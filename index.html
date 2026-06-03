@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HUMAN GLITCHE — VISUAL LAB</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --black:#050505;
+  --white:#f0ede6;
+  --acid:#b8ff00;
+  --glitch:#ff2d55;
+  --mono:'Space Mono',monospace;
+  --display:'Bebas Neue',sans-serif;
+  --body:'DM Sans',sans-serif;
+}
+html{scroll-behavior:smooth;}
+body{background:var(--black);color:var(--white);font-family:var(--body);overflow-x:hidden;cursor:none;}
+
+/* CURSOR */
+#cursor{position:fixed;width:8px;height:8px;background:var(--acid);border-radius:50%;pointer-events:none;z-index:9999;transition:transform 0.1s,background-color 1.5s;mix-blend-mode:difference;}
+#cursor-ring{position:fixed;width:32px;height:32px;border:1px solid var(--acid);border-radius:50%;pointer-events:none;z-index:9998;transition:all 0.15s ease,border-color 1.5s;opacity:0.5;mix-blend-mode:difference;}
+
+/* SHADER CANVAS BG */
+#shader-canvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:0;transition:opacity 2.5s ease;}
+#shader-canvas.active{opacity:1;}
+
+/* NOISE */
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");z-index:1;pointer-events:none;opacity:0.4;}
+
+#scroll-container{position:relative;z-index:2;}
+
+/* ===== DROP ZONE ===== */
+#drop-zone{
+  position:fixed;bottom:2rem;right:2rem;z-index:500;
+  width:210px;cursor:none;
+}
+#drop-inner{
+  border:1px dashed rgba(184,255,0,0.3);
+  padding:1.1rem 1rem;
+  background:rgba(5,5,5,0.9);
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+  border-radius:3px;
+  transition:border-color 0.3s,background 0.3s;
+}
+#drop-zone.drag-over #drop-inner{border-color:var(--acid);background:rgba(184,255,0,0.06);}
+#drop-zone.loaded #drop-inner{border-style:solid;border-color:rgba(184,255,0,0.6);}
+.drop-icon{font-size:18px;margin-bottom:0.5rem;color:var(--acid);transition:color 1.5s;letter-spacing:0;}
+.drop-label{font-family:var(--mono);font-size:9px;letter-spacing:0.15em;color:rgba(240,237,230,0.4);line-height:1.8;}
+.drop-label strong{color:var(--acid);display:block;margin-bottom:3px;font-size:10px;transition:color 1.5s;}
+#drop-file{display:none;}
+
+#status-led{display:inline-block;width:5px;height:5px;border-radius:50%;background:rgba(240,237,230,0.15);margin-right:5px;vertical-align:middle;transition:background-color 0.5s;}
+#status-led.on{background:var(--acid);}
+#status-txt{font-family:var(--mono);font-size:8px;letter-spacing:0.2em;color:rgba(240,237,230,0.3);vertical-align:middle;transition:color 1.5s;}
+
+#shader-name{font-family:var(--mono);font-size:8px;letter-spacing:0.12em;color:var(--acid);margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;opacity:0;transition:opacity 0.5s,color 1.5s;line-height:1;}
+#shader-name.show{opacity:1;}
+
+#pal-row{display:flex;gap:3px;margin-top:8px;height:4px;opacity:0;transition:opacity 0.6s;}
+#pal-row.show{opacity:1;}
+.psw{flex:1;border-radius:1px;transition:background-color 1.2s;}
+
+#reset-btn{display:none;margin-top:8px;font-family:var(--mono);font-size:8px;letter-spacing:0.15em;color:rgba(240,237,230,0.25);background:none;border:none;cursor:none;padding:2px 0;transition:color 0.2s;}
+#reset-btn:hover{color:var(--glitch);}
+#reset-btn.show{display:block;}
+
+/* ISF INPUTS PANEL */
+#isf-panel{
+  position:fixed;bottom:calc(2rem + 10px);right:2rem;z-index:499;
+  width:210px;
+  font-family:var(--mono);font-size:9px;
+  background:rgba(5,5,5,0.9);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  border:1px solid rgba(184,255,0,0.15);border-radius:3px;
+  padding:0.7rem;display:none;max-height:45vh;overflow-y:auto;
+}
+#isf-panel.show{display:block;}
+#isf-panel::-webkit-scrollbar{width:3px;}
+#isf-panel::-webkit-scrollbar-track{background:transparent;}
+#isf-panel::-webkit-scrollbar-thumb{background:rgba(184,255,0,0.2);border-radius:1px;}
+.irow{margin-bottom:8px;}
+.irow:last-child{margin-bottom:0;}
+.ilabel{display:block;color:rgba(240,237,230,0.3);letter-spacing:0.12em;margin-bottom:3px;font-size:8px;}
+.irow input[type=range]{width:100%;height:2px;accent-color:var(--acid);background:rgba(240,237,230,0.08);border-radius:1px;outline:none;-webkit-appearance:none;appearance:none;}
+.irow input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:10px;height:10px;border-radius:50%;background:var(--acid);cursor:none;}
+.irow input[type=color]{width:28px;height:16px;border:none;background:none;cursor:none;border-radius:2px;padding:0;}
+.irow input[type=checkbox]{accent-color:var(--acid);}
+.ival{color:var(--acid);font-size:8px;float:right;}
+.ipanel-title{font-size:8px;letter-spacing:0.25em;color:rgba(240,237,230,0.2);margin-bottom:8px;text-transform:uppercase;}
+
+/* ERROR TOAST */
+#err-toast{
+  position:fixed;bottom:calc(2rem + 10px);right:2rem;z-index:600;
+  font-family:var(--mono);font-size:8px;letter-spacing:0.12em;
+  background:rgba(255,45,85,0.12);border:1px solid rgba(255,45,85,0.4);
+  color:var(--glitch);padding:0.7rem 0.9rem;border-radius:3px;
+  max-width:210px;line-height:1.7;
+  opacity:0;pointer-events:none;transition:opacity 0.4s;
+}
+#err-toast.show{opacity:1;}
+
+/* SECTIONS */
+section{min-height:100vh;display:flex;align-items:center;position:relative;padding:0 8vw;}
+
+/* NAV */
+#nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:2rem 8vw;display:flex;justify-content:space-between;align-items:center;}
+.nav-logo{font-family:var(--mono);font-size:11px;letter-spacing:0.2em;color:rgba(240,237,230,0.4);}
+.nav-links{display:flex;gap:2.5rem;}
+.nav-links a{font-family:var(--mono);font-size:10px;letter-spacing:0.25em;color:rgba(240,237,230,0.25);text-decoration:none;transition:color 0.2s;}
+.nav-links a:hover{color:var(--acid);}
+
+/* HERO */
+#hero{min-height:100vh;justify-content:flex-end;flex-direction:column;padding:0 8vw 10vh;}
+.hero-label{font-family:var(--mono);font-size:11px;letter-spacing:0.3em;color:var(--acid);margin-bottom:1rem;opacity:0.7;transition:color 1.5s;}
+.hero-title{font-family:var(--display);font-size:clamp(6rem,15vw,14rem);line-height:0.88;color:var(--white);}
+.hero-title .ac{color:var(--acid);transition:color 1.5s;}
+.hero-sub{font-family:var(--mono);font-size:12px;color:rgba(240,237,230,0.35);margin-top:1.5rem;max-width:420px;line-height:1.9;}
+.hero-socials{display:flex;gap:2rem;margin-top:2.5rem;}
+.hero-socials a{font-family:var(--mono);font-size:10px;letter-spacing:0.2em;color:rgba(240,237,230,0.3);text-decoration:none;transition:color 0.2s;}
+.hero-socials a:hover{color:var(--acid);}
+.hero-scroll{position:absolute;bottom:3rem;right:calc(230px + 2rem);font-family:var(--mono);font-size:10px;letter-spacing:0.3em;color:rgba(240,237,230,0.2);writing-mode:vertical-rl;display:flex;align-items:center;gap:1rem;}
+.hero-scroll::after{content:'';display:block;width:1px;height:60px;background:var(--acid);animation:sline 1.5s ease-in-out infinite;transition:background-color 1.5s;}
+@keyframes sline{0%{height:0;opacity:0}50%{height:60px;opacity:1}100%{height:0;opacity:0}}
+.hero-tag{position:absolute;top:3rem;right:calc(230px + 2rem);font-family:var(--mono);font-size:10px;letter-spacing:0.2em;color:rgba(240,237,230,0.18);}
+
+/* GLITCH */
+.glitch{position:relative;}
+.glitch::before,.glitch::after{content:attr(data-text);position:absolute;top:0;left:0;width:100%;pointer-events:none;}
+.glitch::before{animation:g1 4s infinite;color:var(--glitch);clip-path:polygon(0 0,100% 0,100% 33%,0 33%);opacity:0;transition:color 1.5s;}
+.glitch::after{animation:g2 4s infinite;color:var(--acid);clip-path:polygon(0 67%,100% 67%,100% 100%,0 100%);opacity:0;transition:color 1.5s;}
+@keyframes g1{0%,88%,100%{transform:none;opacity:0}90%{transform:translate(-4px);opacity:0.8}92%{transform:translate(4px);opacity:0.8}94%{transform:none;opacity:0}}
+@keyframes g2{0%,88%,100%{transform:none;opacity:0}91%{transform:translate(3px);opacity:0.6}93%{transform:translate(-2px);opacity:0.6}95%{transform:none;opacity:0}}
+
+/* MANIFIESTO */
+#manifiesto{flex-direction:column;justify-content:center;}
+.mline{font-family:var(--display);font-size:clamp(2.8rem,6.5vw,7.5rem);line-height:0.95;overflow:hidden;display:block;}
+.mline span{display:block;transform:translateY(110%);transition:transform 0.9s cubic-bezier(0.16,1,0.3,1);}
+.mline.vis span{transform:translateY(0);}
+.mline:nth-child(2) span{transition-delay:0.08s;}
+.mline:nth-child(3) span{transition-delay:0.16s;}
+.mline:nth-child(4) span{transition-delay:0.25s;color:var(--acid);transition:color 1.5s,transform 0.9s cubic-bezier(0.16,1,0.3,1) 0.25s;}
+.mfine{font-family:var(--mono);font-size:11px;color:rgba(240,237,230,0.3);margin-top:3rem;letter-spacing:0.15em;line-height:1.9;max-width:460px;}
+
+/* AETHER SECTION */
+#aether-sec{flex-direction:column;min-height:80vh;padding:8vh 8vw;}
+.aether-badge{font-family:var(--mono);font-size:9px;letter-spacing:0.3em;color:var(--acid);border:1px solid rgba(184,255,0,0.3);padding:5px 14px;display:inline-block;margin-bottom:2rem;transition:color 1.5s,border-color 1.5s;}
+.aether-title{font-family:var(--display);font-size:clamp(3rem,7vw,8rem);line-height:0.9;margin-bottom:1.5rem;}
+.aether-desc{font-family:var(--mono);font-size:11px;line-height:2;color:rgba(240,237,230,0.4);max-width:400px;margin-bottom:2.5rem;}
+.aether-link{font-family:var(--mono);font-size:10px;letter-spacing:0.2em;color:var(--acid);text-decoration:none;border-bottom:1px solid var(--acid);padding-bottom:2px;transition:color 1.5s,border-color 1.5s;}
+.viz-stat{display:flex;gap:4rem;margin-top:3rem;}
+.stat-num{font-family:var(--display);font-size:4rem;color:var(--acid);line-height:1;transition:color 1.5s;}
+.stat-label{font-family:var(--mono);font-size:9px;letter-spacing:0.3em;color:rgba(240,237,230,0.3);margin-top:3px;}
+
+/* BLOG */
+#blog{flex-direction:column;padding:10vh 8vw;}
+.sec-hdr{display:flex;justify-content:space-between;align-items:flex-end;width:100%;margin-bottom:4rem;}
+.sec-title{font-family:var(--display);font-size:clamp(3rem,6vw,6rem);line-height:0.9;}
+.sec-link{font-family:var(--mono);font-size:10px;letter-spacing:0.2em;color:var(--acid);text-decoration:none;border-bottom:1px solid var(--acid);padding-bottom:2px;transition:color 1.5s,border-color 1.5s;}
+.blog-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:1px;background:rgba(240,237,230,0.06);width:100%;}
+.bcard{background:var(--black);padding:2.2rem 1.8rem;cursor:none;position:relative;overflow:hidden;transition:background 0.3s;}
+.bcard::before{content:'';position:absolute;inset:0;background:var(--acid);transform:translateY(101%);transition:transform 0.45s cubic-bezier(0.16,1,0.3,1),background-color 1.5s;z-index:0;}
+.bcard:hover::before{transform:translateY(0);}
+.bcard:hover .cnum,.bcard:hover .ctitle,.bcard:hover .cmeta,.bcard:hover .ctag{color:var(--black)!important;}
+.bcard:hover .ctag{border-color:rgba(0,0,0,0.2)!important;}
+.cnum{font-family:var(--mono);font-size:9px;color:rgba(240,237,230,0.2);margin-bottom:1.8rem;position:relative;z-index:1;transition:color 0.3s;}
+.ctitle{font-family:var(--display);font-size:1.8rem;line-height:1.05;margin-bottom:0.8rem;position:relative;z-index:1;transition:color 0.3s;}
+.cmeta{font-family:var(--mono);font-size:9px;color:rgba(240,237,230,0.25);position:relative;z-index:1;transition:color 0.3s;}
+.ctag{display:inline-block;font-family:var(--mono);font-size:8px;letter-spacing:0.2em;border:1px solid rgba(240,237,230,0.12);padding:3px 9px;margin-top:1.3rem;position:relative;z-index:1;transition:color 0.3s,border-color 0.3s;}
+
+/* CATALOGO */
+#catalogo{flex-direction:column;padding:10vh 8vw;}
+.svc-list{width:100%;margin-top:3rem;}
+.srow{display:grid;grid-template-columns:70px 1fr auto;align-items:start;gap:2.5rem;padding:2.2rem 0;border-top:1px solid rgba(240,237,230,0.07);transition:border-color 0.3s;}
+.srow:hover{border-top-color:var(--acid);}
+.srow:last-child{border-bottom:1px solid rgba(240,237,230,0.07);}
+.snum{font-family:var(--mono);font-size:9px;color:rgba(240,237,230,0.18);padding-top:0.8rem;}
+.sname{font-family:var(--display);font-size:clamp(2rem,3.5vw,3.8rem);line-height:1;}
+.sprice{font-family:var(--mono);font-size:11px;color:var(--acid);white-space:nowrap;padding-top:0.8rem;transition:color 1.5s;}
+.ssub{font-family:var(--mono);font-size:10px;color:rgba(240,237,230,0.3);margin-top:0.4rem;line-height:1.8;grid-column:2;}
+
+/* PLANES */
+#comunidad{flex-direction:column;padding:10vh 8vw;}
+.plans{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:rgba(240,237,230,0.06);width:100%;margin-top:4rem;}
+.plan{background:var(--black);padding:2.8rem 2.2rem;}
+.plan.feat{background:var(--acid);transition:background-color 1.5s;}
+.plan.feat *{color:var(--black)!important;}
+.ptier{font-family:var(--mono);font-size:8px;letter-spacing:0.3em;color:rgba(240,237,230,0.25);margin-bottom:1.8rem;text-transform:uppercase;}
+.pprice{font-family:var(--display);font-size:5rem;line-height:1;margin-bottom:0.3rem;}
+.pper{font-family:var(--mono);font-size:10px;color:rgba(240,237,230,0.35);margin-bottom:2rem;}
+.pname{font-family:var(--display);font-size:1.7rem;line-height:1;margin-bottom:1.3rem;}
+.pfeat{list-style:none;}
+.pfeat li{font-family:var(--mono);font-size:10px;color:rgba(240,237,230,0.45);padding:0.45rem 0;border-bottom:1px solid rgba(240,237,230,0.05);line-height:1.6;}
+.pfeat li::before{content:'→ ';color:var(--acid);transition:color 1.5s;}
+.plan.feat .pfeat li::before{color:var(--black);}
+.pcta{display:block;margin-top:2rem;font-family:var(--mono);font-size:10px;letter-spacing:0.2em;text-decoration:none;padding:0.9rem;border:1px solid rgba(240,237,230,0.15);text-align:center;color:var(--white);transition:all 0.3s;}
+.plan.feat .pcta{border-color:var(--black);color:var(--black);}
+.pcta:hover{background:var(--acid);color:var(--black);border-color:var(--acid);}
+
+/* LIVE */
+#live{flex-direction:column;align-items:center;justify-content:center;text-align:center;min-height:70vh;}
+.live-badge{font-family:var(--mono);font-size:9px;letter-spacing:0.3em;color:var(--glitch);border:1px solid var(--glitch);padding:5px 14px;margin-bottom:2rem;display:inline-block;animation:blink 1.2s ease-in-out infinite;transition:color 1.5s,border-color 1.5s;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.25}}
+.live-t{font-family:var(--display);font-size:clamp(4rem,10vw,11rem);line-height:0.88;margin-bottom:1.5rem;}
+.live-sub{font-family:var(--mono);font-size:11px;color:rgba(240,237,230,0.3);letter-spacing:0.15em;}
+.live-a{display:inline-block;margin-top:2rem;font-family:var(--mono);font-size:10px;letter-spacing:0.2em;color:var(--acid);text-decoration:none;border-bottom:1px solid var(--acid);padding-bottom:2px;transition:color 1.5s,border-color 1.5s;}
+
+/* FOOTER */
+#footer{min-height:auto;padding:5rem 8vw 3.5rem;flex-direction:column;border-top:1px solid rgba(240,237,230,0.07);}
+.ftop{display:flex;justify-content:space-between;align-items:flex-start;width:100%;margin-bottom:4rem;}
+.flogo{font-family:var(--display);font-size:5rem;line-height:0.88;color:rgba(240,237,230,0.06);}
+.flinks{display:flex;gap:2.5rem;flex-wrap:wrap;}
+.flinks a{font-family:var(--mono);font-size:9px;letter-spacing:0.2em;color:rgba(240,237,230,0.25);text-decoration:none;transition:color 0.2s;}
+.flinks a:hover{color:var(--acid);}
+.fbot{display:flex;justify-content:space-between;width:100%;}
+.fcopy{font-family:var(--mono);font-size:9px;color:rgba(240,237,230,0.12);letter-spacing:0.12em;}
+.facid{font-family:var(--mono);font-size:9px;color:var(--acid);letter-spacing:0.12em;opacity:0.4;transition:color 1.5s;}
+
+/* SEP */
+.sep{font-family:var(--mono);font-size:9px;letter-spacing:0.3em;color:rgba(240,237,230,0.08);text-align:center;padding:1.5rem;display:block;}
+
+/* REVEAL */
+.rev{opacity:0;transform:translateY(36px);transition:opacity 0.8s ease,transform 0.8s ease;}
+.rev.vis{opacity:1;transform:translateY(0);}
+.rd1{transition-delay:0.1s;}.rd2{transition-delay:0.2s;}.rd3{transition-delay:0.32s;}
+
+@media(max-width:768px){
+  .plans{grid-template-columns:1fr;}
+  .srow{grid-template-columns:40px 1fr;}
+  .sprice{grid-column:2;}
+  .ssub{grid-column:2;}
+  .ftop{flex-direction:column;gap:2.5rem;}
+  .viz-stat{gap:2rem;}
+  #drop-zone{width:170px;bottom:1rem;right:1rem;}
+  #isf-panel{width:170px;}
+}
+</style>
+</head>
+<body>
+
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+<canvas id="shader-canvas"></canvas>
+
+<!-- ISF INPUTS PANEL (aparece encima del drop cuando hay inputs) -->
+<div id="isf-panel"></div>
+
+<!-- DROP ZONE -->
+<div id="drop-zone">
+  <div id="drop-inner">
+    <div class="drop-icon">⬡</div>
+    <div class="drop-label">
+      <strong><span id="status-led"></span><span id="status-txt">AETHER ISF DROP</span></strong>
+      Arrastrá un <code style="color:var(--acid);font-size:9px">.fs</code> de tu app acá
+    </div>
+    <input type="file" id="drop-file" accept=".fs,.glsl,.frag">
+    <div id="pal-row">
+      <div class="psw" id="sw0"></div><div class="psw" id="sw1"></div>
+      <div class="psw" id="sw2"></div><div class="psw" id="sw3"></div>
+      <div class="psw" id="sw4"></div>
+    </div>
+    <div id="shader-name"></div>
+    <button id="reset-btn">✕ RESET</button>
+  </div>
+</div>
+<div id="err-toast"></div>
+
+<nav id="nav">
+  <span class="nav-logo">HG — VL / 2026</span>
+  <div class="nav-links">
+    <a href="#manifiesto">SISTEMA</a>
+    <a href="#aether-sec">AETHER</a>
+    <a href="#blog">BLOG</a>
+    <a href="#catalogo">SERVICIOS</a>
+    <a href="#comunidad">COMUNIDAD</a>
+  </div>
+</nav>
+
+<div id="scroll-container">
+
+  <section id="hero" style="padding:0 8vw 10vh;">
+    <span class="hero-tag">VISUAL LAB × HUMAN GLITCHE</span>
+    <div class="hero-label">Buenos Aires — AR / EST. 2022</div>
+    <h1 class="hero-title glitch" data-text="HUMAN GLITCHE">HUMAN<br><span class="ac">GLITCHE</span></h1>
+    <p class="hero-sub">Ecosistema creativo para operar como humano en un sistema que ya no fue diseñado para humanos. Arte · Código · Comunidad · Visuales en tiempo real.</p>
+    <div class="hero-socials">
+      <a href="https://www.youtube.com/@Human.Glitche" target="_blank">YT</a>
+      <a href="https://x.com/HGlitche" target="_blank">X</a>
+      <a href="https://kick.com/visuallab" target="_blank">KICK</a>
+      <a href="https://discord.gg/mkHhBdUw" target="_blank">DISCORD</a>
+      <a href="https://github.com/human-zeta" target="_blank">GH</a>
+    </div>
+    <div class="hero-scroll">SCROLL</div>
+  </section>
+
+  <section id="manifiesto">
+    <div>
+      <div class="mline"><span>EL GLITCH</span></div>
+      <div class="mline"><span>NO SE</span></div>
+      <div class="mline"><span>CORRIGE.</span></div>
+      <div class="mline"><span>SE HABITA.</span></div>
+      <div class="mline"><span style="color:rgba(240,237,230,0.15);font-size:clamp(1.4rem,2.8vw,3rem);">— Y DESDE AHÍ, SE CREA ALGO NUEVO.</span></div>
+      <p class="mfine rev">Human Glitche es aprender a vivir, crear y trabajar<br>usando el sistema sin dejar que el sistema te use.</p>
+    </div>
+  </section>
+
+  <span class="sep">— — — — — — — — —</span>
+
+  <!-- AETHER SECTION -->
+  <section id="aether-sec">
+    <div>
+      <div class="aether-badge rev">AETHER ISF GENERATOR × GEMINI AI</div>
+      <h2 class="aether-title rev rd1">SHADERS<br>INFINITOS</h2>
+      <p class="aether-desc rev rd2">Generador de visuales ISF alimentado por Gemini. Describís un efecto, la IA lo compila en GLSL real listo para VDMX6, Resolume, o cualquier host ISF. Descargás el <code style="color:var(--acid);font-size:10px">.fs</code> y lo droppeas acá — el site se transforma.</p>
+      <a href="https://github.com/human-zeta/Aether-ISF-generator" class="aether-link rev rd3" target="_blank">VER EN GITHUB →</a>
+      <div class="viz-stat rev rd3">
+        <div><div class="stat-num">ISF</div><div class="stat-label">2.0 SPEC</div></div>
+        <div><div class="stat-num">AI</div><div class="stat-label">GEMINI GEN</div></div>
+        <div><div class="stat-num">∞</div><div class="stat-label">VISUALES</div></div>
+      </div>
+    </div>
+  </section>
+
+  <span class="sep">— — — — — — — — —</span>
+
+  <section id="blog">
+    <div class="sec-hdr rev"><h2 class="sec-title">BLOG</h2><a href="https://www.hg-vl.com/es/blog" class="sec-link" target="_blank">VER TODO →</a></div>
+    <div class="blog-grid">
+      <div class="bcard" data-url="https://www.hg-vl.com/es/blog/aether-isf-infinito"><div class="cnum">001</div><div class="ctitle">AETHER ISF INFINITO</div><div class="cmeta">6 min read</div><div class="ctag">SHADERS</div></div>
+      <div class="bcard" data-url="https://www.hg-vl.com/es/blog/manual-de-cocina-para-vj"><div class="cnum">002</div><div class="ctitle">MANUAL DE COCINA PARA VJ</div><div class="cmeta">7 min read</div><div class="ctag">VJ / WORKFLOW</div></div>
+      <div class="bcard" data-url="https://www.hg-vl.com/es/blog/manual-de-cocina-para-artistas-2026"><div class="cnum">003</div><div class="ctitle">MANUAL ARTISTAS 2026</div><div class="cmeta">8 min read</div><div class="ctag">CREACIÓN</div></div>
+      <div class="bcard" data-url="https://www.hg-vl.com/es/blog/elegi-tu-mac"><div class="cnum">004</div><div class="ctitle">ELEGÍ TU MAC</div><div class="cmeta">4 min read</div><div class="ctag">HARDWARE</div></div>
+      <div class="bcard" data-url="https://www.hg-vl.com/es/blog/elegi-tu-software"><div class="cnum">005</div><div class="ctitle">ELEGÍ TU SOFTWARE</div><div class="cmeta">5 min read</div><div class="ctag">SOFTWARE</div></div>
+      <div class="bcard" data-url="https://www.hg-vl.com/es/blog/que-es-human-glitche"><div class="cnum">006</div><div class="ctitle">QUÉ ES HUMAN GLITCHE</div><div class="cmeta">9 min read</div><div class="ctag">MANIFIESTO</div></div>
+      <div class="bcard" data-url="https://www.hg-vl.com/es/blog/muchas-apps"><div class="cnum">007</div><div class="ctitle">MUCHAS APPS</div><div class="cmeta">5 min read</div><div class="ctag">TOOLS</div></div>
+      <div class="bcard" data-url="https://www.hg-vl.com/es/blog/primer-dia-de-resolume"><div class="cnum">008</div><div class="ctitle">PRIMER DÍA RESOLUME</div><div class="cmeta">5 min read</div><div class="ctag">TUTORIAL</div></div>
+      <div class="bcard" data-url="https://www.hg-vl.com/es/blog/luck-ra-ags-2022-visuales-en-tiempo-real"><div class="cnum">009</div><div class="ctitle">LUCK RA – AGS 2022</div><div class="cmeta">5 min read</div><div class="ctag">SHOW REAL</div></div>
+    </div>
+  </section>
+
+  <span class="sep">— — — — — — — — —</span>
+
+  <section id="catalogo">
+    <div class="sec-hdr rev" style="width:100%;"><h2 class="sec-title">SERVICIOS</h2><a href="https://meetings.hubspot.com/juan-cruz-martinez-astorga" class="sec-link" target="_blank">REUNIÓN →</a></div>
+    <div class="svc-list">
+      <div class="srow rev"><span class="snum">01</span><span class="sname">ASESORÍA CREATIVA</span><span class="sprice">CONSULTAR</span><span class="ssub">Video llamada 1hs · Transcripción · Presupuestado · Charla distendida con referencias para tu show, gira o evento.</span></div>
+      <div class="srow rev rd1"><span class="snum">02</span><span class="sname">TU SHOW PORTABLE</span><span class="sprice">PACK BASE</span><span class="ssub">+10 fondos · 2 logos · Formatos custom · Contacto con operadores · Asesoría creativa + operativa.</span></div>
+      <div class="srow rev rd2"><span class="snum">03</span><span class="sname">SINCRONÍA COMPLEJA</span><span class="sprice">A MEDIDA</span><span class="ssub">SMPTE · Sincro por red · Planificación Luces + Video · Show con operadores · FX sincro · Circuito cerrado.</span></div>
+    </div>
+  </section>
+
+  <span class="sep">— — — — — — — — —</span>
+
+  <section id="comunidad">
+    <div class="sec-hdr rev" style="width:100%;"><h2 class="sec-title">COMUNIDAD</h2><span style="font-family:var(--mono);font-size:10px;color:rgba(240,237,230,0.2);">SI NO TE SOBRA, NO TE GASTES</span></div>
+    <div class="plans">
+      <div class="plan rev">
+        <div class="ptier">TIER 01</div><div class="pprice">$0</div><div class="pper">/ mensual</div>
+        <div class="pname">ARTISTA EN CONSTRUCCIÓN</div>
+        <ul class="pfeat"><li>Recursos gráficos semanales</li><li>Acceso al Discord</li><li>Charlas y clases</li><li>Descuentos en productos</li><li>Nuestro agradecimiento</li></ul>
+        <a href="#" class="pcta">REGISTRATE</a>
+      </div>
+      <div class="plan feat rev rd1">
+        <div class="ptier">TIER 02 / POPULAR</div><div class="pprice">U$D 25</div><div class="pper">/ mensual</div>
+        <div class="pname">ARTISTA FORMADO</div>
+        <ul class="pfeat"><li>Todo el contenido multimedia</li><li>Discord completo</li><li>Todas las clases y charlas</li><li>Descuentos picantes</li><li>Comunidad activa</li></ul>
+        <a href="https://www.mercadopago.com.ar/subscriptions/checkout?preapproval_plan_id=2c9380849007280c0190347b14a20c69" class="pcta" target="_blank">SUSCRIBIRTE</a>
+      </div>
+      <div class="plan rev rd2">
+        <div class="ptier">TIER 03</div><div class="pprice">U$D 50</div><div class="pper">/ mensual</div>
+        <div class="pname">ARTISTA ON THE TOP</div>
+        <ul class="pfeat"><li>Acceso total a comunidades</li><li>Contacto directo con el equipo</li><li>Te salvamos las papas</li><li>Pack personal branding</li><li>Agradecimiento permanente</li></ul>
+        <a href="https://www.mercadopago.com.ar/subscriptions/checkout?preapproval_plan_id=2c938084900728370190347cad9c0c14" class="pcta" target="_blank">SUSCRIBIRTE</a>
+      </div>
+    </div>
+  </section>
+
+  <span class="sep">— — — — — — — — —</span>
+
+  <section id="live">
+    <div style="text-align:center;">
+      <div class="live-badge">● EN VIVO / KICK</div>
+      <h2 class="live-t glitch" data-text="VISUAL LAB">VISUAL LAB</h2>
+      <p class="live-sub">STREAMING DE VISUALES EN TIEMPO REAL</p>
+      <a href="https://kick.com/visuallab" class="live-a" target="_blank">KICK.COM/VISUALLAB →</a><br>
+      <a href="https://www.youtube.com/@Human.Glitche" class="live-a" style="margin-top:0.8rem;" target="_blank">YOUTUBE →</a>
+    </div>
+  </section>
+
+  <section id="footer">
+    <div class="ftop">
+      <div class="flogo">HG<br>VL</div>
+      <div class="flinks">
+        <a href="https://www.youtube.com/@Human.Glitche" target="_blank">YOUTUBE</a>
+        <a href="https://x.com/HGlitche" target="_blank">X / TWITTER</a>
+        <a href="https://kick.com/visuallab" target="_blank">KICK</a>
+        <a href="https://discord.gg/mkHhBdUw" target="_blank">DISCORD</a>
+        <a href="https://github.com/human-zeta" target="_blank">GITHUB</a>
+        <a href="https://linkedin.com" target="_blank">LINKEDIN</a>
+      </div>
+    </div>
+    <div class="fbot">
+      <span class="fcopy">© 2026 HUMAN GLITCHE — VISUAL LAB — BUENOS AIRES</span>
+      <span class="facid">EL GLITCH NO SE CORRIGE.</span>
+    </div>
+  </section>
+
+</div>
+
+<script>
+// ─────────────────────────────────────────────
+// CURSOR
+// ─────────────────────────────────────────────
+const cur = document.getElementById('cursor');
+const ring = document.getElementById('cursor-ring');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{
+  mx=e.clientX; my=e.clientY;
+  cur.style.left=mx-4+'px'; cur.style.top=my-4+'px';
+});
+(function tick(){rx+=(mx-rx)*0.12;ry+=(my-ry)*0.12;ring.style.left=rx-16+'px';ring.style.top=ry-16+'px';requestAnimationFrame(tick);})();
+document.querySelectorAll('a,button,.bcard,.srow,.plan').forEach(el=>{
+  el.addEventListener('mouseenter',()=>{cur.style.transform='scale(3)';ring.style.opacity='0';});
+  el.addEventListener('mouseleave',()=>{cur.style.transform='scale(1)';ring.style.opacity='0.5';});
+});
+
+// ─────────────────────────────────────────────
+// WEBGL SETUP
+// ─────────────────────────────────────────────
+const canvas = document.getElementById('shader-canvas');
+const gl = canvas.getContext('webgl',{premultipliedAlpha:false,alpha:true,preserveDrawingBuffer:true});
+
+let prog = null, animId = null, t0 = 0;
+let isfInputs = {}; // name → {type, value, min, max}
+let uLocs = {};
+let mouseX=0.5, mouseY=0.5;
+
+const VS = `attribute vec2 pos;void main(){gl_Position=vec4(pos,0.,1.);}`;
+
+// Quad
+const qb = gl.createBuffer();
+gl.bindBuffer(gl.ARRAY_BUFFER,qb);
+gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,1,1]),gl.STATIC_DRAW);
+
+function resize(){
+  canvas.width=window.innerWidth;
+  canvas.height=window.innerHeight;
+  gl.viewport(0,0,canvas.width,canvas.height);
+}
+resize();
+window.addEventListener('resize',resize);
+document.addEventListener('mousemove',e=>{mouseX=e.clientX/window.innerWidth;mouseY=1-e.clientY/window.innerHeight;});
+
+function makeShader(src,type){
+  const s=gl.createShader(type);
+  gl.shaderSource(s,src);gl.compileShader(s);
+  if(!gl.getShaderParameter(s,gl.COMPILE_STATUS)){const e=gl.getShaderInfoLog(s);gl.deleteShader(s);throw e;}
+  return s;
+}
+function makeProgram(fsSrc){
+  const p=gl.createProgram();
+  gl.attachShader(p,makeShader(VS,gl.VERTEX_SHADER));
+  gl.attachShader(p,makeShader(fsSrc,gl.FRAGMENT_SHADER));
+  gl.linkProgram(p);
+  if(!gl.getProgramParameter(p,gl.LINK_STATUS))throw gl.getProgramInfoLog(p);
+  return p;
+}
+
+// ─────────────────────────────────────────────
+// AETHER ISF PARSER — matches parseISF() from utils/isf
+// Handles: isf_FragNormCoord, TIME, RENDERSIZE, PI,
+//          all ISFInputType: float, long, bool, point2D, color, image(stub)
+// ─────────────────────────────────────────────
+function parseAetherISF(raw){
+  // 1. Extract JSON metadata block /*{...}*/
+  const m = raw.match(/\/\*\s*(\{[\s\S]*?\})\s*\*\//);
+  let meta = {INPUTS:[]};
+  if(m){
+    try{ meta = JSON.parse(m[1]); meta.INPUTS = meta.INPUTS||[]; }
+    catch(e){ console.warn('ISF JSON parse error',e); }
+  }
+
+  // 2. Strip header comment
+  let glsl = raw.replace(/\/\*[\s\S]*?\*\//,'').trim();
+
+  // 3. ISF built-in variable remapping (matches Aether's parseISF utility)
+  glsl = glsl
+    .replace(/\bisf_FragNormCoord\b/g,'(gl_FragCoord.xy/RENDERSIZE)')
+    .replace(/\bgl_FragNormCoord\b/g,'(gl_FragCoord.xy/RENDERSIZE)')
+    // ISF texture functions — stub for web preview
+    .replace(/IMG_THIS_PIXEL\s*\([^)]*\)/g,'vec4(0.0)')
+    .replace(/IMG_PIXEL\s*\([^,)]*,\s*[^)]*\)/g,'vec4(0.0)')
+    .replace(/IMG_NORM_PIXEL\s*\([^,)]*,\s*[^)]*\)/g,'vec4(0.0)')
+    .replace(/IMG_SIZE\s*\([^)]*\)/g,'RENDERSIZE')
+    .replace(/\bTIME_DELTA\b/g,'(1.0/60.0)')
+    .replace(/\bFRAME_INDEX\b/g,'int(TIME*60.0)')
+    .replace(/\bPASSINDEX\b/g,'0');
+
+  // 4. Remove any existing precision + duplicate uniforms
+  glsl = glsl
+    .replace(/precision\s+\w+\s+float\s*;/g,'')
+    .replace(/uniform\s+float\s+TIME\s*;/g,'')
+    .replace(/uniform\s+vec2\s+RENDERSIZE\s*;/g,'')
+    .replace(/uniform\s+float\s+PI\s*;/g,'')
+    .replace(/uniform\s+vec2\s+MOUSE\s*;/g,'');
+
+  // 5. Parse INPUTS → build isfInputs map + GLSL uniform declarations
+  isfInputs = {};
+  const unifDecls = [
+    'precision mediump float;',
+    '#define PI 3.14159265358979323846',
+    'uniform float TIME;',
+    'uniform vec2  RENDERSIZE;',
+    'uniform vec2  MOUSE;',
+  ];
+
+  (meta.INPUTS||[]).forEach(inp=>{
+    const n = inp.NAME; if(!n) return;
+    const t = (inp.TYPE||'').toLowerCase();
+
+    let glslType='', defVal;
+    if(t==='float'){
+      glslType='float';
+      defVal = (inp.DEFAULT !== undefined) ? parseFloat(inp.DEFAULT) : 0.5;
+      isfInputs[n]={type:'float',value:defVal,min:parseFloat(inp.MIN??0),max:parseFloat(inp.MAX??1),label:inp.LABEL||n,def:defVal};
+    } else if(t==='long'){
+      glslType='float'; // treat as float in WebGL (no integer uniforms in WebGL1)
+      const vals = inp.VALUES||[];
+      defVal = (inp.DEFAULT !== undefined) ? parseFloat(inp.DEFAULT) : (vals[0]||0);
+      isfInputs[n]={type:'long',value:defVal,min:0,max:Math.max(vals.length-1,1),labels:inp.LABELS||[],values:vals,label:inp.LABEL||n,def:defVal};
+    } else if(t==='bool'){
+      glslType='bool';
+      defVal = inp.DEFAULT===true||inp.DEFAULT===1||inp.DEFAULT==='true';
+      isfInputs[n]={type:'bool',value:defVal,label:inp.LABEL||n,def:defVal};
+    } else if(t==='color'){
+      glslType='vec4';
+      const d = inp.DEFAULT||[1,1,1,1];
+      defVal=[d[0]??1,d[1]??1,d[2]??1,d[3]??1];
+      isfInputs[n]={type:'color',value:[...defVal],label:inp.LABEL||n,def:defVal};
+    } else if(t==='point2d'){
+      glslType='vec2';
+      const d = inp.DEFAULT||[0.5,0.5];
+      defVal=[d[0]??0.5,d[1]??0.5];
+      isfInputs[n]={type:'point2D',value:[...defVal],label:inp.LABEL||n,def:defVal};
+    } else if(t==='image'){
+      // Stub — image inputs need texture uploads; just declare sampler2D
+      unifDecls.push(`uniform sampler2D ${n};`);
+      return;
+    } else return;
+
+    if(glslType) unifDecls.push(`uniform ${glslType} ${n};`);
+  });
+
+  const finalSrc = unifDecls.join('\n') + '\n\n' + glsl;
+  return {finalSrc, meta};
+}
+
+// ─────────────────────────────────────────────
+// RUN PROGRAM
+// ─────────────────────────────────────────────
+function runProgram(p){
+  if(animId) cancelAnimationFrame(animId);
+  prog = p;
+  gl.useProgram(p);
+  const posLoc = gl.getAttribLocation(p,'pos');
+  gl.bindBuffer(gl.ARRAY_BUFFER,qb);
+  gl.enableVertexAttribArray(posLoc);
+  gl.vertexAttribPointer(posLoc,2,gl.FLOAT,false,0,0);
+
+  uLocs={};
+  ['TIME','RENDERSIZE','MOUSE'].forEach(n=>uLocs[n]=gl.getUniformLocation(p,n));
+  Object.keys(isfInputs).forEach(n=>uLocs[n]=gl.getUniformLocation(p,n));
+
+  t0 = Date.now();
+  function frame(){
+    animId=requestAnimationFrame(frame);
+    if(!prog) return;
+    gl.useProgram(prog);
+    const t=(Date.now()-t0)/1000;
+    if(uLocs.TIME) gl.uniform1f(uLocs.TIME,t);
+    if(uLocs.RENDERSIZE) gl.uniform2f(uLocs.RENDERSIZE,canvas.width,canvas.height);
+    if(uLocs.MOUSE) gl.uniform2f(uLocs.MOUSE,mouseX,mouseY);
+
+    Object.entries(isfInputs).forEach(([n,inp])=>{
+      const loc=uLocs[n]; if(!loc) return;
+      if(inp.type==='float'||inp.type==='long') gl.uniform1f(loc,parseFloat(inp.value));
+      else if(inp.type==='bool') gl.uniform1i(loc,inp.value?1:0);
+      else if(inp.type==='color') gl.uniform4f(loc,...inp.value);
+      else if(inp.type==='point2D') gl.uniform2f(loc,...inp.value);
+    });
+    gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
+  }
+  frame();
+}
+
+// ─────────────────────────────────────────────
+// PALETTE EXTRACTION (k-means k=5)
+// ─────────────────────────────────────────────
+function extractPalette(){
+  const w=canvas.width,h=canvas.height;
+  const px=new Uint8Array(w*h*4);
+  gl.readPixels(0,0,w,h,gl.RGBA,gl.UNSIGNED_BYTE,px);
+  const samples=[];
+  for(let i=0;i<400;i++){
+    const idx=Math.floor(Math.random()*w*h)*4;
+    if(px[idx+3]<20) continue;
+    samples.push([px[idx],px[idx+1],px[idx+2]]);
+  }
+  if(samples.length<6) return null;
+  let centers=samples.slice(0,5).map(c=>[...c]);
+  for(let iter=0;iter<15;iter++){
+    const buckets=Array.from({length:5},()=>[]);
+    samples.forEach(s=>{
+      let b=0,bd=Infinity;
+      centers.forEach((c,i)=>{const d=(s[0]-c[0])**2+(s[1]-c[1])**2+(s[2]-c[2])**2;if(d<bd){bd=d;b=i;}});
+      buckets[b].push(s);
+    });
+    centers=buckets.map((b,i)=>{
+      if(!b.length) return centers[i];
+      return [
+        Math.round(b.reduce((a,v)=>a+v[0],0)/b.length),
+        Math.round(b.reduce((a,v)=>a+v[1],0)/b.length),
+        Math.round(b.reduce((a,v)=>a+v[2],0)/b.length),
+      ];
+    });
+  }
+  return centers;
+}
+
+function toHex([r,g,b]){return '#'+[r,g,b].map(v=>v.toString(16).padStart(2,'0')).join('');}
+function lum([r,g,b]){return 0.299*r+0.587*g+0.114*b;}
+function sat([r,g,b]){return Math.max(r,g,b)-Math.min(r,g,b);}
+
+function applyPalette(colors){
+  if(!colors||colors.length<3) return;
+  const sorted=[...colors].sort((a,b)=>lum(a)-lum(b));
+  const brightest=sorted[sorted.length-1];
+  const vivid=colors.reduce((best,c)=>sat(c)>sat(best)?c:best,colors[0]);
+
+  const root=document.documentElement;
+  root.style.setProperty('--acid',toHex(brightest));
+  root.style.setProperty('--glitch',toHex(vivid));
+
+  colors.forEach((c,i)=>{const sw=document.getElementById('sw'+i);if(sw)sw.style.background=toHex(c);});
+  document.getElementById('pal-row').classList.add('show');
+
+  // Propagate to cursor
+  cur.style.background=toHex(brightest);
+  ring.style.borderColor=toHex(brightest);
+
+  // Featured plan
+  document.querySelector('.plan.feat').style.background=toHex(brightest);
+}
+
+// ─────────────────────────────────────────────
+// ISF INPUTS PANEL
+// ─────────────────────────────────────────────
+function buildPanel(){
+  const panel=document.getElementById('isf-panel');
+  panel.innerHTML='';
+  const keys=Object.keys(isfInputs);
+  if(!keys.length){panel.classList.remove('show');return;}
+  const title=document.createElement('div');
+  title.className='ipanel-title';title.textContent='ISF INPUTS';panel.appendChild(title);
+  keys.forEach(n=>{
+    const inp=isfInputs[n];
+    const row=document.createElement('div');row.className='irow';
+    const lbl=document.createElement('label');lbl.className='ilabel';lbl.textContent=(inp.label||n).toUpperCase();
+    const valSpan=document.createElement('span');valSpan.className='ival';
+    row.appendChild(lbl);
+
+    if(inp.type==='float'||inp.type==='long'){
+      const sl=document.createElement('input');sl.type='range';
+      sl.min=inp.min??0;sl.max=inp.max??1;sl.step=(inp.max-inp.min)/200||0.01;
+      sl.value=inp.value;
+      valSpan.textContent=parseFloat(inp.value).toFixed(2);
+      sl.addEventListener('input',()=>{isfInputs[n].value=parseFloat(sl.value);valSpan.textContent=parseFloat(sl.value).toFixed(2);});
+      lbl.appendChild(valSpan);row.appendChild(sl);
+    } else if(inp.type==='bool'){
+      const cb=document.createElement('input');cb.type='checkbox';cb.checked=inp.value;
+      cb.addEventListener('change',()=>{isfInputs[n].value=cb.checked;});
+      lbl.style.display='flex';lbl.style.gap='8px';lbl.style.alignItems='center';
+      lbl.appendChild(cb);
+    } else if(inp.type==='color'){
+      const cp=document.createElement('input');cp.type='color';
+      const v=inp.value;cp.value=toHex([Math.round(v[0]*255),Math.round(v[1]*255),Math.round(v[2]*255)]);
+      cp.addEventListener('input',()=>{
+        const h=cp.value;
+        isfInputs[n].value=[parseInt(h.slice(1,3),16)/255,parseInt(h.slice(3,5),16)/255,parseInt(h.slice(5,7),16)/255,1];
+      });
+      row.appendChild(cp);
+    } else if(inp.type==='point2D'){
+      ['X','Y'].forEach((axis,ai)=>{
+        const sl=document.createElement('input');sl.type='range';sl.min=0;sl.max=1;sl.step=0.01;
+        sl.value=inp.value[ai];
+        const axlbl=document.createElement('label');axlbl.className='ilabel';axlbl.textContent=axis;
+        sl.addEventListener('input',()=>{isfInputs[n].value[ai]=parseFloat(sl.value);});
+        row.appendChild(axlbl);row.appendChild(sl);
+      });
+    }
+    panel.appendChild(row);
+  });
+  // Position panel above drop zone
+  const dz=document.getElementById('drop-zone');
+  const dzH=dz.getBoundingClientRect().height;
+  panel.style.bottom=(2+dzH/16+0.6)+'rem'; // rough
+  panel.classList.add('show');
+}
+
+// ─────────────────────────────────────────────
+// LOAD .fs FILE
+// ─────────────────────────────────────────────
+function showErr(msg){
+  const el=document.getElementById('err-toast');
+  el.textContent='⚠ '+String(msg).slice(0,180);
+  el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'),7000);
+}
+
+function loadShader(file){
+  document.getElementById('status-txt').textContent='COMPILANDO...';
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const src=e.target.result;
+    try{
+      const {finalSrc,meta}=parseAetherISF(src);
+      const p=makeProgram(finalSrc);
+
+      canvas.classList.add('active');
+      document.getElementById('status-led').classList.add('on');
+      document.getElementById('drop-zone').classList.add('loaded');
+
+      const label=(meta.LABEL||meta.DESCRIPTION||file.name).toUpperCase().replace(/\.FS$/i,'');
+      const nameEl=document.getElementById('shader-name');
+      nameEl.textContent=label;nameEl.classList.add('show');
+      document.getElementById('status-txt').textContent='SHADER ACTIVO';
+      document.getElementById('reset-btn').classList.add('show');
+
+      runProgram(p);
+
+      // Extract palette after a few frames
+      let fc=0;
+      (function wait(){if(fc++<4){requestAnimationFrame(wait);return;}
+        const pal=extractPalette();if(pal)applyPalette(pal);
+      })();
+
+      buildPanel();
+
+    } catch(err){
+      document.getElementById('status-txt').textContent='ERROR — ver consola';
+      showErr(err);
+      console.error('ISF compile error:',err);
+    }
+  };
+  reader.readAsText(file);
+}
+
+// ─────────────────────────────────────────────
+// RESET
+// ─────────────────────────────────────────────
+document.getElementById('reset-btn').addEventListener('click',()=>{
+  if(animId){cancelAnimationFrame(animId);animId=null;}
+  prog=null;
+  canvas.classList.remove('active');
+  document.getElementById('status-led').classList.remove('on');
+  document.getElementById('drop-zone').classList.remove('loaded');
+  document.getElementById('shader-name').classList.remove('show');
+  document.getElementById('reset-btn').classList.remove('show');
+  document.getElementById('pal-row').classList.remove('show');
+  document.getElementById('isf-panel').classList.remove('show');
+  document.getElementById('status-txt').textContent='AETHER ISF DROP';
+  isfInputs={};
+  // Restore defaults
+  const r=document.documentElement;
+  r.style.setProperty('--acid','#b8ff00');
+  r.style.setProperty('--glitch','#ff2d55');
+  cur.style.background='#b8ff00';
+  ring.style.borderColor='#b8ff00';
+  document.querySelector('.plan.feat').style.background='#b8ff00';
+});
+
+// ─────────────────────────────────────────────
+// DRAG & DROP
+// ─────────────────────────────────────────────
+const dz=document.getElementById('drop-zone');
+const df=document.getElementById('drop-file');
+
+['dragenter','dragover'].forEach(ev=>document.addEventListener(ev,e=>{
+  e.preventDefault();
+  if([...e.dataTransfer.items].some(i=>i.kind==='file')) dz.classList.add('drag-over');
+}));
+document.addEventListener('dragleave',e=>{
+  if(!e.relatedTarget||!document.getElementById('drop-zone').contains(e.relatedTarget))
+    dz.classList.remove('drag-over');
+});
+document.addEventListener('drop',e=>{
+  e.preventDefault();dz.classList.remove('drag-over');
+  const file=[...e.dataTransfer.files].find(f=>/\.(fs|glsl|frag)$/i.test(f.name));
+  if(file) loadShader(file);
+  else showErr('Necesito un .fs — arrastrá un shader de Aether ISF');
+});
+dz.addEventListener('click',()=>df.click());
+df.addEventListener('change',e=>{if(e.target.files[0])loadShader(e.target.files[0]);e.target.value='';});
+
+// ─────────────────────────────────────────────
+// SCROLL REVEAL
+// ─────────────────────────────────────────────
+const obs=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('vis');});
+},{threshold:0.12});
+document.querySelectorAll('.rev,.mline').forEach(el=>obs.observe(el));
+
+// Blog cards
+document.querySelectorAll('.bcard').forEach(c=>{
+  c.addEventListener('click',()=>{const u=c.dataset.url;if(u)window.open(u,'_blank');});
+});
+</script>
+</body>
+</html>
