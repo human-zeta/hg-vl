@@ -145,21 +145,93 @@ section{min-height:100vh;display:flex;align-items:center;position:relative;paddi
 .mline:nth-child(4) span{transition-delay:0.25s;color:var(--acid);transition:color 1.5s,transform 0.9s cubic-bezier(0.16,1,0.3,1) 0.25s;}
 .mfine{font-family:var(--mono);font-size:11px;color:rgba(240,237,230,0.3);margin-top:3rem;letter-spacing:0.15em;line-height:1.9;max-width:460px;}
 
-/* FULLSCREEN BTN */
+/* FULLSCREEN / VISUAL MODE BTN */
 #fs-btn{
   display:none;margin-top:10px;width:100%;
   font-family:var(--mono);font-size:9px;letter-spacing:0.2em;
   background:rgba(184,255,0,0.08);border:1px solid rgba(184,255,0,0.35);
   color:var(--acid);padding:7px 0;border-radius:2px;cursor:none;
-  transition:background 0.2s,border-color 0.2s,color 1.5s;
-  text-align:center;
+  transition:background 0.2s,border-color 0.2s,color 1.5s;text-align:center;
 }
 #fs-btn:hover{background:rgba(184,255,0,0.15);border-color:var(--acid);}
 #fs-btn.show{display:block;}
 
-/* Fullscreen — controles siempre encima */
-#drop-zone,#isf-panel{z-index:2147483647!important;}
-#isf-panel{z-index:2147483646!important;}
+/* MODO VISUAL — oculta web, solo canvas + controles */
+body.visual-mode #scroll-container{display:none;}
+body.visual-mode #nav{display:none;}
+body.visual-mode #shader-canvas{opacity:1!important;}
+body.visual-mode #exit-visual{display:flex;}
+
+/* BOTON SALIR VISUAL */
+#exit-visual{
+  display:none;position:fixed;top:1.5rem;left:50%;transform:translateX(-50%);
+  z-index:9000;font-family:var(--mono);font-size:9px;letter-spacing:0.2em;
+  background:rgba(5,5,5,0.85);border:1px solid rgba(240,237,230,0.12);
+  color:rgba(240,237,230,0.35);padding:7px 20px;border-radius:2px;cursor:none;
+  align-items:center;gap:8px;transition:color 0.2s,border-color 0.2s;
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+}
+#exit-visual:hover{color:var(--glitch);border-color:rgba(255,45,85,0.4);}
+
+/* GALERÍA DE SHADERS */
+#shader-gallery{
+  position:fixed;left:2rem;bottom:2rem;z-index:500;width:230px;
+  font-family:var(--mono);font-size:9px;
+  background:rgba(5,5,5,0.93);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  border:1px solid rgba(184,255,0,0.14);border-radius:3px;
+  display:none;max-height:72vh;flex-direction:column;
+}
+#shader-gallery.show{display:flex;}
+#gallery-header{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:0.65rem 0.9rem;border-bottom:1px solid rgba(240,237,230,0.06);flex-shrink:0;
+}
+#gallery-title{font-size:8px;letter-spacing:0.28em;color:rgba(240,237,230,0.22);}
+#gallery-count{font-size:8px;color:var(--acid);}
+#gallery-close{font-size:9px;color:rgba(240,237,230,0.15);background:none;border:none;cursor:none;transition:color 0.2s;padding:0;}
+#gallery-close:hover{color:var(--glitch);}
+#gallery-list{overflow-y:auto;flex:1;}
+#gallery-list::-webkit-scrollbar{width:2px;}
+#gallery-list::-webkit-scrollbar-thumb{background:rgba(184,255,0,0.12);}
+.gitem{
+  display:grid;grid-template-columns:48px 1fr auto;align-items:center;gap:8px;
+  padding:0.55rem 0.9rem;border-bottom:1px solid rgba(240,237,230,0.04);
+  cursor:none;transition:background 0.2s;
+}
+.gitem:hover{background:rgba(184,255,0,0.04);}
+.gitem:last-child{border-bottom:none;}
+.g-thumb{width:48px;height:30px;border-radius:2px;border:1px solid rgba(240,237,230,0.07);background:rgba(240,237,230,0.03);overflow:hidden;flex-shrink:0;}
+.g-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+.g-info{overflow:hidden;min-width:0;}
+.g-name{font-size:8px;color:rgba(240,237,230,0.65);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:0.06em;}
+.g-date{font-size:7px;color:rgba(240,237,230,0.18);margin-top:2px;}
+.g-actions{display:flex;flex-direction:column;gap:4px;flex-shrink:0;}
+.g-load{font-size:7px;letter-spacing:0.1em;color:var(--acid);background:none;border:none;cursor:none;padding:0;transition:opacity 0.2s;}
+.g-load:hover{opacity:0.6;}
+.g-del{font-size:7px;letter-spacing:0.1em;color:rgba(240,237,230,0.12);background:none;border:none;cursor:none;padding:0;transition:color 0.2s;}
+.g-del:hover{color:var(--glitch);}
+#gallery-empty{padding:1.5rem;text-align:center;color:rgba(240,237,230,0.12);font-size:8px;line-height:2;}
+
+/* TOGGLE GALERÍA — esquina inferior izquierda */
+#gallery-toggle{
+  position:fixed;left:2rem;bottom:2rem;z-index:499;font-family:var(--mono);
+  font-size:9px;letter-spacing:0.2em;background:rgba(5,5,5,0.9);
+  border:1px dashed rgba(240,237,230,0.1);color:rgba(240,237,230,0.22);
+  padding:8px 14px;border-radius:3px;cursor:none;transition:all 0.2s;
+  backdrop-filter:blur(12px);display:flex;align-items:center;gap:6px;
+}
+#gallery-toggle:hover{border-color:rgba(184,255,0,0.25);color:rgba(184,255,0,0.6);}
+#gallery-toggle.has-items{border-color:rgba(184,255,0,0.18);color:rgba(184,255,0,0.45);}
+
+/* en visual mode todo queda encima */
+body.visual-mode #shader-gallery,
+body.visual-mode #gallery-toggle,
+body.visual-mode #drop-zone,
+body.visual-mode #isf-panel,
+body.visual-mode #exit-visual{z-index:9000!important;}
+
+#audio-map.show{opacity:1!important;}
+#audio-btn.active{border-color:rgba(184,255,0,0.5)!important;color:var(--acid)!important;background:rgba(184,255,0,0.06)!important;}
 
 /* AETHER SECTION */
 #aether-sec{flex-direction:column;min-height:80vh;padding:8vh 8vw;}
@@ -271,7 +343,25 @@ section{min-height:100vh;display:flex;align-items:center;position:relative;paddi
 <div id="cursor-ring"></div>
 <canvas id="shader-canvas"></canvas>
 
-<!-- ISF INPUTS PANEL (aparece encima del drop cuando hay inputs) -->
+<!-- SALIR MODO VISUAL -->
+<button id="exit-visual">✕ SALIR VISUAL</button>
+
+<!-- GALERÍA TOGGLE -->
+<button id="gallery-toggle">⬡ SHADERS <span id="gtoggle-count"></span></button>
+
+<!-- GALERÍA PANEL -->
+<div id="shader-gallery">
+  <div id="gallery-header">
+    <span id="gallery-title">SHADER LIBRARY</span>
+    <span id="gallery-count">0</span>
+    <button id="gallery-close">✕</button>
+  </div>
+  <div id="gallery-list">
+    <div id="gallery-empty">Todavía no guardaste shaders.<br>Droppeá un .fs y se guarda solo.</div>
+  </div>
+</div>
+
+<!-- ISF INPUTS PANEL -->
 <div id="isf-panel"></div>
 
 <!-- DROP ZONE -->
@@ -289,7 +379,9 @@ section{min-height:100vh;display:flex;align-items:center;position:relative;paddi
       <div class="psw" id="sw4"></div>
     </div>
     <div id="shader-name"></div>
-    <button id="fs-btn">⛶ PANTALLA COMPLETA</button>
+    <div id="audio-map" style="font-family:var(--mono);font-size:7px;letter-spacing:0.1em;color:rgba(184,255,0,0.4);margin-top:5px;line-height:1.8;opacity:0;transition:opacity 0.4s;word-break:break-all;"></div>
+    <button id="audio-btn" style="display:none;margin-top:8px;width:100%;font-family:var(--mono);font-size:9px;letter-spacing:0.18em;background:rgba(255,255,255,0.03);border:1px solid rgba(240,237,230,0.1);color:rgba(240,237,230,0.3);padding:6px 0;border-radius:2px;cursor:none;transition:all 0.25s;text-align:center;">◎ AUDIO</button>
+    <button id="fs-btn">⛶ MODO VISUAL</button>
     <button id="reset-btn">✕ RESET</button>
   </div>
 </div>
@@ -468,6 +560,17 @@ let isfInputs = {}; // name → {type, value, min, max}
 let uLocs = {};
 let mouseX=0.5, mouseY=0.5;
 
+// AUDIO
+let audioCtx=null, analyser=null, audioData=null, audioStream=null;
+let audioActive=false;
+let audioVol=0, audioBass=0, audioMid=0, audioHigh=0;
+let audioSmooth={vol:0,bass:0,mid:0,high:0,beat:0};
+let beatCooldown=0;
+// Mapping automático: qué input controla cada banda
+let audioMapping={vol:null,bass:null,mid:null,high:null};
+// Valores originales antes de que el audio los tome
+let audioOrigValues={};
+
 const VS = `attribute vec2 pos;void main(){gl_Position=vec4(pos,0.,1.);}`;
 
 // Quad
@@ -545,6 +648,12 @@ function parseAetherISF(raw){
     'uniform float TIME;',
     'uniform vec2  RENDERSIZE;',
     'uniform vec2  MOUSE;',
+    // Audio uniforms — siempre disponibles
+    'uniform float AUDIO_VOL;',
+    'uniform float AUDIO_BASS;',
+    'uniform float AUDIO_MID;',
+    'uniform float AUDIO_HIGH;',
+    'uniform float AUDIO_BEAT;',
   ];
 
   (meta.INPUTS||[]).forEach(inp=>{
@@ -601,7 +710,7 @@ function runProgram(p){
   gl.vertexAttribPointer(posLoc,2,gl.FLOAT,false,0,0);
 
   uLocs={};
-  ['TIME','RENDERSIZE','MOUSE'].forEach(n=>uLocs[n]=gl.getUniformLocation(p,n));
+  ['TIME','RENDERSIZE','MOUSE','AUDIO_VOL','AUDIO_BASS','AUDIO_MID','AUDIO_HIGH','AUDIO_BEAT'].forEach(n=>uLocs[n]=gl.getUniformLocation(p,n));
   Object.keys(isfInputs).forEach(n=>uLocs[n]=gl.getUniformLocation(p,n));
 
   t0 = Date.now();
@@ -613,6 +722,50 @@ function runProgram(p){
     if(uLocs.TIME) gl.uniform1f(uLocs.TIME,t);
     if(uLocs.RENDERSIZE) gl.uniform2f(uLocs.RENDERSIZE,canvas.width,canvas.height);
     if(uLocs.MOUSE) gl.uniform2f(uLocs.MOUSE,mouseX,mouseY);
+
+    // Audio analysis cada frame
+    if(audioActive && analyser){
+      analyser.getByteFrequencyData(audioData);
+      const len=audioData.length;
+      // Bandas: bass 0-10%, mid 10-50%, high 50-100%
+      const bassEnd=Math.floor(len*0.10), midEnd=Math.floor(len*0.50);
+      let bSum=0,mSum=0,hSum=0,vSum=0;
+      for(let i=0;i<len;i++){
+        vSum+=audioData[i];
+        if(i<bassEnd) bSum+=audioData[i];
+        else if(i<midEnd) mSum+=audioData[i];
+        else hSum+=audioData[i];
+      }
+      const norm=v=>Math.min(v/255,1);
+      audioVol=norm(vSum/len);
+      audioBass=norm(bSum/bassEnd);
+      audioMid=norm(mSum/(midEnd-bassEnd));
+      audioHigh=norm(hSum/(len-midEnd));
+
+      // Smoothing exponencial
+      const k=0.25;
+      audioSmooth.vol+=(audioVol-audioSmooth.vol)*k;
+      audioSmooth.bass+=(audioBass-audioSmooth.bass)*k;
+      audioSmooth.mid+=(audioMid-audioSmooth.mid)*k;
+      audioSmooth.high+=(audioHigh-audioSmooth.high)*k;
+
+      // Beat detection (sub-bass threshold)
+      if(beatCooldown>0) beatCooldown--;
+      if(audioBass>0.6 && beatCooldown===0){
+        audioSmooth.beat=1.0;
+        beatCooldown=12;
+      } else {
+        audioSmooth.beat*=0.88;
+      }
+
+      // Auto-mapping: modular sobre inputs float disponibles
+      applyAudioMapping();
+    }
+    if(uLocs.AUDIO_VOL)  gl.uniform1f(uLocs.AUDIO_VOL,  audioSmooth.vol);
+    if(uLocs.AUDIO_BASS) gl.uniform1f(uLocs.AUDIO_BASS, audioSmooth.bass);
+    if(uLocs.AUDIO_MID)  gl.uniform1f(uLocs.AUDIO_MID,  audioSmooth.mid);
+    if(uLocs.AUDIO_HIGH) gl.uniform1f(uLocs.AUDIO_HIGH, audioSmooth.high);
+    if(uLocs.AUDIO_BEAT) gl.uniform1f(uLocs.AUDIO_BEAT, audioSmooth.beat);
 
     Object.entries(isfInputs).forEach(([n,inp])=>{
       const loc=uLocs[n]; if(!loc) return;
@@ -706,8 +859,13 @@ function buildPanel(){
       const sl=document.createElement('input');sl.type='range';
       sl.min=inp.min??0;sl.max=inp.max??1;sl.step=(inp.max-inp.min)/200||0.01;
       sl.value=inp.value;
+      sl.dataset.inputName=n;
       valSpan.textContent=parseFloat(inp.value).toFixed(2);
-      sl.addEventListener('input',()=>{isfInputs[n].value=parseFloat(sl.value);valSpan.textContent=parseFloat(sl.value).toFixed(2);});
+      sl.addEventListener('input',()=>{
+        // Si el audio está mapeado a este input, el usuario lo overridea temporalmente
+        isfInputs[n].value=parseFloat(sl.value);
+        valSpan.textContent=parseFloat(sl.value).toFixed(2);
+      });
       lbl.appendChild(valSpan);row.appendChild(sl);
     } else if(inp.type==='bool'){
       const cb=document.createElement('input');cb.type='checkbox';cb.checked=inp.value;
@@ -750,42 +908,50 @@ function showErr(msg){
   setTimeout(()=>el.classList.remove('show'),7000);
 }
 
-function loadShader(file){
+function loadShaderFromCode(src, name){
   document.getElementById('status-txt').textContent='COMPILANDO...';
+  try{
+    const {finalSrc,meta}=parseAetherISF(src);
+    const p=makeProgram(finalSrc);
+
+    canvas.classList.add('active');
+    document.getElementById('status-led').classList.add('on');
+    document.getElementById('drop-zone').classList.add('loaded');
+
+    const label=(name||meta.LABEL||meta.DESCRIPTION||'SHADER').toUpperCase().replace(/\.FS$/i,'');
+    const nameEl=document.getElementById('shader-name');
+    nameEl.textContent=label;nameEl.classList.add('show');
+    document.getElementById('status-txt').textContent='SHADER ACTIVO';
+    document.getElementById('reset-btn').classList.add('show');
+    document.getElementById('fs-btn').classList.add('show');
+    const audioBtn=document.getElementById('audio-btn');
+    audioBtn.style.display='block';
+    // si ya había audio activo, remap
+    if(audioActive) buildAudioMapping();
+
+    runProgram(p);
+
+    // Extraer paleta y luego guardar en galería (con thumbnail real)
+    let fc=0;
+    (function wait(){
+      if(fc++<4){requestAnimationFrame(wait);return;}
+      const pal=extractPalette();if(pal)applyPalette(pal);
+      // Guardar en galería con thumbnail capturado post-render
+      saveCurrentShader(label, src);
+    })();
+
+    buildPanel();
+
+  } catch(err){
+    document.getElementById('status-txt').textContent='ERROR — ver consola';
+    showErr(err);
+    console.error('ISF compile error:',err);
+  }
+}
+
+function loadShader(file){
   const reader=new FileReader();
-  reader.onload=e=>{
-    const src=e.target.result;
-    try{
-      const {finalSrc,meta}=parseAetherISF(src);
-      const p=makeProgram(finalSrc);
-
-      canvas.classList.add('active');
-      document.getElementById('status-led').classList.add('on');
-      document.getElementById('drop-zone').classList.add('loaded');
-
-      const label=(meta.LABEL||meta.DESCRIPTION||file.name).toUpperCase().replace(/\.FS$/i,'');
-      const nameEl=document.getElementById('shader-name');
-      nameEl.textContent=label;nameEl.classList.add('show');
-      document.getElementById('status-txt').textContent='SHADER ACTIVO';
-      document.getElementById('reset-btn').classList.add('show');
-      document.getElementById('fs-btn').classList.add('show');
-
-      runProgram(p);
-
-      // Extract palette after a few frames
-      let fc=0;
-      (function wait(){if(fc++<4){requestAnimationFrame(wait);return;}
-        const pal=extractPalette();if(pal)applyPalette(pal);
-      })();
-
-      buildPanel();
-
-    } catch(err){
-      document.getElementById('status-txt').textContent='ERROR — ver consola';
-      showErr(err);
-      console.error('ISF compile error:',err);
-    }
-  };
+  reader.onload=e=>loadShaderFromCode(e.target.result, file.name);
   reader.readAsText(file);
 }
 
@@ -795,12 +961,16 @@ function loadShader(file){
 document.getElementById('reset-btn').addEventListener('click',()=>{
   if(animId){cancelAnimationFrame(animId);animId=null;}
   prog=null;
+  exitVisualMode();
   canvas.classList.remove('active');
   document.getElementById('status-led').classList.remove('on');
   document.getElementById('drop-zone').classList.remove('loaded');
   document.getElementById('shader-name').classList.remove('show');
   document.getElementById('reset-btn').classList.remove('show');
   document.getElementById('fs-btn').classList.remove('show');
+  document.getElementById('audio-btn').style.display='none';
+  document.getElementById('audio-map').style.opacity='0';
+  if(audioActive) stopAudio();
   if(document.fullscreenElement) document.exitFullscreen();
   document.getElementById('pal-row').classList.remove('show');
   document.getElementById('isf-panel').classList.remove('show');
@@ -816,21 +986,368 @@ document.getElementById('reset-btn').addEventListener('click',()=>{
 });
 
 // ─────────────────────────────────────────────
-// FULLSCREEN
+// MODO VISUAL (oculta web, solo canvas + controles)
 // ─────────────────────────────────────────────
 const fsBtn = document.getElementById('fs-btn');
-fsBtn.addEventListener('click',()=>{
-  if(!document.fullscreenElement){
-    document.documentElement.requestFullscreen().catch(()=>{});
-    fsBtn.textContent='⛶ SALIR FULLSCREEN';
-  } else {
-    document.exitFullscreen();
-    fsBtn.textContent='⛶ PANTALLA COMPLETA';
-  }
+const exitBtn = document.getElementById('exit-visual');
+
+function enterVisualMode(){
+  document.body.classList.add('visual-mode');
+  document.documentElement.requestFullscreen().catch(()=>{});
+  fsBtn.textContent='⛶ MODO VISUAL ON';
+}
+function exitVisualMode(){
+  document.body.classList.remove('visual-mode');
+  if(document.fullscreenElement) document.exitFullscreen().catch(()=>{});
+  fsBtn.textContent='⛶ MODO VISUAL';
+}
+fsBtn.addEventListener('click', enterVisualMode);
+exitBtn.addEventListener('click', exitVisualMode);
+
+// Audio btn toggle
+document.getElementById('audio-btn').addEventListener('click',()=>{
+  if(audioActive) stopAudio();
+  else startAudio();
 });
+// Estilo cuando está activo
+document.getElementById('audio-btn').addEventListener('mouseenter',function(){this.style.borderColor='rgba(184,255,0,0.3)';});
+document.getElementById('audio-btn').addEventListener('mouseleave',function(){this.style.borderColor=audioActive?'rgba(184,255,0,0.5)':'rgba(240,237,230,0.1)';});
 document.addEventListener('fullscreenchange',()=>{
-  if(!document.fullscreenElement) fsBtn.textContent='⛶ PANTALLA COMPLETA';
+  if(!document.fullscreenElement && document.body.classList.contains('visual-mode'))
+    exitVisualMode();
 });
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape' && document.body.classList.contains('visual-mode')) exitVisualMode();
+});
+
+// ─────────────────────────────────────────────
+// AUTO-MAPPING AUDIO → ISF INPUTS
+// ─────────────────────────────────────────────
+function buildAudioMapping(){
+  // Busca floats disponibles y los mapea a bandas en orden
+  const floats = Object.keys(isfInputs).filter(n=>isfInputs[n].type==='float'||isfInputs[n].type==='long');
+  const bands = ['bass','mid','high','vol'];
+  audioMapping={vol:null,bass:null,mid:null,high:null};
+  audioOrigValues={};
+  bands.forEach((band,i)=>{
+    if(floats[i]){
+      audioMapping[band]=floats[i];
+      audioOrigValues[floats[i]]=isfInputs[floats[i]].value;
+    }
+  });
+  // Si hay solo un float, mapearlo a bass (más impactante)
+  if(floats.length===1){
+    audioMapping.bass=floats[0];
+    audioOrigValues[floats[0]]=isfInputs[floats[0]].value;
+  }
+}
+
+function applyAudioMapping(){
+  // Escala el valor de audio al rango min-max del input
+  function mapBand(name, val){
+    if(!name||!isfInputs[name]) return;
+    const inp=isfInputs[name];
+    const min=inp.min??0, max=inp.max??1;
+    isfInputs[name].value = min + val*(max-min);
+    // Actualizar slider si existe
+    const panel=document.getElementById('isf-panel');
+    const sliders=panel.querySelectorAll('input[type=range]');
+    sliders.forEach(sl=>{
+      if(sl.dataset.inputName===name){
+        sl.value=isfInputs[name].value;
+        const valEl=sl.parentElement.querySelector('.ival');
+        if(valEl) valEl.textContent=parseFloat(isfInputs[name].value).toFixed(2);
+      }
+    });
+  }
+  mapBand(audioMapping.bass, audioSmooth.bass);
+  mapBand(audioMapping.mid,  audioSmooth.mid);
+  mapBand(audioMapping.high, audioSmooth.high);
+  mapBand(audioMapping.vol,  audioSmooth.vol);
+}
+
+function restoreAudioMapping(){
+  Object.entries(audioOrigValues).forEach(([n,v])=>{
+    if(isfInputs[n]) isfInputs[n].value=v;
+  });
+}
+
+// ─────────────────────────────────────────────
+// AUDIO ENGINE
+// ─────────────────────────────────────────────
+async function startAudio(){
+  try{
+    audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+    audioStream = await navigator.mediaDevices.getUserMedia({audio:true,video:false});
+    const source = audioCtx.createMediaStreamSource(audioStream);
+    analyser = audioCtx.createAnalyser();
+    analyser.fftSize=256;
+    analyser.smoothingTimeConstant=0.75;
+    source.connect(analyser);
+    audioData=new Uint8Array(analyser.frequencyBinCount);
+    audioActive=true;
+    buildAudioMapping();
+    updateAudioBtn(true);
+    showAudioMapping();
+  } catch(e){
+    showErr('Permiso de micrófono denegado o no disponible');
+  }
+}
+
+function stopAudio(){
+  audioActive=false;
+  if(audioStream) audioStream.getTracks().forEach(t=>t.stop());
+  if(audioCtx) audioCtx.close();
+  audioCtx=null; analyser=null; audioStream=null;
+  audioSmooth={vol:0,bass:0,mid:0,high:0,beat:0};
+  restoreAudioMapping();
+  audioMapping={vol:null,bass:null,mid:null,high:null};
+  updateAudioBtn(false);
+  hideAudioMapping();
+}
+
+function updateAudioBtn(active){
+  const btn=document.getElementById('audio-btn');
+  if(!btn) return;
+  btn.textContent = active ? '◉ AUDIO ON' : '◎ AUDIO';
+  btn.classList.toggle('active', active);
+}
+
+function showAudioMapping(){
+  const el=document.getElementById('audio-map');
+  if(!el) return;
+  const lines=Object.entries(audioMapping)
+    .filter(([,v])=>v)
+    .map(([band,name])=>`${band.toUpperCase()} → ${name}`);
+  el.textContent = lines.length ? lines.join('  ·  ') : 'sin inputs mapeables';
+  el.classList.add('show');
+}
+function hideAudioMapping(){
+  const el=document.getElementById('audio-map');
+  if(el) el.classList.remove('show');
+}
+
+// ─────────────────────────────────────────────
+// DEFAULT SHADER — aleatorio de galería
+// ─────────────────────────────────────────────
+const DEFAULT_ISF = `/*{
+  "DESCRIPTION": "Plasma gradient — Aether default",
+  "CREDIT": "Aether AI",
+  "ISFVSN": "2.0",
+  "CATEGORIES": ["Generative"],
+  "INPUTS": [
+    {"NAME":"zoom","TYPE":"float","LABEL":"Zoom","DEFAULT":5.0,"MIN":1.0,"MAX":20.0},
+    {"NAME":"colorShift","TYPE":"float","LABEL":"Color Cycle","DEFAULT":0.5,"MIN":0.0,"MAX":1.0}
+  ]
+}*/
+void main(){
+  vec2 st=isf_FragNormCoord;
+  float t=TIME*0.5;
+  vec2 pos=st*zoom;
+  float v=sin(pos.x+t);
+  v+=sin((pos.y+t)*0.5);
+  v+=sin((pos.x+pos.y+t)*0.5);
+  pos+=vec2(sin(t),cos(t));
+  v+=sin(sqrt(pos.x*pos.x+pos.y*pos.y+1.0)+t);
+  v=v/2.0;
+  vec3 color=vec3(sin(v*PI+colorShift*6.0),sin(v*PI+2.0),sin(v*PI+4.0));
+  gl_FragColor=vec4(color*0.5+0.5,1.0);
+}`;
+
+// Lista de shaders builtin para elegir si la galería está vacía
+const BUILTIN_SHADERS = [
+  {name:'PLASMA DEFAULT', code: DEFAULT_ISF},
+  {name:'GLITCH WAVE', code:`/*{
+  "DESCRIPTION":"Glitch wave",
+  "ISFVSN":"2.0",
+  "INPUTS":[
+    {"NAME":"speed","TYPE":"float","LABEL":"Speed","DEFAULT":1.0,"MIN":0.1,"MAX":5.0},
+    {"NAME":"intensity","TYPE":"float","LABEL":"Intensity","DEFAULT":0.5,"MIN":0.0,"MAX":1.0}
+  ]
+}*/
+void main(){
+  vec2 uv=isf_FragNormCoord;
+  float t=TIME*speed;
+  float glitch=sin(uv.y*80.0+t*10.0)*intensity*0.04;
+  uv.x+=glitch;
+  float r=sin(uv.x*12.0+t)*0.5+0.5;
+  float g=sin(uv.y*8.0-t*1.3)*0.5+0.5;
+  float b=sin((uv.x+uv.y)*6.0+t*2.0)*0.5+0.5;
+  gl_FragColor=vec4(r,g,b,1.0);
+}`},
+  {name:'VOID PULSE', code:`/*{
+  "DESCRIPTION":"Void pulse radial",
+  "ISFVSN":"2.0",
+  "INPUTS":[
+    {"NAME":"rings","TYPE":"float","LABEL":"Rings","DEFAULT":8.0,"MIN":1.0,"MAX":30.0},
+    {"NAME":"pulse","TYPE":"float","LABEL":"Pulse speed","DEFAULT":1.0,"MIN":0.1,"MAX":4.0}
+  ]
+}*/
+void main(){
+  vec2 uv=isf_FragNormCoord-0.5;
+  float d=length(uv)*2.0;
+  float t=TIME*pulse;
+  float v=sin(d*rings-t)*0.5+0.5;
+  float v2=sin(d*rings*0.5+t*1.3)*0.5+0.5;
+  gl_FragColor=vec4(v*0.2,v2*0.8,v,1.0);
+}`},
+  {name:'ACID FLOW', code:`/*{
+  "DESCRIPTION":"Acid flow noise",
+  "ISFVSN":"2.0",
+  "INPUTS":[
+    {"NAME":"scale","TYPE":"float","LABEL":"Scale","DEFAULT":4.0,"MIN":1.0,"MAX":16.0},
+    {"NAME":"flow","TYPE":"float","LABEL":"Flow","DEFAULT":0.5,"MIN":0.0,"MAX":2.0}
+  ]
+}*/
+float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5);}
+float noise(vec2 p){
+  vec2 i=floor(p);vec2 f=fract(p);
+  f=f*f*(3.-2.*f);
+  return mix(mix(hash(i),hash(i+vec2(1,0)),f.x),
+             mix(hash(i+vec2(0,1)),hash(i+vec2(1,1)),f.x),f.y);
+}
+void main(){
+  vec2 uv=isf_FragNormCoord;
+  float t=TIME*flow;
+  float n=noise(uv*scale+t);
+  float n2=noise(uv*scale*2.0-t*0.7+3.14);
+  vec3 col=vec3(n*n2,n*(1.0-n2)*0.9,n2*0.2);
+  gl_FragColor=vec4(col,1.0);
+}`},
+];
+
+function loadRandomShader(){
+  const gallery = loadGallery();
+  let chosen;
+  if(gallery.length>0){
+    // Aleatorio de la galería guardada
+    chosen = gallery[Math.floor(Math.random()*gallery.length)];
+    loadShaderFromCode(chosen.code, chosen.name);
+  } else {
+    // Aleatorio de los builtin
+    chosen = BUILTIN_SHADERS[Math.floor(Math.random()*BUILTIN_SHADERS.length)];
+    loadShaderFromCode(chosen.code, chosen.name);
+  }
+}
+
+// Cargar shader aleatorio al iniciar (pequeño delay para que el canvas esté listo)
+setTimeout(loadRandomShader, 400);
+// ─────────────────────────────────────────────
+const GALLERY_KEY = 'hgvl_shader_gallery';
+let galleryOpen = false;
+
+function loadGallery(){
+  try{ return JSON.parse(localStorage.getItem(GALLERY_KEY)||'[]'); }
+  catch(e){ return []; }
+}
+function saveGallery(items){
+  localStorage.setItem(GALLERY_KEY, JSON.stringify(items));
+}
+
+function captureThumbnail(){
+  try{
+    const thumb = document.createElement('canvas');
+    thumb.width=96; thumb.height=60;
+    const ctx = thumb.getContext('2d');
+    ctx.drawImage(canvas,0,0,canvas.width,canvas.height,0,0,96,60);
+    return thumb.toDataURL('image/jpeg',0.7);
+  } catch(e){ return null; }
+}
+
+function saveCurrentShader(name, code){
+  const items = loadGallery();
+  // Evitar duplicados por nombre
+  const existing = items.findIndex(i=>i.name===name);
+  const entry = {
+    id: Date.now().toString(),
+    name,
+    code,
+    thumb: captureThumbnail(),
+    date: new Date().toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit',year:'2-digit'})
+  };
+  if(existing>=0) items[existing]=entry;
+  else items.unshift(entry);
+  saveGallery(items);
+  renderGallery();
+}
+
+function renderGallery(){
+  const items = loadGallery();
+  const list = document.getElementById('gallery-list');
+  const count = document.getElementById('gallery-count');
+  const gcountEl = document.getElementById('gtoggle-count');
+  const toggle = document.getElementById('gallery-toggle');
+  const empty = document.getElementById('gallery-empty');
+
+  count.textContent = items.length;
+  gcountEl.textContent = items.length ? `(${items.length})` : '';
+  toggle.classList.toggle('has-items', items.length>0);
+
+  // Limpiar todo excepto #gallery-empty
+  list.querySelectorAll('.gitem').forEach(el=>el.remove());
+
+  if(!items.length){
+    empty.style.display='block';
+    return;
+  }
+  empty.style.display='none';
+
+  items.forEach(item=>{
+    const row = document.createElement('div');
+    row.className='gitem';
+
+    const thumb = document.createElement('div');
+    thumb.className='g-thumb';
+    if(item.thumb){
+      const img=document.createElement('img');
+      img.src=item.thumb;img.alt='';
+      thumb.appendChild(img);
+    }
+
+    const info = document.createElement('div');
+    info.className='g-info';
+    info.innerHTML=`<div class="g-name">${item.name}</div><div class="g-date">${item.date}</div>`;
+
+    const actions = document.createElement('div');
+    actions.className='g-actions';
+
+    const loadBtn = document.createElement('button');
+    loadBtn.className='g-load';loadBtn.textContent='CARGAR';
+    loadBtn.addEventListener('click',e=>{
+      e.stopPropagation();
+      loadShaderFromCode(item.code, item.name);
+    });
+
+    const delBtn = document.createElement('button');
+    delBtn.className='g-del';delBtn.textContent='DEL';
+    delBtn.addEventListener('click',e=>{
+      e.stopPropagation();
+      const updated = loadGallery().filter(i=>i.id!==item.id);
+      saveGallery(updated);
+      renderGallery();
+    });
+
+    actions.appendChild(loadBtn);
+    actions.appendChild(delBtn);
+    row.appendChild(thumb);row.appendChild(info);row.appendChild(actions);
+    list.appendChild(row);
+  });
+}
+
+// Toggle galería
+document.getElementById('gallery-toggle').addEventListener('click',()=>{
+  galleryOpen=true;
+  document.getElementById('shader-gallery').classList.add('show');
+  document.getElementById('gallery-toggle').style.display='none';
+});
+document.getElementById('gallery-close').addEventListener('click',()=>{
+  galleryOpen=false;
+  document.getElementById('shader-gallery').classList.remove('show');
+  document.getElementById('gallery-toggle').style.display='flex';
+});
+
+// Init galería al cargar
+renderGallery();
 
 // ─────────────────────────────────────────────
 // DRAG & DROP
