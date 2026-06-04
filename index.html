@@ -145,12 +145,38 @@ section{min-height:100vh;display:flex;align-items:center;position:relative;paddi
 .mline:nth-child(4) span{transition-delay:0.25s;color:var(--acid);transition:color 1.5s,transform 0.9s cubic-bezier(0.16,1,0.3,1) 0.25s;}
 .mfine{font-family:var(--mono);font-size:11px;color:rgba(240,237,230,0.3);margin-top:3rem;letter-spacing:0.15em;line-height:1.9;max-width:460px;}
 
+/* FULLSCREEN BTN */
+#fs-btn{
+  display:none;margin-top:10px;width:100%;
+  font-family:var(--mono);font-size:9px;letter-spacing:0.2em;
+  background:rgba(184,255,0,0.08);border:1px solid rgba(184,255,0,0.35);
+  color:var(--acid);padding:7px 0;border-radius:2px;cursor:none;
+  transition:background 0.2s,border-color 0.2s,color 1.5s;
+  text-align:center;
+}
+#fs-btn:hover{background:rgba(184,255,0,0.15);border-color:var(--acid);}
+#fs-btn.show{display:block;}
+
+/* Fullscreen — controles siempre encima */
+#drop-zone,#isf-panel{z-index:2147483647!important;}
+#isf-panel{z-index:2147483646!important;}
+
 /* AETHER SECTION */
 #aether-sec{flex-direction:column;min-height:80vh;padding:8vh 8vw;}
 .aether-badge{font-family:var(--mono);font-size:9px;letter-spacing:0.3em;color:var(--acid);border:1px solid rgba(184,255,0,0.3);padding:5px 14px;display:inline-block;margin-bottom:2rem;transition:color 1.5s,border-color 1.5s;}
 .aether-title{font-family:var(--display);font-size:clamp(3rem,7vw,8rem);line-height:0.9;margin-bottom:1.5rem;}
 .aether-desc{font-family:var(--mono);font-size:11px;line-height:2;color:rgba(240,237,230,0.4);max-width:400px;margin-bottom:2.5rem;}
+.aether-links{display:flex;gap:1.5rem;align-items:center;flex-wrap:wrap;}
 .aether-link{font-family:var(--mono);font-size:10px;letter-spacing:0.2em;color:var(--acid);text-decoration:none;border-bottom:1px solid var(--acid);padding-bottom:2px;transition:color 1.5s,border-color 1.5s;}
+.aether-app-btn{
+  font-family:var(--mono);font-size:10px;letter-spacing:0.2em;
+  color:var(--black);background:var(--acid);
+  text-decoration:none;padding:8px 18px;
+  border:1px solid var(--acid);
+  transition:background 0.2s,color 0.2s,border-color 1.5s;
+  display:inline-block;
+}
+.aether-app-btn:hover{background:transparent;color:var(--acid);}
 .viz-stat{display:flex;gap:4rem;margin-top:3rem;}
 .stat-num{font-family:var(--display);font-size:4rem;color:var(--acid);line-height:1;transition:color 1.5s;}
 .stat-label{font-family:var(--mono);font-size:9px;letter-spacing:0.3em;color:rgba(240,237,230,0.3);margin-top:3px;}
@@ -263,6 +289,7 @@ section{min-height:100vh;display:flex;align-items:center;position:relative;paddi
       <div class="psw" id="sw4"></div>
     </div>
     <div id="shader-name"></div>
+    <button id="fs-btn">⛶ PANTALLA COMPLETA</button>
     <button id="reset-btn">✕ RESET</button>
   </div>
 </div>
@@ -315,7 +342,10 @@ section{min-height:100vh;display:flex;align-items:center;position:relative;paddi
       <div class="aether-badge rev">AETHER ISF GENERATOR × GEMINI AI</div>
       <h2 class="aether-title rev rd1">SHADERS<br>INFINITOS</h2>
       <p class="aether-desc rev rd2">Generador de visuales ISF alimentado por Gemini. Describís un efecto, la IA lo compila en GLSL real listo para VDMX6, Resolume, o cualquier host ISF. Descargás el <code style="color:var(--acid);font-size:10px">.fs</code> y lo droppeas acá — el site se transforma.</p>
-      <a href="https://github.com/human-zeta/Aether-ISF-generator" class="aether-link rev rd3" target="_blank">VER EN GITHUB →</a>
+      <div class="aether-links rev rd3">
+        <a href="https://github.com/human-zeta/Aether-ISF-generator" class="aether-link" target="_blank">VER EN GITHUB →</a>
+        <a href="https://ai.studio/apps/8b699664-53af-4289-973b-98e5754bfafc" class="aether-app-btn" target="_blank">⚡ ABRIR APP</a>
+      </div>
       <div class="viz-stat rev rd3">
         <div><div class="stat-num">ISF</div><div class="stat-label">2.0 SPEC</div></div>
         <div><div class="stat-num">AI</div><div class="stat-label">GEMINI GEN</div></div>
@@ -738,6 +768,7 @@ function loadShader(file){
       nameEl.textContent=label;nameEl.classList.add('show');
       document.getElementById('status-txt').textContent='SHADER ACTIVO';
       document.getElementById('reset-btn').classList.add('show');
+      document.getElementById('fs-btn').classList.add('show');
 
       runProgram(p);
 
@@ -769,6 +800,8 @@ document.getElementById('reset-btn').addEventListener('click',()=>{
   document.getElementById('drop-zone').classList.remove('loaded');
   document.getElementById('shader-name').classList.remove('show');
   document.getElementById('reset-btn').classList.remove('show');
+  document.getElementById('fs-btn').classList.remove('show');
+  if(document.fullscreenElement) document.exitFullscreen();
   document.getElementById('pal-row').classList.remove('show');
   document.getElementById('isf-panel').classList.remove('show');
   document.getElementById('status-txt').textContent='AETHER ISF DROP';
@@ -780,6 +813,23 @@ document.getElementById('reset-btn').addEventListener('click',()=>{
   cur.style.background='#b8ff00';
   ring.style.borderColor='#b8ff00';
   document.querySelector('.plan.feat').style.background='#b8ff00';
+});
+
+// ─────────────────────────────────────────────
+// FULLSCREEN
+// ─────────────────────────────────────────────
+const fsBtn = document.getElementById('fs-btn');
+fsBtn.addEventListener('click',()=>{
+  if(!document.fullscreenElement){
+    document.documentElement.requestFullscreen().catch(()=>{});
+    fsBtn.textContent='⛶ SALIR FULLSCREEN';
+  } else {
+    document.exitFullscreen();
+    fsBtn.textContent='⛶ PANTALLA COMPLETA';
+  }
+});
+document.addEventListener('fullscreenchange',()=>{
+  if(!document.fullscreenElement) fsBtn.textContent='⛶ PANTALLA COMPLETA';
 });
 
 // ─────────────────────────────────────────────
