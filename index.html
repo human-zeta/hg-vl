@@ -103,11 +103,88 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 }
 #err-toast.show{opacity:1;}
 
-/* SECTIONS */
-section{min-height:100vh;display:flex;align-items:center;position:relative;padding:0 8vw;}
+/* TIPOGRAFÍAS EN DIFFERENCE — se leen sobre cualquier fondo de shader */
+.hero-title,.hero-title .ac,
+.mline span,.mline:nth-child(4) span,
+.aether-title,.viz-title,.sec-title,
+.sname,.pprice,.live-t,.ctitle,.stat-num,
+.hero-label,.aether-badge,.aether-link,.sec-link,
+.sprice,.live-a,.facid,.hero-socials a,.nav-links a,
+.hero-sub,.mfine,.aether-desc,.ssub,.pfeat li,
+.cmeta,.nav-logo{
+  mix-blend-mode:difference;
+}
 
-/* NAV */
-#nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:2rem 8vw;display:flex;justify-content:space-between;align-items:center;}
+
+/* REPOSITORIO GLOBAL */
+#global-repo{
+  position:fixed;left:2rem;bottom:2rem;z-index:500;width:260px;
+  font-family:var(--mono);font-size:9px;
+  background:rgba(5,5,5,0.94);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+  border:1px solid rgba(184,255,0,0.16);border-radius:3px;
+  display:none;max-height:72vh;flex-direction:column;
+}
+#global-repo.show{display:flex;}
+#repo-header{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:0.65rem 0.9rem;border-bottom:1px solid rgba(240,237,230,0.06);flex-shrink:0;
+  gap:8px;
+}
+#repo-title{font-size:8px;letter-spacing:0.28em;color:rgba(240,237,230,0.22);flex:1;}
+#repo-live{width:6px;height:6px;border-radius:50%;background:rgba(184,255,0,0.3);flex-shrink:0;animation:pulse-led 2s ease-in-out infinite;}
+@keyframes pulse-led{0%,100%{background:rgba(184,255,0,0.3)}50%{background:rgba(184,255,0,0.9);box-shadow:0 0 6px rgba(184,255,0,0.6);}}
+#repo-count{font-size:8px;color:var(--acid);}
+#repo-close{font-size:9px;color:rgba(240,237,230,0.15);background:none;border:none;cursor:none;transition:color 0.2s;padding:0;}
+#repo-close:hover{color:var(--glitch);}
+
+/* Upload form */
+#repo-upload{padding:0.7rem 0.9rem;border-bottom:1px solid rgba(240,237,230,0.05);flex-shrink:0;}
+#repo-upload-label{
+  display:block;text-align:center;padding:7px;
+  border:1px dashed rgba(184,255,0,0.25);border-radius:2px;
+  color:rgba(184,255,0,0.5);font-size:8px;letter-spacing:0.2em;
+  cursor:none;transition:all 0.2s;
+}
+#repo-upload-label:hover{border-color:var(--acid);color:var(--acid);background:rgba(184,255,0,0.04);}
+#repo-upload-label.uploading{color:rgba(240,237,230,0.3);border-color:rgba(240,237,230,0.1);}
+#repo-file{display:none;}
+#repo-status{font-size:7px;color:rgba(240,237,230,0.2);margin-top:4px;text-align:center;min-height:12px;letter-spacing:0.1em;}
+
+/* Lista */
+#repo-list{overflow-y:auto;flex:1;}
+#repo-list::-webkit-scrollbar{width:2px;}
+#repo-list::-webkit-scrollbar-thumb{background:rgba(184,255,0,0.1);}
+.ritem{
+  display:grid;grid-template-columns:48px 1fr auto;align-items:center;gap:8px;
+  padding:0.5rem 0.9rem;border-bottom:1px solid rgba(240,237,230,0.04);
+  cursor:none;transition:background 0.2s;
+}
+.ritem:hover{background:rgba(184,255,0,0.03);}
+.ritem:last-child{border-bottom:none;}
+.r-thumb{width:48px;height:30px;border-radius:2px;border:1px solid rgba(240,237,230,0.07);
+  background:rgba(240,237,230,0.03);overflow:hidden;flex-shrink:0;}
+.r-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+.r-info{overflow:hidden;min-width:0;}
+.r-name{font-size:8px;color:rgba(240,237,230,0.65);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:0.06em;}
+.r-author{font-size:7px;color:rgba(240,237,230,0.2);margin-top:2px;}
+.r-new{font-size:7px;color:var(--acid);margin-top:1px;letter-spacing:0.15em;}
+.r-load{font-size:7px;letter-spacing:0.1em;color:var(--acid);background:none;border:none;cursor:none;padding:0;transition:opacity 0.2s;flex-shrink:0;}
+.r-load:hover{opacity:0.6;}
+#repo-empty{padding:1.5rem;text-align:center;color:rgba(240,237,230,0.1);font-size:8px;line-height:2;}
+
+/* Toggle repo — arriba del toggle galería local */
+#repo-toggle{
+  position:fixed;left:2rem;bottom:2rem;z-index:498;font-family:var(--mono);
+  font-size:9px;letter-spacing:0.2em;background:rgba(5,5,5,0.9);
+  border:1px solid rgba(184,255,0,0.14);color:rgba(184,255,0,0.4);
+  padding:8px 14px;border-radius:3px;cursor:none;transition:all 0.2s;
+  backdrop-filter:blur(12px);display:flex;align-items:center;gap:6px;
+}
+#repo-toggle:hover{border-color:rgba(184,255,0,0.35);color:rgba(184,255,0,0.7);}
+#repo-toggle .rled{width:5px;height:5px;border-radius:50%;background:rgba(184,255,0,0.4);animation:pulse-led 2s ease-in-out infinite;}
+
+/* SECTIONS */
+section{min-height:100vh;display:flex;align-items:center;position:relative;padding:0 8vw;}top:0;left:0;right:0;z-index:100;padding:2rem 8vw;display:flex;justify-content:space-between;align-items:center;}
 .nav-logo{font-family:var(--mono);font-size:11px;letter-spacing:0.2em;color:rgba(240,237,230,0.4);}
 .nav-links{display:flex;gap:2.5rem;}
 .nav-links a{font-family:var(--mono);font-size:10px;letter-spacing:0.25em;color:rgba(240,237,230,0.25);text-decoration:none;transition:color 0.2s;}
@@ -212,9 +289,9 @@ body.visual-mode #exit-visual{display:flex;}
 .g-del:hover{color:var(--glitch);}
 #gallery-empty{padding:1.5rem;text-align:center;color:rgba(240,237,230,0.12);font-size:8px;line-height:2;}
 
-/* TOGGLE GALERÍA — esquina inferior izquierda */
+/* TOGGLE GALERÍA — arriba del repo toggle */
 #gallery-toggle{
-  position:fixed;left:2rem;bottom:2rem;z-index:499;font-family:var(--mono);
+  position:fixed;left:2rem;bottom:calc(2rem + 42px);z-index:499;font-family:var(--mono);
   font-size:9px;letter-spacing:0.2em;background:rgba(5,5,5,0.9);
   border:1px dashed rgba(240,237,230,0.1);color:rgba(240,237,230,0.22);
   padding:8px 14px;border-radius:3px;cursor:none;transition:all 0.2s;
@@ -346,6 +423,25 @@ body.visual-mode #exit-visual{z-index:9000!important;}
 <!-- SALIR MODO VISUAL -->
 <button id="exit-visual">✕ SALIR VISUAL</button>
 
+<!-- REPOSITORIO GLOBAL -->
+<button id="repo-toggle"><span class="rled"></span>REPO GLOBAL</button>
+<div id="global-repo">
+  <div id="repo-header">
+    <span id="repo-title">SHADER REPO GLOBAL</span>
+    <span id="repo-live"></span>
+    <span id="repo-count">—</span>
+    <button id="repo-close">✕</button>
+  </div>
+  <div id="repo-upload">
+    <label id="repo-upload-label" for="repo-file">⬆ SUBIR MI .FS A LA COMUNIDAD</label>
+    <input type="file" id="repo-file" accept=".fs,.glsl,.frag">
+    <div id="repo-status"></div>
+  </div>
+  <div id="repo-list">
+    <div id="repo-empty">Cargando repositorio...</div>
+  </div>
+</div>
+
 <!-- GALERÍA TOGGLE -->
 <button id="gallery-toggle">⬡ SHADERS <span id="gtoggle-count"></span></button>
 
@@ -380,7 +476,13 @@ body.visual-mode #exit-visual{z-index:9000!important;}
     </div>
     <div id="shader-name"></div>
     <div id="audio-map" style="font-family:var(--mono);font-size:7px;letter-spacing:0.1em;color:rgba(184,255,0,0.4);margin-top:5px;line-height:1.8;opacity:0;transition:opacity 0.4s;word-break:break-all;"></div>
-    <button id="audio-btn" style="display:none;margin-top:8px;width:100%;font-family:var(--mono);font-size:9px;letter-spacing:0.18em;background:rgba(255,255,255,0.03);border:1px solid rgba(240,237,230,0.1);color:rgba(240,237,230,0.3);padding:6px 0;border-radius:2px;cursor:none;transition:all 0.25s;text-align:center;">◎ AUDIO</button>
+    <div id="audio-row" style="display:none;margin-top:8px;gap:4px;flex-direction:column;">
+      <div style="display:flex;gap:4px;">
+        <button id="audio-sys-btn" style="flex:1;font-family:var(--mono);font-size:8px;letter-spacing:0.12em;background:rgba(255,255,255,0.03);border:1px solid rgba(240,237,230,0.1);color:rgba(240,237,230,0.3);padding:5px 0;border-radius:2px;cursor:none;transition:all 0.25s;text-align:center;">◎ SISTEMA</button>
+        <button id="audio-mic-btn" style="flex:1;font-family:var(--mono);font-size:8px;letter-spacing:0.12em;background:rgba(255,255,255,0.03);border:1px solid rgba(240,237,230,0.1);color:rgba(240,237,230,0.3);padding:5px 0;border-radius:2px;cursor:none;transition:all 0.25s;text-align:center;">◎ MICRO</button>
+      </div>
+      <div id="audio-source-label" style="font-family:var(--mono);font-size:7px;letter-spacing:0.12em;color:rgba(240,237,230,0.15);text-align:center;min-height:10px;"></div>
+    </div>
     <button id="fs-btn">⛶ MODO VISUAL</button>
     <button id="reset-btn">✕ RESET</button>
   </div>
@@ -388,8 +490,8 @@ body.visual-mode #exit-visual{z-index:9000!important;}
 <div id="err-toast"></div>
 
 <nav id="nav">
-  <span class="nav-logo">HG — VL / 2026</span>
-  <div class="nav-links">
+  <span class="nav-logo txt-blend txt-blend-sm">HG — VL / 2026</span>
+  <div class="nav-links txt-blend txt-blend-sm">
     <a href="#manifiesto">SISTEMA</a>
     <a href="#aether-sec">AETHER</a>
     <a href="#blog">BLOG</a>
@@ -401,11 +503,11 @@ body.visual-mode #exit-visual{z-index:9000!important;}
 <div id="scroll-container">
 
   <section id="hero" style="padding:0 8vw 10vh;">
-    <span class="hero-tag">VISUAL LAB × HUMAN GLITCHE</span>
-    <div class="hero-label">Buenos Aires — AR / EST. 2022</div>
-    <h1 class="hero-title glitch" data-text="HUMAN GLITCHE">HUMAN<br><span class="ac">GLITCHE</span></h1>
-    <p class="hero-sub">Ecosistema creativo para operar como humano en un sistema que ya no fue diseñado para humanos. Arte · Código · Comunidad · Visuales en tiempo real.</p>
-    <div class="hero-socials">
+    <span class="hero-tag txt-blend txt-blend-sm">VISUAL LAB × HUMAN GLITCHE</span>
+    <div class="hero-label txt-blend txt-blend-sm">Buenos Aires — AR / EST. 2022</div>
+    <h1 class="hero-title glitch txt-blend txt-blend-xl" data-text="HUMAN GLITCHE">HUMAN<br><span class="ac">GLITCHE</span></h1>
+    <p class="hero-sub txt-blend">Ecosistema creativo para operar como humano en un sistema que ya no fue diseñado para humanos. Arte · Código · Comunidad · Visuales en tiempo real.</p>
+    <div class="hero-socials txt-blend txt-blend-sm">
       <a href="https://www.youtube.com/@Human.Glitche" target="_blank">YT</a>
       <a href="https://x.com/HGlitche" target="_blank">X</a>
       <a href="https://kick.com/visuallab" target="_blank">KICK</a>
@@ -417,12 +519,12 @@ body.visual-mode #exit-visual{z-index:9000!important;}
 
   <section id="manifiesto">
     <div>
-      <div class="mline"><span>EL GLITCH</span></div>
-      <div class="mline"><span>NO SE</span></div>
-      <div class="mline"><span>CORRIGE.</span></div>
-      <div class="mline"><span>SE HABITA.</span></div>
-      <div class="mline"><span style="color:rgba(240,237,230,0.15);font-size:clamp(1.4rem,2.8vw,3rem);">— Y DESDE AHÍ, SE CREA ALGO NUEVO.</span></div>
-      <p class="mfine rev">Human Glitche es aprender a vivir, crear y trabajar<br>usando el sistema sin dejar que el sistema te use.</p>
+      <div class="mline txt-blend txt-blend-xl"><span>EL GLITCH</span></div>
+      <div class="mline txt-blend txt-blend-xl"><span>NO SE</span></div>
+      <div class="mline txt-blend txt-blend-xl"><span>CORRIGE.</span></div>
+      <div class="mline txt-blend txt-blend-xl"><span>SE HABITA.</span></div>
+      <div class="mline txt-blend"><span style="color:rgba(240,237,230,0.9);font-size:clamp(1.4rem,2.8vw,3rem);">— Y DESDE AHÍ, SE CREA ALGO NUEVO.</span></div>
+      <p class="mfine rev txt-blend">Human Glitche es aprender a vivir, crear y trabajar<br>usando el sistema sin dejar que el sistema te use.</p>
     </div>
   </section>
 
@@ -431,17 +533,17 @@ body.visual-mode #exit-visual{z-index:9000!important;}
   <!-- AETHER SECTION -->
   <section id="aether-sec">
     <div>
-      <div class="aether-badge rev">AETHER ISF GENERATOR × GEMINI AI</div>
-      <h2 class="aether-title rev rd1">SHADERS<br>INFINITOS</h2>
-      <p class="aether-desc rev rd2">Generador de visuales ISF alimentado por Gemini. Describís un efecto, la IA lo compila en GLSL real listo para VDMX6, Resolume, o cualquier host ISF. Descargás el <code style="color:var(--acid);font-size:10px">.fs</code> y lo droppeas acá — el site se transforma.</p>
-      <div class="aether-links rev rd3">
+      <div class="aether-badge rev txt-blend txt-blend-sm">AETHER ISF GENERATOR × GEMINI AI</div>
+      <h2 class="aether-title rev rd1 txt-blend txt-blend-xl">SHADERS<br>INFINITOS</h2>
+      <p class="aether-desc rev rd2 txt-blend">Generador de visuales ISF alimentado por Gemini. Describís un efecto, la IA lo compila en GLSL real listo para VDMX6, Resolume, o cualquier host ISF. Descargás el <code style="color:#fff;font-size:10px">.fs</code> y lo droppeas acá — el site se transforma.</p>
+      <div class="aether-links rev rd3 txt-blend txt-blend-sm">
         <a href="https://github.com/human-zeta/Aether-ISF-generator" class="aether-link" target="_blank">VER EN GITHUB →</a>
         <a href="https://ai.studio/apps/8b699664-53af-4289-973b-98e5754bfafc" class="aether-app-btn" target="_blank">⚡ ABRIR APP</a>
       </div>
       <div class="viz-stat rev rd3">
-        <div><div class="stat-num">ISF</div><div class="stat-label">2.0 SPEC</div></div>
-        <div><div class="stat-num">AI</div><div class="stat-label">GEMINI GEN</div></div>
-        <div><div class="stat-num">∞</div><div class="stat-label">VISUALES</div></div>
+        <div class="txt-blend txt-blend-xl"><div class="stat-num">ISF</div><div class="stat-label">2.0 SPEC</div></div>
+        <div class="txt-blend txt-blend-xl"><div class="stat-num">AI</div><div class="stat-label">GEMINI GEN</div></div>
+        <div class="txt-blend txt-blend-xl"><div class="stat-num">∞</div><div class="stat-label">VISUALES</div></div>
       </div>
     </div>
   </section>
@@ -449,7 +551,10 @@ body.visual-mode #exit-visual{z-index:9000!important;}
   <span class="sep">— — — — — — — — —</span>
 
   <section id="blog">
-    <div class="sec-hdr rev"><h2 class="sec-title">BLOG</h2><a href="https://www.hg-vl.com/es/blog" class="sec-link" target="_blank">VER TODO →</a></div>
+    <div class="sec-hdr rev">
+      <h2 class="sec-title txt-blend txt-blend-xl">BLOG</h2>
+      <a href="https://www.hg-vl.com/es/blog" class="sec-link txt-blend txt-blend-sm" target="_blank">VER TODO →</a>
+    </div>
     <div class="blog-grid">
       <div class="bcard" data-url="https://www.hg-vl.com/es/blog/aether-isf-infinito"><div class="cnum">001</div><div class="ctitle">AETHER ISF INFINITO</div><div class="cmeta">6 min read</div><div class="ctag">SHADERS</div></div>
       <div class="bcard" data-url="https://www.hg-vl.com/es/blog/manual-de-cocina-para-vj"><div class="cnum">002</div><div class="ctitle">MANUAL DE COCINA PARA VJ</div><div class="cmeta">7 min read</div><div class="ctag">VJ / WORKFLOW</div></div>
@@ -466,18 +571,24 @@ body.visual-mode #exit-visual{z-index:9000!important;}
   <span class="sep">— — — — — — — — —</span>
 
   <section id="catalogo">
-    <div class="sec-hdr rev" style="width:100%;"><h2 class="sec-title">SERVICIOS</h2><a href="https://meetings.hubspot.com/juan-cruz-martinez-astorga" class="sec-link" target="_blank">REUNIÓN →</a></div>
+    <div class="sec-hdr rev" style="width:100%;">
+      <h2 class="sec-title txt-blend txt-blend-xl">SERVICIOS</h2>
+      <a href="https://meetings.hubspot.com/juan-cruz-martinez-astorga" class="sec-link txt-blend txt-blend-sm" target="_blank">REUNIÓN →</a>
+    </div>
     <div class="svc-list">
-      <div class="srow rev"><span class="snum">01</span><span class="sname">ASESORÍA CREATIVA</span><span class="sprice">CONSULTAR</span><span class="ssub">Video llamada 1hs · Transcripción · Presupuestado · Charla distendida con referencias para tu show, gira o evento.</span></div>
-      <div class="srow rev rd1"><span class="snum">02</span><span class="sname">TU SHOW PORTABLE</span><span class="sprice">PACK BASE</span><span class="ssub">+10 fondos · 2 logos · Formatos custom · Contacto con operadores · Asesoría creativa + operativa.</span></div>
-      <div class="srow rev rd2"><span class="snum">03</span><span class="sname">SINCRONÍA COMPLEJA</span><span class="sprice">A MEDIDA</span><span class="ssub">SMPTE · Sincro por red · Planificación Luces + Video · Show con operadores · FX sincro · Circuito cerrado.</span></div>
+      <div class="srow rev"><span class="snum">01</span><span class="sname txt-blend">ASESORÍA CREATIVA</span><span class="sprice txt-blend txt-blend-sm">CONSULTAR</span><span class="ssub txt-blend">Video llamada 1hs · Transcripción · Presupuestado · Charla distendida con referencias para tu show, gira o evento.</span></div>
+      <div class="srow rev rd1"><span class="snum">02</span><span class="sname txt-blend">TU SHOW PORTABLE</span><span class="sprice txt-blend txt-blend-sm">PACK BASE</span><span class="ssub txt-blend">+10 fondos · 2 logos · Formatos custom · Contacto con operadores · Asesoría creativa + operativa.</span></div>
+      <div class="srow rev rd2"><span class="snum">03</span><span class="sname txt-blend">SINCRONÍA COMPLEJA</span><span class="sprice txt-blend txt-blend-sm">A MEDIDA</span><span class="ssub txt-blend">SMPTE · Sincro por red · Planificación Luces + Video · Show con operadores · FX sincro · Circuito cerrado.</span></div>
     </div>
   </section>
 
   <span class="sep">— — — — — — — — —</span>
 
   <section id="comunidad">
-    <div class="sec-hdr rev" style="width:100%;"><h2 class="sec-title">COMUNIDAD</h2><span style="font-family:var(--mono);font-size:10px;color:rgba(240,237,230,0.2);">SI NO TE SOBRA, NO TE GASTES</span></div>
+    <div class="sec-hdr rev" style="width:100%;">
+      <h2 class="sec-title txt-blend txt-blend-xl">COMUNIDAD</h2>
+      <span class="txt-blend txt-blend-sm" style="font-family:var(--mono);font-size:10px;color:#fff;">SI NO TE SOBRA, NO TE GASTES</span>
+    </div>
     <div class="plans">
       <div class="plan rev">
         <div class="ptier">TIER 01</div><div class="pprice">$0</div><div class="pper">/ mensual</div>
@@ -504,18 +615,18 @@ body.visual-mode #exit-visual{z-index:9000!important;}
 
   <section id="live">
     <div style="text-align:center;">
-      <div class="live-badge">● EN VIVO / KICK</div>
-      <h2 class="live-t glitch" data-text="VISUAL LAB">VISUAL LAB</h2>
-      <p class="live-sub">STREAMING DE VISUALES EN TIEMPO REAL</p>
-      <a href="https://kick.com/visuallab" class="live-a" target="_blank">KICK.COM/VISUALLAB →</a><br>
-      <a href="https://www.youtube.com/@Human.Glitche" class="live-a" style="margin-top:0.8rem;" target="_blank">YOUTUBE →</a>
+      <div class="live-badge txt-blend txt-blend-sm">● EN VIVO / KICK</div>
+      <h2 class="live-t glitch txt-blend txt-blend-xl" data-text="VISUAL LAB">VISUAL LAB</h2>
+      <p class="live-sub txt-blend txt-blend-sm">STREAMING DE VISUALES EN TIEMPO REAL</p>
+      <a href="https://kick.com/visuallab" class="live-a txt-blend txt-blend-sm" target="_blank">KICK.COM/VISUALLAB →</a><br>
+      <a href="https://www.youtube.com/@Human.Glitche" class="live-a txt-blend txt-blend-sm" style="margin-top:0.8rem;" target="_blank">YOUTUBE →</a>
     </div>
   </section>
 
   <section id="footer">
     <div class="ftop">
-      <div class="flogo">HG<br>VL</div>
-      <div class="flinks">
+      <div class="flogo txt-blend txt-blend-xl">HG<br>VL</div>
+      <div class="flinks txt-blend txt-blend-sm">
         <a href="https://www.youtube.com/@Human.Glitche" target="_blank">YOUTUBE</a>
         <a href="https://x.com/HGlitche" target="_blank">X / TWITTER</a>
         <a href="https://kick.com/visuallab" target="_blank">KICK</a>
@@ -525,8 +636,8 @@ body.visual-mode #exit-visual{z-index:9000!important;}
       </div>
     </div>
     <div class="fbot">
-      <span class="fcopy">© 2026 HUMAN GLITCHE — VISUAL LAB — BUENOS AIRES</span>
-      <span class="facid">EL GLITCH NO SE CORRIGE.</span>
+      <span class="fcopy txt-blend txt-blend-sm">© 2026 HUMAN GLITCHE — VISUAL LAB — BUENOS AIRES</span>
+      <span class="facid txt-blend txt-blend-sm">EL GLITCH NO SE CORRIGE.</span>
     </div>
   </section>
 
@@ -915,6 +1026,7 @@ function loadShaderFromCode(src, name){
     const p=makeProgram(finalSrc);
 
     canvas.classList.add('active');
+    setHasShader(true);
     document.getElementById('status-led').classList.add('on');
     document.getElementById('drop-zone').classList.add('loaded');
 
@@ -924,9 +1036,8 @@ function loadShaderFromCode(src, name){
     document.getElementById('status-txt').textContent='SHADER ACTIVO';
     document.getElementById('reset-btn').classList.add('show');
     document.getElementById('fs-btn').classList.add('show');
-    const audioBtn=document.getElementById('audio-btn');
-    audioBtn.style.display='block';
-    // si ya había audio activo, remap
+    const audioRow=document.getElementById('audio-row');
+    audioRow.style.display='flex';
     if(audioActive) buildAudioMapping();
 
     runProgram(p);
@@ -962,13 +1073,15 @@ document.getElementById('reset-btn').addEventListener('click',()=>{
   if(animId){cancelAnimationFrame(animId);animId=null;}
   prog=null;
   exitVisualMode();
+  setHasShader(false);
   canvas.classList.remove('active');
   document.getElementById('status-led').classList.remove('on');
   document.getElementById('drop-zone').classList.remove('loaded');
   document.getElementById('shader-name').classList.remove('show');
   document.getElementById('reset-btn').classList.remove('show');
   document.getElementById('fs-btn').classList.remove('show');
-  document.getElementById('audio-btn').style.display='none';
+  document.getElementById('audio-btn') && (document.getElementById('audio-btn').style.display='none');
+  document.getElementById('audio-row').style.display='none';
   document.getElementById('audio-map').style.opacity='0';
   if(audioActive) stopAudio();
   if(document.fullscreenElement) document.exitFullscreen();
@@ -1004,14 +1117,15 @@ function exitVisualMode(){
 fsBtn.addEventListener('click', enterVisualMode);
 exitBtn.addEventListener('click', exitVisualMode);
 
-// Audio btn toggle
-document.getElementById('audio-btn').addEventListener('click',()=>{
-  if(audioActive) stopAudio();
-  else startAudio();
+// Botones audio sistema / micro
+document.getElementById('audio-sys-btn').addEventListener('click',()=>{
+  if(audioSource==='system'){ stopAudio(); return; }
+  startSystemAudio();
 });
-// Estilo cuando está activo
-document.getElementById('audio-btn').addEventListener('mouseenter',function(){this.style.borderColor='rgba(184,255,0,0.3)';});
-document.getElementById('audio-btn').addEventListener('mouseleave',function(){this.style.borderColor=audioActive?'rgba(184,255,0,0.5)':'rgba(240,237,230,0.1)';});
+document.getElementById('audio-mic-btn').addEventListener('click',()=>{
+  if(audioSource==='mic'){ stopAudio(); return; }
+  startMicAudio();
+});
 document.addEventListener('fullscreenchange',()=>{
   if(!document.fullscreenElement && document.body.classList.contains('visual-mode'))
     exitVisualMode();
@@ -1073,45 +1187,121 @@ function restoreAudioMapping(){
 }
 
 // ─────────────────────────────────────────────
-// AUDIO ENGINE
+// AUDIO ENGINE — loopback (sistema) + micro (ambiente)
 // ─────────────────────────────────────────────
-async function startAudio(){
+let audioSource = null; // 'system' | 'mic' | null
+
+async function connectAudioStream(stream){
+  // Si había algo antes, limpiarlo sin resetear mappings
+  if(audioStream) audioStream.getTracks().forEach(t=>t.stop());
+  if(audioCtx) await audioCtx.close();
+
+  audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+  audioStream = stream;
+  const src = audioCtx.createMediaStreamSource(stream);
+  analyser = audioCtx.createAnalyser();
+  analyser.fftSize = 512;               // más resolución de frecuencia
+  analyser.smoothingTimeConstant = 0.8;
+  src.connect(analyser);
+  audioData = new Uint8Array(analyser.frequencyBinCount);
+  audioActive = true;
+  buildAudioMapping();
+  showAudioMapping();
+}
+
+async function startSystemAudio(){
   try{
-    audioCtx = new (window.AudioContext||window.webkitAudioContext)();
-    audioStream = await navigator.mediaDevices.getUserMedia({audio:true,video:false});
-    const source = audioCtx.createMediaStreamSource(audioStream);
-    analyser = audioCtx.createAnalyser();
-    analyser.fftSize=256;
-    analyser.smoothingTimeConstant=0.75;
-    source.connect(analyser);
-    audioData=new Uint8Array(analyser.frequencyBinCount);
-    audioActive=true;
-    buildAudioMapping();
-    updateAudioBtn(true);
-    showAudioMapping();
+    // getDisplayMedia captura audio del sistema sin video
+    const stream = await navigator.mediaDevices.getDisplayMedia({
+      video:{width:1,height:1,frameRate:1}, // mínimo obligatorio en algunos browsers
+      audio:{
+        echoCancellation:false,
+        noiseSuppression:false,
+        sampleRate:48000,
+        channelCount:2
+      }
+    });
+    // Quitar la pista de video si existe (no la necesitamos)
+    stream.getVideoTracks().forEach(t=>t.stop());
+    // Crear stream solo audio desde las pistas de audio
+    const audioOnly = new MediaStream(stream.getAudioTracks());
+    await connectAudioStream(audioOnly);
+    audioSource = 'system';
+    setAudioBtnState('system');
+    setAudioSourceLabel('SISTEMA — loopback activo');
   } catch(e){
-    showErr('Permiso de micrófono denegado o no disponible');
+    if(e.name==='NotAllowedError'){
+      showErr('Permiso denegado. Compartí audio del sistema en el diálogo del browser.');
+    } else if(e.name==='NotSupportedError'){
+      showErr('Tu browser no soporta captura de audio del sistema. Probá con Chrome o Edge.');
+    } else {
+      showErr('Error al capturar audio del sistema: '+e.message);
+    }
+    console.error('loopback error:',e);
+  }
+}
+
+async function startMicAudio(){
+  try{
+    const stream = await navigator.mediaDevices.getUserMedia({
+      audio:{
+        echoCancellation:false,
+        noiseSuppression:false,
+        autoGainControl:false,
+        sampleRate:48000
+      },
+      video:false
+    });
+    await connectAudioStream(stream);
+    audioSource = 'mic';
+    setAudioBtnState('mic');
+    setAudioSourceLabel('MICRO — ambiente activo');
+  } catch(e){
+    if(e.name==='NotAllowedError'){
+      showErr('Permiso de micrófono denegado.');
+    } else {
+      showErr('Error al acceder al micrófono: '+e.message);
+    }
+    console.error('mic error:',e);
   }
 }
 
 function stopAudio(){
-  audioActive=false;
+  audioActive = false;
+  audioSource = null;
   if(audioStream) audioStream.getTracks().forEach(t=>t.stop());
   if(audioCtx) audioCtx.close();
-  audioCtx=null; analyser=null; audioStream=null;
+  audioCtx=null; analyser=null; audioStream=null; audioData=null;
   audioSmooth={vol:0,bass:0,mid:0,high:0,beat:0};
   restoreAudioMapping();
   audioMapping={vol:null,bass:null,mid:null,high:null};
-  updateAudioBtn(false);
+  setAudioBtnState(null);
   hideAudioMapping();
+  setAudioSourceLabel('');
 }
 
-function updateAudioBtn(active){
-  const btn=document.getElementById('audio-btn');
-  if(!btn) return;
-  btn.textContent = active ? '◉ AUDIO ON' : '◎ AUDIO';
-  btn.classList.toggle('active', active);
+function setAudioBtnState(active){
+  // active: 'system' | 'mic' | null
+  const sys = document.getElementById('audio-sys-btn');
+  const mic = document.getElementById('audio-mic-btn');
+  if(!sys||!mic) return;
+
+  const baseStyle = 'background:rgba(255,255,255,0.03);border:1px solid rgba(240,237,230,0.1);color:rgba(240,237,230,0.3);';
+  const onStyle   = 'background:rgba(184,255,0,0.08);border:1px solid rgba(184,255,0,0.5);color:rgba(184,255,0,0.9);';
+
+  sys.style.cssText += active==='system' ? onStyle : baseStyle;
+  mic.style.cssText += active==='mic'    ? onStyle : baseStyle;
+
+  sys.textContent = active==='system' ? '◉ SISTEMA' : '◎ SISTEMA';
+  mic.textContent = active==='mic'    ? '◉ MICRO'   : '◎ MICRO';
 }
+
+function setAudioSourceLabel(txt){
+  const el = document.getElementById('audio-source-label');
+  if(el) el.textContent = txt;
+}
+
+function updateAudioBtn(active){ /* compat — no-op, manejado por setAudioBtnState */ }
 
 function showAudioMapping(){
   const el=document.getElementById('audio-map');
@@ -1217,21 +1407,168 @@ void main(){
 ];
 
 function loadRandomShader(){
+  // Prioridad: 1) repo global 2) galería local 3) builtins
   const gallery = loadGallery();
-  let chosen;
-  if(gallery.length>0){
-    // Aleatorio de la galería guardada
-    chosen = gallery[Math.floor(Math.random()*gallery.length)];
+  const repoPool = repoItems.length ? repoItems : [];
+  const all = [...repoPool, ...gallery];
+  if(all.length>0){
+    const chosen = all[Math.floor(Math.random()*all.length)];
     loadShaderFromCode(chosen.code, chosen.name);
   } else {
-    // Aleatorio de los builtin
-    chosen = BUILTIN_SHADERS[Math.floor(Math.random()*BUILTIN_SHADERS.length)];
+    const chosen = BUILTIN_SHADERS[Math.floor(Math.random()*BUILTIN_SHADERS.length)];
     loadShaderFromCode(chosen.code, chosen.name);
   }
 }
 
-// Cargar shader aleatorio al iniciar (pequeño delay para que el canvas esté listo)
-setTimeout(loadRandomShader, 400);
+// Cargar shader aleatorio al iniciar — espera un poco para que Firebase traiga datos
+setTimeout(()=>{
+  // Si ya llegaron items del repo global, elige entre ellos
+  loadRandomShader();
+}, 1200);
+
+// ─────────────────────────────────────────────
+// REPOSITORIO GLOBAL — Firebase Realtime DB
+// ─────────────────────────────────────────────
+const FB_URL = 'https://hg-vl-shaders-default-rtdb.firebaseio.com';
+let repoItems = [];
+let repoOpen  = false;
+let repoUnsub = null;
+
+async function fbGet(path){
+  try{
+    const r = await fetch(`${FB_URL}${path}.json`);
+    return r.ok ? r.json() : null;
+  }catch(e){ return null; }
+}
+async function fbPush(path, data){
+  try{
+    const r = await fetch(`${FB_URL}${path}.json`,{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(data)
+    });
+    return r.ok ? r.json() : null;
+  }catch(e){ return null; }
+}
+
+function repoStatusMsg(msg, color='rgba(240,237,230,0.25)'){
+  const el=document.getElementById('repo-status');
+  if(el){el.textContent=msg;el.style.color=color;}
+}
+
+function renderRepoList(){
+  const list = document.getElementById('repo-list');
+  const empty = document.getElementById('repo-empty');
+  const countEl = document.getElementById('repo-count');
+  if(!list) return;
+  const items = repoItems.slice().reverse();
+  countEl.textContent = items.length || '—';
+  list.querySelectorAll('.ritem').forEach(el=>el.remove());
+  if(!items.length){
+    empty.textContent='Sé el primero en subir un shader.';
+    empty.style.display='block'; return;
+  }
+  empty.style.display='none';
+  items.forEach(item=>{
+    const row=document.createElement('div');row.className='ritem';
+    const thumb=document.createElement('div');thumb.className='r-thumb';
+    if(item.thumb){const img=document.createElement('img');img.src=item.thumb;img.alt='';thumb.appendChild(img);}
+    const info=document.createElement('div');info.className='r-info';
+    const isNew=(Date.now()-item.ts)<86400000;
+    info.innerHTML=`<div class="r-name">${item.name}</div>
+      <div class="r-author">${item.author||'anon'} · ${item.date||''}</div>
+      ${isNew?'<div class="r-new">● NUEVO</div>':''}`;
+    const load=document.createElement('button');
+    load.className='r-load';load.textContent='CARGAR';
+    load.addEventListener('click',e=>{
+      e.stopPropagation();
+      loadShaderFromCode(item.code, item.name);
+    });
+    row.appendChild(thumb);row.appendChild(info);row.appendChild(load);
+    list.appendChild(row);
+  });
+}
+
+async function fetchRepo(){
+  const data = await fbGet('/shaders');
+  if(!data){ repoItems=[]; renderRepoList(); return; }
+  repoItems = Object.values(data).filter(Boolean);
+  renderRepoList();
+}
+
+function startRepoPolling(){
+  fetchRepo();
+  repoUnsub = setInterval(fetchRepo, 8000);
+}
+function stopRepoPolling(){
+  if(repoUnsub){ clearInterval(repoUnsub); repoUnsub=null; }
+}
+
+async function uploadToRepo(file){
+  const lbl = document.getElementById('repo-upload-label');
+  lbl.classList.add('uploading');
+  lbl.textContent='COMPILANDO...';
+  repoStatusMsg('Verificando shader...');
+  const src = await file.text();
+  try{
+    const {finalSrc, meta} = parseAetherISF(src);
+    makeProgram(finalSrc);
+    const label=(meta.LABEL||meta.DESCRIPTION||file.name).toUpperCase().replace(/\.FS$/i,'');
+    repoStatusMsg('Subiendo...');lbl.textContent='SUBIENDO...';
+    let thumb=null;
+    try{
+      const tc=document.createElement('canvas');tc.width=96;tc.height=60;
+      const ctx=tc.getContext('2d');
+      ctx.drawImage(canvas,0,0,canvas.width,canvas.height,0,0,96,60);
+      thumb=tc.toDataURL('image/jpeg',0.65);
+    }catch(e){}
+    const entry={
+      name:label,code:src,thumb,
+      author:'human-zeta',
+      date:new Date().toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit',year:'2-digit'}),
+      ts:Date.now()
+    };
+    const res = await fbPush('/shaders', entry);
+    if(res){
+      repoStatusMsg('✓ Subido a la comunidad','rgba(184,255,0,0.7)');
+      fetchRepo();
+      loadShaderFromCode(src, label);
+    } else {
+      repoStatusMsg('Error al subir — revisá conexión','rgba(255,45,85,0.7)');
+    }
+  } catch(err){
+    repoStatusMsg('Shader inválido: no compila','rgba(255,45,85,0.7)');
+    console.error(err);
+  }
+  lbl.classList.remove('uploading');
+  lbl.textContent='⬆ SUBIR MI .FS A LA COMUNIDAD';
+  setTimeout(()=>repoStatusMsg(''),5000);
+}
+
+document.getElementById('repo-toggle').addEventListener('click',()=>{
+  repoOpen=true;
+  document.getElementById('global-repo').classList.add('show');
+  document.getElementById('repo-toggle').style.display='none';
+  if(!repoUnsub) startRepoPolling();
+});
+document.getElementById('repo-close').addEventListener('click',()=>{
+  repoOpen=false;
+  document.getElementById('global-repo').classList.remove('show');
+  document.getElementById('repo-toggle').style.display='flex';
+});
+document.getElementById('repo-file').addEventListener('change',e=>{
+  if(e.target.files[0]) uploadToRepo(e.target.files[0]);
+  e.target.value='';
+});
+document.getElementById('repo-upload-label').addEventListener('click',e=>{
+  e.preventDefault();
+  document.getElementById('repo-file').click();
+});
+
+// Fetch silencioso al cargar para tener datos para loadRandom
+fetchRepo();
+
+function setHasShader(v){ document.body.classList.toggle('has-shader',v); }
+
 // ─────────────────────────────────────────────
 const GALLERY_KEY = 'hgvl_shader_gallery';
 let galleryOpen = false;
