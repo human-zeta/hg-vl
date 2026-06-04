@@ -1118,11 +1118,13 @@ fsBtn.addEventListener('click', enterVisualMode);
 exitBtn.addEventListener('click', exitVisualMode);
 
 // Botones audio sistema / micro
-document.getElementById('audio-sys-btn').addEventListener('click',()=>{
+document.getElementById('audio-sys-btn').addEventListener('click',(e)=>{
+  e.stopPropagation();
   if(audioSource==='system'){ stopAudio(); return; }
   startSystemAudio();
 });
-document.getElementById('audio-mic-btn').addEventListener('click',()=>{
+document.getElementById('audio-mic-btn').addEventListener('click',(e)=>{
+  e.stopPropagation();
   if(audioSource==='mic'){ stopAudio(); return; }
   startMicAudio();
 });
@@ -1706,7 +1708,12 @@ document.addEventListener('drop',e=>{
   if(file) loadShader(file);
   else showErr('Necesito un .fs — arrastrá un shader de Aether ISF');
 });
-dz.addEventListener('click',()=>df.click());
+dz.addEventListener('click',(e)=>{
+  // Solo abrir file picker si el click fue en el área de drop (ícono/label),
+  // NO en los botones de audio, fs-btn ni reset-btn
+  if(e.target.closest('button')||e.target.closest('#audio-row')) return;
+  df.click();
+});
 df.addEventListener('change',e=>{if(e.target.files[0])loadShader(e.target.files[0]);e.target.value='';});
 
 // ─────────────────────────────────────────────
