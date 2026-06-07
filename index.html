@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>HUMAN GLITCHE — VISUAL LAB</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Bebas+Neue&family=DM+Sans:wght@300;400;500&family=Archivo+Black&family=IBM+Plex+Mono:wght@500;700&family=Playfair+Display:ital,wght@0,700;1,700&family=Syne:wght@700;800&family=Courier+Prime:wght@700&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 :root{
@@ -738,6 +738,47 @@ document.addEventListener('mousemove',e=>{
   }
   apply();
 })();
+
+// ─────────────────────────────────────────────
+// GLITCH DE TIPOGRAFÍAS — cada tanto, los títulos cambian de familia
+// tipográfica varias veces en una fracción de segundo (como una falla
+// de renderizado) y vuelven a su fuente original. Cada elemento corre
+// con su propio temporizador aleatorio para que no glitcheen todos
+// juntos — más orgánico, menos sincronizado.
+// ─────────────────────────────────────────────
+(function fontGlitch(){
+  const FONTS = [
+    "'Archivo Black',sans-serif",
+    "'IBM Plex Mono',monospace",
+    "'Playfair Display',serif",
+    "'Syne',sans-serif",
+    "'Courier Prime',monospace",
+    "'DM Sans',sans-serif"
+  ];
+  const targets = document.querySelectorAll('.hero-title, .aether-title, .sec-title, .ctitle, .sname, .mline');
+  if(!targets.length) return;
+
+  targets.forEach(el=>{
+    function burst(){
+      let i = 0;
+      const swaps = 4 + Math.floor(Math.random()*4); // 4–7 cambios
+      const iv = setInterval(()=>{
+        el.style.fontFamily = FONTS[Math.floor(Math.random()*FONTS.length)];
+        i++;
+        if(i >= swaps){
+          clearInterval(iv);
+          el.style.fontFamily = ''; // vuelve a la tipografía definida en CSS (--display)
+        }
+      }, 55 + Math.random()*35);
+    }
+    function loop(){
+      burst();
+      setTimeout(loop, 5000 + Math.random()*9000); // próximo glitch entre 5 y 14s
+    }
+    setTimeout(loop, 800 + Math.random()*4000); // arranque desfasado por elemento
+  });
+})();
+
 (function tick(){rx+=(mx-rx)*0.12;ry+=(my-ry)*0.12;ring.style.left=rx-16+'px';ring.style.top=ry-16+'px';requestAnimationFrame(tick);})();
 document.querySelectorAll('a,button,.bcard,.srow,.plan').forEach(el=>{
   el.addEventListener('mouseenter',()=>{cur.style.transform='scale(3)';ring.style.opacity='0';});
