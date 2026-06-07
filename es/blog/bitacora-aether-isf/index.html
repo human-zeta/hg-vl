@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BITÁCORA: CÓMO SE HACE AETHER ISF — HG VL Blog</title>
+<meta name="description" content="No el resultado: el proceso. Cómo nació Aether ISF, qué decisiones se tomaron y por qué — un making-of real, con los errores incluidos.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../blog.css">
+</head>
+<body>
+<nav class="bnav">
+  <a href="/" class="bnav-logo">HG — VL / 2026</a>
+  <a href="/es/blog/" class="bnav-back">← VOLVER AL BLOG</a>
+</nav>
+<article class="bwrap bart">
+  <header class="bart-head">
+    <span class="bart-tag">BITÁCORA</span>
+    <h1 class="bart-title">CÓMO SE HACE AETHER ISF</h1>
+    <p class="bart-dek"><strong>"La obra es el proceso, no el objeto" suena bien en un manual. Acá lo probamos: el making-of real de la herramienta que generamos con IA, con las decisiones, las trabas y los cambios de rumbo incluidos.</strong></p>
+    <div class="bart-meta"><span>013</span> · 6 min read · HUMAN GLITCHE</div>
+  </header>
+  <div class="bart-body">
+<p>En el <a href="../manual-de-cocina-para-artistas-2026/">MANUAL ARTISTAS 2026</a> dijimos que la obra ya no termina en el objeto — que también es el proceso, el contexto, el relato. Esta bitácora es la prueba de esa idea aplicada a algo concreto: <strong><a href="https://github.com/human-zeta/Aether-ISF-generator" target="_blank">Aether ISF</a></strong>, nuestro generador de shaders ISF potenciado por Gemini.</p>
+<hr>
+<h2>El problema que lo originó</h2>
+<p>Generar shaders para visuales en vivo siempre tuvo el mismo cuello de botella: o sabés GLSL a fondo, o dependés de bancos de efectos ajenos que terminan sonando genéricos. Ninguna de las dos opciones encajaba con cómo queríamos trabajar — queríamos describir una idea visual en palabras y que se convirtiera en código real, listo para VDMX6, Resolume o cualquier host ISF.</p>
+<p>Esa fricción —entre lo que imaginábamos y lo que el flujo de trabajo permitía hacer rápido— es exactamente el tipo de tensión que el manual llama "el fuego". De ahí salió la idea.</p>
+<hr>
+<h2>Las decisiones que importaron</h2>
+<p><strong>Por qué ISF y no un formato propio:</strong> porque ISF (Interactive Shader Format) ya es un estándar que entienden los hosts que usamos en vivo. Construir algo "propio y cerrado" hubiera sido más vistoso, pero menos útil — y menos compartible. Elegimos compatibilidad sobre originalidad de formato.</p>
+<p><strong>Por qué Gemini como motor:</strong> porque la idea no era reemplazar el criterio del que arma el shader, sino acelerar la traducción de "tengo esta imagen mental" a "tengo este código que la genera". Gemini hace ese puente; el criterio de qué pedir y qué quedarte sigue siendo humano.</p>
+<p><strong>Por qué publicarlo abierto desde el día uno:</strong> esto está desarrollado a fondo en <a href="../por-que-compartimos-todo/">POR QUÉ COMPARTIMOS TODO</a> — en resumen, una herramienta que nadie prueba no termina de existir. Publicarla temprano significó encontrar errores y casos de uso que nunca hubiéramos imaginado solos.</p>
+<hr>
+<h2>Lo que no salió bien al principio</h2>
+<p>Vale nombrarlo, porque el "making of" sin las trabas es solo propaganda: las primeras versiones generaban shaders que compilaban pero se veían planos — técnicamente correctos, visualmente aburridos. El ajuste no fue técnico, fue de enfoque: pasamos de pedirle a la IA "generá un shader que haga X" a pedirle que pensara en capas — color, movimiento, reacción — por separado. Ese cambio de pregunta cambió todo el resultado.</p>
+<p>Es el mismo principio del manual de artistas aplicado a una herramienta: <strong>la IA es un asistente, el criterio sigue siendo tuyo</strong>. El salto de calidad no vino de un modelo mejor — vino de aprender a preguntar mejor.</p>
+<hr>
+<h2>Dónde está parado hoy</h2>
+<ul>
+<li>Genera shaders ISF 2.0 funcionales a partir de descripciones en lenguaje natural</li>
+<li>Compatible con VDMX6, Resolume y cualquier host ISF estándar</li>
+<li>Código abierto en GitHub — cualquiera puede levantarlo, modificarlo y mejorarlo</li>
+<li>Integrado al lab visual de esta misma web: descargás el <code>.fs</code> y lo droppeás acá</li>
+</ul>
+<hr>
+<h2>Lo que viene</h2>
+<p>No tenemos un roadmap cerrado para mostrar — y eso es a propósito. Esta herramienta crece según lo que la comunidad necesita y lo que encontramos usándola en shows reales. Si tenés una idea de hacia dónde debería ir, el <a href="https://discord.gg/mkHhBdUw" target="_blank">Discord</a> es el lugar para decirla — y, si la idea te entusiasma de verdad, probablemente termines vos mismo construyendo esa parte.</p>
+<hr>
+<h2>Cierre</h2>
+<p>Esta bitácora va a tener más capítulos — de esta herramienta y de las que vengan. No porque haga falta documentar todo, sino porque mostrar cómo se construye algo es, muchas veces, más útil que mostrar el resultado terminado.</p>
+<blockquote><strong>La obra no termina en el objeto. Es el proceso, el contexto, la conversación que genera.</strong></blockquote>
+  </div>
+  <nav class="bnext">
+    <a href="../">← TODOS LOS POSTS</a>
+    <a href="/#blog">VOLVER AL SITIO →</a>
+  </nav>
+</article>
+<footer class="bfoot">
+  <span>© 2026 HUMAN GLITCHE — VISUAL LAB — BUENOS AIRES</span>
+  <a href="/#comunidad">COMUNIDAD →</a>
+</footer>
+</body>
+</html>

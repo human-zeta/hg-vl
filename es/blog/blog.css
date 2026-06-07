@@ -46,6 +46,15 @@ body::before{
 .bhead-title{font-family:var(--display);font-size:clamp(3.2rem,9vw,7.5rem);line-height:0.9;}
 .bhead-sub{font-family:var(--mono);font-size:11px;color:var(--ink-soft);letter-spacing:0.1em;line-height:1.9;margin-top:1.5rem;max-width:480px;}
 
+/* ───────── ETIQUETA DE SECCIÓN DEL ÍNDICE ───────── */
+.bsec-label{
+  font-family:var(--mono);font-size:10px;letter-spacing:0.3em;color:var(--acid);
+  margin:5vh 0 1.4rem;padding-bottom:0.8rem;border-bottom:1px solid var(--line);
+  display:flex;justify-content:space-between;align-items:baseline;gap:1rem;flex-wrap:wrap;
+}
+.bsec-label span:last-child{font-size:9px;letter-spacing:0.15em;color:var(--ink-soft);text-transform:none;}
+.bsec-label:first-of-type{margin-top:0;}
+
 /* ───────── GRID DE POSTS (brutalista, hereda de .blog-grid) ───────── */
 .bgrid{
   display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));
