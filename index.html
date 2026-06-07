@@ -1321,90 +1321,136 @@ function hideAudioMapping(){
 }
 
 // ─────────────────────────────────────────────
-// DEFAULT SHADER — aleatorio de galería
+// SHADERS BUILTIN — 5 piezas curadas, listas para usar
+// si la galería local y el repo global todavía están vacíos
 // ─────────────────────────────────────────────
-const DEFAULT_ISF = `/*{
-  "DESCRIPTION": "Plasma gradient — Aether default",
-  "CREDIT": "Aether AI",
-  "ISFVSN": "2.0",
-  "CATEGORIES": ["Generative"],
-  "INPUTS": [
-    {"NAME":"zoom","TYPE":"float","LABEL":"Zoom","DEFAULT":5.0,"MIN":1.0,"MAX":20.0},
-    {"NAME":"colorShift","TYPE":"float","LABEL":"Color Cycle","DEFAULT":0.5,"MIN":0.0,"MAX":1.0}
+const BUILTIN_SHADERS = [
+  {name:'KALEIDOSCOPE BLOOM', code:`/*{
+  "DESCRIPTION":"Kaleidoscope bloom — mirrored radial symmetry with drifting acid/glitch hues",
+  "CREDIT":"Human Glitche / Visual Lab",
+  "ISFVSN":"2.0",
+  "CATEGORIES":["Generative"],
+  "INPUTS":[
+    {"NAME":"segments","TYPE":"float","LABEL":"Segments","DEFAULT":6.0,"MIN":2.0,"MAX":16.0},
+    {"NAME":"speed","TYPE":"float","LABEL":"Speed","DEFAULT":0.6,"MIN":0.0,"MAX":3.0},
+    {"NAME":"hueShift","TYPE":"float","LABEL":"Hue Shift","DEFAULT":0.0,"MIN":0.0,"MAX":1.0}
+  ]
+}*/
+vec3 hue(float h){
+  vec3 c=clamp(abs(mod(h*6.0+vec3(0.0,4.0,2.0),6.0)-3.0)-1.0,0.0,1.0);
+  return c*c*(3.0-2.0*c);
+}
+void main(){
+  vec2 uv=isf_FragNormCoord*2.0-1.0;
+  float ang=atan(uv.y,uv.x);
+  float rad=length(uv);
+  float seg=(PI*2.0)/max(segments,2.0);
+  ang=abs(mod(ang,seg)-seg*0.5);
+  vec2 p=vec2(cos(ang),sin(ang))*rad;
+  float t=TIME*speed;
+  float pattern=(sin(p.x*8.0+t)+sin(p.y*8.0-t*1.3)+sin(rad*10.0-t*2.0))/3.0;
+  vec3 col=hue(pattern*0.5+0.5+hueShift);
+  col*=smoothstep(1.4,0.0,rad);
+  gl_FragColor=vec4(col,1.0);
+}`},
+  {name:'NEON TUNNEL', code:`/*{
+  "DESCRIPTION":"Neon tunnel — perspective rings rushing toward the viewer, acid/glitch palette",
+  "CREDIT":"Human Glitche / Visual Lab",
+  "ISFVSN":"2.0",
+  "CATEGORIES":["Generative"],
+  "INPUTS":[
+    {"NAME":"speed","TYPE":"float","LABEL":"Speed","DEFAULT":1.0,"MIN":0.0,"MAX":4.0},
+    {"NAME":"rings","TYPE":"float","LABEL":"Rings","DEFAULT":10.0,"MIN":2.0,"MAX":40.0},
+    {"NAME":"twist","TYPE":"float","LABEL":"Twist","DEFAULT":0.3,"MIN":0.0,"MAX":2.0}
   ]
 }*/
 void main(){
-  vec2 st=isf_FragNormCoord;
-  float t=TIME*0.5;
-  vec2 pos=st*zoom;
-  float v=sin(pos.x+t);
-  v+=sin((pos.y+t)*0.5);
-  v+=sin((pos.x+pos.y+t)*0.5);
-  pos+=vec2(sin(t),cos(t));
-  v+=sin(sqrt(pos.x*pos.x+pos.y*pos.y+1.0)+t);
-  v=v/2.0;
-  vec3 color=vec3(sin(v*PI+colorShift*6.0),sin(v*PI+2.0),sin(v*PI+4.0));
-  gl_FragColor=vec4(color*0.5+0.5,1.0);
-}`;
-
-// Lista de shaders builtin para elegir si la galería está vacía
-const BUILTIN_SHADERS = [
-  {name:'PLASMA DEFAULT', code: DEFAULT_ISF},
-  {name:'GLITCH WAVE', code:`/*{
-  "DESCRIPTION":"Glitch wave",
+  vec2 uv=isf_FragNormCoord*2.0-1.0;
+  float r=length(uv);
+  float a=atan(uv.y,uv.x);
+  float t=TIME*speed;
+  float depth=1.0/(r+0.15);
+  float tunnel=sin(depth*rings-t*4.0+a*twist*6.0);
+  float glow=pow(tunnel*0.5+0.5,1.4);
+  vec3 base=mix(vec3(1.0,0.18,0.33),vec3(0.72,1.0,0.0),glow);
+  vec3 col=base*(0.25+glow*1.1)*clamp(depth*0.22,0.0,1.4);
+  gl_FragColor=vec4(col,1.0);
+}`},
+  {name:'RIPPLE GRID', code:`/*{
+  "DESCRIPTION":"Ripple grid — brutalist grid warped by traveling waves",
+  "CREDIT":"Human Glitche / Visual Lab",
   "ISFVSN":"2.0",
+  "CATEGORIES":["Generative"],
   "INPUTS":[
-    {"NAME":"speed","TYPE":"float","LABEL":"Speed","DEFAULT":1.0,"MIN":0.1,"MAX":5.0},
-    {"NAME":"intensity","TYPE":"float","LABEL":"Intensity","DEFAULT":0.5,"MIN":0.0,"MAX":1.0}
+    {"NAME":"density","TYPE":"float","LABEL":"Density","DEFAULT":18.0,"MIN":4.0,"MAX":60.0},
+    {"NAME":"speed","TYPE":"float","LABEL":"Speed","DEFAULT":1.0,"MIN":0.0,"MAX":4.0},
+    {"NAME":"warp","TYPE":"float","LABEL":"Warp","DEFAULT":0.4,"MIN":0.0,"MAX":1.5}
   ]
 }*/
 void main(){
   vec2 uv=isf_FragNormCoord;
   float t=TIME*speed;
-  float glitch=sin(uv.y*80.0+t*10.0)*intensity*0.04;
-  uv.x+=glitch;
-  float r=sin(uv.x*12.0+t)*0.5+0.5;
-  float g=sin(uv.y*8.0-t*1.3)*0.5+0.5;
-  float b=sin((uv.x+uv.y)*6.0+t*2.0)*0.5+0.5;
-  gl_FragColor=vec4(r,g,b,1.0);
+  vec2 c=uv-0.5;
+  float d=length(c);
+  float wave=sin(d*20.0-t*3.0)*warp*0.05;
+  vec2 p=(uv+c*wave)*density;
+  vec2 g=abs(fract(p)-0.5);
+  float line=smoothstep(0.48,0.5,max(g.x,g.y));
+  vec3 bg=mix(vec3(0.02,0.02,0.02),vec3(0.05,0.05,0.08),uv.y);
+  vec3 acid=vec3(0.72,1.0,0.0);
+  vec3 col=mix(bg,acid,line*(0.6+0.4*sin(d*12.0-t*2.0)));
+  gl_FragColor=vec4(col,1.0);
 }`},
-  {name:'VOID PULSE', code:`/*{
-  "DESCRIPTION":"Void pulse radial",
+  {name:'AURORA DRIFT', code:`/*{
+  "DESCRIPTION":"Aurora drift — layered color bands flowing like northern lights",
+  "CREDIT":"Human Glitche / Visual Lab",
   "ISFVSN":"2.0",
+  "CATEGORIES":["Generative"],
   "INPUTS":[
-    {"NAME":"rings","TYPE":"float","LABEL":"Rings","DEFAULT":8.0,"MIN":1.0,"MAX":30.0},
-    {"NAME":"pulse","TYPE":"float","LABEL":"Pulse speed","DEFAULT":1.0,"MIN":0.1,"MAX":4.0}
+    {"NAME":"speed","TYPE":"float","LABEL":"Speed","DEFAULT":0.4,"MIN":0.0,"MAX":2.0},
+    {"NAME":"layers","TYPE":"float","LABEL":"Layers","DEFAULT":4.0,"MIN":1.0,"MAX":5.0},
+    {"NAME":"contrast","TYPE":"float","LABEL":"Contrast","DEFAULT":1.0,"MIN":0.2,"MAX":3.0}
   ]
 }*/
-void main(){
-  vec2 uv=isf_FragNormCoord-0.5;
-  float d=length(uv)*2.0;
-  float t=TIME*pulse;
-  float v=sin(d*rings-t)*0.5+0.5;
-  float v2=sin(d*rings*0.5+t*1.3)*0.5+0.5;
-  gl_FragColor=vec4(v*0.2,v2*0.8,v,1.0);
-}`},
-  {name:'ACID FLOW', code:`/*{
-  "DESCRIPTION":"Acid flow noise",
-  "ISFVSN":"2.0",
-  "INPUTS":[
-    {"NAME":"scale","TYPE":"float","LABEL":"Scale","DEFAULT":4.0,"MIN":1.0,"MAX":16.0},
-    {"NAME":"flow","TYPE":"float","LABEL":"Flow","DEFAULT":0.5,"MIN":0.0,"MAX":2.0}
-  ]
-}*/
-float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5);}
-float noise(vec2 p){
-  vec2 i=floor(p);vec2 f=fract(p);
-  f=f*f*(3.-2.*f);
-  return mix(mix(hash(i),hash(i+vec2(1,0)),f.x),
-             mix(hash(i+vec2(0,1)),hash(i+vec2(1,1)),f.x),f.y);
-}
 void main(){
   vec2 uv=isf_FragNormCoord;
-  float t=TIME*flow;
-  float n=noise(uv*scale+t);
-  float n2=noise(uv*scale*2.0-t*0.7+3.14);
-  vec3 col=vec3(n*n2,n*(1.0-n2)*0.9,n2*0.2);
+  float t=TIME*speed;
+  vec3 col=vec3(0.0);
+  for(int i=0;i<5;i++){
+    float fi=float(i);
+    float band=sin(uv.x*3.0+fi*1.7+t*(0.5+fi*0.13))*0.5+0.5;
+    float y=uv.y+band*0.25+fi*0.04;
+    float glow=smoothstep(0.18,0.0,abs(y-0.5-fi*0.05))*step(fi,layers-0.5);
+    vec3 c=mix(vec3(0.0,1.0,0.55),vec3(0.55,0.0,1.0),fi/4.0);
+    col+=c*glow;
+  }
+  col=pow(col*contrast,vec3(0.9));
+  gl_FragColor=vec4(col,1.0);
+}`},
+  {name:'FRACTAL BLOOM', code:`/*{
+  "DESCRIPTION":"Fractal bloom — recursive zoom into a glitch-colored Julia field",
+  "CREDIT":"Human Glitche / Visual Lab",
+  "ISFVSN":"2.0",
+  "CATEGORIES":["Generative"],
+  "INPUTS":[
+    {"NAME":"zoom","TYPE":"float","LABEL":"Zoom","DEFAULT":1.0,"MIN":0.2,"MAX":4.0},
+    {"NAME":"speed","TYPE":"float","LABEL":"Drift Speed","DEFAULT":0.2,"MIN":0.0,"MAX":1.5},
+    {"NAME":"detail","TYPE":"float","LABEL":"Detail","DEFAULT":6.0,"MIN":2.0,"MAX":12.0}
+  ]
+}*/
+void main(){
+  vec2 uv=(isf_FragNormCoord*2.0-1.0)/max(zoom,0.001);
+  float t=TIME*speed;
+  vec2 c=vec2(0.355+0.05*sin(t),0.355+0.05*cos(t*0.8));
+  vec2 z=uv;
+  float m=0.0;
+  for(int i=0;i<10;i++){
+    z=vec2(z.x*z.x-z.y*z.y,2.0*z.x*z.y)+c;
+    m+=exp(-length(z)*detail*0.15);
+  }
+  float v=clamp(m*0.12,0.0,1.0);
+  vec3 col=mix(vec3(0.04,0.0,0.06),vec3(1.0,0.18,0.33),v);
+  col=mix(col,vec3(0.72,1.0,0.0),pow(v,3.0));
   gl_FragColor=vec4(col,1.0);
 }`},
 ];
