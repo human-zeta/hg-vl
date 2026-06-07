@@ -184,7 +184,8 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 #repo-toggle .rled{width:5px;height:5px;border-radius:50%;background:rgba(184,255,0,0.4);animation:pulse-led 2s ease-in-out infinite;}
 
 /* SECTIONS */
-section{min-height:100vh;display:flex;align-items:center;position:relative;padding:0 8vw;}top:0;left:0;right:0;z-index:100;padding:2rem 8vw;display:flex;justify-content:space-between;align-items:center;}
+section{min-height:100vh;display:flex;align-items:center;position:relative;padding:0 8vw;}
+#nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:2rem 8vw;display:flex;justify-content:space-between;align-items:center;}
 .nav-logo{font-family:var(--mono);font-size:11px;letter-spacing:0.2em;color:rgba(240,237,230,0.4);}
 .nav-links{display:flex;gap:2.5rem;}
 .nav-links a{font-family:var(--mono);font-size:10px;letter-spacing:0.25em;color:rgba(240,237,230,0.25);text-decoration:none;transition:color 0.2s;}
@@ -490,8 +491,8 @@ body.visual-mode #exit-visual{z-index:9000!important;}
 <div id="err-toast"></div>
 
 <nav id="nav">
-  <span class="nav-logo txt-blend txt-blend-sm">HG — VL / 2026</span>
-  <div class="nav-links txt-blend txt-blend-sm">
+  <span class="nav-logo">HG — VL / 2026</span>
+  <div class="nav-links">
     <a href="#manifiesto">SISTEMA</a>
     <a href="#aether-sec">AETHER</a>
     <a href="#blog">BLOG</a>
@@ -503,11 +504,11 @@ body.visual-mode #exit-visual{z-index:9000!important;}
 <div id="scroll-container">
 
   <section id="hero" style="padding:0 8vw 10vh;">
-    <span class="hero-tag txt-blend txt-blend-sm">VISUAL LAB × HUMAN GLITCHE</span>
-    <div class="hero-label txt-blend txt-blend-sm">Buenos Aires — AR / EST. 2022</div>
-    <h1 class="hero-title glitch txt-blend txt-blend-xl" data-text="HUMAN GLITCHE">HUMAN<br><span class="ac">GLITCHE</span></h1>
-    <p class="hero-sub txt-blend">Ecosistema creativo para operar como humano en un sistema que ya no fue diseñado para humanos. Arte · Código · Comunidad · Visuales en tiempo real.</p>
-    <div class="hero-socials txt-blend txt-blend-sm">
+    <span class="hero-tag">VISUAL LAB × HUMAN GLITCHE</span>
+    <div class="hero-label">Buenos Aires — AR / EST. 2022</div>
+    <h1 class="hero-title glitch" data-text="HUMAN GLITCHE">HUMAN<br><span class="ac">GLITCHE</span></h1>
+    <p class="hero-sub">Ecosistema creativo para operar como humano en un sistema que ya no fue diseñado para humanos. Arte · Código · Comunidad · Visuales en tiempo real.</p>
+    <div class="hero-socials">
       <a href="https://www.youtube.com/@Human.Glitche" target="_blank">YT</a>
       <a href="https://x.com/HGlitche" target="_blank">X</a>
       <a href="https://kick.com/visuallab" target="_blank">KICK</a>
@@ -519,12 +520,12 @@ body.visual-mode #exit-visual{z-index:9000!important;}
 
   <section id="manifiesto">
     <div>
-      <div class="mline txt-blend txt-blend-xl"><span>EL GLITCH</span></div>
-      <div class="mline txt-blend txt-blend-xl"><span>NO SE</span></div>
-      <div class="mline txt-blend txt-blend-xl"><span>CORRIGE.</span></div>
-      <div class="mline txt-blend txt-blend-xl"><span>SE HABITA.</span></div>
-      <div class="mline txt-blend"><span style="color:rgba(240,237,230,0.9);font-size:clamp(1.4rem,2.8vw,3rem);">— Y DESDE AHÍ, SE CREA ALGO NUEVO.</span></div>
-      <p class="mfine rev txt-blend">Human Glitche es aprender a vivir, crear y trabajar<br>usando el sistema sin dejar que el sistema te use.</p>
+      <div class="mline"><span>EL GLITCH</span></div>
+      <div class="mline"><span>NO SE</span></div>
+      <div class="mline"><span>CORRIGE.</span></div>
+      <div class="mline"><span>SE HABITA.</span></div>
+      <div class="mline"><span style="color:rgba(240,237,230,0.9);font-size:clamp(1.4rem,2.8vw,3rem);">— Y DESDE AHÍ, SE CREA ALGO NUEVO.</span></div>
+      <p class="mfine rev">Human Glitche es aprender a vivir, crear y trabajar<br>usando el sistema sin dejar que el sistema te use.</p>
     </div>
   </section>
 
@@ -533,17 +534,17 @@ body.visual-mode #exit-visual{z-index:9000!important;}
   <!-- AETHER SECTION -->
   <section id="aether-sec">
     <div>
-      <div class="aether-badge rev txt-blend txt-blend-sm">AETHER ISF GENERATOR × GEMINI AI</div>
-      <h2 class="aether-title rev rd1 txt-blend txt-blend-xl">SHADERS<br>INFINITOS</h2>
-      <p class="aether-desc rev rd2 txt-blend">Generador de visuales ISF alimentado por Gemini. Describís un efecto, la IA lo compila en GLSL real listo para VDMX6, Resolume, o cualquier host ISF. Descargás el <code style="color:#fff;font-size:10px">.fs</code> y lo droppeas acá — el site se transforma.</p>
-      <div class="aether-links rev rd3 txt-blend txt-blend-sm">
+      <div class="aether-badge rev">AETHER ISF GENERATOR × GEMINI AI</div>
+      <h2 class="aether-title rev rd1">SHADERS<br>INFINITOS</h2>
+      <p class="aether-desc rev rd2">Generador de visuales ISF alimentado por Gemini. Describís un efecto, la IA lo compila en GLSL real listo para VDMX6, Resolume, o cualquier host ISF. Descargás el <code style="color:#fff;font-size:10px">.fs</code> y lo droppeas acá — el site se transforma.</p>
+      <div class="aether-links rev rd3">
         <a href="https://github.com/human-zeta/Aether-ISF-generator" class="aether-link" target="_blank">VER EN GITHUB →</a>
         <a href="https://ai.studio/apps/8b699664-53af-4289-973b-98e5754bfafc" class="aether-app-btn" target="_blank">⚡ ABRIR APP</a>
       </div>
       <div class="viz-stat rev rd3">
-        <div class="txt-blend txt-blend-xl"><div class="stat-num">ISF</div><div class="stat-label">2.0 SPEC</div></div>
-        <div class="txt-blend txt-blend-xl"><div class="stat-num">AI</div><div class="stat-label">GEMINI GEN</div></div>
-        <div class="txt-blend txt-blend-xl"><div class="stat-num">∞</div><div class="stat-label">VISUALES</div></div>
+        <div><div class="stat-num">ISF</div><div class="stat-label">2.0 SPEC</div></div>
+        <div><div class="stat-num">AI</div><div class="stat-label">GEMINI GEN</div></div>
+        <div><div class="stat-num">∞</div><div class="stat-label">VISUALES</div></div>
       </div>
     </div>
   </section>
@@ -552,19 +553,19 @@ body.visual-mode #exit-visual{z-index:9000!important;}
 
   <section id="blog">
     <div class="sec-hdr rev">
-      <h2 class="sec-title txt-blend txt-blend-xl">BLOG</h2>
-      <a href="https://www.hg-vl.com/es/blog" class="sec-link txt-blend txt-blend-sm" target="_blank">VER TODO →</a>
+      <h2 class="sec-title">BLOG</h2>
+      <a href="/es/blog/" class="sec-link">VER TODO →</a>
     </div>
     <div class="blog-grid">
-      <div class="bcard" data-url="https://www.hg-vl.com/es/blog/aether-isf-infinito"><div class="cnum">001</div><div class="ctitle">AETHER ISF INFINITO</div><div class="cmeta">6 min read</div><div class="ctag">SHADERS</div></div>
-      <div class="bcard" data-url="https://www.hg-vl.com/es/blog/manual-de-cocina-para-vj"><div class="cnum">002</div><div class="ctitle">MANUAL DE COCINA PARA VJ</div><div class="cmeta">7 min read</div><div class="ctag">VJ / WORKFLOW</div></div>
-      <div class="bcard" data-url="https://www.hg-vl.com/es/blog/manual-de-cocina-para-artistas-2026"><div class="cnum">003</div><div class="ctitle">MANUAL ARTISTAS 2026</div><div class="cmeta">8 min read</div><div class="ctag">CREACIÓN</div></div>
-      <div class="bcard" data-url="https://www.hg-vl.com/es/blog/elegi-tu-mac"><div class="cnum">004</div><div class="ctitle">ELEGÍ TU MAC</div><div class="cmeta">4 min read</div><div class="ctag">HARDWARE</div></div>
-      <div class="bcard" data-url="https://www.hg-vl.com/es/blog/elegi-tu-software"><div class="cnum">005</div><div class="ctitle">ELEGÍ TU SOFTWARE</div><div class="cmeta">5 min read</div><div class="ctag">SOFTWARE</div></div>
-      <div class="bcard" data-url="https://www.hg-vl.com/es/blog/que-es-human-glitche"><div class="cnum">006</div><div class="ctitle">QUÉ ES HUMAN GLITCHE</div><div class="cmeta">9 min read</div><div class="ctag">MANIFIESTO</div></div>
-      <div class="bcard" data-url="https://www.hg-vl.com/es/blog/muchas-apps"><div class="cnum">007</div><div class="ctitle">MUCHAS APPS</div><div class="cmeta">5 min read</div><div class="ctag">TOOLS</div></div>
-      <div class="bcard" data-url="https://www.hg-vl.com/es/blog/primer-dia-de-resolume"><div class="cnum">008</div><div class="ctitle">PRIMER DÍA RESOLUME</div><div class="cmeta">5 min read</div><div class="ctag">TUTORIAL</div></div>
-      <div class="bcard" data-url="https://www.hg-vl.com/es/blog/luck-ra-ags-2022-visuales-en-tiempo-real"><div class="cnum">009</div><div class="ctitle">LUCK RA – AGS 2022</div><div class="cmeta">5 min read</div><div class="ctag">SHOW REAL</div></div>
+      <div class="bcard" data-url="/es/blog/aether-isf-infinito/"><div class="cnum">001</div><div class="ctitle">AETHER ISF INFINITO</div><div class="cmeta">6 min read</div><div class="ctag">SHADERS</div></div>
+      <div class="bcard" data-url="/es/blog/manual-de-cocina-para-vj/"><div class="cnum">002</div><div class="ctitle">MANUAL DE COCINA PARA VJ</div><div class="cmeta">7 min read</div><div class="ctag">VJ / WORKFLOW</div></div>
+      <div class="bcard" data-url="/es/blog/manual-de-cocina-para-artistas-2026/"><div class="cnum">003</div><div class="ctitle">MANUAL ARTISTAS 2026</div><div class="cmeta">8 min read</div><div class="ctag">CREACIÓN</div></div>
+      <div class="bcard" data-url="/es/blog/elegi-tu-mac/"><div class="cnum">004</div><div class="ctitle">ELEGÍ TU MAC</div><div class="cmeta">4 min read</div><div class="ctag">HARDWARE</div></div>
+      <div class="bcard" data-url="/es/blog/elegi-tu-software/"><div class="cnum">005</div><div class="ctitle">ELEGÍ TU SOFTWARE</div><div class="cmeta">5 min read</div><div class="ctag">SOFTWARE</div></div>
+      <div class="bcard" data-url="/es/blog/que-es-human-glitche/"><div class="cnum">006</div><div class="ctitle">QUÉ ES HUMAN GLITCHE</div><div class="cmeta">9 min read</div><div class="ctag">MANIFIESTO</div></div>
+      <div class="bcard" data-url="/es/blog/muchas-apps/"><div class="cnum">007</div><div class="ctitle">MUCHAS APPS</div><div class="cmeta">5 min read</div><div class="ctag">TOOLS</div></div>
+      <div class="bcard" data-url="/es/blog/primer-dia-de-resolume/"><div class="cnum">008</div><div class="ctitle">PRIMER DÍA RESOLUME</div><div class="cmeta">5 min read</div><div class="ctag">TUTORIAL</div></div>
+      <div class="bcard" data-url="/es/blog/luck-ra-ags-2022-visuales-en-tiempo-real/"><div class="cnum">009</div><div class="ctitle">LUCK RA – AGS 2022</div><div class="cmeta">5 min read</div><div class="ctag">SHOW REAL</div></div>
     </div>
   </section>
 
@@ -572,13 +573,13 @@ body.visual-mode #exit-visual{z-index:9000!important;}
 
   <section id="catalogo">
     <div class="sec-hdr rev" style="width:100%;">
-      <h2 class="sec-title txt-blend txt-blend-xl">SERVICIOS</h2>
-      <a href="https://meetings.hubspot.com/juan-cruz-martinez-astorga" class="sec-link txt-blend txt-blend-sm" target="_blank">REUNIÓN →</a>
+      <h2 class="sec-title">SERVICIOS</h2>
+      <a href="https://meetings.hubspot.com/juan-cruz-martinez-astorga" class="sec-link" target="_blank">REUNIÓN →</a>
     </div>
     <div class="svc-list">
-      <div class="srow rev"><span class="snum">01</span><span class="sname txt-blend">ASESORÍA CREATIVA</span><span class="sprice txt-blend txt-blend-sm">CONSULTAR</span><span class="ssub txt-blend">Video llamada 1hs · Transcripción · Presupuestado · Charla distendida con referencias para tu show, gira o evento.</span></div>
-      <div class="srow rev rd1"><span class="snum">02</span><span class="sname txt-blend">TU SHOW PORTABLE</span><span class="sprice txt-blend txt-blend-sm">PACK BASE</span><span class="ssub txt-blend">+10 fondos · 2 logos · Formatos custom · Contacto con operadores · Asesoría creativa + operativa.</span></div>
-      <div class="srow rev rd2"><span class="snum">03</span><span class="sname txt-blend">SINCRONÍA COMPLEJA</span><span class="sprice txt-blend txt-blend-sm">A MEDIDA</span><span class="ssub txt-blend">SMPTE · Sincro por red · Planificación Luces + Video · Show con operadores · FX sincro · Circuito cerrado.</span></div>
+      <div class="srow rev"><span class="snum">01</span><span class="sname">ASESORÍA CREATIVA</span><span class="sprice">CONSULTAR</span><span class="ssub">Video llamada 1hs · Transcripción · Presupuestado · Charla distendida con referencias para tu show, gira o evento.</span></div>
+      <div class="srow rev rd1"><span class="snum">02</span><span class="sname">TU SHOW PORTABLE</span><span class="sprice">PACK BASE</span><span class="ssub">+10 fondos · 2 logos · Formatos custom · Contacto con operadores · Asesoría creativa + operativa.</span></div>
+      <div class="srow rev rd2"><span class="snum">03</span><span class="sname">SINCRONÍA COMPLEJA</span><span class="sprice">A MEDIDA</span><span class="ssub">SMPTE · Sincro por red · Planificación Luces + Video · Show con operadores · FX sincro · Circuito cerrado.</span></div>
     </div>
   </section>
 
@@ -586,8 +587,8 @@ body.visual-mode #exit-visual{z-index:9000!important;}
 
   <section id="comunidad">
     <div class="sec-hdr rev" style="width:100%;">
-      <h2 class="sec-title txt-blend txt-blend-xl">COMUNIDAD</h2>
-      <span class="txt-blend txt-blend-sm" style="font-family:var(--mono);font-size:10px;color:#fff;">SI NO TE SOBRA, NO TE GASTES</span>
+      <h2 class="sec-title">COMUNIDAD</h2>
+      <span style="font-family:var(--mono);font-size:10px;color:#fff;">SI NO TE SOBRA, NO TE GASTES</span>
     </div>
     <div class="plans">
       <div class="plan rev">
@@ -615,18 +616,18 @@ body.visual-mode #exit-visual{z-index:9000!important;}
 
   <section id="live">
     <div style="text-align:center;">
-      <div class="live-badge txt-blend txt-blend-sm">● EN VIVO / KICK</div>
-      <h2 class="live-t glitch txt-blend txt-blend-xl" data-text="VISUAL LAB">VISUAL LAB</h2>
-      <p class="live-sub txt-blend txt-blend-sm">STREAMING DE VISUALES EN TIEMPO REAL</p>
-      <a href="https://kick.com/visuallab" class="live-a txt-blend txt-blend-sm" target="_blank">KICK.COM/VISUALLAB →</a><br>
-      <a href="https://www.youtube.com/@Human.Glitche" class="live-a txt-blend txt-blend-sm" style="margin-top:0.8rem;" target="_blank">YOUTUBE →</a>
+      <div class="live-badge">● EN VIVO / KICK</div>
+      <h2 class="live-t glitch" data-text="VISUAL LAB">VISUAL LAB</h2>
+      <p class="live-sub">STREAMING DE VISUALES EN TIEMPO REAL</p>
+      <a href="https://kick.com/visuallab" class="live-a" target="_blank">KICK.COM/VISUALLAB →</a><br>
+      <a href="https://www.youtube.com/@Human.Glitche" class="live-a" style="margin-top:0.8rem;" target="_blank">YOUTUBE →</a>
     </div>
   </section>
 
   <section id="footer">
     <div class="ftop">
-      <div class="flogo txt-blend txt-blend-xl">HG<br>VL</div>
-      <div class="flinks txt-blend txt-blend-sm">
+      <div class="flogo">HG<br>VL</div>
+      <div class="flinks">
         <a href="https://www.youtube.com/@Human.Glitche" target="_blank">YOUTUBE</a>
         <a href="https://x.com/HGlitche" target="_blank">X / TWITTER</a>
         <a href="https://kick.com/visuallab" target="_blank">KICK</a>
@@ -636,8 +637,8 @@ body.visual-mode #exit-visual{z-index:9000!important;}
       </div>
     </div>
     <div class="fbot">
-      <span class="fcopy txt-blend txt-blend-sm">© 2026 HUMAN GLITCHE — VISUAL LAB — BUENOS AIRES</span>
-      <span class="facid txt-blend txt-blend-sm">EL GLITCH NO SE CORRIGE.</span>
+      <span class="fcopy">© 2026 HUMAN GLITCHE — VISUAL LAB — BUENOS AIRES</span>
+      <span class="facid">EL GLITCH NO SE CORRIGE.</span>
     </div>
   </section>
 
@@ -1726,7 +1727,7 @@ document.querySelectorAll('.rev,.mline').forEach(el=>obs.observe(el));
 
 // Blog cards
 document.querySelectorAll('.bcard').forEach(c=>{
-  c.addEventListener('click',()=>{const u=c.dataset.url;if(u)window.open(u,'_blank');});
+  c.addEventListener('click',()=>{const u=c.dataset.url;if(!u)return; u.startsWith('http')?window.open(u,'_blank'):location.href=u;});
 });
 </script>
 </body>

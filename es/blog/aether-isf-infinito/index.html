@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AETHER ISF INFINITO — HG VL Blog</title>
+<meta name="description" content="En el mundo de las visuales en tiempo real, el shader dejó de ser solo código: pasó a ser lenguaje , instrumento y territorio creativo . Aether ISF Generator nace desde esa idea.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../blog.css">
+</head>
+<body>
+<nav class="bnav">
+  <a href="/" class="bnav-logo">HG — VL / 2026</a>
+  <a href="/es/blog/" class="bnav-back">← VOLVER AL BLOG</a>
+</nav>
+<article class="bwrap bart">
+  <header class="bart-head">
+    <span class="bart-tag">SHADERS</span>
+    <h1 class="bart-title">AETHER ISF INFINITO</h1>
+    <p class="bart-dek">En el mundo de las visuales en tiempo real, el shader dejó de ser solo código: pasó a ser <strong>lenguaje</strong>, <strong>instrumento</strong> y <strong>territorio creativo</strong>.<br>Aether ISF Generator nace desde esa idea.</p>
+    <div class="bart-meta"><span>001</span> · 6 min read · HUMAN GLITCHE</div>
+  </header>
+  <div class="bart-body">
+<h3>Inteligencia artificial aplicada a shaders para VDMX6 (en desarrollo)</h3>
+<p>En el mundo de las visuales en tiempo real, el shader dejó de ser solo código: pasó a ser <strong>lenguaje</strong>, <strong>instrumento</strong> y <strong>territorio creativo</strong>.<br>Aether ISF Generator nace desde esa idea.</p>
+<p>Esta app es una herramienta experimental que utiliza <strong>inteligencia artificial</strong> para <strong>generar, reparar y exportar shaders ISF</strong> listos para ser usados en <strong>VDMX6</strong>, pensada especialmente para VJs, artistas visuales y performers que trabajan en tiempo real.</p>
+<hr>
+<p>Aether es un <strong>generador infinito de shaders ISF</strong>, impulsado por IA, que traduce ideas visuales (texto o imagen) en código GLSL compatible con VDMX.</p>
+<p>En lugar de partir de código en blanco, el usuario puede:</p>
+<ul><li>Describir una estética</li><li>Usar un prompt aleatorio curado</li><li>Importar un <code>.fs</code> existente</li><li>Reparar shaders rotos</li><li>Convertir una imagen en una lógica visual generativa</li></ul>
+<p>Todo dentro de un flujo simple:<br><strong>Describir → Generar → Previsualizar → Exportar</strong></p>
+<hr>
+<h2>Pensada específicamente para VDMX</h2>
+<p>Uno de los grandes problemas de los generadores genéricos de shaders es que <strong>no respetan el ecosistema real de VDMX</strong>.<br>Aether está diseñada con un objetivo claro:</p>
+<ul><li>Compatibilidad <strong>ISF 2.0</strong></li><li>GLSL <strong>WebGL 1.0 / GLSL ES 1.00</strong></li><li>Sin dependencias WebGL2 que rompan en VDMX</li><li>Uso correcto de <code>texture2D</code>, <code>gl_FragColor</code> y built-ins ISF</li><li>Exportes limpios <code>.fs</code>, listos para arrastrar a VDMX</li></ul>
+<p>No es un juguete de laboratorio: apunta a <strong>uso real en escenario</strong>.</p>
+<hr>
+<h2>Funciones principales</h2>
+<ul><li><strong>Generación de shaders ISF por IA</strong><br>A partir de texto o imagen de referencia.</li><li><strong>Image → Shader</strong><br>Tomá una imagen y convertí su estética en lógica generativa.</li><li><strong>Auto-Repair de shaders</strong><br>Repara errores de sintaxis, conflictos ISF y problemas típicos de export.</li><li><strong>Importación de <code>.fs</code></strong><br>Cargá shaders existentes, modificalos o reparalos.</li><li><strong>Random Prompt Button</strong><br>Inspiración instantánea con estéticas curadas para visuales.</li><li><strong>Preview en tiempo real</strong><br>Previsualización directa en el navegador antes de llevarlo a VDMX.</li></ul>
+<hr>
+<h2>¿Para quién es?</h2>
+<ul><li>VJs que quieren crear visuales originales sin escribir shaders desde cero</li><li>Artistas visuales que piensan más en estética que en sintaxis</li><li>Performers que necesitan prototipar rápido</li><li>Diseñadores que quieren entender cómo “piensa” un shader</li><li>Curiosos del cruce entre <strong>arte + código + IA</strong></li></ul>
+<p>No reemplaza el conocimiento técnico: <strong>lo amplifica</strong>.</p>
+<hr>
+<h2>Estado del proyecto: en desarrollo activo 🚧</h2>
+<p>Aether ISF Generator <strong>está en desarrollo</strong>.<br>Esto significa:</p>
+<ul><li>La app evoluciona constantemente</li><li>Algunas funciones todavía están siendo ajustadas</li><li>Se prioriza estabilidad en VDMX antes que features innecesarios</li><li>El feedback de usuarios reales es parte del proceso</li></ul>
+<p>Lejos de ser una versión cerrada, es una <strong>herramienta viva</strong>, que crece a medida que se prueba en contextos reales de show, mapping y performance.</p>
+<hr>
+<h2>Filosofía detrás del proyecto</h2>
+<p>Este proyecto nace desde <em>Human Glitche</em>:<br>la idea de que el humano no debe competir con la máquina, sino <strong>colaborar con ella</strong>.</p>
+<p>Aether no busca automatizar el arte.<br>Busca <strong>expandir el campo creativo</strong>, reducir fricción técnica y abrir puertas a nuevas formas de visuales generativas en tiempo real.</p>
+<hr>
+<h2>Próximos pasos</h2>
+<ul><li>Optimización fina para VDMX6</li><li>Más control sobre inputs ISF</li><li>Presets estéticos avanzados</li><li>Mejoras en el motor de reparación</li><li>Documentación y ejemplos reales de uso en show</li></ul>
+<hr>
+<p>Si sos VJ, artista visual o simplemente te interesa explorar nuevas herramientas creativas, Aether ISF Generator es una invitación a <strong>jugar, romper y crear</strong>.</p>
+<blockquote>En desarrollo. En movimiento. Como el arte en vivo.</blockquote>
+<img src="https://www.hg-vl.com/hs-fs/hubfs/download.gif?width=116&height=116&name=download.gif" alt="" loading="lazy">
+<h2>Human.Zeta</h2>
+<h2>Queres saber mas?</h2>
+  </div>
+  <nav class="bnext">
+    <a href="../">← TODOS LOS POSTS</a>
+    <a href="/#blog">VOLVER AL SITIO →</a>
+  </nav>
+</article>
+<footer class="bfoot">
+  <span>© 2026 HUMAN GLITCHE — VISUAL LAB — BUENOS AIRES</span>
+  <a href="/#comunidad">COMUNIDAD →</a>
+</footer>
+</body>
+</html>
