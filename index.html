@@ -115,6 +115,39 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
   mix-blend-mode:difference;
 }
 
+/* LEGIBILIDAD — los textos chicos quedan opacos/oscuros sobre los shaders;
+   les subimos brillo + un glow sutil, y al pasar el cursor "zoomean"
+   levemente con más brillo todavía: feedback directo para poder leerlos. */
+.hero-label,.aether-badge,.aether-link,.sec-link,
+.sprice,.live-a,.facid,.hero-socials a,.nav-links a,
+.hero-sub,.mfine,.aether-desc,.ssub,.pfeat li,
+.cmeta,.nav-logo,.drop-label,#status-txt,#shader-name,
+.stat-label,.cnum,.ctag,.snum,.hero-scroll,.hero-tag{
+  filter:brightness(1.4) contrast(1.08);
+  text-shadow:0 0 10px rgba(240,237,230,0.22),0 0 22px rgba(184,255,0,0.07);
+  transition:color 0.25s,border-color 0.25s,
+             transform 0.2s ease-out,filter 0.2s ease-out,text-shadow 0.2s ease-out;
+  transform-origin:left center;
+}
+/* .hero-label y .hero-sub ya tienen su transform controlado por el parallax
+   de profundidad (glassDepth) — para ellos el "zoom" es solo de brillo/glow,
+   sin escala, para no pelear con esa animación. */
+.hero-label:hover,.hero-sub:hover{
+  filter:brightness(2.1) contrast(1.25);
+  text-shadow:0 0 16px rgba(240,237,230,0.45),0 0 32px rgba(184,255,0,0.18);
+}
+.aether-badge:hover,.aether-link:hover,.sec-link:hover,
+.sprice:hover,.live-a:hover,.facid:hover,.hero-socials a:hover,.nav-links a:hover,
+.mfine:hover,.aether-desc:hover,.ssub:hover,.pfeat li:hover,
+.cmeta:hover,.nav-logo:hover,.drop-label:hover,#status-txt:hover,#shader-name:hover,
+.stat-label:hover,.cnum:hover,.ctag:hover,.snum:hover,.hero-scroll:hover,.hero-tag:hover{
+  transform:scale(1.16) !important;
+  filter:brightness(2.1) contrast(1.25);
+  text-shadow:0 0 16px rgba(240,237,230,0.45),0 0 32px rgba(184,255,0,0.18);
+  z-index:5;
+  position:relative;
+}
+
 
 /* REPOSITORIO GLOBAL */
 #global-repo{
