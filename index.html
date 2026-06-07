@@ -1469,11 +1469,11 @@ function loadRandomShader(){
   }
 }
 
-// Cargar shader aleatorio al iniciar — espera un poco para que Firebase traiga datos
+// Cargar shader por defecto al iniciar — RIPPLE GRID es la pieza curada de entrada
 setTimeout(()=>{
-  // Si ya llegaron items del repo global, elige entre ellos
-  loadRandomShader();
-}, 1200);
+  const def = BUILTIN_SHADERS.find(s=>s.name==='RIPPLE GRID') || BUILTIN_SHADERS[0];
+  loadShaderFromCode(def.code, def.name);
+}, 600);
 
 // ─────────────────────────────────────────────
 // REPOSITORIO GLOBAL — Firebase Realtime DB
