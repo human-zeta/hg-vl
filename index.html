@@ -191,13 +191,24 @@ section{min-height:100vh;display:flex;align-items:center;position:relative;paddi
 .nav-links a{font-family:var(--mono);font-size:10px;letter-spacing:0.25em;color:rgba(240,237,230,0.25);text-decoration:none;transition:color 0.2s;}
 .nav-links a:hover{color:var(--acid);}
 
-/* HERO */
-#hero{min-height:100vh;justify-content:flex-end;flex-direction:column;padding:0 8vw 10vh;}
-.hero-label{font-family:var(--mono);font-size:11px;letter-spacing:0.3em;color:var(--acid);margin-bottom:1rem;opacity:0.7;transition:color 1.5s;}
-.hero-title{font-family:var(--display);font-size:clamp(6rem,15vw,14rem);line-height:0.88;color:var(--white);}
+/* HERO — capas con profundidad: el shader queda "atrás", la tipografía "flota" delante */
+#hero{min-height:100vh;justify-content:flex-end;flex-direction:column;padding:0 8vw 10vh;perspective:1400px;perspective-origin:50% 60%;}
+#hero *{transform-style:preserve-3d;}
+.hero-label{font-family:var(--mono);font-size:11px;letter-spacing:0.3em;color:var(--acid);margin-bottom:1rem;opacity:0.7;transition:color 1.5s, transform 0.25s ease-out;will-change:transform;}
+.hero-title{
+  font-family:var(--display);font-size:clamp(6rem,15vw,14rem);line-height:0.88;color:var(--white);
+  transition:transform 0.18s ease-out, text-shadow 0.18s ease-out;will-change:transform;
+  /* moldeado tipo blister: filo claro donde "pega la luz" + sombra suave que la separa del fondo,
+     como si la letra fuera una pieza de plástico soplado vista al trasluz */
+  text-shadow:
+    -1px -1px 0 rgba(255,255,255,0.35),
+    1px 1px 1px rgba(0,0,0,0.25),
+    3px 5px 14px rgba(0,0,0,0.45),
+    0 0 50px rgba(184,255,0,0.06);
+}
 .hero-title .ac{color:var(--acid);transition:color 1.5s;}
-.hero-sub{font-family:var(--mono);font-size:12px;color:rgba(240,237,230,0.35);margin-top:1.5rem;max-width:420px;line-height:1.9;}
-.hero-socials{display:flex;gap:2rem;margin-top:2.5rem;}
+.hero-sub{font-family:var(--mono);font-size:12px;color:rgba(240,237,230,0.35);margin-top:1.5rem;max-width:420px;line-height:1.9;transition:transform 0.3s ease-out;will-change:transform;}
+.hero-socials{display:flex;gap:2rem;margin-top:2.5rem;transition:transform 0.35s ease-out;will-change:transform;}
 .hero-socials a{font-family:var(--mono);font-size:10px;letter-spacing:0.2em;color:rgba(240,237,230,0.3);text-decoration:none;transition:color 0.2s;}
 .hero-socials a:hover{color:var(--acid);}
 .hero-scroll{position:absolute;bottom:3rem;right:calc(230px + 2rem);font-family:var(--mono);font-size:10px;letter-spacing:0.3em;color:rgba(240,237,230,0.2);writing-mode:vertical-rl;display:flex;align-items:center;gap:1rem;}
@@ -655,6 +666,55 @@ document.addEventListener('mousemove',e=>{
   mx=e.clientX; my=e.clientY;
   cur.style.left=mx-4+'px'; cur.style.top=my-4+'px';
 });
+
+// ─────────────────────────────────────────────
+// PROFUNDIDAD "BLISTER DE PLÁSTICO" — la tipografía se comporta
+// como una pieza moldeada y soplada: un filo de luz que se desliza
+// sobre la superficie según el cursor (como luz pegando en plástico
+// curvo) + una sombra que la separa del fondo del shader, dándole
+// volumen real en vez de quedar pegada al plano.
+// ─────────────────────────────────────────────
+(function plasticDepth(){
+  const title    = document.querySelector('.hero-title');
+  const sub      = document.querySelector('.hero-sub');
+  const label    = document.querySelector('.hero-label');
+  const socials  = document.querySelector('.hero-socials');
+  if(!title) return;
+
+  let tx=0, ty=0, cx=0, cy=0;
+  document.addEventListener('mousemove', e=>{
+    tx = (e.clientX/window.innerWidth  - 0.5) * 2; // -1..1
+    ty = (e.clientY/window.innerHeight - 0.5) * 2;
+  });
+
+  function apply(){
+    cx += (tx-cx)*0.05;
+    cy += (ty-cy)*0.05;
+
+    // El brillo (highlight) se mueve hacia donde "pegaría la luz" — opuesto al cursor,
+    // como si la pieza fuera convexa y reflejara desde el lado contrario.
+    const hlx = (-cx*3 - 1).toFixed(2);
+    const hly = (-cy*3 - 1).toFixed(2);
+    // La sombra se proyecta del lado opuesto al brillo, separando la letra del fondo.
+    const shx = (cx*5 + 2).toFixed(2);
+    const shy = (cy*6 + 4).toFixed(2);
+    const blur = (12 + Math.abs(cx)*6 + Math.abs(cy)*6).toFixed(1);
+
+    title.style.textShadow = `
+      ${hlx}px ${hly}px 0 rgba(255,255,255,0.38),
+      ${(shx*0.4).toFixed(2)}px ${(shy*0.4).toFixed(2)}px 1px rgba(0,0,0,0.28),
+      ${shx}px ${shy}px ${blur}px rgba(0,0,0,0.45),
+      0 0 50px rgba(184,255,0,0.06)`;
+
+    // Planos sutilmente separados — la tipografía "flota" apenas sobre el shader.
+    title.style.transform   = `translate3d(${cx*-14}px, ${cy*-9}px, 70px)`;
+    sub.style.transform     = `translate3d(${cx*-7}px, ${cy*-5}px, 35px)`;
+    label.style.transform   = `translate3d(${cx*-4}px, ${cy*-3}px, 20px)`;
+    socials.style.transform = `translate3d(${cx*-3}px, ${cy*-2}px, 12px)`;
+    requestAnimationFrame(apply);
+  }
+  apply();
+})();
 (function tick(){rx+=(mx-rx)*0.12;ry+=(my-ry)*0.12;ring.style.left=rx-16+'px';ring.style.top=ry-16+'px';requestAnimationFrame(tick);})();
 document.querySelectorAll('a,button,.bcard,.srow,.plan').forEach(el=>{
   el.addEventListener('mouseenter',()=>{cur.style.transform='scale(3)';ring.style.opacity='0';});
