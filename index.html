@@ -192,19 +192,42 @@ section{min-height:100vh;display:flex;align-items:center;position:relative;paddi
 .nav-links a:hover{color:var(--acid);}
 
 /* HERO — capas con profundidad: el shader queda "atrás", la tipografía "flota" delante */
-#hero{min-height:100vh;justify-content:flex-end;flex-direction:column;padding:0 8vw 10vh;perspective:1400px;perspective-origin:50% 60%;}
+#hero{min-height:100vh;justify-content:flex-end;flex-direction:column;padding:0 8vw 10vh;perspective:1400px;perspective-origin:50% 60%;position:relative;}
 #hero *{transform-style:preserve-3d;}
+/* "vidrio" entre la tipografía y el fondo: capas con distinto desenfoque/aumento
+   que distorsionan el shader detrás, dando sensación de profundidad real
+   (como mirar el fondo a través de paneles de vidrio de distinto grosor/lente) */
+.hero-glass{position:absolute;left:6vw;right:6vw;top:18%;height:62%;z-index:1;pointer-events:none;border-radius:6px;overflow:hidden;transition:transform 0.5s ease-out;will-change:transform;
+  -webkit-mask-image:radial-gradient(ellipse 60% 65% at 50% 50%, #000 35%, transparent 78%);
+  mask-image:radial-gradient(ellipse 60% 65% at 50% 50%, #000 35%, transparent 78%);
+}
+.hero-glass,.hero-glass::before,.hero-glass::after{
+  backdrop-filter:blur(2px) saturate(1.25) contrast(1.08);
+  -webkit-backdrop-filter:blur(2px) saturate(1.25) contrast(1.08);
+}
+.hero-glass::before,.hero-glass::after{content:'';position:absolute;inset:-10%;border-radius:inherit;transition:transform 0.6s ease-out, filter 0.6s ease-out;will-change:transform;}
+.hero-glass::before{
+  backdrop-filter:blur(11px) saturate(1.7) contrast(1.18);
+  -webkit-backdrop-filter:blur(11px) saturate(1.7) contrast(1.18);
+  clip-path:polygon(0 0,52% 0,38% 100%,0 100%);
+  transform:scale(1.06);
+}
+.hero-glass::after{
+  backdrop-filter:blur(0.5px) saturate(1.1) contrast(1.3);
+  -webkit-backdrop-filter:blur(0.5px) saturate(1.1) contrast(1.3);
+  clip-path:polygon(58% 0,100% 0,100% 100%,44% 100%);
+  transform:scale(0.965);
+}
+.hero-title,.hero-label,.hero-sub,.hero-socials{position:relative;z-index:2;}
 .hero-label{font-family:var(--mono);font-size:11px;letter-spacing:0.3em;color:var(--acid);margin-bottom:1rem;opacity:0.7;transition:color 1.5s, transform 0.25s ease-out;will-change:transform;}
 .hero-title{
   font-family:var(--display);font-size:clamp(6rem,15vw,14rem);line-height:0.88;color:var(--white);
   transition:transform 0.18s ease-out, text-shadow 0.18s ease-out;will-change:transform;
-  /* moldeado tipo blister: filo claro donde "pega la luz" + sombra suave que la separa del fondo,
-     como si la letra fuera una pieza de plástico soplado vista al trasluz */
+  /* la profundidad principal la da .hero-glass (vidrio entre tipografía y fondo);
+     acá solo un poco de sombra para separar la letra del vidrio */
   text-shadow:
-    -1px -1px 0 rgba(255,255,255,0.35),
-    1px 1px 1px rgba(0,0,0,0.25),
-    3px 5px 14px rgba(0,0,0,0.45),
-    0 0 50px rgba(184,255,0,0.06);
+    1px 2px 6px rgba(0,0,0,0.35),
+    0 0 40px rgba(184,255,0,0.05);
 }
 .hero-title .ac{color:var(--acid);transition:color 1.5s;}
 .hero-sub{font-family:var(--mono);font-size:12px;color:rgba(240,237,230,0.35);margin-top:1.5rem;max-width:420px;line-height:1.9;transition:transform 0.3s ease-out;will-change:transform;}
@@ -517,6 +540,7 @@ body.visual-mode #exit-visual{z-index:9000!important;}
   <section id="hero" style="padding:0 8vw 10vh;">
     <span class="hero-tag">VISUAL LAB × HUMAN GLITCHE</span>
     <div class="hero-label">Buenos Aires — AR / EST. 2022</div>
+    <div class="hero-glass" aria-hidden="true"></div>
     <h1 class="hero-title glitch" data-text="HUMAN GLITCHE">HUMAN<br><span class="ac">GLITCHE</span></h1>
     <p class="hero-sub">La realidad es una interfaz — diseñada por alguien, en algún momento, con alguna intención. Human Glitche es el laboratorio de quienes la ven, la cuestionan y construyen la versión siguiente. Arte · Código · Comunidad · Visuales en tiempo real.</p>
     <div class="hero-socials">
@@ -668,18 +692,21 @@ document.addEventListener('mousemove',e=>{
 });
 
 // ─────────────────────────────────────────────
-// PROFUNDIDAD "BLISTER DE PLÁSTICO" — la tipografía se comporta
-// como una pieza moldeada y soplada: un filo de luz que se desliza
-// sobre la superficie según el cursor (como luz pegando en plástico
-// curvo) + una sombra que la separa del fondo del shader, dándole
-// volumen real en vez de quedar pegada al plano.
+// PROFUNDIDAD "VIDRIO ENTRE TIPOGRAFÍA Y FONDO" — entre la letra y el
+// shader hay un panel de vidrio (.hero-glass) compuesto por zonas con
+// distinto desenfoque/saturación ("distintos aumentos", como lentes de
+// diferente grosor). Al mover el cursor esas zonas se desplazan y
+// cambian levemente de intensidad — como si el vidrio refractara el
+// fondo de manera distinta según el ángulo de mirada — y la tipografía
+// flota apenas por encima, separada del vidrio por una sombra suave.
 // ─────────────────────────────────────────────
-(function plasticDepth(){
+(function glassDepth(){
   const title    = document.querySelector('.hero-title');
   const sub      = document.querySelector('.hero-sub');
   const label    = document.querySelector('.hero-label');
   const socials  = document.querySelector('.hero-socials');
-  if(!title) return;
+  const glass    = document.querySelector('.hero-glass');
+  if(!title || !glass) return;
 
   let tx=0, ty=0, cx=0, cy=0;
   document.addEventListener('mousemove', e=>{
@@ -691,26 +718,22 @@ document.addEventListener('mousemove',e=>{
     cx += (tx-cx)*0.05;
     cy += (ty-cy)*0.05;
 
-    // El brillo (highlight) se mueve hacia donde "pegaría la luz" — opuesto al cursor,
-    // como si la pieza fuera convexa y reflejara desde el lado contrario.
-    const hlx = (-cx*3 - 1).toFixed(2);
-    const hly = (-cy*3 - 1).toFixed(2);
-    // La sombra se proyecta del lado opuesto al brillo, separando la letra del fondo.
-    const shx = (cx*5 + 2).toFixed(2);
-    const shy = (cy*6 + 4).toFixed(2);
-    const blur = (12 + Math.abs(cx)*6 + Math.abs(cy)*6).toFixed(1);
+    // El vidrio se desplaza distinto que la tipografía → sensación de capas
+    // separadas en profundidad, cada una reaccionando al ángulo de vista.
+    glass.style.transform = `translate3d(${cx*10}px, ${cy*7}px, 40px) scale(${(1+Math.abs(cx)*0.01+Math.abs(cy)*0.01).toFixed(3)})`;
 
+    // Sombra leve que separa la letra del vidrio, del lado opuesto al "aumento" dominante.
+    const shx = (cx*3 + 1.5).toFixed(2);
+    const shy = (cy*3 + 2.5).toFixed(2);
     title.style.textShadow = `
-      ${hlx}px ${hly}px 0 rgba(255,255,255,0.38),
-      ${(shx*0.4).toFixed(2)}px ${(shy*0.4).toFixed(2)}px 1px rgba(0,0,0,0.28),
-      ${shx}px ${shy}px ${blur}px rgba(0,0,0,0.45),
-      0 0 50px rgba(184,255,0,0.06)`;
+      ${shx}px ${shy}px 6px rgba(0,0,0,0.35),
+      0 0 40px rgba(184,255,0,0.05)`;
 
-    // Planos sutilmente separados — la tipografía "flota" apenas sobre el shader.
-    title.style.transform   = `translate3d(${cx*-14}px, ${cy*-9}px, 70px)`;
-    sub.style.transform     = `translate3d(${cx*-7}px, ${cy*-5}px, 35px)`;
-    label.style.transform   = `translate3d(${cx*-4}px, ${cy*-3}px, 20px)`;
-    socials.style.transform = `translate3d(${cx*-3}px, ${cy*-2}px, 12px)`;
+    // Planos sutilmente separados — la tipografía "flota" apenas sobre el vidrio y el shader.
+    title.style.transform   = `translate3d(${cx*-14}px, ${cy*-9}px, 90px)`;
+    sub.style.transform     = `translate3d(${cx*-7}px, ${cy*-5}px, 50px)`;
+    label.style.transform   = `translate3d(${cx*-4}px, ${cy*-3}px, 30px)`;
+    socials.style.transform = `translate3d(${cx*-3}px, ${cy*-2}px, 16px)`;
     requestAnimationFrame(apply);
   }
   apply();
