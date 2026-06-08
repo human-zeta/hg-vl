@@ -607,9 +607,16 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
       const token = await freshToken(session);
       TOKEN = token;
       UID = session.uid;
-      const r = await fetch(`${FB_URL}/subscribers/${session.uid}.json?auth=${token}`);
-      const isSub = r.ok ? (await r.json()) === true : false;
-      if(isSub){
+      const [subR, adminR, modR] = await Promise.all([
+        fetch(`${FB_URL}/subscribers/${session.uid}.json?auth=${token}`),
+        fetch(`${FB_URL}/admins/${session.uid}.json?auth=${token}`),
+        fetch(`${FB_URL}/moderators/${session.uid}.json?auth=${token}`)
+      ]);
+      const isSub   = subR.ok   ? (await subR.json())   === true : false;
+      const isAdmin = adminR.ok ? (await adminR.json()) === true : false;
+      const isMod   = modR.ok   ? (await modR.json())   === true : false;
+      // Lxs admins y moderadorxs tienen acceso total a la Academia, con o sin suscripción
+      if(isSub || isAdmin || isMod){
         showContent();
       }else{
         showLocked(
