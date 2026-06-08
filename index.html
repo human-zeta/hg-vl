@@ -478,6 +478,17 @@ body.visual-mode #exit-visual{z-index:9000!important;}
 .sprice{font-family:var(--mono);font-size:11px;color:var(--acid);white-space:nowrap;padding-top:0.8rem;transition:color 1.5s;}
 .ssub{font-family:var(--mono);font-size:10px;color:rgba(240,237,230,0.3);margin-top:0.4rem;line-height:1.8;grid-column:2;}
 
+/* STACK — herramientas detrás de los servicios */
+.stack-intro{font-family:var(--mono);font-size:10px;letter-spacing:0.2em;color:rgba(240,237,230,0.3);margin-top:4.5rem;margin-bottom:1.5rem;text-transform:uppercase;}
+.stack-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:rgba(240,237,230,0.06);width:100%;}
+.stack-item{background:var(--black);padding:1.7rem 1.6rem;transition:background-color 0.25s;}
+.stack-item:hover{background:rgba(184,255,0,0.04);}
+.stack-item h4{font-family:var(--mono);font-size:11px;letter-spacing:0.16em;color:var(--acid);margin-bottom:0.6rem;
+  text-shadow:0 0 4px rgba(184,255,0,0.6),0 0 12px rgba(184,255,0,0.35),0 0 24px rgba(184,255,0,0.18),0 0 1px rgba(255,255,255,0.45);
+}
+.stack-item p{font-family:var(--mono);font-size:10px;color:rgba(240,237,230,0.35);line-height:1.8;}
+@media (max-width:760px){.stack-grid{grid-template-columns:1fr;}}
+
 /* PLANES */
 #comunidad{flex-direction:column;padding:10vh 8vw;}
 .plans{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:rgba(240,237,230,0.06);width:100%;margin-top:4rem;}
@@ -701,6 +712,17 @@ body.visual-mode #exit-visual{z-index:9000!important;}
       <div class="srow rev"><span class="snum">01</span><span class="sname">LECTURA DE GLITCH</span><span class="sprice">CONSULTAR</span><span class="ssub">Videollamada 1h · grabación + research · diagnóstico honesto de tu show, gira o evento, con referencias a medida.</span></div>
       <div class="srow rev rd1"><span class="snum">02</span><span class="sname">KIT PORTABLE</span><span class="sprice">PACK BASE</span><span class="ssub">+10 fondos · 2 logos animados · formatos a medida · contacto con operadores · soporte creativo y operativo incluido.</span></div>
       <div class="srow rev rd2"><span class="snum">03</span><span class="sname">SINCRONÍA TOTAL</span><span class="sprice">A MEDIDA</span><span class="ssub">SMPTE · sincro en red · planificación luces+video · operación en vivo · FX sincronizados · circuito cerrado end-to-end.</span></div>
+    </div>
+
+    <div class="stack-intro rev">→ El stack detrás de cada servicio</div>
+    <div class="stack-grid">
+      <div class="stack-item rev"><h4>VISUALES EN VIVO</h4><p>Resolume / VDMX / TouchDesigner. VJing, mapping y composición en tiempo real para shows, giras y eventos.</p></div>
+      <div class="stack-item rev rd1"><h4>SHADERS & CÓDIGO VISUAL</h4><p>ISF / GLSL. Shaders a medida, generadores procedurales y herramientas propias — como el motor de este sitio.</p></div>
+      <div class="stack-item rev rd2"><h4>IA GENERATIVA APLICADA</h4><p>Gemini y modelos generativos. Pipelines que aceleran la creación de visuales, código y contenido sin perder la mirada humana.</p></div>
+      <div class="stack-item rev"><h4>DISEÑO 3D & RENDER</h4><p>Cinema 4D + Octane + Insydium + Greyscale Gorilla. Motion graphics, branding tridimensional y renders fotorrealistas.</p></div>
+      <div class="stack-item rev rd1"><h4>POST & EDICIÓN</h4><p>Suite Adobe completa — Premiere, After Effects, Photoshop, Illustrator. Edición, color, compositing y diseño de punta a punta.</p></div>
+      <div class="stack-item rev rd2"><h4>CONTENIDO PARA REDES</h4><p>Piezas, calendarios y estrategia visual para que tu marca o proyecto se sienta vivo en cada plataforma.</p></div>
+      <div class="stack-item rev"><h4>WEB PARA ARTISTAS Y COMERCIOS</h4><p>Sitios a medida — como este — para artistas que necesitan mostrar su trabajo y comercios que necesitan vender mejor.</p></div>
     </div>
   </section>
 
