@@ -209,6 +209,58 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 #repo-file{display:none;}
 #repo-status{font-size:7px;color:rgba(240,237,230,0.2);margin-top:4px;text-align:center;min-height:12px;letter-spacing:0.1em;}
 
+/* AUTH MODAL */
+#auth-overlay{
+  position:fixed;inset:0;z-index:900;display:none;
+  align-items:center;justify-content:center;
+  background:rgba(5,5,5,0.78);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+}
+#auth-overlay.show{display:flex;}
+#auth-modal{
+  position:relative;width:280px;max-width:90vw;
+  background:rgba(8,8,8,0.96);border:1px solid rgba(184,255,0,0.18);border-radius:3px;
+  padding:1.6rem 1.4rem;font-family:var(--mono);
+}
+#auth-close{
+  position:absolute;top:0.6rem;right:0.7rem;background:none;border:none;
+  color:rgba(240,237,230,0.2);font-size:11px;cursor:none;transition:color 0.2s;
+}
+#auth-close:hover{color:var(--glitch);}
+#auth-tabs{display:flex;gap:0.4rem;margin-bottom:1.1rem;}
+.auth-tab{
+  flex:1;background:none;border:1px solid rgba(240,237,230,0.1);color:rgba(240,237,230,0.3);
+  font-family:var(--mono);font-size:8px;letter-spacing:0.2em;padding:7px 0;cursor:none;
+  border-radius:2px;transition:all 0.2s;
+}
+.auth-tab.active{color:var(--acid);border-color:rgba(184,255,0,0.35);background:rgba(184,255,0,0.05);}
+#auth-title{font-size:9px;letter-spacing:0.24em;color:rgba(240,237,230,0.4);text-align:center;margin-bottom:1rem;}
+#auth-form{display:flex;flex-direction:column;gap:0.6rem;}
+#auth-form input{
+  background:rgba(255,255,255,0.03);border:1px solid rgba(240,237,230,0.1);border-radius:2px;
+  color:#f0ede6;font-family:var(--mono);font-size:10px;letter-spacing:0.08em;
+  padding:9px 10px;outline:none;transition:border-color 0.2s;
+}
+#auth-form input::placeholder{color:rgba(240,237,230,0.2);}
+#auth-form input:focus{border-color:rgba(184,255,0,0.4);}
+#auth-submit{
+  margin-top:0.3rem;background:var(--acid);color:#050505;border:none;border-radius:2px;
+  font-family:var(--mono);font-size:9px;letter-spacing:0.22em;font-weight:700;
+  padding:10px 0;cursor:none;transition:opacity 0.2s;
+}
+#auth-submit:hover{opacity:0.85;}
+#auth-submit:disabled{opacity:0.4;cursor:default;}
+#auth-status{font-size:7px;color:rgba(240,237,230,0.25);text-align:center;min-height:14px;letter-spacing:0.08em;margin-top:2px;}
+#auth-status.err{color:var(--glitch);}
+#auth-status.ok{color:var(--acid);}
+#auth-userbox{text-align:center;}
+#auth-greeting{font-size:9px;letter-spacing:0.12em;color:rgba(240,237,230,0.6);margin-bottom:1rem;line-height:1.6;}
+#auth-greeting b{color:var(--acid);}
+#auth-logout{
+  background:none;border:1px solid rgba(255,45,85,0.3);color:var(--glitch);border-radius:2px;
+  font-family:var(--mono);font-size:8px;letter-spacing:0.2em;padding:8px 14px;cursor:none;transition:all 0.2s;
+}
+#auth-logout:hover{background:rgba(255,45,85,0.08);}
+
 /* Lista */
 #repo-list{overflow-y:auto;flex:1;}
 #repo-list::-webkit-scrollbar{width:2px;}
@@ -574,6 +626,29 @@ body.visual-mode #exit-visual{z-index:9000!important;}
   </div>
 </div>
 
+<!-- AUTH MODAL -->
+<div id="auth-overlay">
+  <div id="auth-modal">
+    <button id="auth-close">✕</button>
+    <div id="auth-tabs">
+      <button class="auth-tab active" data-mode="register">REGISTRO</button>
+      <button class="auth-tab" data-mode="login">INGRESAR</button>
+    </div>
+    <div id="auth-title">CREÁ TU CUENTA HG</div>
+    <form id="auth-form">
+      <input type="text" id="auth-name" placeholder="NOMBRE" autocomplete="name" style="display:none;">
+      <input type="email" id="auth-email" placeholder="EMAIL" autocomplete="email" required>
+      <input type="password" id="auth-pass" placeholder="CONTRASEÑA" autocomplete="current-password" required minlength="6">
+      <button type="submit" id="auth-submit">CREAR CUENTA</button>
+      <div id="auth-status"></div>
+    </form>
+    <div id="auth-userbox" style="display:none;">
+      <div id="auth-greeting"></div>
+      <button id="auth-logout">CERRAR SESIÓN</button>
+    </div>
+  </div>
+</div>
+
 <!-- GALERÍA TOGGLE -->
 <button id="gallery-toggle">⬡ SHADERS <span id="gtoggle-count"></span></button>
 
@@ -738,7 +813,7 @@ body.visual-mode #exit-visual{z-index:9000!important;}
         <div class="ptier">TIER 01 — CONCIENCIA ⌘</div><div class="pprice">$0</div><div class="pper">/ mensual</div>
         <div class="pname">EL PRIMER PASO</div>
         <ul class="pfeat"><li>Recursos gráficos semanales</li><li>Acceso al Discord</li><li>Charlas y clases</li><li>Descuentos en productos</li><li>Nuestro agradecimiento</li></ul>
-        <a href="#" class="pcta">REGISTRATE</a>
+        <a href="#" class="pcta" id="auth-trigger" data-mode="register">REGISTRATE</a>
       </div>
       <div class="plan feat rev rd1">
         <div class="ptier">TIER 02 — CREACIÓN ✦ / POPULAR</div><div class="pprice">U$D 25</div><div class="pper">/ mensual</div>
@@ -2007,6 +2082,165 @@ document.querySelectorAll('.rev,.mline').forEach(el=>obs.observe(el));
 document.querySelectorAll('.bcard').forEach(c=>{
   c.addEventListener('click',()=>{const u=c.dataset.url;if(!u)return; u.startsWith('http')?window.open(u,'_blank'):location.href=u;});
 });
+
+// ─────────────────────────────────────────────
+// AUTH — Firebase Auth (REST) + perfil en Realtime DB
+// ─────────────────────────────────────────────
+(function(){
+  const FB_API_KEY = 'AIzaSyAeMKHe7dj4bnaUzkF7iDANrC_cBtg4LAA';
+  const IDT_URL = 'https://identitytoolkit.googleapis.com/v1/accounts';
+  const LS_KEY = 'hg_auth_session';
+
+  const overlay   = document.getElementById('auth-overlay');
+  const modal     = document.getElementById('auth-modal');
+  const closeBtn  = document.getElementById('auth-close');
+  const tabs      = document.querySelectorAll('.auth-tab');
+  const title     = document.getElementById('auth-title');
+  const form      = document.getElementById('auth-form');
+  const nameInp   = document.getElementById('auth-name');
+  const emailInp  = document.getElementById('auth-email');
+  const passInp   = document.getElementById('auth-pass');
+  const submitBtn = document.getElementById('auth-submit');
+  const statusEl  = document.getElementById('auth-status');
+  const userBox   = document.getElementById('auth-userbox');
+  const greeting  = document.getElementById('auth-greeting');
+  const logoutBtn = document.getElementById('auth-logout');
+  const trigger   = document.getElementById('auth-trigger');
+
+  if(!overlay || !form) return;
+
+  let mode = 'register'; // 'register' | 'login'
+
+  function setStatus(msg, type){
+    statusEl.textContent = msg || '';
+    statusEl.classList.remove('err','ok');
+    if(type) statusEl.classList.add(type);
+  }
+
+  function setMode(m){
+    mode = m;
+    tabs.forEach(t=>t.classList.toggle('active', t.dataset.mode===m));
+    nameInp.style.display = (m==='register') ? 'block' : 'none';
+    title.textContent = (m==='register') ? 'CREÁ TU CUENTA HG' : 'INGRESÁ A TU CUENTA';
+    submitBtn.textContent = (m==='register') ? 'CREAR CUENTA' : 'INGRESAR';
+    setStatus('');
+  }
+
+  function getSession(){
+    try{ return JSON.parse(localStorage.getItem(LS_KEY)||'null'); }catch(e){ return null; }
+  }
+  function saveSession(s){ localStorage.setItem(LS_KEY, JSON.stringify(s)); }
+  function clearSession(){ localStorage.removeItem(LS_KEY); }
+
+  function showLoggedIn(session){
+    form.style.display = 'none';
+    document.getElementById('auth-tabs').style.display = 'none';
+    title.style.display = 'none';
+    userBox.style.display = 'block';
+    greeting.innerHTML = `Sesión activa como<br><b>${session.name || session.email}</b>`;
+    if(trigger) trigger.textContent = 'MI CUENTA';
+  }
+  function showForm(){
+    form.style.display = 'flex';
+    document.getElementById('auth-tabs').style.display = 'flex';
+    title.style.display = 'block';
+    userBox.style.display = 'none';
+    if(trigger) trigger.textContent = 'REGISTRATE';
+  }
+
+  function openModal(){
+    const session = getSession();
+    if(session){ showLoggedIn(session); }
+    else{ showForm(); setMode(trigger && trigger.dataset.mode === 'login' ? 'login' : 'register'); }
+    overlay.classList.add('show');
+  }
+  function closeModal(){ overlay.classList.remove('show'); setStatus(''); }
+
+  trigger && trigger.addEventListener('click', e=>{ e.preventDefault(); openModal(); });
+  closeBtn.addEventListener('click', closeModal);
+  overlay.addEventListener('click', e=>{ if(e.target === overlay) closeModal(); });
+  tabs.forEach(t=> t.addEventListener('click', ()=> setMode(t.dataset.mode)));
+
+  async function idtRequest(endpoint, body){
+    const r = await fetch(`${IDT_URL}:${endpoint}?key=${FB_API_KEY}`, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(body)
+    });
+    const data = await r.json();
+    if(!r.ok){
+      const msg = (data && data.error && data.error.message) || 'ERROR';
+      throw new Error(msg);
+    }
+    return data;
+  }
+
+  function friendlyError(code){
+    const map = {
+      'EMAIL_EXISTS': 'Ese correo ya tiene una cuenta — probá ingresar.',
+      'EMAIL_NOT_FOUND': 'No existe una cuenta con ese correo.',
+      'INVALID_PASSWORD': 'Contraseña incorrecta.',
+      'INVALID_LOGIN_CREDENTIALS': 'Correo o contraseña incorrectos.',
+      'WEAK_PASSWORD : Password should be at least 6 characters': 'La contraseña debe tener al menos 6 caracteres.',
+      'TOO_MANY_ATTEMPTS_TRY_LATER': 'Demasiados intentos — esperá un momento.',
+      'INVALID_EMAIL': 'Correo inválido.'
+    };
+    if(map[code]) return map[code];
+    if(code && code.startsWith('WEAK_PASSWORD')) return 'La contraseña debe tener al menos 6 caracteres.';
+    return 'Algo salió mal. Intentá de nuevo.';
+  }
+
+  async function saveProfile(uid, idToken, profile){
+    try{
+      await fetch(`${FB_URL}/users/${uid}.json?auth=${idToken}`, {
+        method:'PATCH',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify(profile)
+      });
+    }catch(e){ /* perfil es best-effort — no bloquear el login */ }
+  }
+
+  form.addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    const email = emailInp.value.trim();
+    const pass  = passInp.value;
+    const name  = nameInp.value.trim();
+    if(!email || !pass) return;
+
+    submitBtn.disabled = true;
+    setStatus(mode==='register' ? 'Creando cuenta…' : 'Ingresando…');
+
+    try{
+      let data;
+      if(mode === 'register'){
+        data = await idtRequest('signUp', { email, password: pass, returnSecureToken: true });
+        const session = { uid: data.localId, email: data.email, idToken: data.idToken, name: name || email.split('@')[0] };
+        saveSession(session);
+        await saveProfile(session.uid, session.idToken, { name: session.name, email: session.email, joined: Date.now() });
+        setStatus('¡Cuenta creada! Bienvenido.', 'ok');
+        setTimeout(()=> showLoggedIn(session), 500);
+      } else {
+        data = await idtRequest('signInWithPassword', { email, password: pass, returnSecureToken: true });
+        const session = { uid: data.localId, email: data.email, idToken: data.idToken, name: data.displayName || email.split('@')[0] };
+        saveSession(session);
+        setStatus('¡Bienvenido de nuevo!', 'ok');
+        setTimeout(()=> showLoggedIn(session), 400);
+      }
+    }catch(err){
+      setStatus(friendlyError(err.message), 'err');
+    }finally{
+      submitBtn.disabled = false;
+    }
+  });
+
+  logoutBtn.addEventListener('click', ()=>{
+    clearSession();
+    form.reset();
+    showForm();
+    setMode('register');
+    closeModal();
+  });
+})();
 </script>
 </body>
 </html>
