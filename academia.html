@@ -104,6 +104,34 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 #academy-content.show{display:block;}
 #gate-locked{display:none;}
 #gate-locked.show{display:block;}
+
+/* XP / NIVEL BADGE */
+#xp-badge{
+  display:flex;align-items:center;gap:1.1rem;flex-wrap:wrap;
+  border:1px solid rgba(184,255,0,0.16);border-radius:3px;
+  background:rgba(184,255,0,0.03);padding:1.1rem 1.4rem;margin-bottom:2rem;
+  font-family:var(--mono);
+}
+#xp-badge .xb-level{font-family:var(--display);font-size:1.3rem;letter-spacing:0.04em;color:var(--acid);}
+#xp-badge .xb-sub{font-size:8px;letter-spacing:0.16em;color:rgba(240,237,230,0.4);text-transform:uppercase;margin-top:2px;}
+#xp-badge .xb-bar-wrap{flex:1;min-width:160px;}
+#xp-badge .xb-bar-track{height:5px;border-radius:3px;background:rgba(255,255,255,0.06);overflow:hidden;}
+#xp-badge .xb-bar-fill{height:100%;background:linear-gradient(90deg,var(--acid),rgba(184,255,0,0.5));border-radius:3px;transition:width 0.5s ease;}
+#xp-badge .xb-bar-label{font-size:7.5px;letter-spacing:0.14em;color:rgba(240,237,230,0.3);margin-top:5px;text-transform:uppercase;}
+
+/* CHECKLIST DE AUTOEVALUACIÓN */
+.topic-row{display:flex;align-items:flex-start;gap:0.6rem;}
+.topic-check{
+  flex-shrink:0;margin-top:1px;width:14px;height:14px;border-radius:2px;cursor:pointer;
+  border:1px solid rgba(184,255,0,0.35);background:rgba(184,255,0,0.04);
+  display:flex;align-items:center;justify-content:center;transition:all 0.15s;
+  font-family:var(--mono);font-size:8px;color:var(--acid);
+}
+.topic-check.done{background:var(--acid);border-color:var(--acid);color:var(--black);font-weight:700;}
+.topic-row.done li, .topic-row.done .topic-text{color:rgba(240,237,230,0.3);text-decoration:line-through;text-decoration-color:rgba(184,255,0,0.25);}
+.topic-text{font-size:9px;letter-spacing:0.05em;color:rgba(240,237,230,0.5);line-height:1.6;}
+.temario-list li{list-style:none;}
+.xp-tag{font-size:7px;letter-spacing:0.1em;color:rgba(184,255,0,0.4);margin-left:6px;white-space:nowrap;}
 </style>
 </head>
 <body>
@@ -131,8 +159,19 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
   <div id="academy-content">
     <div id="programs-intro">
       ⌘ Acá vas a encontrar el <strong>temario completo</strong> de cada herramienta del stack HG.
-      Cada programa se despliega en sus ejes principales — y de a poco vamos a ir sumando las
-      <strong>clases</strong> que profundizan cada herramienta de forma simple y buscable.
+      Cada programa se despliega en sus ejes principales — marcá <strong>"lo aprendí"</strong> en cada eje
+      a medida que avanzás: cada autoevaluación suma <strong>experiencia (XP)</strong> y te acerca al próximo nivel
+      dentro de la comunidad. Honor system — esto es para vos, para que veas tu propio recorrido.
+    </div>
+    <div id="xp-badge">
+      <div>
+        <div class="xb-level" id="xb-level">—</div>
+        <div class="xb-sub" id="xb-sub">cargando experiencia…</div>
+      </div>
+      <div class="xb-bar-wrap">
+        <div class="xb-bar-track"><div class="xb-bar-fill" id="xb-bar" style="width:0%"></div></div>
+        <div class="xb-bar-label" id="xb-bar-label"></div>
+      </div>
     </div>
     <div id="program-grid"><!-- generado por JS --></div>
   </div>
@@ -145,6 +184,79 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
   const FB_API_KEY = 'AIzaSyAeMKHe7dj4bnaUzkF7iDANrC_cBtg4LAA';
   const REFRESH_URL = 'https://securetoken.googleapis.com/v1/token';
   const LS_KEY = 'hg_auth_session';
+
+  const XP_PER_TOPIC = 20;
+  // Niveles — mantener sincronizado con admin.html
+  const LEVELS = [
+    { min: 0,    name: 'NV.0 — INICIADX' },
+    { min: 100,  name: 'NV.1 — APRENDIZ' },
+    { min: 250,  name: 'NV.2 — PRACTICANTE' },
+    { min: 450,  name: 'NV.3 — OPERADRX' },
+    { min: 700,  name: 'NV.4 — ARTESANX GLITCHE' },
+    { min: 1000, name: 'NV.5 — MAESTRX HG' }
+  ];
+  function levelFor(xp){
+    let idx = 0;
+    for(let i=0;i<LEVELS.length;i++){ if(xp >= LEVELS[i].min) idx = i; }
+    return { ...LEVELS[idx], idx };
+  }
+
+  let TOKEN = null;
+  let UID   = null;
+  let PROGRESS = {}; // { [mark]: { [topicIndex]: true } }
+
+  function totalXp(){
+    let count = 0;
+    Object.values(PROGRESS).forEach(prog=>{
+      if(prog && typeof prog === 'object') count += Object.values(prog).filter(Boolean).length;
+    });
+    return count * XP_PER_TOPIC;
+  }
+
+  function renderBadge(){
+    const xp = totalXp();
+    const lvl = levelFor(xp);
+    const next = LEVELS[lvl.idx + 1];
+    const lvlEl  = document.getElementById('xb-level');
+    const subEl  = document.getElementById('xb-sub');
+    const barEl  = document.getElementById('xb-bar');
+    const labelEl= document.getElementById('xb-bar-label');
+    if(!lvlEl) return;
+    lvlEl.textContent = lvl.name;
+    subEl.textContent = `${xp} XP acumulada — autoevaluaciones de la comunidad HG`;
+    if(next){
+      const span = next.min - lvl.min;
+      const prog = Math.max(0, Math.min(1, (xp - lvl.min) / span));
+      barEl.style.width = (prog * 100).toFixed(0) + '%';
+      labelEl.textContent = `${next.min - xp} XP para ${next.name}`;
+    } else {
+      barEl.style.width = '100%';
+      labelEl.textContent = '¡Nivel máximo alcanzado — sos parte del núcleo HG!';
+    }
+  }
+
+  async function toggleTopic(mark, topicIndex, btn){
+    if(!UID || !TOKEN) return;
+    const isDone = !!(PROGRESS[mark] && PROGRESS[mark][topicIndex]);
+    const newVal = !isDone;
+    btn.disabled = true;
+    try{
+      const r = await fetch(`${FB_URL}/progress/${UID}/${mark}/${topicIndex}.json?auth=${TOKEN}`, {
+        method:'PUT',
+        headers:{'Content-Type':'application/json'},
+        body: newVal ? 'true' : 'null'
+      });
+      if(!r.ok) throw new Error('write failed');
+      if(!PROGRESS[mark]) PROGRESS[mark] = {};
+      if(newVal) PROGRESS[mark][topicIndex] = true; else delete PROGRESS[mark][topicIndex];
+      const row = btn.closest('.topic-row');
+      btn.classList.toggle('done', newVal);
+      btn.textContent = newVal ? '✓' : '';
+      row.classList.toggle('done', newVal);
+      renderBadge();
+    }catch(e){ /* silencioso — se puede reintentar */ }
+    finally{ btn.disabled = false; }
+  }
 
   const loadingEl = document.getElementById('gate-loading');
   const lockedEl  = document.getElementById('gate-locked');
@@ -241,14 +353,28 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
         </button>
         <div class="temario">
           <div class="temario-inner">
-            <div class="temario-label">✦ Temario</div>
-            <ul class="temario-list">${p.topics.map(t=>`<li>${t}</li>`).join('')}</ul>
+            <div class="temario-label">✦ Temario — marcá lo que ya aprendiste</div>
+            <ul class="temario-list">${p.topics.map((t, ti)=>{
+              const done = !!(PROGRESS[p.mark] && PROGRESS[p.mark][ti]);
+              return `<li>
+                <div class="topic-row${done ? ' done' : ''}">
+                  <button type="button" class="topic-check${done ? ' done' : ''}" data-mark="${p.mark}" data-idx="${ti}" title="Marcar como aprendido">${done ? '✓' : ''}</button>
+                  <span class="topic-text">${t}<span class="xp-tag">+${XP_PER_TOPIC} XP</span></span>
+                </div>
+              </li>`;
+            }).join('')}</ul>
             <div class="temario-note">Clases en construcción — pronto cada eje del temario va a tener su propia clase, enfocada en una herramienta concreta y pensada para encontrarse fácil y volver a consultarla cuando la necesites.</div>
           </div>
         </div>`;
       const head = card.querySelector('.prog-head');
       head.addEventListener('click', ()=>{
         card.classList.toggle('open');
+      });
+      card.querySelectorAll('.topic-check').forEach(btn=>{
+        btn.addEventListener('click', (e)=>{
+          e.stopPropagation();
+          toggleTopic(btn.dataset.mark, parseInt(btn.dataset.idx, 10), btn);
+        });
       });
       grid.appendChild(card);
     });
@@ -284,9 +410,18 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
     lockedEl.classList.add('show');
   }
 
-  function showContent(){
+  async function loadProgress(){
+    try{
+      const r = await fetch(`${FB_URL}/progress/${UID}.json?auth=${TOKEN}`);
+      PROGRESS = r.ok ? (await r.json() || {}) : {};
+    }catch(e){ PROGRESS = {}; }
+  }
+
+  async function showContent(){
     loadingEl.style.display = 'none';
     contentEl.classList.add('show');
+    await loadProgress();
+    renderBadge();
     renderGrid();
   }
 
@@ -303,6 +438,8 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
     }
     try{
       const token = await freshToken(session);
+      TOKEN = token;
+      UID = session.uid;
       const r = await fetch(`${FB_URL}/subscribers/${session.uid}.json?auth=${token}`);
       const isSub = r.ok ? (await r.json()) === true : false;
       if(isSub){

@@ -347,6 +347,8 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 #profile-doc-links a:hover{color:var(--acid);}
 #profile-academy-link{color:rgba(184,255,0,0.6);font-weight:700;}
 #profile-academy-link:hover{color:var(--acid);}
+#profile-admin-link{color:rgba(255,45,85,0.65);font-weight:700;display:none;}
+#profile-admin-link:hover{color:var(--glitch);}
 #profile-logout{
   background:none;border:1px solid rgba(255,45,85,0.3);color:var(--glitch);border-radius:2px;
   font-family:var(--mono);font-size:8px;letter-spacing:0.2em;padding:9px 0;cursor:none;transition:all 0.2s;
@@ -792,6 +794,7 @@ body.visual-mode #exit-visual{z-index:9000!important;}
         <div class="profile-block-title">☉ BLOG & DOCUMENTACIÓN</div>
         <div id="profile-doc-links">
           <a href="academia.html" id="profile-academy-link">✦ ACADEMIA HG — TEMARIOS Y CLASES</a>
+          <a href="admin.html" id="profile-admin-link">⛒ PANEL ADMIN — SUSCRIPCIONES Y COMUNIDAD</a>
           <a href="/es/blog/" target="_blank">→ BLOG COMPLETO</a>
           <a href="https://github.com/human-zeta/Aether-ISF-generator" target="_blank">→ AETHER ISF — DOCS & CÓDIGO</a>
           <a href="https://github.com/human-zeta" target="_blank">→ GITHUB / REPOS TÉCNICOS</a>
@@ -2505,6 +2508,17 @@ document.querySelectorAll('.bcard').forEach(c=>{
     }
   }
 
+  async function checkAdmin(session){
+    const adminLink = document.getElementById('profile-admin-link');
+    if(!adminLink) return;
+    try{
+      const token = await freshToken(session);
+      const r = await fetch(`${FB_URL}/admins/${session.uid}.json?auth=${token}`);
+      const isAdmin = r.ok ? (await r.json()) === true : false;
+      adminLink.style.display = isAdmin ? 'block' : 'none';
+    }catch(e){ adminLink.style.display = 'none'; }
+  }
+
   function openPanel(){
     const session = getSession();
     if(!session) return;
@@ -2514,6 +2528,7 @@ document.querySelectorAll('.bcard').forEach(c=>{
     renderIdentity(session);
     loadProfile(session);
     loadExclusive(session);
+    checkAdmin(session);
   }
   function closePanel(){ overlay.classList.remove('show'); setStatus(''); }
 

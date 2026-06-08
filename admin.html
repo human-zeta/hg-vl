@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ADMIN — HUMAN GLITCHE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --black:#050505;
+  --white:#f0ede6;
+  --acid:#b8ff00;
+  --glitch:#ff2d55;
+  --mono:'Space Mono',monospace;
+  --display:'Bebas Neue',sans-serif;
+  --body:'DM Sans',sans-serif;
+}
+html{scroll-behavior:smooth;}
+body{background:var(--black);color:var(--white);font-family:var(--body);min-height:100vh;}
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");z-index:0;pointer-events:none;opacity:0.4;}
+
+#wrap{position:relative;z-index:1;max-width:920px;margin:0 auto;padding:2.4rem 1.5rem 5rem;}
+
+#top-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:3rem;flex-wrap:wrap;gap:1rem;}
+#back-link{
+  font-family:var(--mono);font-size:9px;letter-spacing:0.18em;color:rgba(240,237,230,0.4);
+  text-decoration:none;transition:color 0.2s;
+}
+#back-link:hover{color:var(--acid);}
+#ad-title{font-family:var(--display);font-size:clamp(2.4rem,6vw,3.6rem);letter-spacing:0.04em;line-height:1;color:var(--white);}
+#ad-title span{color:var(--glitch);}
+#ad-sub{font-family:var(--mono);font-size:10px;letter-spacing:0.2em;color:rgba(240,237,230,0.35);margin-top:0.6rem;text-transform:uppercase;}
+
+.gate-box{
+  max-width:440px;margin:5rem auto 0;text-align:center;
+  border:1px solid rgba(255,45,85,0.2);border-radius:3px;
+  background:rgba(255,255,255,0.02);padding:2.4rem 1.8rem;
+  font-family:var(--mono);
+}
+.gate-icon{font-size:22px;color:var(--glitch);margin-bottom:1rem;}
+.gate-title{font-size:11px;letter-spacing:0.2em;color:var(--white);margin-bottom:0.8rem;text-transform:uppercase;}
+.gate-msg{font-size:9.5px;letter-spacing:0.05em;color:rgba(240,237,230,0.45);line-height:1.9;margin-bottom:1.5rem;}
+.gate-cta{
+  display:inline-block;font-family:var(--mono);font-size:9px;letter-spacing:0.2em;
+  color:var(--acid);border:1px solid rgba(184,255,0,0.3);border-radius:2px;
+  padding:10px 20px;text-decoration:none;background:rgba(184,255,0,0.06);transition:all 0.2s;
+}
+.gate-cta:hover{background:rgba(184,255,0,0.12);border-color:rgba(184,255,0,0.5);}
+#gate-loading{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:6rem;font-family:var(--mono);font-size:9px;letter-spacing:0.22em;color:rgba(240,237,230,0.3);}
+.led-spin{width:6px;height:6px;border-radius:50%;background:var(--glitch);animation:pulse-led 1.4s ease-in-out infinite;}
+@keyframes pulse-led{0%,100%{opacity:0.25;}50%{opacity:1;}}
+
+#admin-content{display:none;}
+#admin-content.show{display:block;}
+#gate-locked{display:none;}
+#gate-locked.show{display:block;}
+
+.ad-intro{font-family:var(--mono);font-size:9.5px;letter-spacing:0.06em;color:rgba(240,237,230,0.4);line-height:1.9;max-width:620px;margin-bottom:2rem;}
+.ad-intro strong{color:var(--glitch);}
+
+#ad-status{font-family:var(--mono);font-size:9px;letter-spacing:0.15em;color:rgba(240,237,230,0.35);margin-bottom:1.6rem;}
+#ad-status.err{color:var(--glitch);}
+
+.user-table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:9.5px;}
+.user-table thead th{
+  text-align:left;padding:0.7rem 0.8rem;letter-spacing:0.16em;text-transform:uppercase;
+  color:rgba(240,237,230,0.35);font-size:8px;border-bottom:1px solid rgba(240,237,230,0.1);
+}
+.user-table tbody td{
+  padding:0.85rem 0.8rem;border-bottom:1px solid rgba(240,237,230,0.05);
+  color:rgba(240,237,230,0.7);vertical-align:middle;
+}
+.user-table tbody tr:hover{background:rgba(255,255,255,0.015);}
+.u-name{color:var(--white);font-weight:700;}
+.u-email{color:rgba(240,237,230,0.4);font-size:8.5px;}
+.u-uid{color:rgba(240,237,230,0.25);font-size:7.5px;letter-spacing:0;word-break:break-all;}
+.u-xp{color:var(--acid);}
+
+.sub-pill{
+  display:inline-flex;align-items:center;gap:6px;font-size:8px;letter-spacing:0.14em;
+  padding:5px 10px;border-radius:20px;text-transform:uppercase;border:1px solid transparent;
+}
+.sub-pill.on{color:var(--acid);border-color:rgba(184,255,0,0.35);background:rgba(184,255,0,0.07);}
+.sub-pill.off{color:rgba(240,237,230,0.35);border-color:rgba(240,237,230,0.12);background:rgba(255,255,255,0.02);}
+.sub-pill .dot{width:5px;height:5px;border-radius:50%;background:currentColor;}
+
+.toggle-btn{
+  font-family:var(--mono);font-size:8px;letter-spacing:0.16em;text-transform:uppercase;
+  border:1px solid rgba(240,237,230,0.18);border-radius:2px;background:transparent;
+  color:rgba(240,237,230,0.6);padding:7px 12px;cursor:pointer;transition:all 0.2s;white-space:nowrap;
+}
+.toggle-btn:hover{border-color:var(--acid);color:var(--acid);background:rgba(184,255,0,0.05);}
+.toggle-btn.revoke:hover{border-color:var(--glitch);color:var(--glitch);background:rgba(255,45,85,0.05);}
+.toggle-btn:disabled{opacity:0.35;cursor:wait;}
+
+#ad-summary{
+  display:flex;gap:1.6rem;flex-wrap:wrap;margin-bottom:2rem;
+  font-family:var(--mono);font-size:9px;letter-spacing:0.14em;color:rgba(240,237,230,0.4);
+}
+#ad-summary strong{color:var(--white);font-size:14px;display:block;font-family:var(--display);letter-spacing:0.05em;margin-bottom:2px;}
+.ad-stat{border-left:1px solid rgba(255,45,85,0.25);padding-left:0.9rem;}
+</style>
+</head>
+<body>
+<div id="wrap">
+
+  <div id="top-bar">
+    <a id="back-link" href="index.html">← VOLVER AL SITIO</a>
+    <a id="back-link" href="index.html#perfil" style="text-align:right;">MI PERFIL →</a>
+  </div>
+
+  <h1 id="ad-title">ADMIN <span>HG</span></h1>
+  <div id="ad-sub">Panel de administración — gestión manual de suscripciones y comunidad</div>
+
+  <div id="gate-loading">
+    <span class="led-spin"></span> VERIFICANDO ACCESO…
+  </div>
+
+  <div id="gate-locked" class="gate-box">
+    <div class="gate-icon">⛒</div>
+    <div class="gate-title" id="lock-title">ACCESO RESTRINGIDO</div>
+    <div class="gate-msg" id="lock-msg">Esta sección es exclusiva para administradores de Human Glitche.</div>
+    <a class="gate-cta" id="lock-cta" href="index.html">VOLVER AL SITIO</a>
+  </div>
+
+  <div id="admin-content">
+    <div class="ad-intro">
+      ⌘ Acá podés ver la <strong>comunidad registrada</strong> y activar o desactivar el acceso a la
+      <strong>Academia HG</strong> de forma manual — sin tener que entrar a la consola de Firebase.
+      También vas a ver el <strong>progreso / experiencia</strong> que cada miembro acumuló con sus autoevaluaciones.
+    </div>
+
+    <div id="ad-summary"></div>
+    <div id="ad-status">Cargando usuarios…</div>
+    <table class="user-table">
+      <thead>
+        <tr>
+          <th>Usuarix</th>
+          <th>Suscripción</th>
+          <th>XP / Nivel</th>
+          <th>Acción</th>
+        </tr>
+      </thead>
+      <tbody id="user-rows"></tbody>
+    </table>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  const FB_URL = 'https://hg-vl-shaders-default-rtdb.firebaseio.com';
+  const FB_API_KEY = 'AIzaSyAeMKHe7dj4bnaUzkF7iDANrC_cBtg4LAA';
+  const REFRESH_URL = 'https://securetoken.googleapis.com/v1/token';
+  const LS_KEY = 'hg_auth_session';
+  const XP_PER_TOPIC = 20;
+
+  // Niveles — mismos thresholds que en la Academia (mantener sincronizado)
+  const LEVELS = [
+    { min: 0,    name: 'NV.0 — INICIADX' },
+    { min: 100,  name: 'NV.1 — APRENDIZ' },
+    { min: 250,  name: 'NV.2 — PRACTICANTE' },
+    { min: 450,  name: 'NV.3 — OPERADRX' },
+    { min: 700,  name: 'NV.4 — ARTESANX GLITCHE' },
+    { min: 1000, name: 'NV.5 — MAESTRX HG' }
+  ];
+  function levelFor(xp){
+    let cur = LEVELS[0];
+    for(const l of LEVELS){ if(xp >= l.min) cur = l; }
+    return cur;
+  }
+  function xpFromProgress(progress){
+    if(!progress) return 0;
+    let count = 0;
+    Object.values(progress).forEach(prog=>{
+      if(prog && typeof prog === 'object') count += Object.values(prog).filter(Boolean).length;
+    });
+    return count * XP_PER_TOPIC;
+  }
+
+  const loadingEl = document.getElementById('gate-loading');
+  const lockedEl  = document.getElementById('gate-locked');
+  const lockTitle = document.getElementById('lock-title');
+  const lockMsg   = document.getElementById('lock-msg');
+  const lockCta   = document.getElementById('lock-cta');
+  const contentEl = document.getElementById('admin-content');
+  const statusEl  = document.getElementById('ad-status');
+  const rowsEl    = document.getElementById('user-rows');
+  const summaryEl = document.getElementById('ad-summary');
+
+  function getSession(){ try{ return JSON.parse(localStorage.getItem(LS_KEY)||'null'); }catch(e){ return null; } }
+  function saveSession(s){ localStorage.setItem(LS_KEY, JSON.stringify(s)); }
+
+  async function freshToken(session){
+    if(!session.refreshToken) return session.idToken;
+    try{
+      const r = await fetch(`${REFRESH_URL}?key=${FB_API_KEY}`, {
+        method:'POST',
+        headers:{'Content-Type':'application/x-www-form-urlencoded'},
+        body:`grant_type=refresh_token&refresh_token=${encodeURIComponent(session.refreshToken)}`
+      });
+      if(!r.ok) return session.idToken;
+      const data = await r.json();
+      session.idToken = data.id_token;
+      session.refreshToken = data.refresh_token;
+      saveSession(session);
+      return session.idToken;
+    }catch(e){ return session.idToken; }
+  }
+
+  function showLocked(title, msg){
+    loadingEl.style.display = 'none';
+    lockTitle.textContent = title;
+    lockMsg.textContent = msg;
+    lockedEl.classList.add('show');
+  }
+
+  function setStatus(msg, isErr){
+    statusEl.textContent = msg || '';
+    statusEl.classList.toggle('err', !!isErr);
+  }
+
+  let TOKEN = null;
+  let UID   = null;
+
+  async function setSubscription(uid, isSub, btn){
+    btn.disabled = true;
+    const original = btn.textContent;
+    btn.textContent = 'GUARDANDO…';
+    try{
+      const r = await fetch(`${FB_URL}/subscribers/${uid}.json?auth=${TOKEN}`, {
+        method:'PUT',
+        headers:{'Content-Type':'application/json'},
+        body: isSub ? 'true' : 'null'
+      });
+      if(!r.ok) throw new Error('write failed');
+      await loadUsers(); // re-render with fresh state
+    }catch(e){
+      btn.disabled = false;
+      btn.textContent = original;
+      setStatus('No se pudo actualizar la suscripción — probá de nuevo.', true);
+    }
+  }
+
+  function renderRow(uid, user, isSub, xp){
+    const lvl = levelFor(xp);
+    const tr = document.createElement('tr');
+    const name = (user && user.name) || '—';
+    const email = (user && user.email) || '';
+    tr.innerHTML = `
+      <td>
+        <div class="u-name">${name}</div>
+        ${email ? `<div class="u-email">${email}</div>` : ''}
+        <div class="u-uid">${uid}</div>
+      </td>
+      <td>
+        <span class="sub-pill ${isSub ? 'on' : 'off'}"><span class="dot"></span>${isSub ? 'SUSCRIPTX' : 'SIN ACCESO'}</span>
+      </td>
+      <td>
+        <span class="u-xp">${xp} XP</span><br>
+        <span style="color:rgba(240,237,230,0.35);font-size:8px;letter-spacing:0.12em;">${lvl.name}</span>
+      </td>
+      <td></td>
+    `;
+    const actionTd = tr.querySelector('td:last-child');
+    const btn = document.createElement('button');
+    btn.className = 'toggle-btn' + (isSub ? ' revoke' : '');
+    btn.textContent = isSub ? 'QUITAR ACCESO' : 'DAR ACCESO';
+    btn.addEventListener('click', ()=> setSubscription(uid, !isSub, btn));
+    actionTd.appendChild(btn);
+    return tr;
+  }
+
+  async function loadUsers(){
+    setStatus('Cargando usuarios…');
+    rowsEl.innerHTML = '';
+    try{
+      const [usersR, subsR, progR] = await Promise.all([
+        fetch(`${FB_URL}/users.json?auth=${TOKEN}`),
+        fetch(`${FB_URL}/subscribers.json?auth=${TOKEN}`),
+        fetch(`${FB_URL}/progress.json?auth=${TOKEN}`)
+      ]);
+      const users = usersR.ok ? (await usersR.json() || {}) : {};
+      const subs  = subsR.ok  ? (await subsR.json()  || {}) : {};
+      const prog  = progR.ok  ? (await progR.json()  || {}) : {};
+
+      const uids = Object.keys(users);
+      if(!uids.length){
+        setStatus('Todavía no hay usuarios registrados.');
+        return;
+      }
+
+      let subCount = 0;
+      let totalXp = 0;
+      uids.forEach(uid=>{
+        const isSub = subs[uid] === true;
+        const xp = xpFromProgress(prog[uid]);
+        if(isSub) subCount++;
+        totalXp += xp;
+        rowsEl.appendChild(renderRow(uid, users[uid], isSub, xp));
+      });
+
+      summaryEl.innerHTML = `
+        <div class="ad-stat"><strong>${uids.length}</strong>usuarixs registradxs</div>
+        <div class="ad-stat"><strong>${subCount}</strong>suscriptxs activxs</div>
+        <div class="ad-stat"><strong>${totalXp}</strong>xp acumulada — comunidad</div>
+      `;
+      setStatus(`${uids.length} usuarixs · actualizado ${new Date().toLocaleTimeString('es-AR')}`);
+    }catch(e){
+      setStatus('No se pudo cargar la lista de usuarios — probá de nuevo en un momento.', true);
+    }
+  }
+
+  function showContent(){
+    loadingEl.style.display = 'none';
+    contentEl.classList.add('show');
+    loadUsers();
+  }
+
+  async function checkAccess(){
+    const session = getSession();
+    if(!session){
+      showLocked(
+        'INICIÁ SESIÓN',
+        'Para entrar al panel de admin primero necesitás iniciar sesión desde el sitio principal con una cuenta autorizada.'
+      );
+      return;
+    }
+    try{
+      TOKEN = await freshToken(session);
+      UID = session.uid;
+      const r = await fetch(`${FB_URL}/admins/${UID}.json?auth=${TOKEN}`);
+      const isAdmin = r.ok ? (await r.json()) === true : false;
+      if(isAdmin){
+        showContent();
+      }else{
+        showLocked(
+          'ACCESO RESTRINGIDO',
+          'Esta sección es exclusiva para administradores de Human Glitche. Si creés que esto es un error, contactá al equipo.'
+        );
+      }
+    }catch(e){
+      showLocked(
+        'NO PUDIMOS VERIFICAR TU ACCESO',
+        'Hubo un problema al verificar tus permisos. Probá de nuevo en un momento o volvé al sitio principal.'
+      );
+    }
+  }
+
+  checkAccess();
+})();
+</script>
+</body>
+</html>
