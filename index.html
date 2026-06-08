@@ -393,6 +393,13 @@ section{min-height:100vh;display:flex;align-items:center;position:relative;paddi
 .nav-links{display:flex;gap:2.5rem;}
 .nav-links a{font-family:var(--mono);font-size:10px;letter-spacing:0.25em;color:rgba(240,237,230,0.25);text-decoration:none;transition:color 0.2s;}
 .nav-links a:hover{color:var(--acid);}
+.nav-auth-btn,.nav-area-btn{
+  border:1px solid rgba(184,255,0,0.25);border-radius:2px;padding:6px 12px;
+  color:rgba(184,255,0,0.55) !important;letter-spacing:0.18em !important;
+  background:rgba(184,255,0,0.04);transition:all 0.2s;
+}
+.nav-auth-btn:hover,.nav-area-btn:hover{background:rgba(184,255,0,0.1);border-color:rgba(184,255,0,0.5);color:var(--acid) !important;}
+.nav-area-btn{border-color:rgba(184,255,0,0.4);background:rgba(184,255,0,0.07);color:var(--acid) !important;}
 
 /* HERO — capas con profundidad: el shader queda "atrás", la tipografía "flota" delante */
 #hero{min-height:100vh;justify-content:flex-end;flex-direction:column;padding:0 8vw 10vh;perspective:1400px;perspective-origin:50% 60%;position:relative;}
@@ -852,6 +859,8 @@ body.visual-mode #exit-visual{z-index:9000!important;}
     <a href="#blog">BLOG</a>
     <a href="#catalogo">SERVICIOS</a>
     <a href="#comunidad">COMUNIDAD</a>
+    <a href="#" id="nav-auth-btn" class="nav-auth-btn">INGRESAR / REGISTRO</a>
+    <a href="#" id="nav-area-btn" class="nav-area-btn" style="display:none;">⌘ ÁREA PERSONAL</a>
   </div>
 </nav>
 
@@ -2305,6 +2314,8 @@ document.querySelectorAll('.bcard').forEach(c=>{
   function closeModal(){ overlay.classList.remove('show'); setStatus(''); }
 
   trigger && trigger.addEventListener('click', e=>{ e.preventDefault(); openModal(); });
+  const navAuthBtn = document.getElementById('nav-auth-btn');
+  navAuthBtn && navAuthBtn.addEventListener('click', e=>{ e.preventDefault(); openModal(); });
   closeBtn.addEventListener('click', closeModal);
   overlay.addEventListener('click', e=>{ if(e.target === overlay) closeModal(); });
   tabs.forEach(t=> t.addEventListener('click', ()=> setMode(t.dataset.mode)));
@@ -2554,16 +2565,25 @@ document.querySelectorAll('.bcard').forEach(c=>{
 
   function refreshAuthUI(){
     const session = getSession();
-    const trigger = document.getElementById('auth-trigger');
+    const trigger    = document.getElementById('auth-trigger');
+    const navAuth    = document.getElementById('nav-auth-btn');
+    const navArea    = document.getElementById('nav-area-btn');
     if(session){
       toggle.style.display = 'flex';
       if(trigger) trigger.textContent = 'MI CUENTA';
+      if(navAuth) navAuth.style.display = 'none';
+      if(navArea) navArea.style.display = 'inline-block';
     } else {
       toggle.style.display = 'none';
       if(trigger) trigger.textContent = 'REGISTRATE';
+      if(navAuth) navAuth.style.display = 'inline-block';
+      if(navArea) navArea.style.display = 'none';
       closePanel();
     }
   }
+
+  const navAreaBtn = document.getElementById('nav-area-btn');
+  navAreaBtn && navAreaBtn.addEventListener('click', e=>{ e.preventDefault(); openPanel(); });
 
   refreshAuthUI();
   window.addEventListener('storage', e=>{ if(e.key === LS_KEY) refreshAuthUI(); });
