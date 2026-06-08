@@ -2513,9 +2513,21 @@ document.querySelectorAll('.bcard').forEach(c=>{
     if(!adminLink) return;
     try{
       const token = await freshToken(session);
-      const r = await fetch(`${FB_URL}/admins/${session.uid}.json?auth=${token}`);
-      const isAdmin = r.ok ? (await r.json()) === true : false;
-      adminLink.style.display = isAdmin ? 'block' : 'none';
+      const [adminR, modR] = await Promise.all([
+        fetch(`${FB_URL}/admins/${session.uid}.json?auth=${token}`),
+        fetch(`${FB_URL}/moderators/${session.uid}.json?auth=${token}`)
+      ]);
+      const isAdmin = adminR.ok ? (await adminR.json()) === true : false;
+      const isMod   = modR.ok   ? (await modR.json())   === true : false;
+      if(isAdmin){
+        adminLink.textContent = '⛒ PANEL ADMIN — SUSCRIPCIONES Y COMUNIDAD';
+        adminLink.style.display = 'block';
+      }else if(isMod){
+        adminLink.textContent = '✦ PANEL DE MODERACIÓN — COMUNIDAD';
+        adminLink.style.display = 'block';
+      }else{
+        adminLink.style.display = 'none';
+      }
     }catch(e){ adminLink.style.display = 'none'; }
   }
 

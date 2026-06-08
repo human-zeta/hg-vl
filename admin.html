@@ -86,6 +86,25 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .sub-pill.off{color:rgba(240,237,230,0.35);border-color:rgba(240,237,230,0.12);background:rgba(255,255,255,0.02);}
 .sub-pill .dot{width:5px;height:5px;border-radius:50%;background:currentColor;}
 
+.role-pill{
+  display:inline-flex;align-items:center;gap:5px;font-size:7px;letter-spacing:0.16em;
+  padding:3px 8px;border-radius:20px;text-transform:uppercase;border:1px solid transparent;
+  margin-top:4px;font-family:var(--mono);
+}
+.role-pill.admin{color:var(--glitch);border-color:rgba(255,45,85,0.4);background:rgba(255,45,85,0.08);}
+.role-pill.mod{color:var(--acid);border-color:rgba(184,255,0,0.35);background:rgba(184,255,0,0.07);}
+
+.mod-toggle-btn{
+  font-family:var(--mono);font-size:7.5px;letter-spacing:0.14em;text-transform:uppercase;
+  border:1px solid rgba(184,255,0,0.25);border-radius:2px;background:transparent;
+  color:rgba(184,255,0,0.55);padding:6px 10px;cursor:pointer;transition:all 0.2s;white-space:nowrap;
+  margin-top:6px;display:inline-block;
+}
+.mod-toggle-btn:hover{border-color:var(--acid);color:var(--acid);background:rgba(184,255,0,0.06);}
+.mod-toggle-btn.revoke{border-color:rgba(255,45,85,0.25);color:rgba(255,45,85,0.55);}
+.mod-toggle-btn.revoke:hover{border-color:var(--glitch);color:var(--glitch);background:rgba(255,45,85,0.06);}
+.mod-toggle-btn:disabled{opacity:0.35;cursor:wait;}
+
 .toggle-btn{
   font-family:var(--mono);font-size:8px;letter-spacing:0.16em;text-transform:uppercase;
   border:1px solid rgba(240,237,230,0.18);border-radius:2px;background:transparent;
@@ -153,7 +172,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
   </div>
 
   <div id="admin-content">
-    <div class="ad-intro">
+    <div class="ad-intro" id="ad-intro">
       ⌘ Acá podés ver la <strong>comunidad registrada</strong> y activar o desactivar el acceso a la
       <strong>Academia HG</strong> de forma manual — sin tener que entrar a la consola de Firebase.
       También vas a ver el <strong>progreso / experiencia</strong> que cada miembro acumuló con sus autoevaluaciones.
@@ -173,7 +192,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
       <tbody id="user-rows"></tbody>
     </table>
 
-    <div id="patch-drop">
+    <div id="patch-drop" style="display:none;">
       <div id="pd-title">DROPEAR <span>PARCHE</span></div>
       <div class="pd-intro">
         ⌬ Otorgá manualmente un <strong>parche especial</strong> a unx usuarix — por ejemplo, por haber asistido a una
@@ -282,7 +301,31 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 
   let TOKEN = null;
   let UID   = null;
+  let IS_ADMIN = false;
+  let IS_MOD   = false;
+  let ADMINS_CACHE = {};
+  let MODS_CACHE   = {};
   let USERS_CACHE = {}; // { uid: { name, email } } — para el selector de dropeo
+
+  async function setModerator(uid, isMod, btn){
+    if(!IS_ADMIN) return;
+    btn.disabled = true;
+    const original = btn.textContent;
+    btn.textContent = 'GUARDANDO…';
+    try{
+      const r = await fetch(`${FB_URL}/moderators/${uid}.json?auth=${TOKEN}`, {
+        method:'PUT',
+        headers:{'Content-Type':'application/json'},
+        body: isMod ? 'true' : 'null'
+      });
+      if(!r.ok) throw new Error('write failed');
+      await loadUsers();
+    }catch(e){
+      btn.disabled = false;
+      btn.textContent = original;
+      setStatus('No se pudo actualizar la moderación — probá de nuevo.', true);
+    }
+  }
 
   async function setSubscription(uid, isSub, btn){
     btn.disabled = true;
@@ -308,11 +351,17 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
     const tr = document.createElement('tr');
     const name = (user && user.name) || '—';
     const email = (user && user.email) || '';
+    const isUserAdmin = ADMINS_CACHE[uid] === true;
+    const isUserMod   = MODS_CACHE[uid] === true;
+    const rolePill = isUserAdmin
+      ? `<span class="role-pill admin">⛒ admin</span>`
+      : (isUserMod ? `<span class="role-pill mod">✦ moderadxr</span>` : '');
     tr.innerHTML = `
       <td>
         <div class="u-name">${name}</div>
         ${email ? `<div class="u-email">${email}</div>` : ''}
         <div class="u-uid">${uid}</div>
+        ${rolePill}
       </td>
       <td>
         <span class="sub-pill ${isSub ? 'on' : 'off'}"><span class="dot"></span>${isSub ? 'SUSCRIPTX' : 'SIN ACCESO'}</span>
@@ -329,6 +378,16 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
     btn.textContent = isSub ? 'QUITAR ACCESO' : 'DAR ACCESO';
     btn.addEventListener('click', ()=> setSubscription(uid, !isSub, btn));
     actionTd.appendChild(btn);
+
+    // Solo lxs admins pueden nombrar/quitar moderadorxs (y no a otrxs admins)
+    if(IS_ADMIN && !isUserAdmin){
+      const modBtn = document.createElement('button');
+      modBtn.className = 'mod-toggle-btn' + (isUserMod ? ' revoke' : '');
+      modBtn.textContent = isUserMod ? 'QUITAR MODERACIÓN' : 'HACER MODERADXR';
+      modBtn.addEventListener('click', ()=> setModerator(uid, !isUserMod, modBtn));
+      actionTd.appendChild(document.createElement('br'));
+      actionTd.appendChild(modBtn);
+    }
     return tr;
   }
 
@@ -336,14 +395,18 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
     setStatus('Cargando usuarios…');
     rowsEl.innerHTML = '';
     try{
-      const [usersR, subsR, progR] = await Promise.all([
+      const [usersR, subsR, progR, adminsR, modsR] = await Promise.all([
         fetch(`${FB_URL}/users.json?auth=${TOKEN}`),
         fetch(`${FB_URL}/subscribers.json?auth=${TOKEN}`),
-        fetch(`${FB_URL}/progress.json?auth=${TOKEN}`)
+        fetch(`${FB_URL}/progress.json?auth=${TOKEN}`),
+        fetch(`${FB_URL}/admins.json?auth=${TOKEN}`),
+        fetch(`${FB_URL}/moderators.json?auth=${TOKEN}`)
       ]);
       const users = usersR.ok ? (await usersR.json() || {}) : {};
       const subs  = subsR.ok  ? (await subsR.json()  || {}) : {};
       const prog  = progR.ok  ? (await progR.json()  || {}) : {};
+      ADMINS_CACHE = adminsR.ok ? (await adminsR.json() || {}) : {};
+      MODS_CACHE   = modsR.ok   ? (await modsR.json()   || {}) : {};
 
       const uids = Object.keys(users);
       if(!uids.length){
@@ -442,6 +505,30 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
   function showContent(){
     loadingEl.style.display = 'none';
     contentEl.classList.add('show');
+
+    const introEl = document.getElementById('ad-intro');
+    const subEl   = document.getElementById('ad-sub');
+    const dropEl  = document.getElementById('patch-drop');
+
+    if(IS_ADMIN){
+      subEl.textContent = 'Panel de administración — acceso total: comunidad, suscripciones, parches y moderación';
+      introEl.innerHTML = `
+        ⌘ Como <strong>admin</strong> tenés <strong>acceso total</strong>: podés ver la comunidad registrada,
+        activar o desactivar el acceso a la <strong>Academia HG</strong>, ver el progreso / experiencia de cada
+        miembro, <strong>dropear parches</strong> especiales y <strong>nombrar o quitar moderadorxs</strong>
+        — todo sin tener que entrar a la consola de Firebase.
+      `;
+      if(dropEl) dropEl.style.display = '';
+    }else if(IS_MOD){
+      subEl.textContent = 'Panel de moderación — comunidad y suscripciones';
+      introEl.innerHTML = `
+        ✦ Como <strong>moderadxr</strong> podés ver la <strong>comunidad registrada</strong>, su
+        <strong>progreso / experiencia</strong>, y activar o desactivar el acceso a la <strong>Academia HG</strong>.
+        El dropeo de parches y la designación de moderadorxs son exclusivos de lxs admins.
+      `;
+      if(dropEl) dropEl.style.display = 'none';
+    }
+
     loadUsers();
   }
 
@@ -457,14 +544,18 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
     try{
       TOKEN = await freshToken(session);
       UID = session.uid;
-      const r = await fetch(`${FB_URL}/admins/${UID}.json?auth=${TOKEN}`);
-      const isAdmin = r.ok ? (await r.json()) === true : false;
-      if(isAdmin){
+      const [adminR, modR] = await Promise.all([
+        fetch(`${FB_URL}/admins/${UID}.json?auth=${TOKEN}`),
+        fetch(`${FB_URL}/moderators/${UID}.json?auth=${TOKEN}`)
+      ]);
+      IS_ADMIN = adminR.ok ? (await adminR.json()) === true : false;
+      IS_MOD   = modR.ok   ? (await modR.json())   === true : false;
+      if(IS_ADMIN || IS_MOD){
         showContent();
       }else{
         showLocked(
           'ACCESO RESTRINGIDO',
-          'Esta sección es exclusiva para administradores de Human Glitche. Si creés que esto es un error, contactá al equipo.'
+          'Esta sección es exclusiva para administradores y moderadorxs de Human Glitche. Si creés que esto es un error, contactá al equipo.'
         );
       }
     }catch(e){
