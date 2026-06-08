@@ -121,6 +121,28 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 #ad-summary strong{color:var(--white);font-size:14px;display:block;font-family:var(--display);letter-spacing:0.05em;margin-bottom:2px;}
 .ad-stat{border-left:1px solid rgba(255,45,85,0.25);padding-left:0.9rem;}
 
+/* DIARIO HG — publicación */
+#diario-section{margin-top:3.2rem;border-top:1px solid rgba(240,237,230,0.1);padding-top:2rem;}
+#diario-notes-list{margin-top:1.6rem;display:flex;flex-direction:column;gap:0.6rem;max-width:680px;}
+.diario-note-row{
+  display:flex;align-items:center;justify-content:space-between;gap:1rem;
+  border:1px solid rgba(240,237,230,0.1);border-radius:2px;padding:0.7rem 0.9rem;
+  font-family:var(--mono);font-size:8.5px;letter-spacing:0.04em;
+  color:rgba(240,237,230,0.6);
+}
+.diario-note-row.unpublished{opacity:0.45;}
+.dnr-title{flex:1;color:var(--white);font-size:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.dnr-cat{color:rgba(240,237,230,0.35);font-size:7.5px;letter-spacing:0.1em;white-space:nowrap;}
+.dnr-date{color:rgba(240,237,230,0.3);font-size:7px;white-space:nowrap;}
+.dnr-toggle{
+  font-family:var(--mono);font-size:7.5px;letter-spacing:0.12em;text-transform:uppercase;
+  border:1px solid rgba(240,237,230,0.2);border-radius:2px;background:transparent;
+  color:rgba(240,237,230,0.5);padding:5px 9px;cursor:pointer;transition:all 0.2s;white-space:nowrap;
+}
+.dnr-toggle:hover{border-color:var(--glitch);color:var(--glitch);}
+.dnr-toggle.publish:hover{border-color:var(--acid);color:var(--acid);}
+#diario-list-status{font-family:var(--mono);font-size:8px;color:rgba(240,237,230,0.3);margin-top:0.6rem;letter-spacing:0.08em;}
+
 /* DROPEAR PARCHE — admin */
 #patch-drop{margin-top:3.2rem;border-top:1px solid rgba(240,237,230,0.1);padding-top:2rem;}
 #pd-title{font-family:var(--display);font-size:1.5rem;letter-spacing:0.05em;color:var(--white);margin-bottom:0.4rem;}
@@ -222,6 +244,46 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
         </div>
       </form>
     </div>
+
+    <!-- DIARIO HG -->
+    <div id="diario-section" style="display:none;">
+      <div id="pd-title" style="margin-bottom:0.4rem;">DIARIO <span>HG</span></div>
+      <div class="pd-intro">
+        📰 Publicá una nota nueva para <strong>El Diario HG</strong> — tecnología explicada de forma clara y accesible.
+        Las notas aparecen de forma inmediata en <a href="diario.html" target="_blank" style="color:var(--acid);">diario.html</a>.
+      </div>
+      <form id="diario-form" class="pd-grid">
+        <div class="pd-field full">
+          <label for="diario-title">Título de la nota</label>
+          <input type="text" id="diario-title" placeholder="Ej. ¿Qué es el WiFi y cómo funciona?" required>
+        </div>
+        <div class="pd-field">
+          <label for="diario-cat">Categoría</label>
+          <select id="diario-cat">
+            <option value="Tecnología cotidiana">Tecnología cotidiana</option>
+            <option value="Herramientas digitales">Herramientas digitales</option>
+            <option value="Creatividad para todos">Creatividad para todos</option>
+            <option value="Para empezar">Para empezar</option>
+          </select>
+        </div>
+        <div class="pd-field">
+          <label for="diario-author">Autor (opcional)</label>
+          <input type="text" id="diario-author" placeholder="Ej. Equipo HG">
+        </div>
+        <div class="pd-field full">
+          <label for="diario-body">Contenido — separá los párrafos con una línea en blanco</label>
+          <textarea id="diario-body" style="min-height:140px;" placeholder="Escribí la nota acá, de forma clara y sin tecnicismos. Podés usar párrafos separados por una línea en blanco." required></textarea>
+        </div>
+        <div class="pd-field full">
+          <button type="submit" id="diario-submit">PUBLICAR NOTA 📰</button>
+          <div id="diario-status"></div>
+        </div>
+      </form>
+
+      <div id="diario-notes-list"><!-- notas recientes --></div>
+      <div id="diario-list-status"></div>
+    </div>
+
   </div>
 
 </div>
@@ -519,6 +581,9 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
         — todo sin tener que entrar a la consola de Firebase.
       `;
       if(dropEl) dropEl.style.display = '';
+      const diarioEl = document.getElementById('diario-section');
+      if(diarioEl) diarioEl.style.display = '';
+      loadDiarioNotes();
     }else if(IS_MOD){
       subEl.textContent = 'Panel de moderación — comunidad y suscripciones';
       introEl.innerHTML = `
@@ -530,6 +595,94 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
     }
 
     loadUsers();
+  }
+
+  // ───────────────────────────────────────────
+  // DIARIO HG — publicar y gestionar notas
+  // ───────────────────────────────────────────
+  const diarioForm   = document.getElementById('diario-form');
+  const diarioSubmit = document.getElementById('diario-submit');
+  const diarioStatus = document.getElementById('diario-status');
+  const diarioList   = document.getElementById('diario-notes-list');
+  const diarioListSt = document.getElementById('diario-list-status');
+
+  function setDiarioStatus(msg, kind){
+    if(!diarioStatus) return;
+    diarioStatus.textContent = msg || '';
+    diarioStatus.classList.remove('ok','err');
+    if(kind) diarioStatus.classList.add(kind);
+  }
+
+  async function loadDiarioNotes(){
+    if(!diarioList) return;
+    diarioListSt.textContent = 'Cargando notas publicadas…';
+    diarioList.innerHTML = '';
+    try{
+      const r = await fetch(`${FB_URL}/diario.json?orderBy="publishedAt"&limitToLast=20&auth=${TOKEN}`);
+      const data = r.ok ? (await r.json() || {}) : {};
+      const notes = Object.entries(data)
+        .map(([id, n]) => ({ id, ...n }))
+        .sort((a, b) => (b.publishedAt || 0) - (a.publishedAt || 0));
+      if(!notes.length){ diarioListSt.textContent = 'Todavía no hay notas publicadas.'; return; }
+      notes.forEach(note=>{
+        const row = document.createElement('div');
+        const isPublished = note.published !== false;
+        row.className = 'diario-note-row' + (isPublished ? '' : ' unpublished');
+        const d = new Date(note.publishedAt || Date.now());
+        row.innerHTML = `
+          <span class="dnr-title">${note.title || '—'}</span>
+          <span class="dnr-cat">${note.cat || ''}</span>
+          <span class="dnr-date">${d.toLocaleDateString('es-AR')}</span>
+          <button class="dnr-toggle ${isPublished ? '' : 'publish'}">${isPublished ? 'DESPUBLICAR' : 'PUBLICAR'}</button>
+        `;
+        row.querySelector('.dnr-toggle').addEventListener('click', async (btn)=>{
+          btn.target.disabled = true;
+          await fetch(`${FB_URL}/diario/${note.id}/published.json?auth=${TOKEN}`, {
+            method:'PUT', headers:{'Content-Type':'application/json'},
+            body: isPublished ? 'false' : 'true'
+          });
+          loadDiarioNotes();
+        });
+        diarioList.appendChild(row);
+      });
+      diarioListSt.textContent = `${notes.length} notas en total`;
+    }catch(e){
+      diarioListSt.textContent = 'No se pudo cargar la lista de notas.';
+    }
+  }
+
+  if(diarioForm){
+    diarioForm.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const title  = document.getElementById('diario-title').value.trim();
+      const cat    = document.getElementById('diario-cat').value;
+      const author = document.getElementById('diario-author').value.trim();
+      const body   = document.getElementById('diario-body').value.trim();
+      if(!title || !body){ setDiarioStatus('Completá el título y el contenido.', 'err'); return; }
+      diarioSubmit.disabled = true;
+      setDiarioStatus('Publicando…');
+      try{
+        const r = await fetch(`${FB_URL}/diario.json?auth=${TOKEN}`, {
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({
+            title, cat, body,
+            author: author || 'Equipo HG',
+            published: true,
+            publishedAt: Date.now(),
+            publishedBy: UID
+          })
+        });
+        if(!r.ok) throw new Error('write failed');
+        setDiarioStatus('✓ Nota publicada en El Diario HG.', 'ok');
+        diarioForm.reset();
+        loadDiarioNotes();
+      }catch(err){
+        setDiarioStatus('No se pudo publicar — probá de nuevo.', 'err');
+      }finally{
+        diarioSubmit.disabled = false;
+      }
+    });
   }
 
   async function checkAccess(){
