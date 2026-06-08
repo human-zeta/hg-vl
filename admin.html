@@ -465,7 +465,18 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
         fetch(`${FB_URL}/admins.json?auth=${TOKEN}`),
         fetch(`${FB_URL}/moderators.json?auth=${TOKEN}`)
       ]);
-      const users = usersR.ok ? (await usersR.json() || {}) : {};
+
+      if(!usersR.ok){
+        const errBody = await usersR.text().catch(()=>'');
+        if(usersR.status === 401 || usersR.status === 403){
+          setStatus(`Sin permiso para leer /users (HTTP ${usersR.status}) — actualizá las reglas de seguridad en Firebase Console para que admins y mods puedan leer la colección completa.`, true);
+        } else {
+          setStatus(`Error al leer usuarios: HTTP ${usersR.status}${errBody ? ' — ' + errBody.slice(0,120) : ''}`, true);
+        }
+        return;
+      }
+
+      const users = (await usersR.json()) || {};
       const subs  = subsR.ok  ? (await subsR.json()  || {}) : {};
       const prog  = progR.ok  ? (await progR.json()  || {}) : {};
       ADMINS_CACHE = adminsR.ok ? (await adminsR.json() || {}) : {};
@@ -473,7 +484,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 
       const uids = Object.keys(users);
       if(!uids.length){
-        setStatus('Todavía no hay usuarios registrados.');
+        setStatus('Todavía no hay usuarios registrados en /users.');
         return;
       }
 
