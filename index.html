@@ -260,6 +260,96 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
   font-family:var(--mono);font-size:8px;letter-spacing:0.2em;padding:8px 14px;cursor:none;transition:all 0.2s;
 }
 #auth-logout:hover{background:rgba(255,45,85,0.08);}
+#auth-open-profile{
+  display:block;width:100%;margin-bottom:0.6rem;background:rgba(184,255,0,0.08);
+  border:1px solid rgba(184,255,0,0.3);color:var(--acid);border-radius:2px;
+  font-family:var(--mono);font-size:8px;letter-spacing:0.2em;padding:9px 0;cursor:none;transition:all 0.2s;
+}
+#auth-open-profile:hover{background:rgba(184,255,0,0.14);}
+
+/* PROFILE TOGGLE */
+#profile-toggle{
+  position:fixed;right:2rem;bottom:2rem;z-index:498;font-family:var(--mono);
+  font-size:9px;letter-spacing:0.2em;background:rgba(5,5,5,0.9);
+  border:1px solid rgba(184,255,0,0.14);color:rgba(184,255,0,0.4);
+  padding:8px 14px;border-radius:3px;cursor:none;transition:all 0.2s;
+  backdrop-filter:blur(12px);align-items:center;gap:6px;
+}
+#profile-toggle:hover{border-color:rgba(184,255,0,0.35);color:rgba(184,255,0,0.7);}
+#profile-toggle .rled{width:5px;height:5px;border-radius:50%;background:rgba(184,255,0,0.4);animation:pulse-led 2s ease-in-out infinite;}
+
+/* PROFILE PANEL */
+#profile-overlay{
+  position:fixed;inset:0;z-index:850;display:none;
+  align-items:center;justify-content:center;
+  background:rgba(5,5,5,0.78);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+}
+#profile-overlay.show{display:flex;}
+#profile-panel{
+  position:relative;width:380px;max-width:92vw;max-height:84vh;
+  background:rgba(8,8,8,0.96);border:1px solid rgba(184,255,0,0.18);border-radius:3px;
+  display:flex;flex-direction:column;font-family:var(--mono);
+}
+#profile-header{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:0.9rem 1.1rem;border-bottom:1px solid rgba(240,237,230,0.06);flex-shrink:0;
+}
+#profile-htitle{font-size:9px;letter-spacing:0.28em;color:rgba(240,237,230,0.3);}
+#profile-close{font-size:11px;color:rgba(240,237,230,0.2);background:none;border:none;cursor:none;transition:color 0.2s;padding:0;}
+#profile-close:hover{color:var(--glitch);}
+#profile-body{overflow-y:auto;padding:1.1rem;display:flex;flex-direction:column;gap:1.3rem;}
+#profile-body::-webkit-scrollbar{width:2px;}
+#profile-body::-webkit-scrollbar-thumb{background:rgba(184,255,0,0.1);}
+#profile-id{display:flex;align-items:center;gap:12px;}
+#profile-avatar{
+  width:42px;height:42px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(184,255,0,0.08);border:1px solid rgba(184,255,0,0.3);
+  color:var(--acid);font-size:18px;
+}
+#profile-dname{font-size:11px;letter-spacing:0.1em;color:#f0ede6;}
+#profile-demail{font-size:8px;letter-spacing:0.06em;color:rgba(240,237,230,0.3);margin-top:2px;}
+.profile-block-title{
+  font-size:8px;letter-spacing:0.18em;color:rgba(184,255,0,0.5);margin-bottom:0.7rem;
+}
+#profile-form{display:flex;flex-direction:column;gap:0.55rem;}
+#profile-form input,#profile-form textarea{
+  background:rgba(255,255,255,0.03);border:1px solid rgba(240,237,230,0.1);border-radius:2px;
+  color:#f0ede6;font-family:var(--mono);font-size:9px;letter-spacing:0.06em;
+  padding:8px 10px;outline:none;transition:border-color 0.2s;resize:vertical;
+}
+#profile-form input::placeholder,#profile-form textarea::placeholder{color:rgba(240,237,230,0.2);}
+#profile-form input:focus,#profile-form textarea:focus{border-color:rgba(184,255,0,0.4);}
+#prof-save{
+  margin-top:0.2rem;background:var(--acid);color:#050505;border:none;border-radius:2px;
+  font-family:var(--mono);font-size:9px;letter-spacing:0.2em;font-weight:700;
+  padding:9px 0;cursor:none;transition:opacity 0.2s;
+}
+#prof-save:hover{opacity:0.85;}
+#prof-save:disabled{opacity:0.4;cursor:default;}
+#profile-status{font-size:7px;color:rgba(240,237,230,0.25);text-align:center;min-height:12px;letter-spacing:0.08em;}
+#profile-status.err{color:var(--glitch);}
+#profile-status.ok{color:var(--acid);}
+#exclusive-list{display:flex;flex-direction:column;gap:6px;}
+#exclusive-empty{font-size:8px;letter-spacing:0.08em;color:rgba(240,237,230,0.2);text-align:center;padding:0.6rem 0;}
+.ex-item{
+  display:block;padding:9px 11px;border:1px solid rgba(184,255,0,0.14);border-radius:2px;
+  background:rgba(184,255,0,0.03);text-decoration:none;transition:all 0.2s;
+}
+.ex-item:hover{border-color:rgba(184,255,0,0.4);background:rgba(184,255,0,0.07);}
+.ex-name{font-size:9px;letter-spacing:0.1em;color:#f0ede6;}
+.ex-desc{font-size:7.5px;letter-spacing:0.05em;color:rgba(240,237,230,0.3);margin-top:3px;line-height:1.5;}
+#profile-doc-links{display:flex;flex-direction:column;gap:7px;}
+#profile-doc-links a{
+  font-size:8.5px;letter-spacing:0.1em;color:rgba(240,237,230,0.45);text-decoration:none;
+  transition:color 0.2s;
+}
+#profile-doc-links a:hover{color:var(--acid);}
+#profile-logout{
+  background:none;border:1px solid rgba(255,45,85,0.3);color:var(--glitch);border-radius:2px;
+  font-family:var(--mono);font-size:8px;letter-spacing:0.2em;padding:9px 0;cursor:none;transition:all 0.2s;
+}
+#profile-logout:hover{background:rgba(255,45,85,0.08);}
 
 /* Lista */
 #repo-list{overflow-y:auto;flex:1;}
@@ -644,7 +734,62 @@ body.visual-mode #exit-visual{z-index:9000!important;}
     </form>
     <div id="auth-userbox" style="display:none;">
       <div id="auth-greeting"></div>
+      <button id="auth-open-profile">IR A MI PERFIL →</button>
       <button id="auth-logout">CERRAR SESIÓN</button>
+    </div>
+  </div>
+</div>
+
+<!-- PERFIL TOGGLE (visible solo con sesión activa) -->
+<button id="profile-toggle" style="display:none;"><span class="rled"></span>MI PERFIL</button>
+
+<!-- PANEL DE PERFIL -->
+<div id="profile-overlay">
+  <div id="profile-panel">
+    <div id="profile-header">
+      <span id="profile-htitle">PERFIL HG</span>
+      <button id="profile-close">✕</button>
+    </div>
+    <div id="profile-body">
+
+      <div id="profile-id">
+        <div id="profile-avatar">⌘</div>
+        <div id="profile-id-text">
+          <div id="profile-dname">—</div>
+          <div id="profile-demail">—</div>
+        </div>
+      </div>
+
+      <div class="profile-block">
+        <div class="profile-block-title">⌘ MI INFORMACIÓN — visible para la comunidad</div>
+        <form id="profile-form">
+          <input type="text" id="prof-name" placeholder="NOMBRE / ALIAS" maxlength="40">
+          <input type="text" id="prof-role" placeholder="DISCIPLINA — VJ / DISEÑO / CÓDIGO / SONIDO…" maxlength="60">
+          <textarea id="prof-bio" placeholder="BIO CORTA PARA LA COMUNIDAD (máx. 240)" maxlength="240" rows="3"></textarea>
+          <input type="text" id="prof-link" placeholder="LINK — PORTFOLIO / INSTAGRAM / GITHUB" maxlength="140">
+          <button type="submit" id="prof-save">GUARDAR PERFIL</button>
+          <div id="profile-status"></div>
+        </form>
+      </div>
+
+      <div class="profile-block">
+        <div class="profile-block-title">✦ MATERIAL EXCLUSIVO — solo para la comunidad HG</div>
+        <div id="exclusive-list">
+          <div id="exclusive-empty">Cargando material exclusivo…</div>
+        </div>
+      </div>
+
+      <div class="profile-block">
+        <div class="profile-block-title">☉ BLOG & DOCUMENTACIÓN</div>
+        <div id="profile-doc-links">
+          <a href="/es/blog/" target="_blank">→ BLOG COMPLETO</a>
+          <a href="https://github.com/human-zeta/Aether-ISF-generator" target="_blank">→ AETHER ISF — DOCS & CÓDIGO</a>
+          <a href="https://github.com/human-zeta" target="_blank">→ GITHUB / REPOS TÉCNICOS</a>
+          <a href="https://discord.gg/mkHhBdUw" target="_blank">→ DISCORD — COMUNIDAD HG</a>
+        </div>
+      </div>
+
+      <button id="profile-logout">CERRAR SESIÓN</button>
     </div>
   </div>
 </div>
@@ -2214,17 +2359,17 @@ document.querySelectorAll('.bcard').forEach(c=>{
       let data;
       if(mode === 'register'){
         data = await idtRequest('signUp', { email, password: pass, returnSecureToken: true });
-        const session = { uid: data.localId, email: data.email, idToken: data.idToken, name: name || email.split('@')[0] };
+        const session = { uid: data.localId, email: data.email, idToken: data.idToken, refreshToken: data.refreshToken, name: name || email.split('@')[0] };
         saveSession(session);
         await saveProfile(session.uid, session.idToken, { name: session.name, email: session.email, joined: Date.now() });
         setStatus('¡Cuenta creada! Bienvenido.', 'ok');
-        setTimeout(()=> showLoggedIn(session), 500);
+        setTimeout(()=> { showLoggedIn(session); document.dispatchEvent(new CustomEvent('hg-auth-changed')); }, 500);
       } else {
         data = await idtRequest('signInWithPassword', { email, password: pass, returnSecureToken: true });
-        const session = { uid: data.localId, email: data.email, idToken: data.idToken, name: data.displayName || email.split('@')[0] };
+        const session = { uid: data.localId, email: data.email, idToken: data.idToken, refreshToken: data.refreshToken, name: data.displayName || email.split('@')[0] };
         saveSession(session);
         setStatus('¡Bienvenido de nuevo!', 'ok');
-        setTimeout(()=> showLoggedIn(session), 400);
+        setTimeout(()=> { showLoggedIn(session); document.dispatchEvent(new CustomEvent('hg-auth-changed')); }, 400);
       }
     }catch(err){
       setStatus(friendlyError(err.message), 'err');
@@ -2239,7 +2384,187 @@ document.querySelectorAll('.bcard').forEach(c=>{
     showForm();
     setMode('register');
     closeModal();
+    document.dispatchEvent(new CustomEvent('hg-auth-changed'));
   });
+})();
+
+// ─────────────────────────────────────────────
+// PERFIL — info de comunidad, material exclusivo, blog & docs
+// ─────────────────────────────────────────────
+(function(){
+  const FB_API_KEY = 'AIzaSyAeMKHe7dj4bnaUzkF7iDANrC_cBtg4LAA';
+  const REFRESH_URL = 'https://securetoken.googleapis.com/v1/token';
+  const LS_KEY = 'hg_auth_session';
+
+  const toggle    = document.getElementById('profile-toggle');
+  const overlay   = document.getElementById('profile-overlay');
+  const closeBtn  = document.getElementById('profile-close');
+  const openBtn   = document.getElementById('auth-open-profile');
+  const dname     = document.getElementById('profile-dname');
+  const demail    = document.getElementById('profile-demail');
+  const form      = document.getElementById('profile-form');
+  const nameInp   = document.getElementById('prof-name');
+  const roleInp   = document.getElementById('prof-role');
+  const bioInp    = document.getElementById('prof-bio');
+  const linkInp   = document.getElementById('prof-link');
+  const saveBtn   = document.getElementById('prof-save');
+  const statusEl  = document.getElementById('profile-status');
+  const exList    = document.getElementById('exclusive-list');
+  const exEmpty   = document.getElementById('exclusive-empty');
+  const logoutBtn2= document.getElementById('profile-logout');
+
+  if(!overlay || !form || !toggle) return;
+
+  function getSession(){ try{ return JSON.parse(localStorage.getItem(LS_KEY)||'null'); }catch(e){ return null; } }
+  function saveSession(s){ localStorage.setItem(LS_KEY, JSON.stringify(s)); }
+  function clearSession(){ localStorage.removeItem(LS_KEY); }
+
+  function setStatus(msg, type){
+    statusEl.textContent = msg || '';
+    statusEl.classList.remove('err','ok');
+    if(type) statusEl.classList.add(type);
+  }
+
+  // Los idToken de Firebase expiran a la hora — los renovamos con el refreshToken
+  async function freshToken(session){
+    if(!session.refreshToken) return session.idToken;
+    try{
+      const r = await fetch(`${REFRESH_URL}?key=${FB_API_KEY}`, {
+        method:'POST',
+        headers:{'Content-Type':'application/x-www-form-urlencoded'},
+        body:`grant_type=refresh_token&refresh_token=${encodeURIComponent(session.refreshToken)}`
+      });
+      if(!r.ok) return session.idToken;
+      const data = await r.json();
+      session.idToken = data.id_token;
+      session.refreshToken = data.refresh_token;
+      saveSession(session);
+      return session.idToken;
+    }catch(e){ return session.idToken; }
+  }
+
+  function renderIdentity(session){
+    dname.textContent = session.name || session.email;
+    demail.textContent = session.email;
+  }
+
+  async function loadProfile(session){
+    try{
+      const token = await freshToken(session);
+      const r = await fetch(`${FB_URL}/users/${session.uid}.json?auth=${token}`);
+      if(!r.ok) return;
+      const data = await r.json();
+      if(!data) return;
+      nameInp.value = data.name || '';
+      roleInp.value = data.role || '';
+      bioInp.value  = data.bio  || '';
+      linkInp.value = data.link || '';
+      if(data.name){ dname.textContent = data.name; }
+    }catch(e){ /* silencioso — el perfil es de cortesía */ }
+  }
+
+  async function loadExclusive(session){
+    exList.querySelectorAll('.ex-item').forEach(el=>el.remove());
+    exEmpty.style.display = 'block';
+    exEmpty.textContent = 'Cargando material exclusivo…';
+    try{
+      const token = await freshToken(session);
+      const r = await fetch(`${FB_URL}/exclusive.json?auth=${token}`);
+      const data = r.ok ? await r.json() : null;
+      const items = data ? Object.values(data).filter(Boolean) : [];
+      if(!items.length){
+        exEmpty.textContent = 'Todavía no hay material publicado — pronto vas a encontrar acá recursos, presets y guías exclusivas para la comunidad.';
+        return;
+      }
+      exEmpty.style.display = 'none';
+      items.forEach(item=>{
+        const a = document.createElement('a');
+        a.className = 'ex-item';
+        a.href = item.url || '#';
+        a.target = '_blank';
+        a.rel = 'noopener';
+        a.innerHTML = `<div class="ex-name">${item.title || 'Sin título'}</div>${item.desc ? `<div class="ex-desc">${item.desc}</div>` : ''}`;
+        exList.appendChild(a);
+      });
+    }catch(e){
+      exEmpty.textContent = 'No se pudo cargar el material — probá de nuevo más tarde.';
+    }
+  }
+
+  function openPanel(){
+    const session = getSession();
+    if(!session) return;
+    const authOverlay = document.getElementById('auth-overlay');
+    if(authOverlay) authOverlay.classList.remove('show');
+    overlay.classList.add('show');
+    renderIdentity(session);
+    loadProfile(session);
+    loadExclusive(session);
+  }
+  function closePanel(){ overlay.classList.remove('show'); setStatus(''); }
+
+  toggle.addEventListener('click', openPanel);
+  openBtn && openBtn.addEventListener('click', openPanel);
+  closeBtn.addEventListener('click', closePanel);
+  overlay.addEventListener('click', e=>{ if(e.target === overlay) closePanel(); });
+
+  form.addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    const session = getSession();
+    if(!session) return;
+    saveBtn.disabled = true;
+    setStatus('Guardando…');
+    try{
+      const token = await freshToken(session);
+      const profile = {
+        name: nameInp.value.trim(),
+        role: roleInp.value.trim(),
+        bio:  bioInp.value.trim(),
+        link: linkInp.value.trim(),
+        email: session.email,
+        updated: Date.now()
+      };
+      const r = await fetch(`${FB_URL}/users/${session.uid}.json?auth=${token}`, {
+        method:'PATCH',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify(profile)
+      });
+      if(!r.ok) throw new Error('write failed');
+      if(profile.name){
+        session.name = profile.name;
+        saveSession(session);
+        renderIdentity(session);
+      }
+      setStatus('¡Perfil guardado!', 'ok');
+    }catch(err){
+      setStatus('No se pudo guardar — intentá de nuevo.', 'err');
+    }finally{
+      saveBtn.disabled = false;
+    }
+  });
+
+  logoutBtn2.addEventListener('click', ()=>{
+    clearSession();
+    closePanel();
+    refreshAuthUI();
+  });
+
+  function refreshAuthUI(){
+    const session = getSession();
+    const trigger = document.getElementById('auth-trigger');
+    if(session){
+      toggle.style.display = 'flex';
+      if(trigger) trigger.textContent = 'MI CUENTA';
+    } else {
+      toggle.style.display = 'none';
+      if(trigger) trigger.textContent = 'REGISTRATE';
+      closePanel();
+    }
+  }
+
+  refreshAuthUI();
+  window.addEventListener('storage', e=>{ if(e.key === LS_KEY) refreshAuthUI(); });
+  document.addEventListener('hg-auth-changed', refreshAuthUI);
 })();
 </script>
 </body>
