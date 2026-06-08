@@ -132,6 +132,28 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .topic-text{font-size:9px;letter-spacing:0.05em;color:rgba(240,237,230,0.5);line-height:1.6;}
 .temario-list li{list-style:none;}
 .xp-tag{font-size:7px;letter-spacing:0.1em;color:rgba(184,255,0,0.4);margin-left:6px;white-space:nowrap;}
+
+/* PARCHES — estilo scout */
+#patches-block{margin-bottom:2.4rem;}
+.patches-label{font-family:var(--mono);font-size:8px;letter-spacing:0.22em;color:rgba(240,237,230,0.35);text-transform:uppercase;margin-bottom:0.9rem;}
+#patches-grid{display:flex;flex-wrap:wrap;gap:0.9rem;}
+#patches-empty{font-family:var(--mono);font-size:8.5px;letter-spacing:0.06em;color:rgba(240,237,230,0.25);line-height:1.8;max-width:480px;}
+.patch{
+  width:96px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px;
+  cursor:default;
+}
+.patch-shield{
+  width:58px;height:64px;display:flex;align-items:center;justify-content:center;
+  clip-path:polygon(50% 0%,100% 22%,100% 70%,50% 100%,0% 70%,0% 22%);
+  font-family:var(--display);font-size:13px;letter-spacing:0.02em;
+  border:1px solid rgba(184,255,0,0.4);background:rgba(184,255,0,0.08);color:var(--acid);
+}
+.patch.dropped .patch-shield{
+  border-color:rgba(255,45,85,0.4);background:rgba(255,45,85,0.08);color:var(--glitch);
+}
+.patch-name{font-family:var(--mono);font-size:7.5px;letter-spacing:0.07em;color:rgba(240,237,230,0.55);line-height:1.5;}
+.patch-skill{font-family:var(--mono);font-size:6.5px;letter-spacing:0.1em;color:rgba(184,255,0,0.4);text-transform:uppercase;}
+.patch.dropped .patch-skill{color:rgba(255,45,85,0.45);}
 </style>
 </head>
 <body>
@@ -173,6 +195,11 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
         <div class="xb-bar-label" id="xb-bar-label"></div>
       </div>
     </div>
+    <div id="patches-block">
+      <div class="patches-label">⌬ Mis parches — estilo scout, por cada eje aprendido y cada charla presencial</div>
+      <div id="patches-grid"></div>
+      <div id="patches-empty">Todavía no tenés parches — marcá ejes del temario como aprendidos para ganar tus primeros, o sumate a una charla presencial de la comunidad para recibir uno especial del equipo.</div>
+    </div>
     <div id="program-grid"><!-- generado por JS --></div>
   </div>
 
@@ -204,6 +231,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
   let TOKEN = null;
   let UID   = null;
   let PROGRESS = {}; // { [mark]: { [topicIndex]: true } }
+  let DROPPED  = {}; // { [pushId]: { name, desc, skill, droppedAt, droppedBy } } — parches admin
 
   function totalXp(){
     let count = 0;
@@ -254,6 +282,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
       btn.textContent = newVal ? '✓' : '';
       row.classList.toggle('done', newVal);
       renderBadge();
+      renderPatches();
     }catch(e){ /* silencioso — se puede reintentar */ }
     finally{ btn.disabled = false; }
   }
@@ -417,11 +446,77 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
     }catch(e){ PROGRESS = {}; }
   }
 
+  async function loadPatches(){
+    try{
+      const r = await fetch(`${FB_URL}/patches/${UID}.json?auth=${TOKEN}`);
+      DROPPED = r.ok ? (await r.json() || {}) : {};
+    }catch(e){ DROPPED = {}; }
+  }
+
+  // Parches "auto" — uno por cada eje del temario marcado como aprendido (estilo scout)
+  function autoPatches(){
+    const out = [];
+    PROGRAMS.forEach(p=>{
+      const prog = PROGRESS[p.mark];
+      if(!prog) return;
+      p.topics.forEach((t, ti)=>{
+        if(prog[ti]){
+          out.push({
+            kind: 'auto',
+            label: p.mark,
+            name: t,
+            skill: p.name
+          });
+        }
+      });
+    });
+    return out;
+  }
+
+  function patchInitials(str){
+    if(!str) return '✦';
+    const words = str.replace(/[^\wáéíóúñÁÉÍÓÚÑ\s]/g,'').trim().split(/\s+/);
+    if(words.length === 1) return words[0].slice(0,3).toUpperCase();
+    return words.slice(0,2).map(w=>w[0]).join('').toUpperCase();
+  }
+
+  function renderPatches(){
+    const gridEl  = document.getElementById('patches-grid');
+    const emptyEl = document.getElementById('patches-empty');
+    if(!gridEl) return;
+    const auto = autoPatches();
+    const dropped = Object.keys(DROPPED || {}).map(id=>({ id, ...DROPPED[id] }));
+    const total = auto.length + dropped.length;
+    gridEl.innerHTML = '';
+    emptyEl.style.display = total ? 'none' : '';
+    auto.forEach(pa=>{
+      const el = document.createElement('div');
+      el.className = 'patch';
+      el.title = pa.name;
+      el.innerHTML = `
+        <div class="patch-shield">${pa.label}</div>
+        <div class="patch-name">${pa.name}</div>
+        <div class="patch-skill">${pa.skill}</div>`;
+      gridEl.appendChild(el);
+    });
+    dropped.forEach(pd=>{
+      const el = document.createElement('div');
+      el.className = 'patch dropped';
+      el.title = pd.desc || pd.name || 'Parche de charla presencial';
+      el.innerHTML = `
+        <div class="patch-shield">${patchInitials(pd.name)}</div>
+        <div class="patch-name">${pd.name || 'Parche especial'}</div>
+        ${pd.skill ? `<div class="patch-skill">${pd.skill}</div>` : ''}`;
+      gridEl.appendChild(el);
+    });
+  }
+
   async function showContent(){
     loadingEl.style.display = 'none';
     contentEl.classList.add('show');
-    await loadProgress();
+    await Promise.all([loadProgress(), loadPatches()]);
     renderBadge();
+    renderPatches();
     renderGrid();
   }
 

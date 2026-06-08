@@ -101,6 +101,33 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 }
 #ad-summary strong{color:var(--white);font-size:14px;display:block;font-family:var(--display);letter-spacing:0.05em;margin-bottom:2px;}
 .ad-stat{border-left:1px solid rgba(255,45,85,0.25);padding-left:0.9rem;}
+
+/* DROPEAR PARCHE — admin */
+#patch-drop{margin-top:3.2rem;border-top:1px solid rgba(240,237,230,0.1);padding-top:2rem;}
+#pd-title{font-family:var(--display);font-size:1.5rem;letter-spacing:0.05em;color:var(--white);margin-bottom:0.4rem;}
+#pd-title span{color:var(--glitch);}
+.pd-intro{font-family:var(--mono);font-size:9px;letter-spacing:0.06em;color:rgba(240,237,230,0.4);line-height:1.8;max-width:600px;margin-bottom:1.4rem;}
+.pd-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.9rem;max-width:680px;}
+.pd-field{display:flex;flex-direction:column;gap:0.4rem;grid-column:span 1;}
+.pd-field.full{grid-column:1 / -1;}
+.pd-field label{font-family:var(--mono);font-size:7.5px;letter-spacing:0.18em;text-transform:uppercase;color:rgba(240,237,230,0.4);}
+.pd-field select, .pd-field input, .pd-field textarea{
+  font-family:var(--mono);font-size:9.5px;letter-spacing:0.04em;color:var(--white);
+  background:rgba(255,255,255,0.03);border:1px solid rgba(240,237,230,0.15);border-radius:2px;
+  padding:9px 10px;outline:none;transition:border-color 0.2s;
+}
+.pd-field select:focus, .pd-field input:focus, .pd-field textarea:focus{border-color:var(--acid);}
+.pd-field textarea{resize:vertical;min-height:54px;font-family:var(--body);font-size:11px;}
+#pd-submit{
+  margin-top:1.1rem;font-family:var(--mono);font-size:9px;letter-spacing:0.18em;text-transform:uppercase;
+  border:1px solid rgba(255,45,85,0.4);border-radius:2px;background:rgba(255,45,85,0.08);
+  color:var(--glitch);padding:11px 22px;cursor:pointer;transition:all 0.2s;
+}
+#pd-submit:hover{background:rgba(255,45,85,0.16);border-color:var(--glitch);}
+#pd-submit:disabled{opacity:0.4;cursor:wait;}
+#pd-status{margin-top:0.8rem;font-family:var(--mono);font-size:8.5px;letter-spacing:0.08em;color:rgba(240,237,230,0.4);}
+#pd-status.ok{color:var(--acid);}
+#pd-status.err{color:var(--glitch);}
 </style>
 </head>
 <body>
@@ -145,6 +172,37 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
       </thead>
       <tbody id="user-rows"></tbody>
     </table>
+
+    <div id="patch-drop">
+      <div id="pd-title">DROPEAR <span>PARCHE</span></div>
+      <div class="pd-intro">
+        ⌬ Otorgá manualmente un <strong>parche especial</strong> a unx usuarix — por ejemplo, por haber asistido a una
+        charla o evento presencial de la comunidad. Podés aclarar un nombre, una descripción y un <strong>skill / opt</strong>
+        asociado, que va a quedar visible en su perfil de la Academia.
+      </div>
+      <form id="pd-form" class="pd-grid">
+        <div class="pd-field full">
+          <label for="pd-user">Usuarix destinatarix</label>
+          <select id="pd-user" required></select>
+        </div>
+        <div class="pd-field">
+          <label for="pd-name">Nombre del parche</label>
+          <input type="text" id="pd-name" placeholder="Ej. Charla — Visuales en vivo" required>
+        </div>
+        <div class="pd-field">
+          <label for="pd-skill">Skill / opt (opcional)</label>
+          <input type="text" id="pd-skill" placeholder="Ej. Performance en vivo">
+        </div>
+        <div class="pd-field full">
+          <label for="pd-desc">Descripción (opcional)</label>
+          <textarea id="pd-desc" placeholder="Contexto del parche — evento, fecha, detalle..."></textarea>
+        </div>
+        <div class="pd-field full">
+          <button type="submit" id="pd-submit">DROPEAR PARCHE ⛒</button>
+          <div id="pd-status"></div>
+        </div>
+      </form>
+    </div>
   </div>
 
 </div>
@@ -224,6 +282,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 
   let TOKEN = null;
   let UID   = null;
+  let USERS_CACHE = {}; // { uid: { name, email } } — para el selector de dropeo
 
   async function setSubscription(uid, isSub, btn){
     btn.disabled = true;
@@ -292,6 +351,9 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
         return;
       }
 
+      USERS_CACHE = users;
+      populatePatchUserSelect(uids);
+
       let subCount = 0;
       let totalXp = 0;
       uids.forEach(uid=>{
@@ -311,6 +373,70 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
     }catch(e){
       setStatus('No se pudo cargar la lista de usuarios — probá de nuevo en un momento.', true);
     }
+  }
+
+  // ───────────────────────────────────────────
+  // DROPEAR PARCHE — admin-only, escribe en /patches/{uid}
+  // ───────────────────────────────────────────
+  const pdForm   = document.getElementById('pd-form');
+  const pdUser   = document.getElementById('pd-user');
+  const pdName   = document.getElementById('pd-name');
+  const pdSkill  = document.getElementById('pd-skill');
+  const pdDesc   = document.getElementById('pd-desc');
+  const pdSubmit = document.getElementById('pd-submit');
+  const pdStatus = document.getElementById('pd-status');
+
+  function populatePatchUserSelect(uids){
+    if(!pdUser) return;
+    const prevValue = pdUser.value;
+    pdUser.innerHTML = '<option value="">— elegí unx usuarix —</option>' + uids.map(uid=>{
+      const u = USERS_CACHE[uid] || {};
+      const label = u.name ? `${u.name}${u.email ? ' — ' + u.email : ''}` : (u.email || uid);
+      return `<option value="${uid}">${label}</option>`;
+    }).join('');
+    if(prevValue && uids.includes(prevValue)) pdUser.value = prevValue;
+  }
+
+  function setPdStatus(msg, kind){
+    pdStatus.textContent = msg || '';
+    pdStatus.classList.remove('ok','err');
+    if(kind) pdStatus.classList.add(kind);
+  }
+
+  if(pdForm){
+    pdForm.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const targetUid = pdUser.value;
+      const name = pdName.value.trim();
+      const skill = pdSkill.value.trim();
+      const desc = pdDesc.value.trim();
+      if(!targetUid || !name){
+        setPdStatus('Elegí unx usuarix y escribí un nombre para el parche.', 'err');
+        return;
+      }
+      pdSubmit.disabled = true;
+      setPdStatus('Dropeando parche…');
+      try{
+        const r = await fetch(`${FB_URL}/patches/${targetUid}.json?auth=${TOKEN}`, {
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({
+            name,
+            skill: skill || null,
+            desc: desc || null,
+            droppedAt: Date.now(),
+            droppedBy: UID
+          })
+        });
+        if(!r.ok) throw new Error('write failed');
+        setPdStatus('✓ Parche dropeado — ya está disponible en su perfil de la Academia.', 'ok');
+        pdForm.reset();
+      }catch(err){
+        setPdStatus('No se pudo dropear el parche — probá de nuevo.', 'err');
+      }finally{
+        pdSubmit.disabled = false;
+      }
+    });
   }
 
   function showContent(){
