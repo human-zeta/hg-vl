@@ -103,13 +103,15 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 }
 #err-toast.show{opacity:1;}
 
-/* TIPOGRAFÍAS EN DIFFERENCE — se leen sobre cualquier fondo de shader */
+/* TIPOGRAFÍAS EN DIFFERENCE — se leen sobre cualquier fondo de shader.
+   OJO: el texto en color acid (verde) se saca de este grupo más abajo,
+   porque cuando el shader tiene tonos verdes parecidos la resta los
+   cancela y el texto desaparece (le pasaba a "GLITCHE"). */
 .hero-title,
-.mline span,.mline:nth-child(4) span,
+.mline span,
 .aether-title,.viz-title,.sec-title,
-.sname,.pprice,.live-t,.ctitle,.stat-num,
-.hero-label,.aether-badge,.aether-link,.sec-link,
-.sprice,.live-a,.facid,.hero-socials a,.nav-links a,
+.sname,.pprice,.live-t,.ctitle,
+.hero-socials a,.nav-links a,
 .hero-sub,.mfine,.aether-desc,.ssub,.pfeat li,
 .cmeta,.nav-logo{
   mix-blend-mode:difference;
@@ -146,6 +148,30 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
   text-shadow:0 0 16px rgba(240,237,230,0.45),0 0 32px rgba(184,255,0,0.18);
   z-index:5;
   position:relative;
+}
+
+/* TEXTO EN COLOR ACID — mismo problema que tenía "GLITCHE": en difference,
+   contra un shader de tonos verdes parecidos, la resta lo cancela y
+   desaparece. Se saca de difference y se le da bloom propio (halo acid +
+   núcleo blanco) para que siempre se distinga del fondo, sea cual sea su color. */
+.mline:nth-child(4) span,.stat-num,
+.hero-label,.aether-badge,.aether-link,.sec-link,
+.sprice,.live-a,.facid{
+  mix-blend-mode:normal;
+  text-shadow:
+    0 0 4px rgba(184,255,0,0.65),
+    0 0 12px rgba(184,255,0,0.4),
+    0 0 28px rgba(184,255,0,0.22),
+    0 0 1px rgba(255,255,255,0.5);
+}
+.mline:nth-child(4) span:hover,.stat-num:hover,
+.hero-label:hover,.aether-badge:hover,.aether-link:hover,.sec-link:hover,
+.sprice:hover,.live-a:hover,.facid:hover{
+  text-shadow:
+    0 0 6px rgba(184,255,0,0.85),
+    0 0 18px rgba(184,255,0,0.55),
+    0 0 38px rgba(184,255,0,0.32),
+    0 0 2px rgba(255,255,255,0.65);
 }
 
 
