@@ -183,7 +183,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
     <table class="user-table">
       <thead>
         <tr>
-          <th>Usuarix</th>
+          <th>Usuario</th>
           <th>Suscripción</th>
           <th>XP / Nivel</th>
           <th>Acción</th>
@@ -195,13 +195,13 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
     <div id="patch-drop" style="display:none;">
       <div id="pd-title">DROPEAR <span>PARCHE</span></div>
       <div class="pd-intro">
-        ⌬ Otorgá manualmente un <strong>parche especial</strong> a unx usuarix — por ejemplo, por haber asistido a una
+        ⌬ Otorgá manualmente un <strong>parche especial</strong> a un usuario — por ejemplo, por haber asistido a una
         charla o evento presencial de la comunidad. Podés aclarar un nombre, una descripción y un <strong>skill / opt</strong>
         asociado, que va a quedar visible en su perfil de la Academia.
       </div>
       <form id="pd-form" class="pd-grid">
         <div class="pd-field full">
-          <label for="pd-user">Usuarix destinatarix</label>
+          <label for="pd-user">Usuario destinatario</label>
           <select id="pd-user" required></select>
         </div>
         <div class="pd-field">
@@ -236,12 +236,12 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 
   // Niveles — mismos thresholds que en la Academia (mantener sincronizado)
   const LEVELS = [
-    { min: 0,    name: 'NV.0 — INICIADX' },
+    { min: 0,    name: 'NV.0 — INICIADO' },
     { min: 100,  name: 'NV.1 — APRENDIZ' },
     { min: 250,  name: 'NV.2 — PRACTICANTE' },
-    { min: 450,  name: 'NV.3 — OPERADRX' },
-    { min: 700,  name: 'NV.4 — ARTESANX GLITCHE' },
-    { min: 1000, name: 'NV.5 — MAESTRX HG' }
+    { min: 450,  name: 'NV.3 — OPERADOR' },
+    { min: 700,  name: 'NV.4 — ARTESANO GLITCHE' },
+    { min: 1000, name: 'NV.5 — MAESTRO HG' }
   ];
   function levelFor(xp){
     let cur = LEVELS[0];
@@ -355,7 +355,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
     const isUserMod   = MODS_CACHE[uid] === true;
     const rolePill = isUserAdmin
       ? `<span class="role-pill admin">⛒ admin</span>`
-      : (isUserMod ? `<span class="role-pill mod">✦ moderadxr</span>` : '');
+      : (isUserMod ? `<span class="role-pill mod">✦ moderador</span>` : '');
     tr.innerHTML = `
       <td>
         <div class="u-name">${name}</div>
@@ -364,7 +364,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
         ${rolePill}
       </td>
       <td>
-        <span class="sub-pill ${isSub ? 'on' : 'off'}"><span class="dot"></span>${isSub ? 'SUSCRIPTX' : 'SIN ACCESO'}</span>
+        <span class="sub-pill ${isSub ? 'on' : 'off'}"><span class="dot"></span>${isSub ? 'SUSCRIPTOR' : 'SIN ACCESO'}</span>
       </td>
       <td>
         <span class="u-xp">${xp} XP</span><br>
@@ -379,11 +379,11 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
     btn.addEventListener('click', ()=> setSubscription(uid, !isSub, btn));
     actionTd.appendChild(btn);
 
-    // Solo lxs admins pueden nombrar/quitar moderadorxs (y no a otrxs admins)
+    // Solo los admins pueden nombrar/quitar moderadores (y no a otros admins)
     if(IS_ADMIN && !isUserAdmin){
       const modBtn = document.createElement('button');
       modBtn.className = 'mod-toggle-btn' + (isUserMod ? ' revoke' : '');
-      modBtn.textContent = isUserMod ? 'QUITAR MODERACIÓN' : 'HACER MODERADXR';
+      modBtn.textContent = isUserMod ? 'QUITAR MODERACIÓN' : 'HACER MODERADOR';
       modBtn.addEventListener('click', ()=> setModerator(uid, !isUserMod, modBtn));
       actionTd.appendChild(document.createElement('br'));
       actionTd.appendChild(modBtn);
@@ -428,11 +428,11 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
       });
 
       summaryEl.innerHTML = `
-        <div class="ad-stat"><strong>${uids.length}</strong>usuarixs registradxs</div>
-        <div class="ad-stat"><strong>${subCount}</strong>suscriptxs activxs</div>
+        <div class="ad-stat"><strong>${uids.length}</strong>usuarios registrados</div>
+        <div class="ad-stat"><strong>${subCount}</strong>suscriptores activos</div>
         <div class="ad-stat"><strong>${totalXp}</strong>xp acumulada — comunidad</div>
       `;
-      setStatus(`${uids.length} usuarixs · actualizado ${new Date().toLocaleTimeString('es-AR')}`);
+      setStatus(`${uids.length} usuarios · actualizado ${new Date().toLocaleTimeString('es-AR')}`);
     }catch(e){
       setStatus('No se pudo cargar la lista de usuarios — probá de nuevo en un momento.', true);
     }
@@ -452,7 +452,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
   function populatePatchUserSelect(uids){
     if(!pdUser) return;
     const prevValue = pdUser.value;
-    pdUser.innerHTML = '<option value="">— elegí unx usuarix —</option>' + uids.map(uid=>{
+    pdUser.innerHTML = '<option value="">— elegí un usuario —</option>' + uids.map(uid=>{
       const u = USERS_CACHE[uid] || {};
       const label = u.name ? `${u.name}${u.email ? ' — ' + u.email : ''}` : (u.email || uid);
       return `<option value="${uid}">${label}</option>`;
@@ -474,7 +474,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
       const skill = pdSkill.value.trim();
       const desc = pdDesc.value.trim();
       if(!targetUid || !name){
-        setPdStatus('Elegí unx usuarix y escribí un nombre para el parche.', 'err');
+        setPdStatus('Elegí un usuario y escribí un nombre para el parche.', 'err');
         return;
       }
       pdSubmit.disabled = true;
@@ -515,16 +515,16 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
       introEl.innerHTML = `
         ⌘ Como <strong>admin</strong> tenés <strong>acceso total</strong>: podés ver la comunidad registrada,
         activar o desactivar el acceso a la <strong>Academia HG</strong>, ver el progreso / experiencia de cada
-        miembro, <strong>dropear parches</strong> especiales y <strong>nombrar o quitar moderadorxs</strong>
+        miembro, <strong>dropear parches</strong> especiales y <strong>nombrar o quitar moderadores</strong>
         — todo sin tener que entrar a la consola de Firebase.
       `;
       if(dropEl) dropEl.style.display = '';
     }else if(IS_MOD){
       subEl.textContent = 'Panel de moderación — comunidad y suscripciones';
       introEl.innerHTML = `
-        ✦ Como <strong>moderadxr</strong> podés ver la <strong>comunidad registrada</strong>, su
+        ✦ Como <strong>moderador</strong> podés ver la <strong>comunidad registrada</strong>, su
         <strong>progreso / experiencia</strong>, y activar o desactivar el acceso a la <strong>Academia HG</strong>.
-        El dropeo de parches y la designación de moderadorxs son exclusivos de lxs admins.
+        El dropeo de parches y la designación de moderadores son exclusivos de los admins.
       `;
       if(dropEl) dropEl.style.display = 'none';
     }
@@ -555,7 +555,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
       }else{
         showLocked(
           'ACCESO RESTRINGIDO',
-          'Esta sección es exclusiva para administradores y moderadorxs de Human Glitche. Si creés que esto es un error, contactá al equipo.'
+          'Esta sección es exclusiva para administradores y moderadores de Human Glitche. Si creés que esto es un error, contactá al equipo.'
         );
       }
     }catch(e){

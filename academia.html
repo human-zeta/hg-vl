@@ -215,12 +215,12 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
   const XP_PER_TOPIC = 20;
   // Niveles — mantener sincronizado con admin.html
   const LEVELS = [
-    { min: 0,    name: 'NV.0 — INICIADX' },
+    { min: 0,    name: 'NV.0 — INICIADO' },
     { min: 100,  name: 'NV.1 — APRENDIZ' },
     { min: 250,  name: 'NV.2 — PRACTICANTE' },
-    { min: 450,  name: 'NV.3 — OPERADRX' },
-    { min: 700,  name: 'NV.4 — ARTESANX GLITCHE' },
-    { min: 1000, name: 'NV.5 — MAESTRX HG' }
+    { min: 450,  name: 'NV.3 — OPERADOR' },
+    { min: 700,  name: 'NV.4 — ARTESANO GLITCHE' },
+    { min: 1000, name: 'NV.5 — MAESTRO HG' }
   ];
   function levelFor(xp){
     let idx = 0;
@@ -405,7 +405,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
       'Preproducción — guion técnico, plan de rodaje y locaciones',
       'Cámara, lentes y movimientos narrativos',
       'Dirección de fotografía y diseño de luz',
-      'Sonido directo y dirección de actorxs',
+      'Sonido directo y dirección de actores',
       'Postproducción y entrega del proyecto final'] },
     { mark:'COMP', name:'Composición audiovisual', cat:'Cine & narrativa audiovisual', topics:[
       'Encuadre, regla de tercios y peso visual',
@@ -615,7 +615,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
       const isSub   = subR.ok   ? (await subR.json())   === true : false;
       const isAdmin = adminR.ok ? (await adminR.json()) === true : false;
       const isMod   = modR.ok   ? (await modR.json())   === true : false;
-      // Lxs admins y moderadorxs tienen acceso total a la Academia, con o sin suscripción
+      // Los admins y moderadores tienen acceso total a la Academia, con o sin suscripción
       if(isSub || isAdmin || isMod){
         showContent();
       }else{
