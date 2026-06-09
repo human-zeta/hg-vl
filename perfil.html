@@ -18,8 +18,53 @@
   --body:'DM Sans',sans-serif;
 }
 html{scroll-behavior:smooth;}
-body{background:var(--black);color:var(--white);font-family:var(--body);min-height:100vh;}
+body{background:var(--black);color:var(--white);font-family:var(--body);min-height:100vh;transition:background 0.25s,color 0.25s;}
 body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");z-index:0;pointer-events:none;opacity:0.4;}
+
+/* LIGHT MODE */
+body.light-mode{--black:#f0ede6;--white:#0d0d0d;}
+body.light-mode::before{opacity:0.06;}
+body.light-mode .patch-shield{background:rgba(80,120,0,0.08);}
+
+/* THEME TOGGLE */
+#theme-toggle{
+  font-family:var(--mono);font-size:9px;letter-spacing:0.18em;
+  color:rgba(240,237,230,0.5);background:none;
+  border:1px solid rgba(240,237,230,0.15);border-radius:2px;
+  padding:6px 10px;cursor:pointer;transition:all 0.2s;
+}
+#theme-toggle:hover{color:var(--acid);border-color:rgba(184,255,0,0.3);}
+
+/* PATCHES SIDEBAR */
+#patches-sidebar{
+  position:fixed;top:0;right:0;height:100vh;z-index:600;
+  display:flex;align-items:flex-start;
+  transition:transform 0.35s ease;
+}
+#patches-sidebar.collapsed{transform:translateX(calc(100% - 34px));}
+#patches-toggle{
+  writing-mode:vertical-rl;text-orientation:mixed;
+  background:rgba(184,255,0,0.06);border:1px solid rgba(184,255,0,0.25);
+  border-right:none;color:var(--acid);font-family:var(--mono);
+  font-size:9px;letter-spacing:0.25em;padding:1.2rem 0.5rem;
+  cursor:pointer;border-radius:3px 0 0 3px;align-self:center;
+  transition:background 0.2s;flex-shrink:0;
+}
+#patches-toggle:hover{background:rgba(184,255,0,0.12);}
+#patches-panel{
+  width:240px;max-height:80vh;overflow-y:auto;
+  background:rgba(10,10,10,0.94);backdrop-filter:blur(8px);
+  border:1px solid rgba(184,255,0,0.2);border-right:none;
+  border-radius:3px 0 0 3px;padding:1.2rem;margin-top:6vh;
+}
+body.light-mode #patches-panel{background:rgba(240,237,230,0.94);}
+#patches-panel .sec-title{margin-bottom:1rem;}
+#patches-panel #patches-grid{flex-direction:column;gap:0.7rem;}
+#patches-panel .patch{display:flex;align-items:center;gap:0.7rem;}
+#patches-panel .patch-shield{flex-shrink:0;}
+@media(max-width:760px){
+  #patches-sidebar{display:none;}
+}
 
 #wrap{position:relative;z-index:1;max-width:860px;margin:0 auto;padding:2.4rem 1.5rem 6rem;}
 
@@ -141,10 +186,22 @@ body.is-own #soc-edit-btn{display:inline-flex;}
 </head>
 <body>
 
+<div id="patches-sidebar" class="collapsed">
+  <button id="patches-toggle" type="button">⌬ PARCHES HG</button>
+  <div id="patches-panel">
+    <div class="sec-title">⌬ PARCHES HG</div>
+    <div id="patches-grid"></div>
+    <div id="patches-empty">Sin parches todavía.</div>
+  </div>
+</div>
+
 <div id="wrap">
   <div id="top-bar">
     <a id="back-link" href="index.html">← VOLVER AL SITIO</a>
-    <span id="own-badge">✦ TU PERFIL</span>
+    <div style="display:flex;align-items:center;gap:0.8rem;">
+      <button id="theme-toggle" type="button">☀ MODO DÍA</button>
+      <span id="own-badge">✦ TU PERFIL</span>
+    </div>
   </div>
 
   <div id="gate-loading"><span class="led-spin"></span> CARGANDO PERFIL…</div>
@@ -194,13 +251,6 @@ body.is-own #soc-edit-btn{display:inline-flex;}
       <div id="socials-grid"></div>
     </div>
 
-    <!-- PARCHES -->
-    <div class="sec">
-      <div class="sec-title">⌬ PARCHES HG</div>
-      <div id="patches-grid"></div>
-      <div id="patches-empty">Sin parches todavía.</div>
-    </div>
-
     <!-- COMENTARIOS — solo admin -->
     <div class="sec" id="comments-sec">
       <div class="sec-title">⌬ NOTAS INTERNAS <span style="font-family:var(--mono);font-size:7px;letter-spacing:0.15em;color:rgba(255,45,85,0.5);border:1px solid rgba(255,45,85,0.2);padding:2px 6px;">ADMIN</span></div>
@@ -228,6 +278,24 @@ body.is-own #soc-edit-btn{display:inline-flex;}
 
 <script>
 (function(){
+  // THEME TOGGLE
+  const themeBtn = document.getElementById('theme-toggle');
+  function applyTheme(mode){
+    document.body.classList.toggle('light-mode', mode === 'light');
+    themeBtn.textContent = mode === 'light' ? '☾ MODO NOCHE' : '☀ MODO DÍA';
+  }
+  applyTheme(localStorage.getItem('hg_theme') || 'dark');
+  themeBtn.addEventListener('click', ()=>{
+    const next = document.body.classList.contains('light-mode') ? 'dark' : 'light';
+    localStorage.setItem('hg_theme', next);
+    applyTheme(next);
+  });
+
+  // PATCHES SIDEBAR TOGGLE
+  const patchesSidebar = document.getElementById('patches-sidebar');
+  const patchesToggle  = document.getElementById('patches-toggle');
+  patchesToggle.addEventListener('click', ()=> patchesSidebar.classList.toggle('collapsed'));
+
   const FB_URL    = 'https://hg-vl-shaders-default-rtdb.firebaseio.com';
   const FB_API_KEY= 'AIzaSyAeMKHe7dj4bnaUzkF7iDANrC_cBtg4LAA';
   const REFRESH_URL='https://securetoken.googleapis.com/v1/token';
