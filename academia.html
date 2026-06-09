@@ -344,11 +344,252 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
   // ───────────────────────────────────────────
   const PROGRAMS = [
     { mark:'RES', name:'Resolume Arena', cat:'Visuales en vivo', topics:[
-      'Interfaz, capas y composiciones',
-      'Mapping y output a múltiples pantallas',
-      'Efectos, mezclas y automatizaciones',
-      'Sincronización con audio y MIDI/OSC',
-      'Armado de un set para show en vivo'] },
+    { title: 'Interfaz, capas y composiciones', content: `
+<h3>Introducción a Resolume Arena</h3>
+<p>Resolume Arena es el software estándar de la industria para la proyección de visuales en vivo (VJing) y video mapping. Utilizado en festivales, clubes, teatros y eventos corporativos de todo el mundo, Arena combina un mezclador de clips de video en tiempo real con un sistema de output avanzado capaz de controlar múltiples pantallas y superficies simultáneamente. Antes de lanzarte a mezclar, es fundamental entender cómo está organizada su interfaz, ya que toda la lógica del programa gira en torno a una jerarquía clara: <strong>composición → capas → columnas → clips</strong>.</p>
+
+<h3>La interfaz principal</h3>
+<p>Al abrir Resolume Arena por primera vez, la pantalla se divide en varias zonas clave:</p>
+<ul>
+  <li><strong>Deck (parte superior)</strong>: Es la biblioteca de clips. Aquí se organizan los archivos de video, imágenes, generadores y fuentes de audio que usarás en tu set. Puedes crear múltiples decks y organizarlos por categorías o momentos del show.</li>
+  <li><strong>Composition (centro)</strong>: La cuadrícula principal de trabajo. Las filas son <em>capas</em> (layers) y las columnas son <em>columnas</em> (columns). Cada celda puede contener un clip de video.</li>
+  <li><strong>Panel de efectos y parámetros (derecha)</strong>: Muestra los parámetros del clip, capa o composición seleccionada. Aquí se ajustan efectos, opacidad, modos de mezcla y transformaciones.</li>
+  <li><strong>Output preview (arriba a la derecha)</strong>: Una vista previa en tiempo real de lo que está saliendo al proyector o pantalla.</li>
+  <li><strong>Timeline y BPM (parte inferior)</strong>: Controles de tempo, sincronización y automatización.</li>
+</ul>
+
+<h3>Composiciones</h3>
+<p>Una <strong>composición</strong> (composition) es el lienzo principal de trabajo. Define la resolución de salida, la frecuencia de cuadros (FPS) y el espacio de color del proyecto. Antes de comenzar cualquier producción, debes configurar la composición según los requerimientos técnicos del evento: si vas a proyectar en Full HD, configuras 1920×1080; si el mapping requiere un canvas panorámico, puedes definir resoluciones arbitrarias como 5760×1080.</p>
+<p>Puedes tener múltiples composiciones guardadas en un proyecto Arena, lo que te permite preparar diferentes actos o momentos de un show y cambiar entre ellos de forma no destructiva.</p>
+
+<h3>Capas (Layers)</h3>
+<p>Las capas funcionan de manera similar a las capas en Photoshop o After Effects: se apilan verticalmente y las capas superiores se renderizan encima de las inferiores. Cada capa tiene sus propios controles de:</p>
+<ul>
+  <li><strong>Opacidad</strong>: Qué tan visible es la capa respecto a las capas inferiores.</li>
+  <li><strong>Modo de mezcla (Blend Mode)</strong>: Add, Multiply, Screen, Overlay, etc. Estos modos determinan cómo los píxeles de la capa interactúan con los de abajo.</li>
+  <li><strong>Solo / Bypass</strong>: Para aislar una capa o desactivar sus efectos temporalmente sin eliminarla.</li>
+  <li><strong>Efectos de capa</strong>: Puedes aplicar efectos a toda la capa, que afectarán a cualquier clip que se reproduzca en ella.</li>
+</ul>
+<p>Un concepto clave es que en Resolume <strong>solo puede reproducirse un clip por capa a la vez</strong>. Si activas un clip en la fila 1, columna 3, el clip anterior de esa capa se detiene automáticamente. Esto permite cambios de clip suaves y predecibles.</p>
+
+<h3>Clips y columnas</h3>
+<p>Los <strong>clips</strong> son la unidad mínima de contenido: un archivo de video, una imagen, un generador procedural o una fuente de cámara en vivo. Cada clip tiene su propia configuración de reproducción (loop, ping-pong, velocidad, entrada/salida de transparencia).</p>
+<p>Las <strong>columnas</strong> permiten lanzar múltiples clips simultáneamente con un solo clic. Si organizas tu contenido por columnas temáticas (por ejemplo, "intro", "drop", "break"), puedes cambiar el estado de toda la composición de golpe con un solo disparo de columna. Esta es una técnica fundamental para shows en vivo estructurados.</p>
+
+<h3>Errores comunes al comenzar</h3>
+<ul>
+  <li><strong>No configurar la resolución de composición antes de empezar</strong>: Si agregas clips y luego cambias la resolución, todo el mapping y las transformaciones pueden descuadrarse.</li>
+  <li><strong>Confundir efectos de clip con efectos de capa</strong>: Los efectos aplicados a un clip solo afectan a ese clip; los de capa afectan todo lo que pase por esa capa.</li>
+  <li><strong>Demasiadas capas con blend modes pesados</strong>: Modos como "Blur" o efectos de distorsión en múltiples capas pueden saturar la GPU. Empieza con pocos efectos y optimiza.</li>
+</ul>
+
+<h3>Consejos profesionales</h3>
+<ul>
+  <li>Nombra tus capas desde el principio (doble clic en el nombre de capa). En un show con 10+ capas, el orden y la nomenclatura son críticos.</li>
+  <li>Usa colores de clip para categorizar el contenido visualmente dentro de la composición.</li>
+  <li>Guarda versiones de tu composición regularmente usando "Save As" con fecha y versión.</li>
+</ul>
+
+<div class="ejercicio"><div class="ejercicio-label">✦ Ejercicio</div>
+Crea una nueva composición en Resolume Arena con resolución 1920×1080 a 30 FPS. Agrega al menos 4 capas y ponles nombres descriptivos (por ejemplo: "Fondo", "Texturas", "Logos", "FX"). Importa al menos 3 clips de video diferentes y organízalos en al menos 3 columnas distintas. Practica lanzar columnas completas y observa cómo cambia la composición. Experimenta con al menos 3 blend modes diferentes en las capas y documenta cuáles combinaciones visuales te parecen más interesantes.
+</div>
+` },
+    { title: 'Mapping y output a múltiples pantallas', content: `
+<h3>¿Qué es el video mapping en Resolume?</h3>
+<p>El <strong>video mapping</strong> (o projection mapping) es la técnica de proyectar contenido visual sobre superficies que no son pantallas planas convencionales: edificios, esculturas, escenarios con estructuras irregulares, o simplemente múltiples pantallas ubicadas en posiciones distintas del espacio. Resolume Arena incluye un módulo llamado <strong>Advanced Output</strong> que permite controlar con precisión qué parte del canvas de composición se envía a qué pantalla física, con qué forma y con qué correcciones geométricas.</p>
+
+<h3>El flujo de trabajo: Composition → Slicer → Screen</h3>
+<p>El pipeline de output en Arena funciona en tres etapas:</p>
+<ul>
+  <li><strong>Composition canvas</strong>: Tu lienzo de trabajo, que puede ser mucho más grande que cualquier pantalla individual. Por ejemplo, puedes tener un canvas de 5760×1080 que abarca 3 proyectores Full HD horizontales.</li>
+  <li><strong>Slices</strong>: Son recortes del canvas. Cada slice toma una región rectangular del canvas y la envía a una salida específica. Puedes aplicar transformaciones geométricas al slice: warp, keystone, rotación, escala.</li>
+  <li><strong>Screens</strong>: Representan las salidas físicas (conectores de video de tu computadora). Cada screen puede recibir múltiples slices y tiene su propia resolución física.</li>
+</ul>
+
+<h3>Configurando Advanced Output paso a paso</h3>
+<p>Para acceder al módulo de output avanzado, ve al menú <strong>Output → Advanced Output</strong>. La interfaz muestra un panel con tres áreas principales: la lista de screens, el editor de slices y la vista previa.</p>
+<p><strong>Paso 1 — Crear una Screen</strong>: Haz clic en "Add Screen". Asigna la resolución física de tu proyector o monitor (por ejemplo, 1920×1080). Si tienes múltiples outputs de video en tu sistema, selecciona cuál conector físico corresponde a esta screen.</p>
+<p><strong>Paso 2 — Agregar un Slice</strong>: Dentro de la screen, crea un slice. El slice define qué parte del canvas de composición va a esa screen. Por defecto toma todo el canvas, pero puedes ajustarlo para tomar solo una sección.</p>
+<p><strong>Paso 3 — Warp y corrección geométrica</strong>: Activa el modo "Warp" en el slice. Aparecerán puntos de control en las esquinas del slice que puedes arrastrar para corregir la perspectiva o adaptar la imagen a superficies no rectangulares. Para mappings complejos, puedes agregar más puntos de control subdividiendo el slice.</p>
+<p><strong>Paso 4 — Máscara</strong>: Puedes aplicar una máscara vectorial al slice para recortar la proyección según la forma exacta de la superficie. Esto es esencial cuando proyectas sobre arquitectura irregular.</p>
+
+<h3>Mapping sobre múltiples pantallas en un evento</h3>
+<p>En un escenario de festival típico podrías tener: 2 pantallas LED laterales + 1 pantalla central + proyecciones sobre el suelo del escenario. En este caso el canvas de composición podría ser de 6000×2000 píxeles, con cada región del canvas correspondiente a una superficie física diferente. El VJ trabaja en el canvas completo, componiendo con conciencia del espacio físico total.</p>
+<p>Una práctica profesional es crear una <strong>guía de canvas</strong>: una imagen de referencia que muestra los límites de cada pantalla sobre el canvas de composición. Esta imagen se coloca en la capa más baja durante el preparo del set y se oculta durante el show.</p>
+
+<h3>Blend zones (zonas de fusión)</h3>
+<p>Cuando dos proyectores se solapan para cubrir una superficie grande, es necesario aplicar <strong>edge blending</strong>: una degradación suave en los bordes de solapamiento para que la imagen parezca continua. Arena permite configurar zonas de fusión directamente en el slice, con control de curva gamma para que la transición sea imperceptible al ojo.</p>
+
+<h3>Errores comunes</h3>
+<ul>
+  <li><strong>No calibrar en el espacio real</strong>: La corrección geométrica debe hacerse con el proyector en su posición final. Cualquier movimiento posterior descuadra el mapping.</li>
+  <li><strong>Canvas demasiado grande sin optimización</strong>: Un canvas de 8K puede saturar la GPU si no se optimizan los clips y efectos.</li>
+  <li><strong>Olvidar el gamma del proyector</strong>: Cada proyector tiene su curva de respuesta luminosa. Lo que se ve en pantalla puede diferir significativamente del monitor de referencia.</li>
+</ul>
+
+<div class="ejercicio"><div class="ejercicio-label">✦ Ejercicio</div>
+Abre Advanced Output y configura un escenario de dos pantallas simuladas: crea un canvas de 3840×1080, luego crea dos screens de 1920×1080 cada una. Asigna un slice a cada screen tomando la mitad izquierda y derecha del canvas respectivamente. Aplica contenido diferente a cada mitad del canvas usando capas con posicionamiento manual. Luego activa el modo Warp en uno de los slices y practica ajustar los cuatro puntos de esquina para simular una corrección de keystone. Si tienes dos monitores disponibles, conecta el output real y verifica que la imagen aparece correctamente dividida.
+</div>
+` },
+    { title: 'Efectos, mezclas y automatizaciones', content: `
+<h3>El sistema de efectos en Resolume Arena</h3>
+<p>Resolume Arena cuenta con un sistema de efectos en tiempo real que puede aplicarse a tres niveles distintos: <strong>clip</strong>, <strong>capa</strong> y <strong>composición</strong>. Esta arquitectura en cascada da una flexibilidad enorme: puedes procesar un clip individualmente, aplicar un efecto adicional a toda la capa en la que corre, y luego aplicar un efecto global a toda la composición antes de que la señal salga al projector. Los efectos se procesan en la GPU y la mayoría opera a velocidades de render que permiten 60 FPS sin esfuerzo en hardware moderno.</p>
+
+<h3>Tipos de efectos disponibles</h3>
+<ul>
+  <li><strong>Efectos de color</strong>: Hue Rotate, Brightness/Contrast, Levels, Color Balance, Invert. Son los más ligeros computacionalmente y los más usados para ajustes en vivo.</li>
+  <li><strong>Efectos de distorsión</strong>: Kaleidoscope, Mirror, Twist, Ripple, Displacement. Transforman la geometría de la imagen en tiempo real.</li>
+  <li><strong>Efectos de blur y glow</strong>: Gaussian Blur, Radial Blur, Bloom. Añaden suavidad o luminosidad estilizada pero son más costosos en GPU.</li>
+  <li><strong>Efectos de síntesis</strong>: Generadores de ruido, gradientes, patrones. Pueden usarse como capas de textura sin necesidad de archivos externos.</li>
+  <li><strong>Efectos de FFT (audio-reactivos)</strong>: Analizan el audio en tiempo real y pueden modular cualquier parámetro de efecto.</li>
+</ul>
+
+<h3>Aplicar y encadenar efectos</h3>
+<p>Para agregar un efecto, selecciona un clip, capa o la composición, y luego arrastra el efecto desde el panel de efectos hacia el área de parámetros. Los efectos se pueden encadenar en cadena (chain): primero se aplica el efecto A, luego el B actúa sobre el resultado de A. El orden importa: aplicar un blur antes de un kaleidoscope produce resultados diferentes que hacerlo al revés.</p>
+<p>Cada efecto tiene sus parámetros individuales. Estos parámetros pueden ser:</p>
+<ul>
+  <li><strong>Ajustados manualmente</strong> con sliders en el panel.</li>
+  <li><strong>Automatizados</strong> con envelopes o LFOs internos.</li>
+  <li><strong>Vinculados a MIDI</strong> para control en vivo desde una controladora.</li>
+  <li><strong>Modulados por audio</strong> usando el analizador FFT.</li>
+</ul>
+
+<h3>Modos de mezcla (Blend Modes)</h3>
+<p>Los blend modes determinan cómo los píxeles de una capa se combinan con las capas inferiores. Los más importantes para VJing son:</p>
+<ul>
+  <li><strong>Add</strong>: Suma los valores de color. Ideal para capas de luz o brillo (fuegos artificiales, rayos de luz). Los negros se vuelven transparentes.</li>
+  <li><strong>Screen</strong>: Similar a Add pero más suave, evita el clipping. Muy popular para overlays de textura luminosa.</li>
+  <li><strong>Multiply</strong>: Oscurece multiplicando los valores. Los blancos se vuelven transparentes. Útil para texturas oscuras sobre fondos coloridos.</li>
+  <li><strong>Overlay</strong>: Combina Multiply y Screen según el valor del pixel base. Aumenta el contraste y la saturación.</li>
+  <li><strong>Difference</strong>: Muestra la diferencia matemática entre capas. Produce efectos psicodélicos e impredecibles, muy útil para sets experimentales.</li>
+</ul>
+
+<h3>Automatizaciones — Envelopes y LFOs</h3>
+<p>Resolume permite automatizar cualquier parámetro numérico a lo largo del tiempo o en sincronía con el BPM del set. Hay dos mecanismos principales:</p>
+<p><strong>Envelopes</strong>: Curvas de tiempo que modifican un parámetro cuando se lanza un clip. Por ejemplo, al activar un clip, la opacidad puede subir de 0 a 100% en 2 beats con una curva exponencial. Al cerrarlo, puede bajar suavemente en 4 beats. Esto da transiciones profesionales sin intervención manual.</p>
+<p><strong>LFOs (Low Frequency Oscillators)</strong>: Osciladores que modulan un parámetro de forma continua y cíclica. Puedes configurar la forma de onda (seno, cuadrada, sierra), la velocidad en BPM (1/4, 1/2, 1 ciclo cada 4 beats, etc.), y el rango de modulación. Un LFO en el parámetro de Hue Rotate produce un cambio de color automático sincronizado con la música, sin que el VJ tenga que hacer nada.</p>
+
+<h3>Sincronización con BPM</h3>
+<p>Todos los envelopes y LFOs pueden anclarse al reloj de BPM global. Resolume puede detectar el BPM de la música automáticamente, o puedes ingresarlo manualmente con el botón de tap tempo. Una vez sincronizado, los clips con duración de loop en múltiplos de beats se reproducirán siempre en fase con la música.</p>
+
+<h3>Errores comunes</h3>
+<ul>
+  <li><strong>Apilar demasiados efectos pesados</strong>: Cada efecto GPU tiene un costo. En un show en vivo, menos efectos bien elegidos son más confiables que muchos efectos mediocres.</li>
+  <li><strong>No resetear efectos entre actuaciones</strong>: Si usas efectos con LFOs, verifica que los estados iniciales estén correctamente configurados en tu set antes del show.</li>
+  <li><strong>Ignorar el orden de efectos en la cadena</strong>: Experimenta con el orden; un mismo set de efectos en diferente orden produce resultados completamente distintos.</li>
+</ul>
+
+<div class="ejercicio"><div class="ejercicio-label">✦ Ejercicio</div>
+Crea una composición de 3 capas. En la capa inferior coloca un clip de fondo en loop con blend mode Normal. En la capa media aplica un clip abstracto con blend mode Add y aplícale un efecto Hue Rotate con un LFO de forma sinusoidal sincronizado a 1 ciclo cada 4 beats. En la capa superior aplica un clip de partículas con blend mode Screen y agrega un efecto de Brightness controlado por un envelope que sube de 0 a 100% en 2 beats al lanzar el clip. Ajusta el BPM a 128 y observa cómo todo el sistema responde en sincronía. Documenta los parámetros que generaron el resultado visual más interesante.
+</div>
+` },
+    { title: 'Sincronización con audio y MIDI/OSC', content: `
+<h3>Por qué la sincronización importa en el VJing</h3>
+<p>La conexión entre el audio y el visual es el alma del performance audiovisual. Un set de VJ donde los visuales responden al ritmo, a las frecuencias y a los cambios de energía de la música crea una experiencia sensorial cohesiva que el público percibe intuitivamente. Resolume Arena ofrece múltiples mecanismos de sincronización: análisis de audio interno, recepción de señales MIDI desde controladoras y software externo, y protocolo OSC para comunicación con otros programas. Dominar estas herramientas es lo que separa un set de VJ aficionado de uno profesional.</p>
+
+<h3>Análisis de audio interno (FFT)</h3>
+<p>Resolume puede analizar el audio que entra por la tarjeta de sonido y extraer información en tiempo real. La herramienta principal es el analizador <strong>FFT (Fast Fourier Transform)</strong>, que descompone la señal de audio en bandas de frecuencia. El resultado se divide típicamente en tres rangos:</p>
+<ul>
+  <li><strong>Bass (graves)</strong>: 20-250 Hz. El bombo, el bajo. Ideal para disparar flashes, cambios bruscos de color o pulsaciones.</li>
+  <li><strong>Mid (medios)</strong>: 250 Hz - 4 kHz. La melodía, la voz, los sintetizadores. Ideal para modulaciones de velocidad o efectos de forma.</li>
+  <li><strong>High (agudos)</strong>: 4 kHz - 20 kHz. El hi-hat, los transientes, el brillo. Ideal para partículas, destellos o texturas finas.</li>
+</ul>
+<p>Para vincular una banda de FFT a un parámetro, haz clic derecho en cualquier slider de efecto y selecciona "Link to Audio". Luego elige la banda de frecuencia y ajusta el rango de modulación. A partir de ese momento, el parámetro responderá automáticamente al audio.</p>
+
+<h3>BPM y sincronización rítmica</h3>
+<p>El BPM (Beats Per Minute) es el denominador común entre el audio y los visuales. Resolume muestra el BPM actual en la barra inferior. Puedes sincronizarlo de tres maneras:</p>
+<ul>
+  <li><strong>Tap Tempo</strong>: Haz clic en el botón Tap al ritmo de la música. Arena calcula el BPM promedio.</li>
+  <li><strong>Detección automática</strong>: Arena puede analizar el audio entrante y detectar el BPM automáticamente (con mayor precisión en música electrónica de ritmo constante).</li>
+  <li><strong>MIDI Clock</strong>: Recibe el tempo directamente desde el DJ o desde software como Ableton Live, garantizando sincronización perfecta sin deriva.</li>
+</ul>
+
+<h3>Configuración MIDI en Resolume</h3>
+<p>MIDI (Musical Instrument Digital Interface) permite controlar cualquier parámetro de Arena desde una controladora física (pad, knob, fader) o desde otro software. El proceso de mapeo es sencillo:</p>
+<p><strong>Paso 1</strong>: Ve a <strong>Shortcuts → MIDI</strong> para ver el panel de asignaciones MIDI.</p>
+<p><strong>Paso 2</strong>: Activa el modo de aprendizaje MIDI haciendo clic en "Enable MIDI". Arena entra en modo "learn".</p>
+<p><strong>Paso 3</strong>: Haz clic en el parámetro que quieres controlar (un slider de efecto, el fader de capa, el botón de lanzamiento de un clip).</p>
+<p><strong>Paso 4</strong>: Mueve el knob o presiona el pad en tu controladora MIDI. Arena detecta automáticamente el canal y el número de control MIDI y hace la asignación.</p>
+<p><strong>Paso 5</strong>: Ajusta el rango de respuesta (mínimo y máximo del parámetro) y si la respuesta es lineal o tiene curva.</p>
+<p>Controladoras populares para VJing con Arena incluyen el <strong>Novation Launchpad</strong> (para lanzar clips en una grilla luminosa), el <strong>Akai APC40</strong>, y el <strong>Livid Code</strong>. Arena tiene templates prediseñados para muchas de estas controladoras.</p>
+
+<h3>Protocolo OSC (Open Sound Control)</h3>
+<p>OSC es un protocolo de red más flexible que MIDI, con mayor resolución numérica y capacidad de enviar mensajes con estructura jerárquica. Es ideal para comunicación entre software: por ejemplo, recibir datos de Ableton Live, Max/MSP, TouchDesigner o un sistema de sensores personalizado.</p>
+<p>Para configurar OSC en Arena, ve a <strong>Preferences → OSC</strong>. Define el puerto de escucha (por defecto 7000). Luego mapea mensajes OSC a parámetros de la misma forma que con MIDI, pero usando las direcciones OSC (por ejemplo: <code>/layer/1/opacity</code> o <code>/clip/3/2/play</code>).</p>
+<p>Arena también tiene un protocolo propietario llamado <strong>Arena WebSocket API</strong> que permite control desde aplicaciones web y scripts personalizados.</p>
+
+<h3>Integración con Ableton Live</h3>
+<p>La combinación de Ableton Live + Resolume Arena es estándar en el mundo del audiovisual en vivo. Ableton puede enviar MIDI Clock para mantener el BPM sincronizado, disparar clips de Arena mediante MIDI notes, y modular efectos mediante MIDI CC. Con el plugin <strong>Resolume Wire</strong> instalado como VST en Ableton, es posible renderizar patches de Arena directamente dentro del flujo de audio.</p>
+
+<h3>Errores comunes</h3>
+<ul>
+  <li><strong>Latencia de audio</strong>: Si el análisis FFT está desfasado respecto al audio real, verifica el buffer de la tarjeta de sonido. Buffers menores reducen la latencia.</li>
+  <li><strong>Conflictos de canal MIDI</strong>: Dos parámetros mapeados al mismo canal/CC producen comportamientos inesperados. Verifica el mapa de MIDI antes del show.</li>
+  <li><strong>Deriva de BPM</strong>: Con tap tempo, el BPM puede derivar si el DJ acelera o desacelera gradualmente. Siempre que sea posible, usa MIDI Clock externo.</li>
+</ul>
+
+<div class="ejercicio"><div class="ejercicio-label">✦ Ejercicio</div>
+Configura una sesión en Resolume Arena con al menos dos capas. Activa el análisis de audio desde tu entrada de micrófono o tarjeta de sonido y vincula la banda de bass a la opacidad de la capa inferior, y la banda de highs a la velocidad de reproducción de un clip en la capa superior. Si tienes una controladora MIDI disponible, mapea al menos 4 parámetros: opacidad de cada capa, el parámetro principal de un efecto, y el lanzamiento de un clip. Graba 2 minutos de output visual mientras pones música y analiza qué momentos de la grabación suenan y se ven más cohesivos.
+</div>
+` },
+    { title: 'Armado de un set para show en vivo', content: `
+<h3>La diferencia entre practicar y actuar</h3>
+<p>Conocer los controles de Resolume Arena en casa es muy diferente a usarlo en un show real. El ambiente de un club o festival introduce variables que pueden desestabilizar a cualquier VJ inexperto: la presión del tiempo, los problemas técnicos inesperados, la oscuridad detrás del booth, el ruido ensordecedor que dificulta escuchar tu propio sistema. Armar un set profesional significa anticipar todos estos escenarios y preparar un sistema que sea robusto, intuitivo y recuperable ante fallos.</p>
+
+<h3>Estructura del set: planificación de contenido</h3>
+<p>Un set de VJ bien preparado no es una colección aleatoria de clips: es una narrativa visual organizada en el tiempo. Antes de siquiera abrir Resolume, debes responder estas preguntas:</p>
+<ul>
+  <li><strong>¿Cuánto dura el set?</strong>: Un set de 30 minutos requiere una densidad de contenido diferente a uno de 3 horas.</li>
+  <li><strong>¿Cuál es el género musical?</strong>: Techno oscuro pide una paleta visual diferente a house melódico o drum & bass.</li>
+  <li><strong>¿Hay momentos clave predefinidos?</strong>: ¿El artista tiene una canción específica donde quiere un efecto especial? ¿Hay un momento de "clímax" planificado?</li>
+  <li><strong>¿Cuál es el setup técnico del venue?</strong>: Resolución de las pantallas, número de outputs, tipo de proyectores.</li>
+</ul>
+<p>Con estas respuestas, divide tu set en <strong>actos o momentos</strong>: intro/calentamiento, desarrollo, peak moment, outro. Organiza las columnas de tu composición cronológicamente o temáticamente según esta estructura.</p>
+
+<h3>Preparación del archivo de proyecto</h3>
+<p>Un proyecto de Arena bien estructurado tiene:</p>
+<ul>
+  <li><strong>Composición principal</strong>: Con la resolución correcta para el venue.</li>
+  <li><strong>Capas organizadas por función</strong>: Fondo, texturas intermedias, elementos de primer plano, overlays, texto/logos.</li>
+  <li><strong>Columnas agrupadas por momento</strong>: Intro (cols 1-5), Desarrollo (cols 6-15), Peak (cols 16-20), Outro (cols 21-25).</li>
+  <li><strong>Deck organizado</strong>: Clips numerados, nombrados y con preview thumbnail visible.</li>
+  <li><strong>Presets de efectos</strong>: Los efectos más usados guardados como presets accesibles rápidamente.</li>
+</ul>
+
+<h3>Optimización del rendimiento para el show</h3>
+<p>En un show en vivo no puedes permitirte caídas de FPS. Cada clip de video que usas en tu set debe estar <strong>pre-procesado al codec correcto</strong>. Resolume recomienda el codec <strong>HAP</strong> (desarrollado específicamente para VJing), que delega la decodificación a la GPU, liberando la CPU para otras tareas. Para convertir clips a HAP usa <strong>Shutter Encoder</strong> o el plugin HAP para Premiere/After Effects.</p>
+<p>Reglas de optimización:</p>
+<ul>
+  <li>Todos los clips al mismo FPS que la composición (evita conversiones en tiempo real).</li>
+  <li>Resolución de clips igual o menor a la de salida (Resolume puede escalar hacia arriba, pero es costoso).</li>
+  <li>Limitar el número de capas activas simultáneamente (6-8 es un número razonable para hardware mid-range).</li>
+  <li>Desactivar efectos que no sean esenciales para el look final.</li>
+</ul>
+
+<h3>Checklist pre-show</h3>
+<p>Las horas antes de un show deben seguir un protocolo estricto:</p>
+<ul>
+  <li>Verificar que todos los archivos de media están en la carpeta del proyecto y referenciados correctamente.</li>
+  <li>Probar el output físico con el hardware del venue (proyector/LED/mixer).</li>
+  <li>Verificar la sincronización MIDI/OSC con el DJ si aplica.</li>
+  <li>Cerrar todas las aplicaciones innecesarias en la computadora.</li>
+  <li>Desactivar actualizaciones automáticas del sistema operativo.</li>
+  <li>Conectar el equipo a corriente eléctrica y verificar que no haya sobrecalentamiento.</li>
+  <li>Tener un plan B: una composición de "emergencia" simple que puedas lanzar si algo falla.</li>
+</ul>
+
+<h3>Durante el show: actitud y flow</h3>
+<p>La regla más importante del VJing en vivo es <strong>escuchar la música</strong>. Tu trabajo es servir al audio, no compite con él. Los cambios visuales más impactantes son los que responden a momentos clave de la música: drops, breaks, builds. Evita la sobreactuación visual: un visual que cambia demasiado rápido cansa la vista y pierde impacto.</p>
+<p>Desarrolla la habilidad de <strong>anticipación</strong>: conoce el set del DJ con anticipación si es posible, o aprende a leer las señales de que se acerca un cambio (el DJ levantando un fader, la energía de la pista cambiando).</p>
+
+<h3>Post-show y mejora continua</h3>
+<p>Grabar el output de video de tu set (usando la función de grabación interna de Arena o una capturadora externa) te permite revisar tu performance con ojos críticos al día siguiente. ¿Qué momentos funcionaron? ¿Qué transiciones sonaron torpes? ¿Qué clips nunca usaste y pueden eliminarse del set?</p>
+
+<div class="ejercicio"><div class="ejercicio-label">✦ Ejercicio</div>
+Prepara un set simulado de 20 minutos para un género musical de tu elección. Crea una composición con al menos 5 capas y 20 columnas organizadas en 4 actos (intro, desarrollo, clímax, outro). Convierte al menos 5 clips de video al codec HAP si tienes la herramienta disponible, o simplifica los efectos de manera que el proyecto corra a 60 FPS estables. Graba el set completo usando la función de grabación de Arena mientras pones una playlist del género elegido, y posteriormente revisa la grabación identificando al menos 3 momentos que funcionaron bien y 3 que mejorarías.
+</div>
+` }
+  ]},
     { mark:'VDMX', name:'VDMX', cat:'Visuales en vivo', topics:[
       { title:'Arquitectura modular y patches', content:`<h3>Qué es VDMX</h3>
 <p>VDMX es un software VJ modular para macOS, desarrollado por Vidvox. A diferencia de Resolume —que trabaja con una línea de tiempo fija— VDMX está diseñado desde cero para performance en tiempo real: cada elemento es un módulo que podés conectar, apilar y controlar de forma independiente.</p>
