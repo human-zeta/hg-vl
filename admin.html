@@ -169,6 +169,59 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 #pd-status{margin-top:0.8rem;font-family:var(--mono);font-size:8.5px;letter-spacing:0.08em;color:rgba(240,237,230,0.4);}
 #pd-status.ok{color:var(--acid);}
 #pd-status.err{color:var(--glitch);}
+
+/* ── PIXEL EDITOR ──────────────────── */
+#pixel-editor-wrap{
+  margin-top:1.2rem;border:1px solid rgba(184,255,0,0.13);
+  border-radius:3px;padding:1.1rem 1.2rem;background:rgba(184,255,0,0.015);
+}
+#pixel-editor-head{
+  font-family:var(--mono);font-size:8px;letter-spacing:0.2em;
+  color:rgba(184,255,0,0.5);text-transform:uppercase;margin-bottom:0.9rem;
+}
+#pixel-editor-inner{display:flex;gap:1.2rem;flex-wrap:wrap;align-items:flex-start;}
+#px-canvas{
+  border:1px solid rgba(240,237,230,0.1);cursor:crosshair;
+  image-rendering:pixelated;display:block;flex-shrink:0;
+  touch-action:none;
+}
+#px-palette{display:flex;flex-wrap:wrap;gap:4px;width:124px;}
+.px-swatch{
+  width:22px;height:22px;border-radius:2px;cursor:pointer;
+  border:2px solid transparent;transition:border-color 0.12s;box-sizing:border-box;
+}
+.px-swatch.active{border-color:var(--acid);}
+.px-tools-row{display:flex;gap:5px;margin-top:7px;flex-wrap:wrap;}
+.px-tool{
+  font-family:var(--mono);font-size:7.5px;letter-spacing:0.08em;
+  padding:4px 8px;cursor:pointer;border-radius:2px;
+  border:1px solid rgba(240,237,230,0.2);background:none;color:rgba(240,237,230,0.4);
+  transition:all 0.12s;
+}
+.px-tool.active,.px-tool:hover{border-color:rgba(184,255,0,0.4);color:var(--acid);background:rgba(184,255,0,0.05);}
+#px-clear{
+  font-family:var(--mono);font-size:7.5px;letter-spacing:0.08em;
+  padding:4px 8px;cursor:pointer;border-radius:2px;margin-top:5px;
+  border:1px solid rgba(255,45,85,0.25);background:none;color:rgba(255,45,85,0.45);
+  transition:all 0.12s;
+}
+#px-clear:hover{border-color:var(--glitch);color:var(--glitch);}
+#px-right{display:flex;flex-direction:column;gap:8px;}
+#px-preview-label{font-family:var(--mono);font-size:7px;letter-spacing:0.18em;color:rgba(240,237,230,0.25);text-transform:uppercase;}
+#px-preview-shield{
+  width:58px;height:64px;display:flex;align-items:center;justify-content:center;
+  clip-path:polygon(50% 0%,100% 22%,100% 70%,50% 100%,0% 70%,0% 22%);
+  background:rgba(184,255,0,0.08);overflow:hidden;
+}
+#px-preview-shield img{width:100%;height:100%;object-fit:cover;image-rendering:pixelated;}
+#px-use-btn{
+  font-family:var(--mono);font-size:8px;letter-spacing:0.14em;
+  padding:6px 10px;cursor:pointer;border:1px solid rgba(184,255,0,0.3);
+  background:rgba(184,255,0,0.06);color:var(--acid);border-radius:2px;transition:all 0.12s;
+}
+#px-use-btn:hover{background:rgba(184,255,0,0.12);}
+#px-use-btn:disabled{opacity:0.4;cursor:default;}
+#px-img-status{font-family:var(--mono);font-size:7px;letter-spacing:0.1em;color:rgba(184,255,0,0.5);}
 </style>
 </head>
 <body>
@@ -239,6 +292,30 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
           <textarea id="pd-desc" placeholder="Contexto del parche — evento, fecha, detalle..."></textarea>
         </div>
         <div class="pd-field full">
+          <div id="pixel-editor-wrap">
+            <div id="pixel-editor-head">⌬ Imagen del parche — dibujá un ícono 8-bit (opcional)</div>
+            <div id="pixel-editor-inner">
+              <div>
+                <canvas id="px-canvas" width="192" height="192"></canvas>
+                <div class="px-tools-row">
+                  <button type="button" class="px-tool active" data-tool="pencil">✏ PINCEL</button>
+                  <button type="button" class="px-tool" data-tool="erase">⌫ BORRAR</button>
+                  <button type="button" class="px-tool" data-tool="fill">▣ FILL</button>
+                </div>
+                <button type="button" id="px-clear">✕ LIMPIAR</button>
+              </div>
+              <div id="px-right">
+                <div id="px-palette"></div>
+                <div id="px-preview-label">preview parche</div>
+                <div id="px-preview-shield"><img id="px-preview-img" src="" alt="preview" style="display:none"></div>
+                <button type="button" id="px-use-btn">✓ USAR IMAGEN</button>
+                <div id="px-img-status"></div>
+              </div>
+            </div>
+            <input type="hidden" id="pd-image-data">
+          </div>
+        </div>
+        <div class="pd-field full">
           <button type="submit" id="pd-submit">DROPEAR PARCHE ⛒</button>
           <div id="pd-status"></div>
         </div>
@@ -260,11 +337,11 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
         <div class="pd-field">
           <label for="diario-cat">Categoría</label>
           <select id="diario-cat">
-            <option value="Tecnología cotidiana">Tecnología cotidiana</option>
-            <option value="Herramientas digitales">Herramientas digitales</option>
-            <option value="Creatividad para todos">Creatividad para todos</option>
-            <option value="Para empezar">Para empezar</option>
-            <option value="Seguridad">Seguridad</option>
+            <option value="tecnología cotidiana">Tecnología cotidiana</option>
+            <option value="herramientas digitales">Herramientas digitales</option>
+            <option value="creatividad para todos">Creatividad para todos</option>
+            <option value="para empezar">Para empezar</option>
+            <option value="seguridad">Seguridad</option>
           </select>
         </div>
         <div class="pd-field">
@@ -572,7 +649,8 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
             skill: skill || null,
             desc: desc || null,
             droppedAt: Date.now(),
-            droppedBy: UID
+            droppedBy: UID,
+            imageData: document.getElementById('pd-image-data').value || null
           })
         });
         if(!r.ok) throw new Error('write failed');
@@ -740,6 +818,110 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
       );
     }
   }
+
+  // ── PIXEL EDITOR ────────────────────────────────────────────
+  (function initPixelEditor(){
+    const GRID = 16, CELL = 12;
+    const PALETTE = ['#050505','#2a2a2a','#666666','#f0ede6','#b8ff00','#ff2d55','#00d4ff','#ffcc00','#ff6b00','#aa44ff'];
+    const canvas = document.getElementById('px-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const pixels = Array.from({length:GRID}, ()=>new Array(GRID).fill(null));
+    let activeColor = PALETTE[4];
+    let tool = 'pencil';
+    let painting = false;
+
+    // palette swatches
+    const paletteEl = document.getElementById('px-palette');
+    PALETTE.forEach((c, i)=>{
+      const sw = document.createElement('div');
+      sw.className = 'px-swatch' + (i===4?' active':'');
+      sw.style.background = c;
+      sw.title = c;
+      sw.addEventListener('click', ()=>{
+        document.querySelectorAll('.px-swatch').forEach(s=>s.classList.remove('active'));
+        sw.classList.add('active');
+        activeColor = c;
+      });
+      paletteEl.appendChild(sw);
+    });
+
+    function redraw(){
+      ctx.fillStyle = '#0d0d0d';
+      ctx.fillRect(0,0,canvas.width,canvas.height);
+      ctx.strokeStyle = 'rgba(240,237,230,0.07)';
+      ctx.lineWidth = 0.5;
+      for(let i=0;i<=GRID;i++){
+        ctx.beginPath(); ctx.moveTo(i*CELL,0); ctx.lineTo(i*CELL,GRID*CELL); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(0,i*CELL); ctx.lineTo(GRID*CELL,i*CELL); ctx.stroke();
+      }
+      pixels.forEach((row,r)=>row.forEach((col,c)=>{
+        if(col){ ctx.fillStyle=col; ctx.fillRect(c*CELL+1,r*CELL+1,CELL-1,CELL-1); }
+      }));
+    }
+
+    function cellAt(e){
+      const rect = canvas.getBoundingClientRect();
+      const sx = canvas.width/rect.width, sy = canvas.height/rect.height;
+      const cx = e.clientX||e.touches[0].clientX, cy = e.clientY||e.touches[0].clientY;
+      return { col:Math.floor((cx-rect.left)*sx/CELL), row:Math.floor((cy-rect.top)*sy/CELL) };
+    }
+
+    function applyTool(e){
+      const {row,col} = cellAt(e);
+      if(row<0||row>=GRID||col<0||col>=GRID) return;
+      if(tool==='pencil') pixels[row][col]=activeColor;
+      else if(tool==='erase') pixels[row][col]=null;
+      redraw();
+    }
+
+    function fill(r,c,from,to){
+      if(r<0||r>=GRID||c<0||c>=GRID||pixels[r][c]!==from||from===to) return;
+      pixels[r][c]=to;
+      fill(r-1,c,from,to); fill(r+1,c,from,to); fill(r,c-1,from,to); fill(r,c+1,from,to);
+    }
+
+    canvas.addEventListener('mousedown', e=>{ painting=true; if(tool==='fill'){ const {row,col}=cellAt(e); if(row>=0&&row<GRID&&col>=0&&col<GRID){ fill(row,col,pixels[row][col],activeColor); redraw(); } } else applyTool(e); });
+    canvas.addEventListener('mousemove', e=>{ if(painting&&tool!=='fill') applyTool(e); });
+    canvas.addEventListener('mouseup', ()=>painting=false);
+    canvas.addEventListener('mouseleave', ()=>painting=false);
+    canvas.addEventListener('touchstart', e=>{ e.preventDefault(); painting=true; applyTool(e); }, {passive:false});
+    canvas.addEventListener('touchmove', e=>{ e.preventDefault(); if(painting) applyTool(e); }, {passive:false});
+    canvas.addEventListener('touchend', ()=>painting=false);
+
+    document.querySelectorAll('.px-tool').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        document.querySelectorAll('.px-tool').forEach(b=>b.classList.remove('active'));
+        btn.classList.add('active');
+        tool = btn.dataset.tool;
+      });
+    });
+
+    document.getElementById('px-clear').addEventListener('click', ()=>{
+      pixels.forEach(row=>row.fill(null));
+      document.getElementById('pd-image-data').value='';
+      document.getElementById('px-img-status').textContent='';
+      const img=document.getElementById('px-preview-img'); img.src=''; img.style.display='none';
+      redraw();
+    });
+
+    document.getElementById('px-use-btn').addEventListener('click', ()=>{
+      const out = document.createElement('canvas');
+      out.width=32; out.height=32;
+      const oc=out.getContext('2d');
+      oc.imageSmoothingEnabled=false;
+      pixels.forEach((row,r)=>row.forEach((color,c)=>{
+        if(color){ oc.fillStyle=color; oc.fillRect(c*2,r*2,2,2); }
+      }));
+      const dataUrl=out.toDataURL('image/png');
+      document.getElementById('pd-image-data').value=dataUrl;
+      const img=document.getElementById('px-preview-img');
+      img.src=dataUrl; img.style.display='block';
+      document.getElementById('px-img-status').textContent='✓ imagen lista';
+    });
+
+    redraw();
+  })();
 
   checkAccess();
 })();
