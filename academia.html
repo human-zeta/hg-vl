@@ -577,7 +577,9 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
                   </div>
                 </li>`;
             }).join('')}</ul>
-            <div class="temario-note">Clases en construcción — pronto cada eje del temario va a tener su propia clase, enfocada en una herramienta concreta y pensada para encontrarse fácil y volver a consultarla cuando la necesites.</div>
+            ${p.topics.every(t=> t && typeof t === 'object' && (t.content || t.hasContent))
+              ? ''
+              : '<div class="temario-note">Clases en construcción — pronto cada eje del temario va a tener su propia clase, enfocada en una herramienta concreta y pensada para encontrarse fácil y volver a consultarla cuando la necesites.</div>'}
           </div>
         </div>`;
       const head = card.querySelector('.prog-head');
