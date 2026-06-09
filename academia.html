@@ -767,25 +767,37 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
   }
 
   // ── MODAL ────────────────────────────────
-  const modal    = document.getElementById('class-modal');
-  const modalOverlay = modal.querySelector('.modal-overlay');
-  const modalTitle   = document.getElementById('modal-title');
-  const modalBody    = document.getElementById('modal-body');
-  const modalClose   = document.getElementById('modal-close');
+  // Lazy init: #class-modal está después del </script>, así que no se accede
+  // hasta que sea necesario (DOMContentLoaded garantiza que ya existe).
+  let _modal = null;
+  function getModal(){
+    if(!_modal){
+      _modal = {
+        el:       document.getElementById('class-modal'),
+        overlay:  document.getElementById('modal-overlay'),
+        title:    document.getElementById('modal-title'),
+        body:     document.getElementById('modal-body'),
+        closeBtn: document.getElementById('modal-close'),
+      };
+      _modal.closeBtn.addEventListener('click', closeModal);
+      _modal.overlay.addEventListener('click', closeModal);
+    }
+    return _modal;
+  }
 
   function openModal(title, content){
-    modalTitle.textContent = title;
-    modalBody.innerHTML = content;
-    modalBody.scrollTop = 0;
-    modal.classList.add('open');
+    const m = getModal();
+    m.title.textContent = title;
+    m.body.innerHTML = content;
+    m.body.scrollTop = 0;
+    m.el.classList.add('open');
     document.body.style.overflow = 'hidden';
   }
   function closeModal(){
-    modal.classList.remove('open');
+    if(!_modal) return;
+    _modal.el.classList.remove('open');
     document.body.style.overflow = '';
   }
-  modalClose.addEventListener('click', closeModal);
-  modalOverlay.addEventListener('click', closeModal);
   document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeModal(); });
 
   checkAccess();
