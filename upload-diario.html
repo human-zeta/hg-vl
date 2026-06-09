@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Upload Diario HG</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:#050505;color:#f0ede6;font-family:'Space Mono',monospace;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:2rem;}
+.box{max-width:520px;width:100%;border:1px solid rgba(184,255,0,0.2);border-radius:3px;padding:2.4rem;background:#0a0a0a;}
+h1{font-size:1rem;letter-spacing:0.15em;color:#b8ff00;margin-bottom:0.5rem;}
+.sub{font-size:8px;letter-spacing:0.18em;color:rgba(240,237,230,0.35);margin-bottom:2rem;text-transform:uppercase;}
+.log{display:flex;flex-direction:column;gap:8px;}
+.entry{font-size:10px;letter-spacing:0.05em;line-height:1.6;padding:0.6rem 0.8rem;border-radius:2px;border:1px solid rgba(240,237,230,0.08);}
+.entry.ok{border-color:rgba(184,255,0,0.25);color:#b8ff00;}
+.entry.err{border-color:rgba(255,45,85,0.3);color:#ff2d55;}
+.entry.info{color:rgba(240,237,230,0.5);}
+.entry.done{border-color:rgba(184,255,0,0.4);background:rgba(184,255,0,0.05);color:#b8ff00;font-weight:700;}
+</style>
+</head>
+<body>
+<div class="box">
+  <h1>EL DIARIO HG — UPLOAD</h1>
+  <div class="sub">Subiendo artículos a Firebase…</div>
+  <div class="log" id="log"></div>
+</div>
+<script>
+(async () => {
+  const FB_URL     = 'https://hg-vl-shaders-default-rtdb.firebaseio.com';
+  const FB_API_KEY = 'AIzaSyAeMKHe7dj4bnaUzkF7iDANrC_cBtg4LAA';
+  const REFRESH_URL = 'https://securetoken.googleapis.com/v1/token';
+  const log = document.getElementById('log');
+
+  function addLog(msg, type = 'info') {
+    const el = document.createElement('div');
+    el.className = 'entry ' + type;
+    el.textContent = msg;
+    log.appendChild(el);
+  }
+
+  // session
+  let session;
+  try { session = JSON.parse(localStorage.getItem('hg_auth_session') || 'null'); } catch(e) {}
+  if (!session || !session.refreshToken) {
+    addLog('❌ No hay sesión iniciada. Iniciá sesión en hg-vl.com primero, luego volvé aquí.', 'err');
+    return;
+  }
+  addLog('Sesión encontrada — ' + session.email, 'info');
+
+  // refresh token
+  let token;
+  try {
+    const tr = await fetch(`${REFRESH_URL}?key=${FB_API_KEY}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: `grant_type=refresh_token&refresh_token=${encodeURIComponent(session.refreshToken)}`
+    });
+    const td = await tr.json();
+    token = td.id_token;
+    session.idToken = token;
+    session.refreshToken = td.refresh_token;
+    localStorage.setItem('hg_auth_session', JSON.stringify(session));
+    addLog('Token actualizado.', 'info');
+  } catch(e) {
+    addLog('❌ No se pudo actualizar el token: ' + e.message, 'err');
+    return;
+  }
+
+  const uid = session.uid;
+  const now = Date.now();
+
+  const ARTICLES = [
+    {
+      title: 'Cómo hacer una videollamada por WhatsApp',
+      cat: 'para empezar',
+      author: 'Equipo HG',
+      publishedAt: now - 4 * 24 * 60 * 60 * 1000,
+      body: `Una videollamada es como hablar por teléfono, pero además te ven y vos también ves a la otra persona. No hace falta comprar nada ni instalar nada especial: si tenés WhatsApp, ya podés hacerlo. Solo necesitás tener WhatsApp instalado y conexión a internet (WiFi o datos del celular).
+
+Cómo hacerlo, paso a paso:
+1. Abrí WhatsApp en tu celular.
+2. Buscá el nombre de la persona a la que querés llamar. Tocá su nombre para abrir la conversación.
+3. Arriba a la derecha vas a ver dos íconos pequeños: un teléfono y una cámara de video. Tocá el de la cámara de video.
+4. Va a aparecer una pantalla preguntando si querés hacer una videollamada. Tocá "Videollamada".
+5. Esperá unos segundos. Si la otra persona atiende, van a poder verse y hablar.
+6. Cuando termines, tocá el botón rojo para colgar.
+
+Si la imagen se ve cortada o lenta: probablemente es la conexión a internet. Acercate al router WiFi de tu casa, o pedile a alguien que revise que estés conectado.
+
+Si la persona no atiende, no pasa nada. Le va a quedar un aviso de que la llamaste. Podés intentarlo de nuevo más tarde.
+
+Con la práctica, en pocos días se vuelve algo natural. Muchas personas que nunca habían hecho una videollamada hoy la usan todos los días para hablar con sus hijos o nietos.`
+    },
+    {
+      title: 'Cómo reconocer una estafa online',
+      cat: 'tecnología cotidiana',
+      author: 'Equipo HG',
+      publishedAt: now - 3 * 24 * 60 * 60 * 1000,
+      body: `Recibir un mensaje que dice que ganaste algo, que tu cuenta tiene un problema, o que alguien necesita ayuda urgente — estas son las formas más comunes en que intentan engañar a las personas por internet o por el celular.
+
+La buena noticia: casi siempre hay señales que avisan. Con un poco de atención, es fácil detectarlas.
+
+Las señales más comunes de una estafa:
+• Te piden que actúes "ahora mismo" o "urgente". Los estafadores generan apuro para que no tengas tiempo de pensar. Si algo es urgente de verdad, siempre hay tiempo para verificar.
+• Te piden datos personales o contraseñas. Los bancos, el gobierno y WhatsApp nunca te van a pedir tu clave por mensaje ni por teléfono.
+• Dicen que ganaste un premio que no buscaste. Si no participaste de ningún sorteo, no podés haber ganado nada.
+• El mensaje tiene errores de ortografía o está mal escrito. Muchas estafas llegan traducidas de otros idiomas y se notan.
+• Te piden que hagas una transferencia de dinero. Especialmente si "tu hijo" o "tu nieto" te escribe desde un número desconocido diciendo que necesita plata urgente.
+
+El "cuento del familiar": es muy común recibir mensajes de WhatsApp diciendo "hola ma, cambié de número". Antes de responder o enviar dinero, llamá directamente al número de siempre de esa persona para verificar.
+
+¿Qué hacer si sospechás?
+• No respondas, no hagas clic en ningún link y no envíes datos.
+• Llamá directamente a la persona o entidad que supuestamente te escribió.
+• Contale a alguien de confianza antes de hacer cualquier cosa.
+
+La regla más simple: si algo te genera duda o apuro, esperá. Las cosas legítimas pueden esperar unos minutos. Las estafas necesitan que actúes ya.
+
+No hay que tenerle miedo a internet. Solo hay que usarlo con la misma atención que usamos en la calle: sin apuros y con sentido común.`
+    },
+    {
+      title: 'Cómo enviar fotos por WhatsApp',
+      cat: 'para empezar',
+      author: 'Equipo HG',
+      publishedAt: now - 2 * 24 * 60 * 60 * 1000,
+      body: `Sacar una foto es solo la mitad. La otra mitad es poder compartirla. Por suerte, enviar fotos por WhatsApp es muy fácil una vez que lo hacés la primera vez.
+
+Podés enviar una foto que acabás de sacar, o una que ya tenés guardada en el celular.
+
+Para enviar una foto que ya tenés guardada:
+1. Abrí WhatsApp y entrá a la conversación de la persona a la que querés enviarle la foto.
+2. Abajo, al lado del cuadro de texto donde escribís los mensajes, hay un ícono de un clip o una carita. Tocá el clip (o el ícono que parece un "+" en algunos celulares).
+3. Se van a abrir opciones. Tocá "Galería" o "Imagen".
+4. Vas a ver las fotos de tu celular. Tocá la foto que querés enviar.
+5. Tocá el botón de enviar (la flecha verde). Listo.
+
+Para sacar una foto y enviarla en el momento:
+1. Entrá a la conversación en WhatsApp.
+2. Tocá el ícono de la cámara que aparece al lado del cuadro de texto.
+3. Sacá la foto tocando el círculo blanco grande.
+4. Si te gustó, tocá la flecha verde para enviarla. Si no, tocá la X para descartarla y volver a intentarlo.
+
+Podés enviar varias fotos a la vez: al abrir la galería, si tocás y mantenés el dedo sobre una foto, podés después tocar más fotos para seleccionarlas. Así se mandan todas juntas de una sola vez.
+
+Si la foto tarda en enviarse, es porque pesa mucho o la conexión está lenta. Esperá un momento y vas a ver que el relojito se convierte en dos palomitas — eso significa que llegó.
+
+Una palomita: enviada. Dos palomitas grises: llegó al celular del otro. Dos palomitas azules: la leyeron.`
+    },
+    {
+      title: 'Cuando llaman para robarte',
+      cat: 'seguridad',
+      author: 'Equipo HG',
+      publishedAt: now - 1 * 24 * 60 * 60 * 1000,
+      body: `Suena el teléfono. Una voz amable dice que llama del banco, de ANSES, de una empresa de servicios, o incluso de Microsoft. Dice que hay un problema urgente con tu cuenta, tu jubilación o tu computadora. Y que necesita que hagas algo ya.
+
+Esto se llama estafa telefónica, y es uno de los engaños más comunes que existen hoy. Afecta a personas de todas las edades, pero los adultos mayores son el blanco más frecuente porque suelen contestar el teléfono y confiar en quien llama.
+
+Los guiones más usados:
+• "Soy del banco y detectamos movimientos sospechosos en su cuenta." Te piden que confirmes tu número de tarjeta, clave o que transfieras dinero a una "cuenta segura". Los bancos nunca hacen esto.
+• "Llamamos de ANSES / PAMI / AFIP para actualizar sus datos." Te piden tu DNI, CUIL, clave previsional o datos bancarios. Los organismos del Estado no te llaman para pedirte claves.
+• "Su computadora tiene un virus y necesitamos acceso para arreglarlo." Te piden que instales un programa para que puedan "ver tu pantalla". Con eso pueden robar todo lo que hay en tu dispositivo.
+• "Ganó un premio, solo necesitamos sus datos para acreditarlo." Siempre hay un costo oculto, o usan tus datos para cometer fraudes.
+
+Lo que ninguna entidad legítima hace por teléfono: ni el banco, ni ANSES, ni ninguna empresa te va a pedir tu clave, tu contraseña, que hagas una transferencia o que instales algo en tu celular o computadora. Si alguien te pide eso, es una estafa.
+
+Qué hacer cuando recibís esa llamada:
+• No des ningún dato personal, bancario ni contraseña.
+• Si dicen que son del banco, cortá y llamá vos al número oficial que figura en tu tarjeta o en el sitio web del banco.
+• No te apures. Una llamada legítima puede esperar. Una que no puede esperar, probablemente sea falsa.
+• Contale a un familiar o persona de confianza antes de hacer cualquier cosa.
+
+Si ya diste datos o hiciste una transferencia: llamá a tu banco de inmediato al número oficial. Cuanto antes lo reportás, más posibilidades hay de frenar el daño. No te dé vergüenza: estas estafas engañan a mucha gente.
+
+No hay nada de malo en cortar una llamada que genera dudas. Es lo más inteligente que podés hacer.`
+    },
+    {
+      title: 'Contraseñas: la llave de tu vida digital',
+      cat: 'seguridad',
+      author: 'Equipo HG',
+      publishedAt: now,
+      body: `Una contraseña es como la llave de tu casa. Si es fácil de copiar, cualquiera puede entrar. Si la perdés, quedás afuera. La idea es tener una que sea difícil para los demás y manejable para vos.
+
+Hoy muchas personas usan contraseñas como "123456" o su fecha de nacimiento. Son las primeras que prueban quienes intentan robar cuentas.
+
+Cómo crear una contraseña buena: no necesitás algo imposible de recordar. El truco es usar una frase que tenga sentido para vos, combinada con algún número o símbolo. Por ejemplo, en lugar de "rosario1950", podés usar: MiPerroSeLlamaFelipe7! — esa contraseña es larga, tiene mayúsculas, números y un signo. Es muy difícil de adivinar y para vos es fácil de recordar porque tiene significado.
+
+Las contraseñas que hay que evitar:
+• Tu nombre o el de un familiar.
+• Tu fecha de nacimiento o la de alguien cercano.
+• Números en orden: 123456, 111111.
+• La palabra "contraseña" o "password".
+• El nombre de tu mascota sola, sin nada más.
+
+No uses la misma contraseña para todo: si alguien descubre tu contraseña de un servicio y es la misma que usás en tu banco, tiene acceso a todo. Al menos el banco y el correo electrónico deberían tener contraseñas distintas.
+
+Cómo no olvidarlas:
+• Sí está bien: anotarlas en una libreta guardada en casa, en un lugar que solo vos conocés.
+• No está bien: en un papel pegado a la computadora, o en un mensaje de WhatsApp a vos mismo.
+• Muy bien: usar la app de contraseñas que viene en tu celular (en iPhone se llama "Claves"; en Android es "Administrador de contraseñas de Google"). Guardan todo de forma segura y te las completan automáticamente.
+
+Cuándo cambiar una contraseña: si recibís un aviso de que tu cuenta fue accedida desde otro lugar, o si sospechás que alguien la conoce, cambiala de inmediato. No esperes.
+
+No hace falta ser experto para tener contraseñas seguras. Con una frase que recordés bien y un número al final, ya estás mucho más protegido que la mayoría.`
+    }
+  ];
+
+  addLog(`Subiendo ${ARTICLES.length} artículos…`, 'info');
+
+  let ok = 0;
+  for (const art of ARTICLES) {
+    try {
+      const payload = {
+        title: art.title,
+        cat: art.cat,
+        body: art.body,
+        author: art.author || 'Equipo HG',
+        published: true,
+        publishedAt: art.publishedAt || Date.now(),
+        publishedBy: uid
+      };
+      const r = await fetch(`${FB_URL}/diario.json?auth=${token}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      const d = await r.json();
+      addLog(`✓ "${art.title}"`, 'ok');
+      ok++;
+    } catch(e) {
+      addLog(`✗ Error en "${art.title}": ${e.message}`, 'err');
+    }
+  }
+
+  if (ok === ARTICLES.length) {
+    addLog(`✅ ${ok} artículos publicados en El Diario HG. Podés cerrar esta página.`, 'done');
+  } else {
+    addLog(`⚠️ ${ok}/${ARTICLES.length} subidos. Revisá los errores.`, 'err');
+  }
+})();
+</script>
+</body>
+</html>
