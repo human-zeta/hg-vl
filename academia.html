@@ -767,8 +767,8 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
   }
 
   // ── MODAL ────────────────────────────────
-  // Lazy init: #class-modal está después del </script>, así que no se accede
-  // hasta que sea necesario (DOMContentLoaded garantiza que ya existe).
+  // Lazy init: #class-modal está definido después del tag de cierre del script,
+  // así que se resuelve la primera vez que se necesita (DOM ya completo).
   let _modal = null;
   function getModal(){
     if(!_modal){
