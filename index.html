@@ -69,6 +69,20 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 #reset-btn:hover{color:var(--glitch);}
 #reset-btn.show{display:block;}
 
+/* TOGGLE CONTROLES SHADER */
+#ctrl-toggle{
+  position:fixed;bottom:calc(2rem + 10px);right:2rem;z-index:501;
+  font-family:var(--mono);font-size:8px;letter-spacing:0.18em;
+  background:rgba(5,5,5,0.88);border:1px solid rgba(184,255,0,0.2);
+  color:rgba(184,255,0,0.5);padding:5px 10px;border-radius:2px;
+  cursor:none;transition:all 0.2s;backdrop-filter:blur(12px);
+  display:none; /* solo aparece cuando hay shader cargado */
+}
+#ctrl-toggle:hover{border-color:rgba(184,255,0,0.5);color:var(--acid);}
+body.ctrl-collapsed #drop-inner{display:none;}
+body.ctrl-collapsed #isf-panel{display:none!important;}
+body.ctrl-collapsed #ctrl-toggle{bottom:2rem;}
+
 /* ISF INPUTS PANEL */
 #isf-panel{
   position:fixed;bottom:calc(2rem + 10px);right:2rem;z-index:499;
@@ -709,14 +723,52 @@ body.visual-mode #exit-visual{z-index:9000!important;}
 .rd1{transition-delay:0.1s;}.rd2{transition-delay:0.2s;}.rd3{transition-delay:0.32s;}
 
 @media(max-width:768px){
-  .plans{grid-template-columns:1fr;}
-  .srow{grid-template-columns:40px 1fr;}
-  .sprice{grid-column:2;}
+  /* NAV */
+  #nav{padding:1.2rem 5vw;}
+  .nav-links a:not(.nav-auth-btn):not(.nav-area-btn){display:none;}
+  .nav-links{gap:1rem;}
+
+  /* HERO */
+  #hero{padding:0 5vw 8vh;}
+  .hero-glass{display:none;}
+
+  /* SECCIONES */
+  #aether-sec,#blog,#catalogo,#comunidad,#live,#footer{padding-left:5vw;padding-right:5vw;}
+
+  /* MANIFESTO — evitar textos cortados */
+  .mfine{font-size:12px;line-height:1.9;}
+
+  /* BLOG GRID — 1 columna */
+  .blog-grid{grid-template-columns:1fr;}
+
+  /* CATALOGO — filas de servicios */
+  .srow{grid-template-columns:36px 1fr;gap:1rem;}
+  .sprice{grid-column:2;padding-top:0;}
   .ssub{grid-column:2;}
-  .ftop{flex-direction:column;gap:2.5rem;}
-  .viz-stat{gap:2rem;}
-  #drop-zone{width:170px;bottom:1rem;right:1rem;}
-  #isf-panel{width:170px;}
+  .sname{font-size:clamp(1.6rem,7vw,2.8rem);}
+
+  /* STACK */
+  .stack-grid{grid-template-columns:1fr;}
+
+  /* PLANES */
+  .plans{grid-template-columns:1fr;}
+
+  /* VIZ STATS */
+  .viz-stat{gap:2rem;flex-wrap:wrap;}
+
+  /* FOOTER */
+  .ftop{flex-direction:column;gap:2rem;}
+  .flinks{gap:1.2rem;}
+  .fbot{flex-direction:column;gap:0.5rem;}
+
+  /* CONTROLES SHADER — esquina inferior izquierda en móvil para no tapar contenido */
+  #drop-zone{width:calc(100vw - 2.4rem);max-width:260px;bottom:1rem;right:auto;left:1.2rem;}
+  #isf-panel{width:calc(100vw - 2.4rem);max-width:260px;bottom:calc(1rem + 10px);right:auto;left:1.2rem;}
+  #ctrl-toggle{right:auto;left:1.2rem;bottom:calc(1rem + 10px);}
+  body.ctrl-collapsed #ctrl-toggle{bottom:1rem;}
+
+  /* TOGGLES FLOTANTES — no se amontonen */
+  #gallery-toggle,#repo-toggle,#profile-toggle{right:1rem;}
 }
 </style>
 </head>
@@ -822,6 +874,7 @@ body.visual-mode #exit-visual{z-index:9000!important;}
       <div class="profile-block">
         <div class="profile-block-title">☉ BLOG & DOCUMENTACIÓN</div>
         <div id="profile-doc-links">
+          <a href="perfil.html" id="profile-perfil-link">⌬ MI PERFIL — PARCHES Y REDES</a>
           <a href="academia.html" id="profile-academy-link">✦ ACADEMIA HG — TEMARIOS Y CLASES</a>
           <a href="diario.html">📰 EL DIARIO HG — TECNOLOGÍA COTIDIANA</a>
           <a href="admin.html" id="profile-admin-link">⛒ PANEL ADMIN — SUSCRIPCIONES Y COMUNIDAD</a>
@@ -854,6 +907,9 @@ body.visual-mode #exit-visual{z-index:9000!important;}
 
 <!-- ISF INPUTS PANEL -->
 <div id="isf-panel"></div>
+
+<!-- TOGGLE CONTROLES -->
+<button id="ctrl-toggle">— OCULTAR</button>
 
 <!-- DROP ZONE -->
 <div id="drop-zone">
@@ -1129,7 +1185,9 @@ document.addEventListener('mousemove',e=>{
     "'Courier Prime',monospace",
     "'DM Sans',sans-serif"
   ];
-  const targets = document.querySelectorAll('.hero-title, .aether-title, .sec-title, .ctitle, .sname, .mline');
+  /* Solo títulos standalone de ancho completo — sacar .ctitle, .sname, .mline
+     evita que el cambio de familia reflow las columnas de texto adyacente */
+  const targets = document.querySelectorAll('.hero-title, .aether-title, .live-t');
   if(!targets.length) return;
 
   targets.forEach(el=>{
@@ -1535,6 +1593,10 @@ function loadShaderFromCode(src, name){
     document.getElementById('status-txt').textContent='SHADER ACTIVO';
     document.getElementById('reset-btn').classList.add('show');
     document.getElementById('fs-btn').classList.add('show');
+    const ctrlTog=document.getElementById('ctrl-toggle');
+    ctrlTog.style.display='block';
+    document.body.classList.remove('ctrl-collapsed');
+    ctrlTog.textContent='— OCULTAR';
     const audioRow=document.getElementById('audio-row');
     audioRow.style.display='flex';
     if(audioActive) buildAudioMapping();
@@ -1586,6 +1648,8 @@ document.getElementById('reset-btn').addEventListener('click',()=>{
   if(document.fullscreenElement) document.exitFullscreen();
   document.getElementById('pal-row').classList.remove('show');
   document.getElementById('isf-panel').classList.remove('show');
+  document.getElementById('ctrl-toggle').style.display='none';
+  document.body.classList.remove('ctrl-collapsed');
   document.getElementById('status-txt').textContent='AETHER ISF DROP';
   isfInputs={};
   // Restore defaults
@@ -1602,6 +1666,12 @@ document.getElementById('reset-btn').addEventListener('click',()=>{
 // ─────────────────────────────────────────────
 const fsBtn = document.getElementById('fs-btn');
 const exitBtn = document.getElementById('exit-visual');
+
+// TOGGLE controles shader
+document.getElementById('ctrl-toggle').addEventListener('click',()=>{
+  const collapsed = document.body.classList.toggle('ctrl-collapsed');
+  document.getElementById('ctrl-toggle').textContent = collapsed ? '+ CONTROLES' : '— OCULTAR';
+});
 
 function enterVisualMode(){
   document.body.classList.add('visual-mode');

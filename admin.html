@@ -436,6 +436,16 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
       <td></td>
     `;
     const actionTd = tr.querySelector('td:last-child');
+    // Link a perfil
+    const perfilLink = document.createElement('a');
+    perfilLink.className = 'btn-link-sm';
+    perfilLink.href = `perfil.html?uid=${uid}`;
+    perfilLink.textContent = '⌬ PERFIL';
+    perfilLink.style.cssText = 'display:inline-block;font-family:var(--mono);font-size:8px;letter-spacing:0.15em;color:rgba(184,255,0,0.5);text-decoration:none;border:1px solid rgba(184,255,0,0.2);padding:3px 8px;margin-bottom:5px;transition:all 0.2s;';
+    perfilLink.addEventListener('mouseenter',()=>{ perfilLink.style.color='var(--acid)'; perfilLink.style.borderColor='rgba(184,255,0,0.5)'; });
+    perfilLink.addEventListener('mouseleave',()=>{ perfilLink.style.color='rgba(184,255,0,0.5)'; perfilLink.style.borderColor='rgba(184,255,0,0.2)'; });
+    actionTd.appendChild(perfilLink);
+    actionTd.appendChild(document.createElement('br'));
     const btn = document.createElement('button');
     btn.className = 'toggle-btn' + (isSub ? ' revoke' : '');
     btn.textContent = isSub ? 'QUITAR ACCESO' : 'DAR ACCESO';

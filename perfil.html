@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PERFIL — HUMAN GLITCHE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --black:#050505;
+  --white:#f0ede6;
+  --acid:#b8ff00;
+  --glitch:#ff2d55;
+  --mono:'Space Mono',monospace;
+  --display:'Bebas Neue',sans-serif;
+  --body:'DM Sans',sans-serif;
+}
+html{scroll-behavior:smooth;}
+body{background:var(--black);color:var(--white);font-family:var(--body);min-height:100vh;}
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");z-index:0;pointer-events:none;opacity:0.4;}
+
+#wrap{position:relative;z-index:1;max-width:860px;margin:0 auto;padding:2.4rem 1.5rem 6rem;}
+
+/* TOP BAR */
+#top-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:3rem;flex-wrap:wrap;gap:1rem;}
+#back-link{font-family:var(--mono);font-size:9px;letter-spacing:0.18em;color:rgba(240,237,230,0.4);text-decoration:none;transition:color 0.2s;}
+#back-link:hover{color:var(--acid);}
+#own-badge{font-family:var(--mono);font-size:8px;letter-spacing:0.2em;color:var(--acid);border:1px solid rgba(184,255,0,0.3);padding:4px 10px;display:none;}
+
+/* LOADING / LOCKED */
+#gate-loading{display:flex;align-items:center;gap:8px;margin-top:6rem;font-family:var(--mono);font-size:9px;letter-spacing:0.22em;color:rgba(240,237,230,0.3);}
+.led-spin{width:6px;height:6px;border-radius:50%;border:1px solid var(--acid);border-top-color:transparent;animation:spin 0.8s linear infinite;display:inline-block;}
+@keyframes spin{to{transform:rotate(360deg)}}
+#gate-locked{display:none;text-align:center;padding:5rem 2rem;}
+#gate-locked.show{display:block;}
+.gate-title{font-family:var(--display);font-size:2.5rem;color:var(--acid);margin-bottom:1rem;}
+.gate-msg{font-family:var(--mono);font-size:10px;color:rgba(240,237,230,0.35);line-height:2;margin-bottom:2rem;}
+.gate-cta{display:inline-block;font-family:var(--mono);font-size:9px;letter-spacing:0.2em;color:var(--acid);border:1px solid var(--acid);padding:10px 22px;text-decoration:none;transition:all 0.2s;}
+.gate-cta:hover{background:var(--acid);color:var(--black);}
+
+/* CONTENT */
+#profile-content{display:none;}
+#profile-content.show{display:block;}
+
+/* ── HERO ─────────────────────────────── */
+#profile-hero{display:grid;grid-template-columns:auto 1fr;gap:2rem;align-items:start;margin-bottom:3rem;padding-bottom:3rem;border-bottom:1px solid rgba(240,237,230,0.07);}
+#avatar{width:96px;height:96px;border-radius:3px;background:rgba(184,255,0,0.08);border:1px solid rgba(184,255,0,0.25);display:flex;align-items:center;justify-content:center;font-family:var(--display);font-size:2.4rem;color:var(--acid);letter-spacing:0.05em;flex-shrink:0;overflow:hidden;position:relative;}
+#avatar img{width:100%;height:100%;object-fit:cover;display:none;}
+#avatar img.loaded{display:block;}
+#avatar-initials{pointer-events:none;}
+#avatar-upload-label{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:rgba(5,5,5,0.75);font-family:var(--mono);font-size:7px;letter-spacing:0.15em;color:var(--acid);cursor:pointer;text-align:center;}
+body.is-own #avatar:hover #avatar-upload-label{display:flex;}
+#avatar-upload{display:none;}
+.hero-info{min-width:0;}
+#display-name{font-family:var(--display);font-size:3rem;line-height:0.95;margin-bottom:0.6rem;word-break:break-word;}
+#level-badge{display:inline-flex;align-items:center;gap:8px;margin-bottom:0.8rem;}
+.lvl-tag{font-family:var(--mono);font-size:8px;letter-spacing:0.25em;color:var(--acid);border:1px solid rgba(184,255,0,0.35);padding:3px 9px;}
+.xp-num{font-family:var(--mono);font-size:8px;letter-spacing:0.15em;color:rgba(240,237,230,0.3);}
+.xp-bar-wrap{height:2px;background:rgba(240,237,230,0.08);border-radius:1px;width:180px;margin-bottom:1rem;}
+.xp-bar-fill{height:100%;background:var(--acid);border-radius:1px;transition:width 0.6s ease;}
+#bio-text{font-family:var(--mono);font-size:10px;color:rgba(240,237,230,0.45);line-height:1.9;max-width:520px;}
+#bio-text:empty::before{content:'Sin bio todavía.';color:rgba(240,237,230,0.18);}
+
+/* EDIT INLINE */
+.edit-field{background:none;border:none;border-bottom:1px solid rgba(184,255,0,0.3);color:var(--white);font-family:inherit;font-size:inherit;width:100%;outline:none;padding:2px 0;transition:border-color 0.2s;}
+.edit-field:focus{border-bottom-color:var(--acid);}
+#name-edit{font-family:var(--display);font-size:3rem;line-height:0.95;background:none;border:none;border-bottom:1px solid rgba(184,255,0,0.3);color:var(--white);width:100%;outline:none;padding:2px 0;margin-bottom:0.6rem;display:none;}
+#bio-edit{resize:none;height:70px;font-size:10px;font-family:var(--mono);line-height:1.9;color:rgba(240,237,230,0.7);display:none;}
+#edit-bar{display:none;margin-top:1rem;gap:0.7rem;flex-wrap:wrap;}
+body.is-own #edit-bar{display:flex;}
+.btn-sm{font-family:var(--mono);font-size:8px;letter-spacing:0.18em;background:none;border:1px solid rgba(240,237,230,0.2);color:rgba(240,237,230,0.5);padding:5px 12px;cursor:pointer;transition:all 0.2s;}
+.btn-sm:hover{border-color:var(--acid);color:var(--acid);}
+.btn-sm.primary{border-color:rgba(184,255,0,0.5);color:var(--acid);}
+.btn-sm.primary:hover{background:var(--acid);color:var(--black);}
+#save-status{font-family:var(--mono);font-size:8px;letter-spacing:0.15em;color:rgba(184,255,0,0.5);align-self:center;display:none;}
+
+/* ── SECCIÓN BASE ─────────────────────── */
+.sec{margin-bottom:3rem;}
+.sec-title{font-family:var(--mono);font-size:9px;letter-spacing:0.3em;color:rgba(240,237,230,0.25);text-transform:uppercase;margin-bottom:1.4rem;display:flex;align-items:center;gap:0.8rem;}
+.sec-title::after{content:'';flex:1;height:1px;background:rgba(240,237,230,0.07);}
+
+/* ── REDES SOCIALES ───────────────────── */
+#socials-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:1px;background:rgba(240,237,230,0.06);}
+.social-card{background:var(--black);padding:1.2rem;display:flex;flex-direction:column;gap:0.5rem;transition:background 0.2s;position:relative;}
+.social-card:hover{background:rgba(184,255,0,0.03);}
+.soc-platform{font-family:var(--mono);font-size:8px;letter-spacing:0.25em;color:rgba(240,237,230,0.25);text-transform:uppercase;}
+.soc-handle{font-family:var(--mono);font-size:10px;color:var(--acid);word-break:break-all;text-decoration:none;transition:opacity 0.2s;}
+.soc-handle:hover{opacity:0.7;}
+.soc-handle:empty::before{content:'—';color:rgba(240,237,230,0.15);}
+.soc-edit-input{display:none;background:none;border:none;border-bottom:1px solid rgba(184,255,0,0.25);color:var(--white);font-family:var(--mono);font-size:10px;width:100%;outline:none;padding:1px 0;}
+.soc-edit-input:focus{border-bottom-color:var(--acid);}
+body.is-own.editing-socials .soc-handle{display:none;}
+body.is-own.editing-socials .soc-edit-input{display:block;}
+#socials-empty{font-family:var(--mono);font-size:9px;color:rgba(240,237,230,0.2);padding:1.5rem 0;display:none;}
+
+#soc-edit-btn{display:none;}
+body.is-own #soc-edit-btn{display:inline-flex;}
+#soc-edit-btn.active{color:var(--acid);border-color:rgba(184,255,0,0.5);}
+
+/* ── PARCHES ──────────────────────────── */
+#patches-grid{display:flex;flex-wrap:wrap;gap:0.9rem;}
+#patches-empty{font-family:var(--mono);font-size:9px;color:rgba(240,237,230,0.2);padding:1rem 0;}
+.patch{display:flex;flex-direction:column;align-items:center;gap:5px;width:72px;cursor:default;}
+.patch-shield{width:44px;height:52px;background:rgba(184,255,0,0.08);border:1px solid rgba(184,255,0,0.3);clip-path:polygon(50% 0%,100% 20%,100% 75%,50% 100%,0% 75%,0% 20%);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:8px;font-weight:700;color:var(--acid);letter-spacing:0.05em;transition:background 0.2s;}
+.patch.dropped .patch-shield{background:rgba(255,45,85,0.08);border-color:rgba(255,45,85,0.3);color:var(--glitch);}
+.patch-name{font-family:var(--mono);font-size:7px;letter-spacing:0.1em;color:rgba(240,237,230,0.4);text-align:center;line-height:1.4;max-width:72px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.patch-skill{font-family:var(--mono);font-size:6px;letter-spacing:0.08em;color:rgba(240,237,230,0.2);text-align:center;}
+
+/* ── COMENTARIOS ADMIN ────────────────── */
+#comments-sec{display:none;}
+#comments-sec.show{display:block;}
+#comments-list{margin-bottom:1.5rem;display:flex;flex-direction:column;gap:0.8rem;}
+.comment-row{background:rgba(240,237,230,0.03);border:1px solid rgba(240,237,230,0.07);border-radius:2px;padding:1rem 1.2rem;}
+.cmr-meta{font-family:var(--mono);font-size:8px;color:rgba(240,237,230,0.2);letter-spacing:0.12em;margin-bottom:0.5rem;display:flex;justify-content:space-between;align-items:center;gap:1rem;}
+.cmr-text{font-family:var(--mono);font-size:10px;color:rgba(240,237,230,0.6);line-height:1.8;}
+.cmr-del{background:none;border:none;font-family:var(--mono);font-size:8px;color:rgba(255,45,85,0.4);cursor:pointer;padding:0;transition:color 0.2s;}
+.cmr-del:hover{color:var(--glitch);}
+#no-comments{font-family:var(--mono);font-size:9px;color:rgba(240,237,230,0.2);}
+#comment-form{display:flex;flex-direction:column;gap:0.7rem;}
+#comment-textarea{background:rgba(240,237,230,0.03);border:1px solid rgba(240,237,230,0.1);border-radius:2px;color:var(--white);font-family:var(--mono);font-size:10px;padding:0.8rem;resize:vertical;min-height:80px;outline:none;transition:border-color 0.2s;line-height:1.8;}
+#comment-textarea:focus{border-color:rgba(184,255,0,0.3);}
+#comment-submit{align-self:flex-start;}
+#comment-status{font-family:var(--mono);font-size:8px;letter-spacing:0.15em;color:rgba(184,255,0,0.5);display:none;}
+
+/* ── PROFIL PROPIO — el dueño también puede ver sus propios comentarios ─ */
+#own-comments-sec{display:none;margin-top:1rem;}
+#own-comments-sec.show{display:block;}
+.own-comment-note{font-family:var(--mono);font-size:8px;letter-spacing:0.12em;color:rgba(240,237,230,0.18);margin-bottom:1rem;}
+
+/* RESPONSIVE */
+@media(max-width:600px){
+  #profile-hero{grid-template-columns:1fr;gap:1.5rem;}
+  #avatar{width:72px;height:72px;font-size:1.8rem;}
+  #display-name{font-size:2.2rem;}
+  #socials-grid{grid-template-columns:repeat(2,1fr);}
+  .xp-bar-wrap{width:120px;}
+}
+</style>
+</head>
+<body>
+
+<div id="wrap">
+  <div id="top-bar">
+    <a id="back-link" href="index.html">← VOLVER AL SITIO</a>
+    <span id="own-badge">✦ TU PERFIL</span>
+  </div>
+
+  <div id="gate-loading"><span class="led-spin"></span> CARGANDO PERFIL…</div>
+
+  <div id="gate-locked" class="gate-box">
+    <div class="gate-title">PERFIL NO ENCONTRADO</div>
+    <div class="gate-msg" id="lock-msg">Este perfil no existe o no está disponible.</div>
+    <a class="gate-cta" href="index.html">VOLVER AL SITIO</a>
+  </div>
+
+  <div id="profile-content">
+
+    <!-- HERO -->
+    <div id="profile-hero">
+      <div id="avatar">
+        <img id="avatar-img" alt="avatar">
+        <span id="avatar-initials">HG</span>
+        <label id="avatar-upload-label" for="avatar-upload" title="Cambiar foto">⬡<br>FOTO</label>
+        <input type="file" id="avatar-upload" accept="image/*">
+      </div>
+      <div class="hero-info">
+        <div id="display-name">—</div>
+        <input id="name-edit" type="text" placeholder="Tu nombre o alias" maxlength="40">
+        <div id="level-badge">
+          <span class="lvl-tag" id="lvl-tag">NV.0 — INICIADO</span>
+          <span class="xp-num" id="xp-num">0 XP</span>
+        </div>
+        <div class="xp-bar-wrap"><div class="xp-bar-fill" id="xp-bar" style="width:0%"></div></div>
+        <div id="bio-text"></div>
+        <textarea id="bio-edit" class="edit-field" placeholder="Una línea sobre lo que hacés o buscás en HG…" maxlength="280"></textarea>
+        <div id="edit-bar">
+          <button class="btn-sm primary" id="toggle-edit-btn">✎ EDITAR PERFIL</button>
+          <button class="btn-sm" id="save-btn" style="display:none;">✓ GUARDAR</button>
+          <button class="btn-sm" id="cancel-btn" style="display:none;">✕ CANCELAR</button>
+          <span id="save-status">GUARDADO ✓</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- REDES SOCIALES -->
+    <div class="sec" id="socials-sec">
+      <div class="sec-title">
+        ⌬ REDES Y PROYECTOS
+        <button class="btn-sm" id="soc-edit-btn">✎ EDITAR</button>
+      </div>
+      <div id="socials-empty">Sin redes conectadas todavía.</div>
+      <div id="socials-grid"></div>
+    </div>
+
+    <!-- PARCHES -->
+    <div class="sec">
+      <div class="sec-title">⌬ PARCHES HG</div>
+      <div id="patches-grid"></div>
+      <div id="patches-empty">Sin parches todavía.</div>
+    </div>
+
+    <!-- COMENTARIOS — solo admin -->
+    <div class="sec" id="comments-sec">
+      <div class="sec-title">⌬ NOTAS INTERNAS <span style="font-family:var(--mono);font-size:7px;letter-spacing:0.15em;color:rgba(255,45,85,0.5);border:1px solid rgba(255,45,85,0.2);padding:2px 6px;">ADMIN</span></div>
+      <div id="comments-list"></div>
+      <div id="no-comments" style="display:none;">Sin notas todavía.</div>
+      <form id="comment-form">
+        <textarea id="comment-textarea" placeholder="Nota interna sobre este miembro…" maxlength="600"></textarea>
+        <div style="display:flex;align-items:center;gap:1rem;">
+          <button type="submit" class="btn-sm primary" id="comment-submit">+ AGREGAR NOTA</button>
+          <span id="comment-status">GUARDADO ✓</span>
+        </div>
+      </form>
+    </div>
+
+    <!-- COMENTARIOS VISIBLES AL DUEÑO DEL PERFIL -->
+    <div class="sec" id="own-comments-sec">
+      <div class="sec-title">⌬ FEEDBACK DEL EQUIPO HG</div>
+      <div class="own-comment-note">Notas que el equipo Human Glitche dejó en tu perfil.</div>
+      <div id="own-comments-list"></div>
+      <div id="own-no-comments">Sin feedback todavía.</div>
+    </div>
+
+  </div><!-- /profile-content -->
+</div><!-- /wrap -->
+
+<script>
+(function(){
+  const FB_URL    = 'https://hg-vl-shaders-default-rtdb.firebaseio.com';
+  const FB_API_KEY= 'AIzaSyAeMKHe7dj4bnaUzkF7iDANrC_cBtg4LAA';
+  const REFRESH_URL='https://securetoken.googleapis.com/v1/token';
+  const LS_KEY    = 'hg_auth_session';
+  const XP_PER_TOPIC = 20;
+  const LEVELS = [
+    { min:0,    name:'NV.0 — INICIADO'         },
+    { min:100,  name:'NV.1 — APRENDIZ'         },
+    { min:250,  name:'NV.2 — PRACTICANTE'      },
+    { min:450,  name:'NV.3 — OPERADOR'         },
+    { min:700,  name:'NV.4 — ARTESANO GLITCHE' },
+    { min:1000, name:'NV.5 — MAESTRO HG'       },
+  ];
+  const SOCIAL_DEFS = [
+    { key:'instagram', label:'INSTAGRAM',  base:'https://instagram.com/' },
+    { key:'tiktok',    label:'TIKTOK',     base:'https://tiktok.com/@'  },
+    { key:'twitter',   label:'X / TWITTER',base:'https://x.com/'        },
+    { key:'youtube',   label:'YOUTUBE',    base:'https://youtube.com/@' },
+    { key:'behance',   label:'BEHANCE',    base:'https://behance.net/'  },
+    { key:'vimeo',     label:'VIMEO',      base:'https://vimeo.com/'    },
+    { key:'github',    label:'GITHUB',     base:'https://github.com/'   },
+    { key:'website',   label:'SITIO WEB',  base:''                      },
+  ];
+
+  let TOKEN = null, VIEWER_UID = null, TARGET_UID = null;
+  let IS_ADMIN = false, IS_MOD = false, IS_OWN = false;
+  let PROFILE = {}, PROGRESS = {}, DROPPED = {}, COMMENTS = {};
+  let editMode = false, socEditMode = false;
+
+  // ── DOM refs
+  const loadingEl  = document.getElementById('gate-loading');
+  const lockedEl   = document.getElementById('gate-locked');
+  const contentEl  = document.getElementById('profile-content');
+  const ownBadge   = document.getElementById('own-badge');
+
+  function showLocked(msg){ loadingEl.style.display='none'; document.getElementById('lock-msg').textContent=msg; lockedEl.classList.add('show'); }
+
+  // ── Session helpers
+  function getSession(){ try{ return JSON.parse(localStorage.getItem(LS_KEY)||'null'); }catch(e){ return null; } }
+  function saveSession(s){ localStorage.setItem(LS_KEY, JSON.stringify(s)); }
+  async function freshToken(session){
+    if(!session.refreshToken) return session.idToken;
+    try{
+      const r = await fetch(`${REFRESH_URL}?key=${FB_API_KEY}`,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:`grant_type=refresh_token&refresh_token=${encodeURIComponent(session.refreshToken)}`});
+      if(!r.ok) return session.idToken;
+      const d = await r.json();
+      session.idToken = d.id_token; session.refreshToken = d.refresh_token;
+      saveSession(session); return session.idToken;
+    }catch(e){ return session.idToken; }
+  }
+
+  // ── Level helpers
+  function levelFor(xp){
+    let idx=0; for(let i=0;i<LEVELS.length;i++){ if(xp>=LEVELS[i].min) idx=i; } return {...LEVELS[idx],idx};
+  }
+  function totalXp(){
+    let n=0; Object.values(PROGRESS).forEach(p=>{ if(p&&typeof p==='object') n+=Object.values(p).filter(Boolean).length; }); return n*XP_PER_TOPIC;
+  }
+
+  // ── Initials from name
+  function initials(name){
+    if(!name) return 'HG';
+    const w=name.trim().split(/\s+/);
+    if(w.length>=2) return (w[0][0]+w[1][0]).toUpperCase();
+    return name.slice(0,2).toUpperCase();
+  }
+
+  // ── Patch helpers
+  function patchInitials(str){
+    if(!str) return '✦';
+    const words=str.replace(/[^\wáéíóúñÁÉÍÓÚÑ\s]/g,'').trim().split(/\s+/);
+    if(words.length===1) return words[0].slice(0,3).toUpperCase();
+    return words.slice(0,2).map(w=>w[0]).join('').toUpperCase();
+  }
+  function autoPatches(){
+    const out=[];
+    // We don't have PROGRAMS here — use mark keys directly from PROGRESS
+    Object.entries(PROGRESS).forEach(([mark,topics])=>{
+      if(!topics||typeof topics!=='object') return;
+      Object.entries(topics).forEach(([ti,done])=>{
+        if(done) out.push({kind:'auto',label:mark,name:`${mark} — tema ${parseInt(ti)+1}`,skill:mark});
+      });
+    });
+    return out;
+  }
+
+  // ── Render functions
+  function renderHero(){
+    const xp = totalXp();
+    const lvl = levelFor(xp);
+    const next = LEVELS[lvl.idx+1];
+    document.getElementById('display-name').textContent = PROFILE.displayName || '—';
+    document.getElementById('name-edit').value = PROFILE.displayName || '';
+    document.getElementById('bio-text').textContent = PROFILE.bio || '';
+    document.getElementById('bio-edit').value = PROFILE.bio || '';
+    document.getElementById('lvl-tag').textContent = lvl.name;
+    document.getElementById('xp-num').textContent = xp+' XP';
+    if(next){
+      const span=next.min-lvl.min; const prog=Math.max(0,Math.min(1,(xp-lvl.min)/span));
+      document.getElementById('xp-bar').style.width=(prog*100).toFixed(0)+'%';
+    } else { document.getElementById('xp-bar').style.width='100%'; }
+    // Avatar
+    const avImg = document.getElementById('avatar-img');
+    const avIni = document.getElementById('avatar-initials');
+    if(PROFILE.avatarUrl){ avImg.src=PROFILE.avatarUrl; avImg.onload=()=>{ avImg.classList.add('loaded'); avIni.style.display='none'; }; }
+    else { avIni.textContent = initials(PROFILE.displayName); }
+  }
+
+  function renderSocials(){
+    const grid = document.getElementById('socials-grid');
+    const empty = document.getElementById('socials-empty');
+    const socials = PROFILE.socials || {};
+    const hasAny = SOCIAL_DEFS.some(s=>socials[s.key]);
+    grid.innerHTML='';
+    if(!IS_OWN && !hasAny){ empty.style.display='block'; grid.style.display='none'; return; }
+    empty.style.display='none'; grid.style.display='grid';
+    SOCIAL_DEFS.forEach(def=>{
+      const val = socials[def.key]||'';
+      if(!IS_OWN && !val) return; // viewing others: skip empty
+      const card = document.createElement('div');
+      card.className='social-card';
+      const href = val ? (def.base && !val.startsWith('http') ? def.base+val : val) : '#';
+      card.innerHTML=`
+        <div class="soc-platform">${def.label}</div>
+        <a class="soc-handle" href="${val?href:'#'}" target="_blank" rel="noopener"${!val?' style="pointer-events:none"':''}>${val||''}</a>
+        <input class="soc-edit-input" data-key="${def.key}" type="text" placeholder="${def.key==='website'?'https://tu-sitio.com':def.label.toLowerCase()}" value="${val}">`;
+      grid.appendChild(card);
+    });
+  }
+
+  function renderPatches(){
+    const grid  = document.getElementById('patches-grid');
+    const empty = document.getElementById('patches-empty');
+    const auto  = autoPatches();
+    const dropped = Object.keys(DROPPED||{}).map(id=>({id,...DROPPED[id]}));
+    const total = auto.length+dropped.length;
+    grid.innerHTML='';
+    empty.style.display = total ? 'none' : '';
+    auto.forEach(pa=>{
+      const el=document.createElement('div'); el.className='patch';
+      el.innerHTML=`<div class="patch-shield">${pa.label}</div><div class="patch-name">${pa.name}</div><div class="patch-skill">${pa.skill}</div>`;
+      grid.appendChild(el);
+    });
+    dropped.forEach(pd=>{
+      const el=document.createElement('div'); el.className='patch dropped';
+      el.innerHTML=`<div class="patch-shield">${patchInitials(pd.name)}</div><div class="patch-name">${pd.name||'Parche especial'}</div>${pd.skill?`<div class="patch-skill">${pd.skill}</div>`:''}`;
+      grid.appendChild(el);
+    });
+  }
+
+  function fmtDate(ts){
+    return new Date(ts).toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+  }
+
+  function renderComments(){
+    const list    = document.getElementById('comments-list');
+    const noComm  = document.getElementById('no-comments');
+    const ownList = document.getElementById('own-comments-list');
+    const ownNo   = document.getElementById('own-no-comments');
+    const entries = Object.entries(COMMENTS).sort((a,b)=>a[1].createdAt-b[1].createdAt);
+
+    // Admin view
+    if(IS_ADMIN||IS_MOD){
+      list.innerHTML='';
+      if(!entries.length){ noComm.style.display='block'; }
+      else{
+        noComm.style.display='none';
+        entries.forEach(([id,c])=>{
+          const row=document.createElement('div'); row.className='comment-row';
+          row.innerHTML=`
+            <div class="cmr-meta">
+              <span>${c.author||'Equipo HG'} — ${fmtDate(c.createdAt)}</span>
+              ${IS_ADMIN?`<button class="cmr-del" data-id="${id}">✕ eliminar</button>`:''}
+            </div>
+            <div class="cmr-text">${c.text.replace(/\n/g,'<br>')}</div>`;
+          list.appendChild(row);
+        });
+        list.querySelectorAll('.cmr-del').forEach(btn=>{
+          btn.addEventListener('click',()=>deleteComment(btn.dataset.id));
+        });
+      }
+    }
+
+    // Own profile view (non-admin owner)
+    if(IS_OWN && !IS_ADMIN && !IS_MOD){
+      const secEl = document.getElementById('own-comments-sec');
+      if(!entries.length){ ownNo.style.display='block'; secEl.classList.add('show'); }
+      else{
+        ownNo.style.display='none'; secEl.classList.add('show');
+        ownList.innerHTML='';
+        entries.forEach(([,c])=>{
+          const row=document.createElement('div'); row.className='comment-row';
+          row.innerHTML=`<div class="cmr-meta">${c.author||'Equipo HG'} — ${fmtDate(c.createdAt)}</div><div class="cmr-text">${c.text.replace(/\n/g,'<br>')}</div>`;
+          ownList.appendChild(row);
+        });
+      }
+    }
+  }
+
+  // ── Firebase helpers
+  async function fbGet(path, useToken){
+    const url = `${FB_URL}${path}.json${useToken?`?auth=${TOKEN}`:''}`;
+    const r = await fetch(url); return r.ok ? (await r.json()) : null;
+  }
+  async function fbPut(path, data){
+    const r = await fetch(`${FB_URL}${path}.json?auth=${TOKEN}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+    return r.ok;
+  }
+  async function fbPost(path, data){
+    const r = await fetch(`${FB_URL}${path}.json?auth=${TOKEN}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+    return r.ok ? await r.json() : null;
+  }
+  async function fbDelete(path){
+    const r = await fetch(`${FB_URL}${path}.json?auth=${TOKEN}`,{method:'DELETE'});
+    return r.ok;
+  }
+
+  // ── Save profile
+  async function saveProfile(){
+    const nameVal = document.getElementById('name-edit').value.trim();
+    const bioVal  = document.getElementById('bio-edit').value.trim();
+    PROFILE.displayName = nameVal;
+    PROFILE.bio = bioVal;
+    PROFILE.updatedAt = Date.now();
+    const ok = await fbPut(`/profiles/${TARGET_UID}`, PROFILE);
+    if(ok){
+      const st=document.getElementById('save-status');
+      st.style.display='inline';
+      setTimeout(()=>{ st.style.display='none'; },2000);
+      renderHero();
+      exitEditMode();
+    }
+  }
+
+  // ── Save socials
+  async function saveSocials(){
+    const inputs = document.querySelectorAll('.soc-edit-input');
+    const socials = PROFILE.socials || {};
+    inputs.forEach(inp=>{ socials[inp.dataset.key]=inp.value.trim(); });
+    PROFILE.socials = socials;
+    PROFILE.updatedAt = Date.now();
+    await fbPut(`/profiles/${TARGET_UID}`, PROFILE);
+    renderSocials();
+    document.body.classList.remove('editing-socials');
+    socEditMode = false;
+    document.getElementById('soc-edit-btn').textContent='✎ EDITAR';
+    document.getElementById('soc-edit-btn').classList.remove('active');
+  }
+
+  // ── Edit mode toggles
+  function enterEditMode(){
+    editMode=true;
+    document.getElementById('display-name').style.display='none';
+    document.getElementById('name-edit').style.display='block';
+    document.getElementById('bio-text').style.display='none';
+    document.getElementById('bio-edit').style.display='block';
+    document.getElementById('toggle-edit-btn').style.display='none';
+    document.getElementById('save-btn').style.display='inline-flex';
+    document.getElementById('cancel-btn').style.display='inline-flex';
+  }
+  function exitEditMode(){
+    editMode=false;
+    document.getElementById('display-name').style.display='';
+    document.getElementById('name-edit').style.display='none';
+    document.getElementById('bio-text').style.display='';
+    document.getElementById('bio-edit').style.display='none';
+    document.getElementById('toggle-edit-btn').style.display='';
+    document.getElementById('save-btn').style.display='none';
+    document.getElementById('cancel-btn').style.display='none';
+  }
+
+  // ── Add/delete comment
+  async function addComment(text){
+    const data = { text, author: PROFILE_VIEWER_NAME, authorUid: VIEWER_UID, createdAt: Date.now() };
+    const res = await fbPost(`/profile-comments/${TARGET_UID}`, data);
+    if(res){ COMMENTS[res.name]=data; renderComments(); return true; }
+    return false;
+  }
+  async function deleteComment(id){
+    await fbDelete(`/profile-comments/${TARGET_UID}/${id}`);
+    delete COMMENTS[id]; renderComments();
+  }
+
+  // ── Avatar upload (base64 → Firebase profile)
+  document.getElementById('avatar-upload').addEventListener('change', async function(){
+    const file=this.files[0]; if(!file) return;
+    if(file.size>500000){ alert('Imagen muy grande (máx 500KB)'); return; }
+    const reader=new FileReader();
+    reader.onload=async e=>{
+      PROFILE.avatarUrl=e.target.result;
+      PROFILE.updatedAt=Date.now();
+      await fbPut(`/profiles/${TARGET_UID}`,PROFILE);
+      renderHero();
+    };
+    reader.readAsDataURL(file);
+  });
+
+  // ── Social edit btn
+  document.getElementById('soc-edit-btn').addEventListener('click',()=>{
+    socEditMode=!socEditMode;
+    if(socEditMode){
+      document.body.classList.add('editing-socials');
+      document.getElementById('soc-edit-btn').textContent='✓ GUARDAR REDES';
+      document.getElementById('soc-edit-btn').classList.add('active');
+    } else {
+      saveSocials();
+    }
+  });
+
+  // ── Profile edit btns
+  document.getElementById('toggle-edit-btn').addEventListener('click', enterEditMode);
+  document.getElementById('save-btn').addEventListener('click', saveProfile);
+  document.getElementById('cancel-btn').addEventListener('click',()=>{ exitEditMode(); renderHero(); });
+
+  // ── Comment form
+  document.getElementById('comment-form').addEventListener('submit', async e=>{
+    e.preventDefault();
+    const ta=document.getElementById('comment-textarea');
+    const text=ta.value.trim(); if(!text) return;
+    const btn=document.getElementById('comment-submit');
+    btn.disabled=true;
+    const ok=await addComment(text);
+    if(ok){
+      ta.value='';
+      const st=document.getElementById('comment-status');
+      st.style.display='inline'; setTimeout(()=>{ st.style.display='none'; },2000);
+    }
+    btn.disabled=false;
+  });
+
+  // ── INIT
+  let PROFILE_VIEWER_NAME = 'Equipo HG';
+
+  async function init(){
+    const params = new URLSearchParams(location.search);
+    TARGET_UID = params.get('uid');
+
+    const session = getSession();
+    if(session){
+      try{
+        TOKEN = await freshToken(session);
+        VIEWER_UID = session.uid;
+        // Check viewer roles in parallel
+        const [adminR, modR] = await Promise.all([
+          fetch(`${FB_URL}/admins/${VIEWER_UID}.json?auth=${TOKEN}`),
+          fetch(`${FB_URL}/moderators/${VIEWER_UID}.json?auth=${TOKEN}`)
+        ]);
+        IS_ADMIN = adminR.ok && (await adminR.json())===true;
+        IS_MOD   = modR.ok  && (await modR.json())===true;
+      }catch(e){ /* continue as guest */ }
+    }
+
+    // If no uid param → own profile
+    if(!TARGET_UID){
+      if(!VIEWER_UID){ showLocked('Iniciá sesión en el sitio principal para ver tu perfil.'); return; }
+      TARGET_UID = VIEWER_UID;
+    }
+
+    IS_OWN = (VIEWER_UID && VIEWER_UID === TARGET_UID);
+    if(IS_OWN) document.body.classList.add('is-own');
+
+    // Load profile data (public) + progress + patches + comments in parallel
+    const authSuffix = TOKEN ? `?auth=${TOKEN}` : '';
+    const [profR, progR, patchR] = await Promise.all([
+      fetch(`${FB_URL}/profiles/${TARGET_UID}.json`),
+      fetch(`${FB_URL}/progress/${TARGET_UID}.json${authSuffix}`),
+      fetch(`${FB_URL}/patches/${TARGET_UID}.json${authSuffix}`),
+    ]);
+
+    PROFILE  = profR.ok  ? (await profR.json()  || {}) : {};
+    PROGRESS = progR.ok  ? (await progR.json()  || {}) : {};
+    DROPPED  = patchR.ok ? (await patchR.json() || {}) : {};
+
+    // Comments: admin/mod/owner can read
+    if(IS_ADMIN || IS_MOD || IS_OWN){
+      try{
+        const commR = await fetch(`${FB_URL}/profile-comments/${TARGET_UID}.json?auth=${TOKEN}`);
+        COMMENTS = commR.ok ? (await commR.json() || {}) : {};
+      }catch(e){ COMMENTS={}; }
+    }
+
+    // Get viewer display name for comments
+    if(VIEWER_UID && TOKEN){
+      try{
+        const vp = await fetch(`${FB_URL}/profiles/${VIEWER_UID}.json?auth=${TOKEN}`);
+        const vpd = vp.ok ? await vp.json() : null;
+        PROFILE_VIEWER_NAME = vpd?.displayName || 'Equipo HG';
+      }catch(e){}
+    }
+
+    // If no profile exists yet and it's own → create empty
+    if(!PROFILE && IS_OWN) PROFILE = {};
+
+    // Render everything
+    loadingEl.style.display='none';
+    contentEl.classList.add('show');
+    if(IS_OWN) ownBadge.style.display='inline-block';
+
+    renderHero();
+    renderSocials();
+    renderPatches();
+
+    // Comments visibility
+    if(IS_ADMIN||IS_MOD){
+      document.getElementById('comments-sec').classList.add('show');
+    }
+    renderComments();
+
+    // Back link: if admin viewing someone else's profile, go back to admin panel
+    if((IS_ADMIN||IS_MOD) && !IS_OWN){
+      document.getElementById('back-link').href='admin.html';
+      document.getElementById('back-link').textContent='← PANEL ADMIN';
+    }
+  }
+
+  init();
+})();
+</script>
+</body>
+</html>
