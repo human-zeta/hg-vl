@@ -339,6 +339,27 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .ex-item:hover{border-color:rgba(184,255,0,0.4);background:rgba(184,255,0,0.07);}
 .ex-name{font-size:9px;letter-spacing:0.1em;color:#f0ede6;}
 .ex-desc{font-size:7.5px;letter-spacing:0.05em;color:rgba(240,237,230,0.3);margin-top:3px;line-height:1.5;}
+#lobby-list{display:flex;flex-direction:column;gap:6px;}
+#lobby-empty{font-size:8px;letter-spacing:0.08em;color:rgba(240,237,230,0.2);text-align:center;padding:0.6rem 0;}
+.lobby-item{
+  display:block;padding:9px 11px;border:1px solid rgba(240,237,230,0.1);border-radius:2px;
+  background:rgba(255,255,255,0.02);text-decoration:none;transition:all 0.2s;cursor:pointer;
+}
+.lobby-item:hover{border-color:rgba(184,255,0,0.25);background:rgba(184,255,0,0.03);}
+.lobby-item.launched{border-color:rgba(255,45,85,0.2);background:rgba(255,45,85,0.02);}
+.li-top{display:flex;align-items:center;gap:6px;margin-bottom:3px;}
+.li-type{
+  font-size:7px;letter-spacing:0.16em;text-transform:uppercase;
+  padding:2px 6px;border-radius:20px;border:1px solid transparent;
+}
+.li-title{font-size:9px;letter-spacing:0.08em;color:#f0ede6;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.li-status{font-size:7px;letter-spacing:0.12em;text-transform:uppercase;color:rgba(240,237,230,0.3);margin-top:2px;}
+.li-status.lanzada{color:var(--glitch);}
+#lobby-see-all{
+  display:block;margin-top:8px;font-size:8px;letter-spacing:0.14em;
+  color:rgba(184,255,0,0.5);text-decoration:none;transition:color 0.2s;text-align:center;padding:4px 0;
+}
+#lobby-see-all:hover{color:var(--acid);}
 #profile-doc-links{display:flex;flex-direction:column;gap:7px;}
 #profile-doc-links a{
   font-size:8.5px;letter-spacing:0.1em;color:rgba(240,237,230,0.45);text-decoration:none;
@@ -788,6 +809,14 @@ body.visual-mode #exit-visual{z-index:9000!important;}
         <div id="exclusive-list">
           <div id="exclusive-empty">Cargando material exclusivo…</div>
         </div>
+      </div>
+
+      <div class="profile-block">
+        <div class="profile-block-title">⚡ SALAS ACTIVAS — tus lobbies en curso</div>
+        <div id="lobby-list">
+          <div id="lobby-empty">Cargando salas…</div>
+        </div>
+        <a href="lobbies.html" id="lobby-see-all">→ VER TODAS LAS SALAS</a>
       </div>
 
       <div class="profile-block">
@@ -2510,6 +2539,47 @@ document.querySelectorAll('.bcard').forEach(c=>{
     }
   }
 
+  const TYPE_COLORS_PANEL = {
+    'PROYECTO':'#b8ff00','COLLAB':'#00d4ff','JAM':'#ff6b00','BRAINSTORM':'#9b59ff','PRODUCCIÓN':'#ff2d8a'
+  };
+
+  async function loadLobbies(session){
+    const lobbyList  = document.getElementById('lobby-list');
+    const lobbyEmpty = document.getElementById('lobby-empty');
+    if(!lobbyList || !lobbyEmpty) return;
+    lobbyList.querySelectorAll('.lobby-item').forEach(el=>el.remove());
+    lobbyEmpty.style.display = 'block';
+    lobbyEmpty.textContent = 'Cargando salas…';
+    try{
+      const r = await fetch(`${FB_URL}/lobbies.json`);
+      const data = r.ok ? await r.json() : null;
+      if(!data){ lobbyEmpty.textContent = 'No estás en ninguna sala — ¿arrancamos?'; return; }
+      const mine = Object.entries(data)
+        .map(([id,l])=>({id,...l}))
+        .filter(l => l && l.members && l.members[session.uid]);
+      if(!mine.length){ lobbyEmpty.textContent = 'No estás en ninguna sala — ¿arrancamos?'; return; }
+      lobbyEmpty.style.display = 'none';
+      mine.forEach(l=>{
+        const color = TYPE_COLORS_PANEL[l.type] || 'var(--acid)';
+        const count = Object.keys(l.members||{}).length;
+        const launched = l.status === 'launched';
+        const div = document.createElement('a');
+        div.className = 'lobby-item' + (launched ? ' launched' : '');
+        div.href = 'lobbies.html';
+        div.innerHTML = `
+          <div class="li-top">
+            <span class="li-type" style="color:${color};border-color:${color}30;background:${color}11;">${l.type||''}</span>
+            <span class="li-title">${l.title||'Sin título'}</span>
+          </div>
+          <div class="li-status${launched?' lanzada':''}">${launched?'● LANZADA':`${count} / ${l.capacity||4} — ESPERANDO`}</div>
+        `;
+        lobbyList.appendChild(div);
+      });
+    }catch(e){
+      lobbyEmpty.textContent = 'No se pudieron cargar las salas.';
+    }
+  }
+
   async function checkAdmin(session){
     const adminLink = document.getElementById('profile-admin-link');
     if(!adminLink) return;
@@ -2542,6 +2612,7 @@ document.querySelectorAll('.bcard').forEach(c=>{
     renderIdentity(session);
     loadProfile(session);
     loadExclusive(session);
+    loadLobbies(session);
     checkAdmin(session);
   }
   function closePanel(){ overlay.classList.remove('show'); setStatus(''); }
