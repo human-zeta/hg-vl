@@ -232,11 +232,37 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .temario-list li{list-style:none;}
 .xp-tag{font-size:7px;letter-spacing:0.1em;color:rgba(184,255,0,0.4);margin-left:6px;white-space:nowrap;}
 
-/* PARCHES — estilo scout */
-#patches-block{margin-bottom:2.4rem;}
+/* PARCHES — panel lateral ocultable */
+#patches-sidebar{
+  position:fixed;top:0;right:0;height:100vh;z-index:600;
+  display:flex;align-items:flex-start;
+  transition:transform 0.35s ease;
+}
+#patches-sidebar.collapsed{transform:translateX(calc(100% - 34px));}
+#patches-toggle{
+  writing-mode:vertical-rl;text-orientation:mixed;
+  background:rgba(184,255,0,0.06);border:1px solid rgba(184,255,0,0.25);
+  border-right:none;color:var(--acid);font-family:var(--mono);
+  font-size:9px;letter-spacing:0.25em;padding:1.2rem 0.5rem;
+  cursor:pointer;border-radius:3px 0 0 3px;align-self:center;
+  transition:background 0.2s;flex-shrink:0;
+}
+#patches-toggle:hover{background:rgba(184,255,0,0.12);}
+#patches-panel{
+  width:240px;max-height:80vh;overflow-y:auto;
+  background:rgba(10,10,10,0.94);backdrop-filter:blur(8px);
+  border:1px solid rgba(184,255,0,0.2);border-right:none;
+  border-radius:3px 0 0 3px;padding:1.2rem;margin-top:6vh;
+}
 .patches-label{font-family:var(--mono);font-size:8px;letter-spacing:0.22em;color:rgba(240,237,230,0.35);text-transform:uppercase;margin-bottom:0.9rem;}
 #patches-grid{display:flex;flex-wrap:wrap;gap:0.9rem;}
+#patches-panel #patches-grid{flex-direction:column;gap:0.7rem;}
+#patches-panel .patch{flex-direction:row;align-items:center;text-align:left;width:auto;}
+#patches-panel .patch-shield{flex-shrink:0;}
 #patches-empty{font-family:var(--mono);font-size:8.5px;letter-spacing:0.06em;color:rgba(240,237,230,0.25);line-height:1.8;max-width:480px;}
+@media(max-width:760px){
+  #patches-sidebar{display:none;}
+}
 .patch{
   width:96px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px;
   cursor:default;
@@ -296,14 +322,18 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
         <div class="xb-bar-label" id="xb-bar-label"></div>
       </div>
     </div>
-    <div id="patches-block">
-      <div class="patches-label">⌬ Mis parches — estilo scout, por cada eje aprendido y cada charla presencial</div>
-      <div id="patches-grid"></div>
-      <div id="patches-empty">Todavía no tenés parches — marcá ejes del temario como aprendidos para ganar tus primeros, o sumate a una charla presencial de la comunidad para recibir uno especial del equipo.</div>
-    </div>
     <div id="program-grid"><!-- generado por JS --></div>
   </div>
 
+</div>
+
+<div id="patches-sidebar" class="collapsed">
+  <button id="patches-toggle" type="button">⌬ MIS PARCHES</button>
+  <div id="patches-panel">
+    <div class="patches-label">⌬ Mis parches — estilo scout, por cada eje aprendido y cada charla presencial</div>
+    <div id="patches-grid"></div>
+    <div id="patches-empty">Todavía no tenés parches — marcá ejes del temario como aprendidos para ganar tus primeros, o sumate a una charla presencial de la comunidad para recibir uno especial del equipo.</div>
+  </div>
 </div>
 
 <script>
@@ -806,6 +836,10 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
     document.body.style.overflow = '';
   }
   document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeModal(); });
+
+  const patchesSidebar = document.getElementById('patches-sidebar');
+  const patchesToggle  = document.getElementById('patches-toggle');
+  patchesToggle.addEventListener('click', ()=> patchesSidebar.classList.toggle('collapsed'));
 
   checkAccess();
 })();
