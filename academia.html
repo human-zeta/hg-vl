@@ -100,6 +100,50 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .temario-list li::before{content:'→';position:absolute;left:0;color:rgba(184,255,0,0.4);}
 .temario-note{font-size:8px;letter-spacing:0.05em;color:rgba(240,237,230,0.25);margin-top:0.9rem;line-height:1.7;font-style:italic;}
 
+.topic-title-btn{
+  background:none;border:none;padding:0;text-align:left;cursor:pointer;
+  font-family:var(--mono);font-size:9px;letter-spacing:0.05em;
+  color:rgba(240,237,230,0.5);line-height:1.6;flex:1;transition:color 0.2s;
+}
+.topic-title-btn:hover{color:rgba(240,237,230,0.8);}
+.topic-expand-ind{
+  font-size:8px;color:rgba(184,255,0,0.3);margin-left:6px;
+  transition:transform 0.2s,color 0.2s;flex-shrink:0;user-select:none;
+  cursor:pointer;
+}
+.topic-row.has-content .topic-expand-ind{color:rgba(184,255,0,0.4);}
+.topic-content{
+  display:none;margin:0.5rem 0 0.3rem 20px;
+  padding:0.9rem 1rem;
+  border-left:2px solid rgba(184,255,0,0.15);
+  font-family:var(--body);font-size:9px;line-height:1.82;
+  color:rgba(240,237,230,0.45);
+}
+.topic-content.open{display:block;}
+.topic-content h3{
+  font-family:var(--mono);font-size:7.5px;letter-spacing:0.2em;
+  color:rgba(184,255,0,0.55);text-transform:uppercase;
+  margin:0.9rem 0 0.35rem;
+}
+.topic-content h3:first-child{margin-top:0;}
+.topic-content p{margin-bottom:0.65rem;}
+.topic-content ul{padding-left:1.1rem;margin-bottom:0.65rem;}
+.topic-content li{margin-bottom:0.3rem;}
+.topic-content strong{color:rgba(240,237,230,0.72);}
+.topic-content blockquote{
+  border-left:2px solid rgba(184,255,0,0.25);padding-left:0.8rem;
+  color:rgba(240,237,230,0.35);font-style:italic;margin:0.5rem 0;
+}
+.topic-content .ejercicio{
+  margin-top:0.9rem;padding:0.8rem 1rem;
+  border:1px solid rgba(184,255,0,0.15);border-radius:2px;
+  background:rgba(184,255,0,0.03);
+}
+.topic-content .ejercicio-label{
+  font-family:var(--mono);font-size:7px;letter-spacing:0.2em;
+  color:rgba(184,255,0,0.5);text-transform:uppercase;margin-bottom:0.4rem;
+}
+
 #academy-content{display:none;}
 #academy-content.show{display:block;}
 #gate-locked{display:none;}
@@ -306,11 +350,100 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
       'Sincronización con audio y MIDI/OSC',
       'Armado de un set para show en vivo'] },
     { mark:'VDMX', name:'VDMX', cat:'Visuales en vivo', topics:[
-      'Arquitectura modular y patches',
-      'Mezcla de capas y crossfading',
-      'Inputs externos — cámara, audio, datos',
-      'Control en vivo — MIDI, teclado, OSC',
-      'Construcción de una interfaz de performance'] },
+      { title:'Arquitectura modular y patches', content:`<h3>Qué es VDMX</h3>
+<p>VDMX es un software VJ modular para macOS, desarrollado por Vidvox. A diferencia de Resolume —que trabaja con una línea de tiempo fija— VDMX está diseñado desde cero para performance en tiempo real: cada elemento es un módulo que podés conectar, apilar y controlar de forma independiente.</p>
+<p>El concepto central es el <strong>patch</strong> — una configuración de módulos interconectados que define cómo se genera, procesa y mezcla el video. Cada vez que abrís VDMX, trabajás dentro de un patch. Un patch puede ser tan simple como un reproductor de video o tan complejo como un sistema de generación procedural con múltiples entradas de datos.</p>
+<h3>Los módulos principales</h3>
+<ul>
+<li><strong>Movie File Player</strong>: reproduce archivos de video desde tu disco</li>
+<li><strong>Camera</strong>: captura señal de cualquier cámara conectada al sistema</li>
+<li><strong>Generator / ISF</strong>: genera visuales procedurales desde shaders GLSL</li>
+<li><strong>Audio Analysis</strong>: analiza frecuencias y amplitud de una señal de audio en tiempo real</li>
+<li><strong>Layer Compositor</strong>: mezcla capas con modos de blending y opacidad</li>
+<li><strong>FX Chain</strong>: aplica efectos en cadena sobre cualquier señal de video</li>
+</ul>
+<h3>Cómo se conectan</h3>
+<p>En VDMX todo tiene una entrada y una salida. Una fuente de video —Movie Player, Camera, Generator— produce señal. Esa señal entra a un Layer dentro del Layer Compositor, que la mezcla con otras capas y produce el output final. Podés tener múltiples Compositors para procesamiento en cascada.</p>
+<p>Lo que hace poderoso a este sistema es que cualquier parámetro de cualquier módulo puede ser <strong>mapeado</strong> a cualquier otra cosa: un slider, un valor de audio, un mensaje MIDI, una señal OSC, o incluso el output de otro módulo. Eso es lo que convierte a VDMX en un instrumento.</p>
+<h3>Error frecuente</h3>
+<p>No guardar el patch durante la sesión. VDMX no tiene autoguardado por defecto. Guardá frecuentemente con ⌘S y nombrá las versiones con fecha.</p>
+<div class="ejercicio"><div class="ejercicio-label">✦ Ejercicio</div>Creá un patch desde cero con tres fuentes distintas: un clip de video, una cámara o input virtual, y un generator ISF básico. Conectalas todas a un Layer Compositor. Explorá qué pasa cuando activás y desactivás cada fuente. Guardá el patch con un nombre descriptivo.</div>` },
+      { title:'Mezcla de capas y crossfading', content:`<h3>El Layer Compositor</h3>
+<p>El Layer Compositor es el módulo central de mezcla. Cada Compositor tiene N capas que se apilan de abajo hacia arriba. La capa más baja es la base; las superiores se mezclan sobre ella según su modo de blending y opacidad.</p>
+<h3>Modos de blending principales</h3>
+<ul>
+<li><strong>Normal</strong>: la capa superior reemplaza a la inferior según su opacidad</li>
+<li><strong>Add</strong>: suma los valores de pixel — ideal para efectos luminosos y partículas</li>
+<li><strong>Multiply</strong>: multiplica los valores — oscurece, útil para texturas y overlays</li>
+<li><strong>Screen</strong>: inverso de Multiply — aclara, bueno para efectos de luz y humo</li>
+<li><strong>Difference</strong>: resta los valores — produce colores invertidos y efectos psicodélicos</li>
+<li><strong>Overlay</strong>: combina Multiply y Screen según el tono base — aumenta contraste</li>
+</ul>
+<h3>Crossfading entre fuentes</h3>
+<p>Cuando una capa tiene dos fuentes asignadas, el crossfader de esa capa controla la transición entre ellas. Podés automatizarlo, controlarlo con MIDI, o hacer el crossfade manualmente. La velocidad se define por tiempo —en segundos— o por beats si VDMX detecta el BPM del audio.</p>
+<h3>Grupos de capas</h3>
+<p>VDMX te permite agrupar capas para procesarlas como unidad. Un grupo es, en sí mismo, una señal de video que podés tratar como fuente para otro módulo. Esto abre la puerta a cadenas de efectos complejas sin comprometer el rendimiento.</p>
+<h3>Transiciones con efectos</h3>
+<p>Además de la opacidad, podés agregar transiciones visuales entre capas: zoom, blur, pixelación, wipe. Estas transiciones viven en el FX Chain de la capa y se activan durante el cruce.</p>
+<div class="ejercicio"><div class="ejercicio-label">✦ Ejercicio</div>Armá un Layer Compositor con tres capas. Asigná modos de blending distintos a cada una y practicá hacer crossfades manuales y automáticos. Grabá el resultado con el grabador interno de VDMX y analizá qué combinaciones funcionan mejor para tu estética.</div>` },
+      { title:'Inputs externos — cámara, audio, datos', content:`<h3>Cámara</h3>
+<p>VDMX reconoce cualquier cámara que aparezca en macOS — webcam interna, cámara externa USB/HDMI con capturadora, o cámara IP. Se agrega como un módulo "Camera" y se conecta como cualquier otra fuente visual. Podés tener múltiples cámaras simultáneas.</p>
+<h3>Syphon y NDI</h3>
+<p>Syphon es el protocolo estándar en macOS para compartir video entre aplicaciones sin perder calidad ni performance. Si Resolume, TouchDesigner, o cualquier app compatible genera video con Syphon, VDMX puede recibirlo como fuente en tiempo real. NDI hace lo mismo pero vía red — ideal para setups distribuidos o para recibir señal desde otra máquina.</p>
+<h3>Audio Analysis</h3>
+<p>El módulo Audio Analysis descompone la señal de audio en valores controlables:</p>
+<ul>
+<li><strong>Amplitude</strong>: volumen general — la señal más básica y reactiva</li>
+<li><strong>Beat Detection</strong>: detecta el pulso del audio y genera pulsos discretos en cada golpe</li>
+<li><strong>FFT</strong>: análisis por frecuencias — podés extraer sub, medios y agudos por separado</li>
+<li><strong>BPM</strong>: tempo estimado — sincroniza animaciones al ritmo de la música</li>
+</ul>
+<p>Cada valor puede mapearse a cualquier parámetro: Amplitude → opacidad, Beat → trigger de clip, FFT de sub → intensidad de un efecto.</p>
+<h3>OSC desde el teléfono</h3>
+<p>OSC (Open Sound Control) es un protocolo de red. Cualquier app que envíe mensajes OSC — TouchOSC, Lemur, Pure Data — puede controlar parámetros de VDMX en tiempo real vía WiFi. Configurás la IP y puerto en las preferencias de VDMX y asignás cada mensaje OSC a un parámetro.</p>
+<div class="ejercicio"><div class="ejercicio-label">✦ Ejercicio</div>Conectá el análisis de audio a tres parámetros distintos de tu patch: uno de amplitud, uno de beat y uno de FFT de frecuencia. Reproducí música variada y observá cómo reacciona el sistema. Ajustá el rango y la respuesta de cada mapeo hasta que la reacción se sienta musical, no mecánica.</div>` },
+      { title:'Control en vivo — MIDI, teclado, OSC', content:`<h3>MIDI Learn</h3>
+<p>VDMX tiene un sistema de MIDI learn global: hacés clic derecho sobre cualquier parámetro y elegís "MIDI Learn". Luego movés el control físico en tu controlador y la asignación queda hecha. La próxima vez que muevas ese knob, ese parámetro responde.</p>
+<p>Los controles MIDI más comunes en un setup VJ:</p>
+<ul>
+<li><strong>Knobs / potenciómetros</strong>: opacidad de capas, intensidad de efectos, velocidad de reproducción</li>
+<li><strong>Faders</strong>: crossfaders entre fuentes o capas</li>
+<li><strong>Botones / pads</strong>: trigger de clips, activación de efectos, cambio de preset</li>
+<li><strong>Rueda de pitch</strong>: control fino de parámetros continuos con alta precisión</li>
+</ul>
+<h3>Control de teclado</h3>
+<p>VDMX soporta asignación de teclado. Podés definir que la barra espaciadora active/desactive una capa, que 1–9 disparen clips, que las flechas cambien de preset. Es útil cuando no tenés un controlador MIDI a mano o para acciones rápidas en el medio de un set.</p>
+<h3>OSC desde dispositivos externos</h3>
+<p>Con una app como TouchOSC o Lemur en tu teléfono, podés crear una interfaz táctil personalizada — un pad de 4×4, sliders para cada parámetro, botones de preset — y enviarla vía WiFi a VDMX. Todo diseñado por vos, todo controlando tu patch en tiempo real.</p>
+<h3>Presets y snapshots</h3>
+<p>VDMX puede guardar el estado completo de un patch en un preset. Durante el performance podés hacer transiciones entre presets: inmediatas o con crossfade. Esto te da "escenas" preparadas — apertura, clímax, cierre — y podés navegar entre ellas en vivo sin improvisar desde cero.</p>
+<div class="ejercicio"><div class="ejercicio-label">✦ Ejercicio</div>Configurá un controlador MIDI (físico o virtual) y asigná: un fader a la opacidad de una capa, dos botones a trigger de dos clips distintos, y un knob a un parámetro de un efecto. Grabá un performance corto de 2 minutos usando solo esos controles. Notá qué falta y ajustá el mapeo.</div>` },
+      { title:'Construcción de una interfaz de performance', content:`<h3>Principios de un buen patch de performance</h3>
+<p>El patch de performance no es el mismo que usás para explorar. Es un instrumento diseñado para condiciones específicas: presión, oscuridad, cambios rápidos, errores posibles.</p>
+<ul>
+<li><strong>Mínimo necesario</strong>: cada módulo que agregás es algo que puede fallar o distraerte. Solo va lo que usás en el show.</li>
+<li><strong>Todo mapeado</strong>: en el momento del show no hay tiempo para hacer clic derecho. Todo lo que tocás en vivo tiene que estar asignado antes de subir al escenario.</li>
+<li><strong>Prueba de falla</strong>: ¿qué pasa si un clip no carga? ¿si la cámara se desconecta? Un buen patch tiene fallbacks: generadores que siempre funcionan, loops de seguridad, capas de backup.</li>
+<li><strong>Organización visual</strong>: nombrá cada módulo con claridad. En la oscuridad del show vas a leer "CÁMARA FRONTAL" mucho más rápido que "Camera 1".</li>
+</ul>
+<h3>Construyendo el set</h3>
+<ul>
+<li><strong>Definí el setlist visual</strong>: cuántas escenas, cómo transicionás entre ellas</li>
+<li><strong>Organizá el contenido</strong>: carpetas por escena, nombres claros, archivos en formato HAP para mejor rendimiento</li>
+<li><strong>Armá la jerarquía de capas</strong>: cuáles van abajo (loops base), cuáles arriba (efectos, cámara live)</li>
+<li><strong>Mapeá el hardware</strong>: asigná todo antes del show, hacé un diagrama si es necesario</li>
+<li><strong>Probá el sistema completo</strong>: al menos una vez, reproducí el set de principio a fin en condiciones parecidas al show real</li>
+</ul>
+<h3>El check antes del show</h3>
+<ul>
+<li>Archivos de video en formato HAP (mejor performance en macOS)</li>
+<li>Sample rate de audio configurado y recibiendo señal</li>
+<li>MIDI y OSC recibiendo señal correctamente</li>
+<li>Output configurado para la resolución del proyector o pantalla</li>
+<li>Patch guardado con la versión y fecha del show en el nombre</li>
+</ul>
+<div class="ejercicio"><div class="ejercicio-label">✦ Ejercicio final de integración</div>Construí un patch de performance de 20 minutos. Que incluya: mínimo 3 escenas con transición entre ellas, audio reactivo en al menos un parámetro, control MIDI de los elementos clave, y un plan de fallback si algo falla. Ejecutalo de principio a fin sin parar.</div>` }
+    ] },
     { mark:'TD', name:'TouchDesigner', cat:'Visuales en vivo', topics:[
       'Lógica de nodos — TOPs, CHOPs, SOPs, DATs',
       'Generación procedural en tiempo real',
@@ -456,13 +589,23 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
           <div class="temario-inner">
             <div class="temario-label">✦ Temario — marcá lo que ya aprendiste</div>
             <ul class="temario-list">${p.topics.map((t, ti)=>{
+              const isObj = t && typeof t === 'object';
+              const title = isObj ? t.title : t;
+              const content = isObj ? t.content : null;
+              const hasContent = !!content;
               const done = !!(PROGRESS[p.mark] && PROGRESS[p.mark][ti]);
-              return `<li>
-                <div class="topic-row${done ? ' done' : ''}">
-                  <button type="button" class="topic-check${done ? ' done' : ''}" data-mark="${p.mark}" data-idx="${ti}" title="Marcar como aprendido">${done ? '✓' : ''}</button>
-                  <span class="topic-text">${t}<span class="xp-tag">+${XP_PER_TOPIC} XP</span></span>
-                </div>
-              </li>`;
+              return `
+                <li>
+                  <div class="topic-row${done ? ' done' : ''}${hasContent ? ' has-content' : ''}">
+                    <button type="button" class="topic-check${done ? ' done' : ''}" data-mark="${p.mark}" data-idx="${ti}" title="Marcar como aprendido">${done ? '✓' : ''}</button>
+                    ${hasContent
+                      ? `<button class="topic-title-btn" data-ti="${ti}" data-mark="${p.mark}-c">${title}<span class="xp-tag">+${XP_PER_TOPIC} XP</span></button>
+                         <span class="topic-expand-ind" data-ti="${ti}" data-mark="${p.mark}-c">▶</span>`
+                      : `<span class="topic-text">${title}<span class="xp-tag">+${XP_PER_TOPIC} XP</span></span>`
+                    }
+                  </div>
+                  ${hasContent ? `<div class="topic-content" id="tc-${p.mark}-${ti}">${content}</div>` : ''}
+                </li>`;
             }).join('')}</ul>
             <div class="temario-note">Clases en construcción — pronto cada eje del temario va a tener su propia clase, enfocada en una herramienta concreta y pensada para encontrarse fácil y volver a consultarla cuando la necesites.</div>
           </div>
@@ -476,6 +619,20 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
           e.stopPropagation();
           toggleTopic(btn.dataset.mark, parseInt(btn.dataset.idx, 10), btn);
         });
+      });
+      card.addEventListener('click', e=>{
+        const btn = e.target.closest('.topic-title-btn, .topic-expand-ind');
+        if (!btn) return;
+        e.stopPropagation();
+        const ti = btn.dataset.ti;
+        const mark = btn.dataset.mark.replace('-c', '');
+        const contentEl = document.getElementById(`tc-${mark}-${ti}`);
+        const ind = btn.closest('.topic-row')
+          ? btn.closest('.topic-row').querySelector('.topic-expand-ind')
+          : btn;
+        if (!contentEl) return;
+        const isOpen = contentEl.classList.toggle('open');
+        if (ind) ind.style.transform = isOpen ? 'rotate(90deg)' : '';
       });
       grid.appendChild(card);
     });
@@ -533,10 +690,11 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
       if(!prog) return;
       p.topics.forEach((t, ti)=>{
         if(prog[ti]){
+          const topicTitle = (t && typeof t === 'object') ? t.title : t;
           out.push({
             kind: 'auto',
             label: p.mark,
-            name: t,
+            name: topicTitle,
             skill: p.name
           });
         }
