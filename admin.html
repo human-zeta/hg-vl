@@ -458,12 +458,18 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
         headers:{'Content-Type':'application/json'},
         body: isMod ? 'true' : 'null'
       });
-      if(!r.ok) throw new Error('write failed');
+      if(!r.ok){
+        const errBody = await r.text().catch(()=>'');
+        if(r.status === 401 || r.status === 403){
+          throw new Error(`Sin permiso para escribir en /moderators (HTTP ${r.status}) — actualizá las reglas de seguridad en Firebase para que admins puedan escribir en /moderators/$uid.`);
+        }
+        throw new Error(`HTTP ${r.status}${errBody ? ' — ' + errBody.slice(0,150) : ''}`);
+      }
       await loadUsers();
     }catch(e){
       btn.disabled = false;
       btn.textContent = original;
-      setStatus('No se pudo actualizar la moderación — probá de nuevo.', true);
+      setStatus(`No se pudo actualizar la moderación — ${e.message}`, true);
     }
   }
 
@@ -477,12 +483,18 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
         headers:{'Content-Type':'application/json'},
         body: isSub ? 'true' : 'null'
       });
-      if(!r.ok) throw new Error('write failed');
+      if(!r.ok){
+        const errBody = await r.text().catch(()=>'');
+        if(r.status === 401 || r.status === 403){
+          throw new Error(`Sin permiso para escribir en /subscribers (HTTP ${r.status}) — actualizá las reglas de seguridad en Firebase para que admins y mods puedan escribir en /subscribers/$uid.`);
+        }
+        throw new Error(`HTTP ${r.status}${errBody ? ' — ' + errBody.slice(0,150) : ''}`);
+      }
       await loadUsers(); // re-render with fresh state
     }catch(e){
       btn.disabled = false;
       btn.textContent = original;
-      setStatus('No se pudo actualizar la suscripción — probá de nuevo.', true);
+      setStatus(`No se pudo actualizar la suscripción — ${e.message}`, true);
     }
   }
 
