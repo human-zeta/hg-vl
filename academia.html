@@ -106,42 +106,96 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
   color:rgba(240,237,230,0.5);line-height:1.6;flex:1;transition:color 0.2s;
 }
 .topic-title-btn:hover{color:rgba(240,237,230,0.8);}
-.topic-expand-ind{
-  font-size:8px;color:rgba(184,255,0,0.3);margin-left:6px;
-  transition:transform 0.2s,color 0.2s;flex-shrink:0;user-select:none;
-  cursor:pointer;
+.topic-open-ind{
+  font-size:9px;color:rgba(184,255,0,0.5);margin-left:6px;
+  flex-shrink:0;user-select:none;cursor:pointer;
+  transition:color 0.2s;
 }
-.topic-row.has-content .topic-expand-ind{color:rgba(184,255,0,0.4);}
-.topic-content{
-  display:none;margin:0.5rem 0 0.3rem 20px;
-  padding:0.9rem 1rem;
-  border-left:2px solid rgba(184,255,0,0.15);
-  font-family:var(--body);font-size:9px;line-height:1.82;
-  color:rgba(240,237,230,0.45);
+.topic-row.has-content .topic-title-btn:hover ~ .topic-open-ind,
+.topic-open-ind:hover{color:var(--acid);}
+
+/* ── MODAL DE CLASE ────────────────────── */
+#class-modal{
+  display:none;position:fixed;inset:0;z-index:900;
+  align-items:center;justify-content:center;padding:1rem;
 }
-.topic-content.open{display:block;}
-.topic-content h3{
-  font-family:var(--mono);font-size:7.5px;letter-spacing:0.2em;
-  color:rgba(184,255,0,0.55);text-transform:uppercase;
-  margin:0.9rem 0 0.35rem;
+#class-modal.open{display:flex;}
+.modal-overlay{
+  position:absolute;inset:0;
+  background:rgba(5,5,5,0.90);
+  backdrop-filter:blur(6px);cursor:pointer;
 }
-.topic-content h3:first-child{margin-top:0;}
-.topic-content p{margin-bottom:0.65rem;}
-.topic-content ul{padding-left:1.1rem;margin-bottom:0.65rem;}
-.topic-content li{margin-bottom:0.3rem;}
-.topic-content strong{color:rgba(240,237,230,0.72);}
-.topic-content blockquote{
-  border-left:2px solid rgba(184,255,0,0.25);padding-left:0.8rem;
-  color:rgba(240,237,230,0.35);font-style:italic;margin:0.5rem 0;
+.modal-box{
+  position:relative;z-index:1;
+  background:#0e0e0e;
+  border:1px solid rgba(184,255,0,0.22);
+  border-radius:3px;
+  max-width:720px;width:100%;
+  max-height:88vh;
+  display:flex;flex-direction:column;
+  box-shadow:0 0 60px rgba(0,0,0,0.7);
 }
-.topic-content .ejercicio{
-  margin-top:0.9rem;padding:0.8rem 1rem;
-  border:1px solid rgba(184,255,0,0.15);border-radius:2px;
-  background:rgba(184,255,0,0.03);
+.modal-head{
+  display:flex;align-items:flex-start;gap:1rem;
+  padding:1.4rem 1.6rem 1.1rem;
+  border-bottom:1px solid rgba(240,237,230,0.07);
+  flex-shrink:0;
 }
-.topic-content .ejercicio-label{
-  font-family:var(--mono);font-size:7px;letter-spacing:0.2em;
-  color:rgba(184,255,0,0.5);text-transform:uppercase;margin-bottom:0.4rem;
+.modal-tag{
+  font-family:var(--mono);font-size:7px;letter-spacing:0.3em;
+  color:var(--acid);background:rgba(184,255,0,0.08);
+  border:1px solid rgba(184,255,0,0.2);border-radius:2px;
+  padding:3px 8px;white-space:nowrap;margin-top:2px;flex-shrink:0;
+}
+.modal-title{
+  font-family:var(--mono);font-size:11px;letter-spacing:0.1em;
+  color:var(--white);font-weight:700;flex:1;line-height:1.45;
+}
+.modal-close{
+  background:none;border:1px solid rgba(240,237,230,0.15);
+  border-radius:2px;color:rgba(240,237,230,0.5);
+  font-size:16px;cursor:pointer;line-height:1;
+  padding:2px 7px;flex-shrink:0;transition:all 0.2s;
+}
+.modal-close:hover{color:var(--white);border-color:rgba(240,237,230,0.4);}
+.modal-body{
+  flex:1;overflow-y:auto;padding:1.8rem 2rem;
+  font-family:var(--body);font-size:14.5px;
+  line-height:1.8;color:rgba(240,237,230,0.72);
+}
+.modal-body::-webkit-scrollbar{width:4px;}
+.modal-body::-webkit-scrollbar-track{background:transparent;}
+.modal-body::-webkit-scrollbar-thumb{background:rgba(184,255,0,0.25);border-radius:2px;}
+.modal-body h3{
+  font-family:var(--mono);font-size:9px;letter-spacing:0.25em;
+  color:rgba(184,255,0,0.75);text-transform:uppercase;
+  margin:1.9rem 0 0.7rem;
+}
+.modal-body h3:first-child{margin-top:0;}
+.modal-body p{margin-bottom:1rem;}
+.modal-body ul,.modal-body ol{padding-left:1.5rem;margin-bottom:1rem;}
+.modal-body li{margin-bottom:0.45rem;}
+.modal-body strong{color:rgba(240,237,230,0.92);}
+.modal-body em{color:rgba(240,237,230,0.65);}
+.modal-body code{
+  font-family:var(--mono);font-size:12px;
+  background:rgba(184,255,0,0.07);
+  border:1px solid rgba(184,255,0,0.15);
+  border-radius:2px;padding:1px 5px;
+}
+.modal-body blockquote{
+  border-left:2px solid rgba(184,255,0,0.3);padding-left:1rem;
+  color:rgba(240,237,230,0.5);font-style:italic;margin:0.8rem 0;
+}
+.modal-body .ejercicio{
+  margin-top:2.2rem;padding:1.3rem 1.6rem;
+  border:1px solid rgba(184,255,0,0.22);border-radius:3px;
+  background:rgba(184,255,0,0.04);
+}
+.modal-body .ejercicio-label{
+  font-family:var(--mono);font-size:8px;letter-spacing:0.3em;
+  color:var(--acid);text-transform:uppercase;
+  margin-bottom:0.7rem;display:block;
 }
 
 #academy-content{display:none;}
@@ -1408,12 +1462,11 @@ Toma un shader GLSL que hayas creado anteriormente y realiza el proceso completo
                   <div class="topic-row${done ? ' done' : ''}${hasContent ? ' has-content' : ''}">
                     <button type="button" class="topic-check${done ? ' done' : ''}" data-mark="${p.mark}" data-idx="${ti}" title="Marcar como aprendido">${done ? '✓' : ''}</button>
                     ${hasContent
-                      ? `<button class="topic-title-btn" data-ti="${ti}" data-mark="${p.mark}-c">${title}<span class="xp-tag">+${XP_PER_TOPIC} XP</span></button>
-                         <span class="topic-expand-ind" data-ti="${ti}" data-mark="${p.mark}-c">▶</span>`
+                      ? `<button class="topic-title-btn" data-key="${p.mark}-${ti}">${title}<span class="xp-tag">+${XP_PER_TOPIC} XP</span></button>
+                         <span class="topic-open-ind" data-key="${p.mark}-${ti}">↗</span>`
                       : `<span class="topic-text">${title}<span class="xp-tag">+${XP_PER_TOPIC} XP</span></span>`
                     }
                   </div>
-                  ${hasContent ? `<div class="topic-content" id="tc-${p.mark}-${ti}">${content}</div>` : ''}
                 </li>`;
             }).join('')}</ul>
             <div class="temario-note">Clases en construcción — pronto cada eje del temario va a tener su propia clase, enfocada en una herramienta concreta y pensada para encontrarse fácil y volver a consultarla cuando la necesites.</div>
@@ -1430,18 +1483,18 @@ Toma un shader GLSL que hayas creado anteriormente y realiza el proceso completo
         });
       });
       card.addEventListener('click', e=>{
-        const btn = e.target.closest('.topic-title-btn, .topic-expand-ind');
+        const btn = e.target.closest('.topic-title-btn, .topic-open-ind');
         if (!btn) return;
         e.stopPropagation();
-        const ti = btn.dataset.ti;
-        const mark = btn.dataset.mark.replace('-c', '');
-        const contentEl = document.getElementById(`tc-${mark}-${ti}`);
-        const ind = btn.closest('.topic-row')
-          ? btn.closest('.topic-row').querySelector('.topic-expand-ind')
-          : btn;
-        if (!contentEl) return;
-        const isOpen = contentEl.classList.toggle('open');
-        if (ind) ind.style.transform = isOpen ? 'rotate(90deg)' : '';
+        const key = btn.dataset.key;
+        const lastDash = key.lastIndexOf('-');
+        const mark = key.slice(0, lastDash);
+        const ti = parseInt(key.slice(lastDash + 1), 10);
+        const prog = PROGRAMS.find(p => p.mark === mark);
+        if (!prog) return;
+        const topic = prog.topics[ti];
+        if (!topic || typeof topic === 'string') return;
+        openModal(topic.title, topic.content);
       });
       grid.appendChild(card);
     });
@@ -1604,8 +1657,42 @@ Toma un shader GLSL que hayas creado anteriormente y realiza el proceso completo
     }
   }
 
+  // ── MODAL ────────────────────────────────
+  const modal    = document.getElementById('class-modal');
+  const modalOverlay = modal.querySelector('.modal-overlay');
+  const modalTitle   = document.getElementById('modal-title');
+  const modalBody    = document.getElementById('modal-body');
+  const modalClose   = document.getElementById('modal-close');
+
+  function openModal(title, content){
+    modalTitle.textContent = title;
+    modalBody.innerHTML = content;
+    modalBody.scrollTop = 0;
+    modal.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeModal(){
+    modal.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+  modalClose.addEventListener('click', closeModal);
+  modalOverlay.addEventListener('click', closeModal);
+  document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeModal(); });
+
   checkAccess();
 })();
 </script>
+
+<div id="class-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+  <div class="modal-overlay" id="modal-overlay"></div>
+  <div class="modal-box">
+    <div class="modal-head">
+      <span class="modal-tag">CLASE</span>
+      <h2 class="modal-title" id="modal-title"></h2>
+      <button class="modal-close" id="modal-close" aria-label="Cerrar">✕</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+  </div>
+</div>
 </body>
 </html>
