@@ -22,6 +22,35 @@ html{scroll-behavior:smooth;}
 body{background:var(--black);color:var(--white);font-family:var(--body);min-height:100vh;}
 body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");z-index:0;pointer-events:none;opacity:0.4;}
 
+/* SHADER DE FONDO */
+#shader-canvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:0;transition:opacity 2.5s ease;}
+#shader-canvas.active{opacity:0.5;}
+
+/* PANEL DE CONTROLES ISF */
+#isf-panel{
+  position:fixed;bottom:1.5rem;right:1.5rem;z-index:50;
+  width:210px;
+  font-family:var(--mono);font-size:9px;
+  background:rgba(5,5,5,0.9);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  border:1px solid rgba(184,255,0,0.15);border-radius:3px;
+  padding:0.7rem;display:none;max-height:45vh;overflow-y:auto;
+}
+#isf-panel.show{display:block;}
+#isf-panel::-webkit-scrollbar{width:3px;}
+#isf-panel::-webkit-scrollbar-track{background:transparent;}
+#isf-panel::-webkit-scrollbar-thumb{background:rgba(184,255,0,0.2);border-radius:1px;}
+.irow{margin-bottom:8px;}
+.irow:last-child{margin-bottom:0;}
+.ilabel{display:block;color:rgba(240,237,230,0.3);letter-spacing:0.12em;margin-bottom:3px;font-size:8px;}
+.irow input[type=range]{width:100%;height:2px;accent-color:var(--acid);background:rgba(240,237,230,0.08);border-radius:1px;outline:none;-webkit-appearance:none;appearance:none;}
+.irow input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:10px;height:10px;border-radius:50%;background:var(--acid);cursor:pointer;}
+.irow input[type=color]{width:28px;height:16px;border:none;background:none;cursor:pointer;border-radius:2px;padding:0;}
+.irow input[type=checkbox]{accent-color:var(--acid);}
+.ival{color:var(--acid);font-size:8px;float:right;}
+.ipanel-title{font-size:8px;letter-spacing:0.25em;color:rgba(240,237,230,0.2);margin-bottom:8px;text-transform:uppercase;}
+
+@media(max-width:640px){#isf-panel{width:calc(100vw - 2.4rem);right:1.2rem;left:1.2rem;}}
+
 #wrap{position:relative;z-index:1;max-width:880px;margin:0 auto;padding:0 1.5rem 5rem;}
 
 /* NAV */
@@ -143,6 +172,8 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 </head>
 <body>
 
+<canvas id="shader-canvas"></canvas>
+
 <div id="wrap">
 
   <nav class="lnav">
@@ -219,6 +250,8 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 
 </div>
 
+<div id="isf-panel"></div>
+
 <script>
 (function(){
   const LS_KEY = 'hg_gemini_key';
@@ -277,6 +310,309 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
     return (fence ? fence[1] : text).trim();
   }
 
+  // ─────────────────────────────────────────────
+  // SHADER DE FONDO + CONTROLES (motor ISF, igual que el home)
+  // ─────────────────────────────────────────────
+  const canvas = document.getElementById('shader-canvas');
+  const gl = canvas.getContext('webgl',{premultipliedAlpha:false,alpha:true,preserveDrawingBuffer:true});
+
+  let prog = null, animId = null, t0 = 0;
+  let isfInputs = {};
+  let uLocs = {};
+  let mouseX=0.5, mouseY=0.5;
+
+  const VS = `attribute vec2 pos;void main(){gl_Position=vec4(pos,0.,1.);}`;
+
+  const qb = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER,qb);
+  gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,1,1]),gl.STATIC_DRAW);
+
+  function resize(){
+    canvas.width=window.innerWidth;
+    canvas.height=window.innerHeight;
+    gl.viewport(0,0,canvas.width,canvas.height);
+  }
+  resize();
+  window.addEventListener('resize',resize);
+  document.addEventListener('mousemove',e=>{mouseX=e.clientX/window.innerWidth;mouseY=1-e.clientY/window.innerHeight;});
+
+  function makeShader(src,type){
+    const s=gl.createShader(type);
+    gl.shaderSource(s,src);gl.compileShader(s);
+    if(!gl.getShaderParameter(s,gl.COMPILE_STATUS)){const e=gl.getShaderInfoLog(s);gl.deleteShader(s);throw e;}
+    return s;
+  }
+  function makeProgram(fsSrc){
+    const p=gl.createProgram();
+    gl.attachShader(p,makeShader(VS,gl.VERTEX_SHADER));
+    gl.attachShader(p,makeShader(fsSrc,gl.FRAGMENT_SHADER));
+    gl.linkProgram(p);
+    if(!gl.getProgramParameter(p,gl.LINK_STATUS))throw gl.getProgramInfoLog(p);
+    return p;
+  }
+
+  // Parser ISF — mismo comportamiento que el del home
+  function parseAetherISF(raw){
+    const m = raw.match(/\/\*\s*(\{[\s\S]*?\})\s*\*\//);
+    let meta = {INPUTS:[]};
+    if(m){
+      try{ meta = JSON.parse(m[1]); meta.INPUTS = meta.INPUTS||[]; }
+      catch(e){ console.warn('ISF JSON parse error',e); }
+    }
+
+    let glsl = raw.replace(/\/\*[\s\S]*?\*\//,'').trim();
+
+    glsl = glsl
+      .replace(/\bisf_FragNormCoord\b/g,'(gl_FragCoord.xy/RENDERSIZE)')
+      .replace(/\bgl_FragNormCoord\b/g,'(gl_FragCoord.xy/RENDERSIZE)')
+      .replace(/IMG_THIS_PIXEL\s*\([^)]*\)/g,'vec4(0.0)')
+      .replace(/IMG_PIXEL\s*\([^,)]*,\s*[^)]*\)/g,'vec4(0.0)')
+      .replace(/IMG_NORM_PIXEL\s*\([^,)]*,\s*[^)]*\)/g,'vec4(0.0)')
+      .replace(/IMG_SIZE\s*\([^)]*\)/g,'RENDERSIZE')
+      .replace(/\bTIME_DELTA\b/g,'(1.0/60.0)')
+      .replace(/\bFRAME_INDEX\b/g,'int(TIME*60.0)')
+      .replace(/\bPASSINDEX\b/g,'0');
+
+    glsl = glsl
+      .replace(/precision\s+\w+\s+float\s*;/g,'')
+      .replace(/uniform\s+float\s+TIME\s*;/g,'')
+      .replace(/uniform\s+vec2\s+RENDERSIZE\s*;/g,'')
+      .replace(/uniform\s+float\s+PI\s*;/g,'')
+      .replace(/uniform\s+vec2\s+MOUSE\s*;/g,'');
+
+    isfInputs = {};
+    const unifDecls = [
+      'precision mediump float;',
+      '#define PI 3.14159265358979323846',
+      'uniform float TIME;',
+      'uniform vec2  RENDERSIZE;',
+      'uniform vec2  MOUSE;',
+      'uniform float AUDIO_VOL;',
+      'uniform float AUDIO_BASS;',
+      'uniform float AUDIO_MID;',
+      'uniform float AUDIO_HIGH;',
+      'uniform float AUDIO_BEAT;',
+    ];
+
+    (meta.INPUTS||[]).forEach(inp=>{
+      const n = inp.NAME; if(!n) return;
+      const t = (inp.TYPE||'').toLowerCase();
+
+      let glslType='', defVal;
+      if(t==='float'){
+        glslType='float';
+        defVal = (inp.DEFAULT !== undefined) ? parseFloat(inp.DEFAULT) : 0.5;
+        isfInputs[n]={type:'float',value:defVal,min:parseFloat(inp.MIN??0),max:parseFloat(inp.MAX??1),label:inp.LABEL||n,def:defVal};
+      } else if(t==='long'){
+        glslType='float';
+        const vals = inp.VALUES||[];
+        defVal = (inp.DEFAULT !== undefined) ? parseFloat(inp.DEFAULT) : (vals[0]||0);
+        isfInputs[n]={type:'long',value:defVal,min:0,max:Math.max(vals.length-1,1),labels:inp.LABELS||[],values:vals,label:inp.LABEL||n,def:defVal};
+      } else if(t==='bool'){
+        glslType='bool';
+        defVal = inp.DEFAULT===true||inp.DEFAULT===1||inp.DEFAULT==='true';
+        isfInputs[n]={type:'bool',value:defVal,label:inp.LABEL||n,def:defVal};
+      } else if(t==='color'){
+        glslType='vec4';
+        const d = inp.DEFAULT||[1,1,1,1];
+        defVal=[d[0]??1,d[1]??1,d[2]??1,d[3]??1];
+        isfInputs[n]={type:'color',value:[...defVal],label:inp.LABEL||n,def:defVal};
+      } else if(t==='point2d'){
+        glslType='vec2';
+        const d = inp.DEFAULT||[0.5,0.5];
+        defVal=[d[0]??0.5,d[1]??0.5];
+        isfInputs[n]={type:'point2D',value:[...defVal],label:inp.LABEL||n,def:defVal};
+      } else if(t==='image'){
+        unifDecls.push(`uniform sampler2D ${n};`);
+        return;
+      } else return;
+
+      if(glslType) unifDecls.push(`uniform ${glslType} ${n};`);
+    });
+
+    const finalSrc = unifDecls.join('\n') + '\n\n' + glsl;
+    return {finalSrc, meta};
+  }
+
+  function runProgram(p){
+    if(animId) cancelAnimationFrame(animId);
+    prog = p;
+    gl.useProgram(p);
+    const posLoc = gl.getAttribLocation(p,'pos');
+    gl.bindBuffer(gl.ARRAY_BUFFER,qb);
+    gl.enableVertexAttribArray(posLoc);
+    gl.vertexAttribPointer(posLoc,2,gl.FLOAT,false,0,0);
+
+    uLocs={};
+    ['TIME','RENDERSIZE','MOUSE','AUDIO_VOL','AUDIO_BASS','AUDIO_MID','AUDIO_HIGH','AUDIO_BEAT'].forEach(n=>uLocs[n]=gl.getUniformLocation(p,n));
+    Object.keys(isfInputs).forEach(n=>uLocs[n]=gl.getUniformLocation(p,n));
+
+    t0 = Date.now();
+    function frame(){
+      animId=requestAnimationFrame(frame);
+      if(!prog) return;
+      gl.useProgram(prog);
+      const t=(Date.now()-t0)/1000;
+      if(uLocs.TIME) gl.uniform1f(uLocs.TIME,t);
+      if(uLocs.RENDERSIZE) gl.uniform2f(uLocs.RENDERSIZE,canvas.width,canvas.height);
+      if(uLocs.MOUSE) gl.uniform2f(uLocs.MOUSE,mouseX,mouseY);
+      if(uLocs.AUDIO_VOL)  gl.uniform1f(uLocs.AUDIO_VOL,  0);
+      if(uLocs.AUDIO_BASS) gl.uniform1f(uLocs.AUDIO_BASS, 0);
+      if(uLocs.AUDIO_MID)  gl.uniform1f(uLocs.AUDIO_MID,  0);
+      if(uLocs.AUDIO_HIGH) gl.uniform1f(uLocs.AUDIO_HIGH, 0);
+      if(uLocs.AUDIO_BEAT) gl.uniform1f(uLocs.AUDIO_BEAT, 0);
+
+      Object.entries(isfInputs).forEach(([n,inp])=>{
+        const loc=uLocs[n]; if(!loc) return;
+        if(inp.type==='float'||inp.type==='long') gl.uniform1f(loc,parseFloat(inp.value));
+        else if(inp.type==='bool') gl.uniform1i(loc,inp.value?1:0);
+        else if(inp.type==='color') gl.uniform4f(loc,...inp.value);
+        else if(inp.type==='point2D') gl.uniform2f(loc,...inp.value);
+      });
+      gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
+    }
+    frame();
+  }
+
+  // PALETA — tiñe --acid/--glitch con los colores del shader generado
+  function extractPalette(){
+    const w=canvas.width,h=canvas.height;
+    const px=new Uint8Array(w*h*4);
+    gl.readPixels(0,0,w,h,gl.RGBA,gl.UNSIGNED_BYTE,px);
+    const samples=[];
+    for(let i=0;i<400;i++){
+      const idx=Math.floor(Math.random()*w*h)*4;
+      if(px[idx+3]<20) continue;
+      samples.push([px[idx],px[idx+1],px[idx+2]]);
+    }
+    if(samples.length<6) return null;
+    let centers=samples.slice(0,5).map(c=>[...c]);
+    for(let iter=0;iter<15;iter++){
+      const buckets=Array.from({length:5},()=>[]);
+      samples.forEach(s=>{
+        let b=0,bd=Infinity;
+        centers.forEach((c,i)=>{const d=(s[0]-c[0])**2+(s[1]-c[1])**2+(s[2]-c[2])**2;if(d<bd){bd=d;b=i;}});
+        buckets[b].push(s);
+      });
+      centers=buckets.map((b,i)=>{
+        if(!b.length) return centers[i];
+        return [
+          Math.round(b.reduce((a,v)=>a+v[0],0)/b.length),
+          Math.round(b.reduce((a,v)=>a+v[1],0)/b.length),
+          Math.round(b.reduce((a,v)=>a+v[2],0)/b.length),
+        ];
+      });
+    }
+    return centers;
+  }
+  function toHex([r,g,b]){return '#'+[r,g,b].map(v=>v.toString(16).padStart(2,'0')).join('');}
+  function lum([r,g,b]){return 0.299*r+0.587*g+0.114*b;}
+  function sat([r,g,b]){return Math.max(r,g,b)-Math.min(r,g,b);}
+  function applyPalette(colors){
+    if(!colors||colors.length<3) return;
+    const sorted=[...colors].sort((a,b)=>lum(a)-lum(b));
+    const brightest=sorted[sorted.length-1];
+    const vivid=colors.reduce((best,c)=>sat(c)>sat(best)?c:best,colors[0]);
+    const root=document.documentElement;
+    root.style.setProperty('--acid',toHex(brightest));
+    root.style.setProperty('--glitch',toHex(vivid));
+  }
+
+  // PANEL DE CONTROLES ISF
+  function buildPanel(){
+    const panel=document.getElementById('isf-panel');
+    panel.innerHTML='';
+    const keys=Object.keys(isfInputs);
+    if(!keys.length){panel.classList.remove('show');return;}
+    const title=document.createElement('div');
+    title.className='ipanel-title';title.textContent='CONTROLES';panel.appendChild(title);
+    keys.forEach(n=>{
+      const inp=isfInputs[n];
+      const row=document.createElement('div');row.className='irow';
+      const lbl=document.createElement('label');lbl.className='ilabel';lbl.textContent=(inp.label||n).toUpperCase();
+      const valSpan=document.createElement('span');valSpan.className='ival';
+      row.appendChild(lbl);
+
+      if(inp.type==='float'||inp.type==='long'){
+        const sl=document.createElement('input');sl.type='range';
+        sl.min=inp.min??0;sl.max=inp.max??1;sl.step=(inp.max-inp.min)/200||0.01;
+        sl.value=inp.value;
+        valSpan.textContent=parseFloat(inp.value).toFixed(2);
+        sl.addEventListener('input',()=>{
+          isfInputs[n].value=parseFloat(sl.value);
+          valSpan.textContent=parseFloat(sl.value).toFixed(2);
+        });
+        lbl.appendChild(valSpan);row.appendChild(sl);
+      } else if(inp.type==='bool'){
+        const cb=document.createElement('input');cb.type='checkbox';cb.checked=inp.value;
+        cb.addEventListener('change',()=>{isfInputs[n].value=cb.checked;});
+        lbl.style.display='flex';lbl.style.gap='8px';lbl.style.alignItems='center';
+        lbl.appendChild(cb);
+      } else if(inp.type==='color'){
+        const cp=document.createElement('input');cp.type='color';
+        const v=inp.value;cp.value=toHex([Math.round(v[0]*255),Math.round(v[1]*255),Math.round(v[2]*255)]);
+        cp.addEventListener('input',()=>{
+          const h=cp.value;
+          isfInputs[n].value=[parseInt(h.slice(1,3),16)/255,parseInt(h.slice(3,5),16)/255,parseInt(h.slice(5,7),16)/255,1];
+        });
+        row.appendChild(cp);
+      } else if(inp.type==='point2D'){
+        ['X','Y'].forEach((axis,ai)=>{
+          const sl=document.createElement('input');sl.type='range';sl.min=0;sl.max=1;sl.step=0.01;
+          sl.value=inp.value[ai];
+          const axlbl=document.createElement('label');axlbl.className='ilabel';axlbl.textContent=axis;
+          sl.addEventListener('input',()=>{isfInputs[n].value[ai]=parseFloat(sl.value);});
+          row.appendChild(axlbl);row.appendChild(sl);
+        });
+      }
+      panel.appendChild(row);
+    });
+    panel.classList.add('show');
+  }
+
+  // REPO GLOBAL — Firebase Realtime DB (mismo /shaders que el home)
+  const FB_URL = 'https://hg-vl-shaders-default-rtdb.firebaseio.com';
+  async function pushToRepo(name, code){
+    let thumb=null;
+    try{
+      const tc=document.createElement('canvas');tc.width=96;tc.height=60;
+      const ctx=tc.getContext('2d');
+      ctx.drawImage(canvas,0,0,canvas.width,canvas.height,0,0,96,60);
+      thumb=tc.toDataURL('image/jpeg',0.65);
+    }catch(e){}
+    const entry={
+      name, code, thumb,
+      author:'Aether IA',
+      date:new Date().toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit',year:'2-digit'}),
+      ts:Date.now()
+    };
+    try{
+      const r = await fetch(`${FB_URL}/shaders.json`,{
+        method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify(entry)
+      });
+      return r.ok;
+    }catch(e){ return false; }
+  }
+
+  // Compila, pone de fondo, arma controles, extrae paleta y guarda en el repo
+  async function loadGeneratedShader(code, label){
+    const {finalSrc} = parseAetherISF(code);
+    const p = makeProgram(finalSrc);
+    canvas.classList.add('active');
+    runProgram(p);
+    buildPanel();
+    let fc=0;
+    await new Promise(resolve=>{
+      (function wait(){
+        if(fc++<4){requestAnimationFrame(wait);return;}
+        const pal=extractPalette(); if(pal) applyPalette(pal);
+        resolve();
+      })();
+    });
+    return pushToRepo(label, code);
+  }
+
   generateBtn.addEventListener('click', async ()=>{
     const key = localStorage.getItem(LS_KEY);
     const idea = promptInput.value.trim();
@@ -311,9 +647,20 @@ El shader debe representar esta idea: "${idea}"`;
         && data.candidates[0].content.parts[0].text;
       if(!text) throw new Error('La respuesta no tenía contenido.');
 
-      outputCode.textContent = extractShaderCode(text);
+      const code = extractShaderCode(text);
+      outputCode.textContent = code;
       outputBox.style.display = 'block';
-      setGenStatus('✓ Shader generado.', 'ok');
+
+      const label = idea.slice(0, 40).toUpperCase();
+      setGenStatus('✓ Shader generado — compilando y aplicando de fondo…', 'ok');
+      try{
+        const saved = await loadGeneratedShader(code, label);
+        setGenStatus(saved
+          ? '✓ Shader generado, aplicado de fondo y guardado en el Repo Global.'
+          : '✓ Shader generado y aplicado de fondo (no se pudo guardar en el Repo Global).', 'ok');
+      }catch(renderErr){
+        setGenStatus(`Shader generado, pero no compiló para usarlo de fondo — ${renderErr}`, 'err');
+      }
     }catch(err){
       setGenStatus(`No se pudo generar — ${err.message}`, 'err');
     }finally{
