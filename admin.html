@@ -343,6 +343,13 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
         📰 Publicá una nota nueva para <strong>El Diario HG</strong> — tecnología explicada de forma clara y accesible.
         Las notas aparecen de forma inmediata en <a href="diario.html" target="_blank" style="color:var(--acid);">diario.html</a>.
       </div>
+      <div id="diario-seed-box" class="pd-intro" style="border:1px solid rgba(184,255,0,0.18);border-radius:3px;padding:0.9rem 1rem;background:rgba(184,255,0,0.03);">
+        🌱 Tanda inicial: 10 notas ya escritas (2 por categoría), listas para cargar de una — pensadas para arrancar el archivo del Diario.
+        <div style="margin-top:0.6rem;">
+          <button type="button" id="diario-seed-btn" style="font-family:var(--mono);font-size:9px;letter-spacing:0.18em;text-transform:uppercase;border:1px solid rgba(184,255,0,0.4);border-radius:2px;background:rgba(184,255,0,0.08);color:var(--acid);padding:9px 18px;cursor:pointer;transition:all 0.2s;">CARGAR 10 NOTAS INICIALES 🌱</button>
+          <div id="diario-seed-status" style="margin-top:0.6rem;font-family:var(--mono);font-size:8.5px;letter-spacing:0.08em;color:rgba(240,237,230,0.4);"></div>
+        </div>
+      </div>
       <form id="diario-form" class="pd-grid">
         <div class="pd-field full">
           <label for="diario-title">Título de la nota</label>
@@ -830,6 +837,197 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
       }finally{
         diarioSubmit.disabled = false;
       }
+    });
+  }
+
+  // ───────────────────────────────────────────
+  // TANDA INICIAL DE NOTAS — "El Diario HG"
+  // ───────────────────────────────────────────
+  const DIARIO_SEED = [
+    {
+      cat: 'para empezar',
+      title: 'Bienvenido a Human Glitche: guía de 10 minutos para arrancar',
+      body: `Si llegaste hasta acá y no sabés muy bien por dónde empezar, esta nota es para vos. Human Glitche tiene varias partes, y no hace falta usarlas todas el primer día — alcanza con entender qué es cada una para elegir por dónde arrancar según lo que te interese.
+
+La Academia es el corazón del aprendizaje: temarios organizados por programa (Photoshop, Illustrator, Premiere, TouchDesigner, ISF, y muchos más), divididos en ejes que vas marcando como aprendidos a tu propio ritmo. Cada eje que completás suma experiencia y, en algunos programas, va "coloreando" un parche — como una insignia que arranca en gris y se llena de color a medida que avanzás.
+
+Tu Perfil es tu tarjeta de presentación dentro de la comunidad: ahí se ve tu progreso, tus parches, y un espacio para contar quién sos y dónde encontrarte en redes. Los Lobbies son salas de espera para juntarse con otra gente del proyecto — pensadas para colaborar, probar cosas juntos o simplemente charlar.
+
+Y después está esto que estás leyendo: El Diario HG, nuestra publicación con tecnología explicada en criollo, sin vueltas ni jerga innecesaria, para que cualquiera — tenga o no experiencia previa — entienda de qué se habla.
+
+Un solo consejo para arrancar: no intentes "terminar" todo de una. Elegí un eje de un programa que te interese, marcalo como aprendido cuando lo entiendas, y volvé mañana por más. Así se construye esto — de a poco, pero todos los días.`
+    },
+    {
+      cat: 'para empezar',
+      title: 'Glosario básico: 12 palabras que vas a escuchar todo el tiempo en el mundo visual/digital',
+      body: `Si empezás a meterte en diseño, video o visuales en vivo, vas a chocar rápido con un montón de palabras que se dan por sabidas. Acá van doce, explicadas cortito y sin tecnicismos.
+
+VJ: la persona que mezcla y proyecta visuales en vivo, generalmente acompañando música — el equivalente visual de un DJ.
+
+Render: el proceso por el cual la computadora "calcula" y genera la imagen o el video final a partir de un proyecto. Puede tardar segundos o horas, según la complejidad.
+
+GPU: la placa de video. Es el componente que hace los cálculos gráficos — cuanto más exigente el trabajo (3D, video, IA), más importa tener una buena.
+
+FPS (cuadros por segundo): cuántas imágenes distintas se muestran por segundo en un video. Más FPS, movimiento más fluido.
+
+Loop: un fragmento de video o animación que se repite sin que se note el corte — base de muchos sets visuales en vivo.
+
+Mapping (video mapping): proyectar imágenes ajustadas a la forma exacta de un objeto o superficie, para que parezca que "encaja" con el espacio real.
+
+Plugin: un agregado que le suma funciones extra a un programa, sin tener que cambiar de software.
+
+Exportar: guardar tu proyecto en un formato final (video, imagen, PDF) listo para compartir o publicar, separado del archivo "de trabajo" original.
+
+RAW: el formato de foto que guarda toda la información captada por la cámara, sin comprimir ni "cocinar" — da más margen para editar después.
+
+Vector vs. raster: las imágenes vectoriales (Illustrator) se arman con formas matemáticas y se pueden agrandar sin perder calidad; las raster (Photoshop) son una grilla de píxeles, y agrandarlas de más las pixela.
+
+Timeline: la línea de tiempo donde se ordenan los clips, capas o eventos de un proyecto de edición o animación.
+
+Shader: un programita que le dice a la placa de video cómo pintar cada punto de la pantalla — la base de muchos efectos visuales y de las visuales generativas. Le dedicamos una nota aparte, porque da para mucho más.`
+    },
+    {
+      cat: 'tecnología cotidiana',
+      title: '¿Qué es "la nube" en realidad?',
+      body: `Cuando guardás una foto "en la nube", no queda flotando en ningún lado en el cielo: viaja por internet hasta una computadora gigante, ubicada en un edificio enorme lleno de servidores, en algún lugar del mundo. Esa máquina la guarda y la tiene lista para devolvértela apenas la pidas, desde cualquier dispositivo con tu cuenta.
+
+Esos edificios se llaman centros de datos, y las empresas grandes — Google, Apple, Microsoft, Amazon, entre otras — tienen decenas repartidos por el planeta. Cuando subís un archivo "a la nube", en los hechos lo estás copiando a una de esas máquinas.
+
+¿Por qué importa saber esto? Porque cambia la pregunta que hay que hacerse. No es "¿está seguro en la nube?" en abstracto, sino "¿confío en la empresa dueña de esa computadora, y entiendo qué hace con mis datos?". La nube no es mágica ni neutral: es la computadora de otra persona, prestada.
+
+La buena noticia es que, para uso cotidiano —fotos, documentos, copias de seguridad— los servicios grandes son bastante confiables y guardan varias copias redundantes: perder un archivo por una falla de ellos es rarísimo. Lo que sí depende de vos es la contraseña de tu cuenta, quién tiene acceso, y si activaste la verificación en dos pasos.
+
+Entender qué es la nube es el primer paso para decidir, con información real, qué guardar ahí y qué no — en vez de moverte por miedo o por costumbre.`
+    },
+    {
+      cat: 'tecnología cotidiana',
+      title: 'Por qué tu celular se pone lento (y no siempre es culpa tuya)',
+      body: `Es uno de los reclamos más comunes: "antes mi celular volaba, y ahora con todo cerrado igual va lento". Pasan varias cosas a la vez, y vale la pena entenderlas para saber qué podés mejorar y qué no.
+
+Primero, las apps que usás todos los días se actualizan seguido, y cada actualización suele pedir un poco más de procesador y memoria que la anterior — no porque hagan mucho más, sino porque se van acumulando funciones, animaciones y capas de seguridad.
+
+Segundo, el almacenamiento lleno frena todo. Cuando el celular se queda sin espacio libre, hasta las tareas básicas (guardar una foto, abrir una app) se vuelven más lentas, porque el sistema necesita lugar de "maniobra" para trabajar. Liberar espacio —borrar fotos duplicadas, vaciar la papelera, desinstalar apps que no usás— suele notarse enseguida.
+
+Tercero, la batería. A medida que pasa el tiempo, las baterías pierden capacidad de entregar energía rápido, y algunos sistemas operativos "frenan" el procesador a propósito cuando detectan una batería desgastada, para evitar que el celular se apague de golpe. Es real, y es otra razón (entre varias) por la que conviene cuidar la batería: cargarla parcialmente en vez de siempre al 100%, evitar el calor extremo, y no dejarla en 0% por mucho tiempo.
+
+Por último, sí existe la obsolescencia: en algún momento, el hardware deja de alcanzar para lo que el software actual necesita. No siempre es una conspiración para que compres uno nuevo — a veces es, simplemente, que la tecnología sigue avanzando y el celular viejo se quedó un escalón atrás. Saber distinguir estas causas te ayuda a decidir si conviene optimizar lo que tenés o si ya cumplió su ciclo.`
+    },
+    {
+      cat: 'herramientas digitales',
+      title: 'Canva, Photoshop o Illustrator: ¿por dónde empezar?',
+      body: `Las tres son herramientas de diseño, pero responden a necesidades distintas — y elegir mal la primera puede hacerte perder semanas de frustración innecesaria.
+
+Canva es la opción más amigable para arrancar. Funciona desde el navegador, tiene plantillas para casi todo (posts de redes, currículums, presentaciones, flyers) y el resultado se ve profesional incluso sin experiencia previa. Es ideal si necesitás resolver algo rápido, prolijo, y no estás buscando (todavía) controlar cada detalle.
+
+Photoshop trabaja con imágenes formadas por píxeles — fotos, texturas, composiciones. Es la herramienta indicada cuando el trabajo parte de una foto real: retocar, combinar imágenes, ajustar color, preparar piezas para redes con más control que una plantilla. Tiene una curva de aprendizaje más larga, pero es el estándar de la industria para edición fotográfica.
+
+Illustrator trabaja con vectores: formas definidas por matemática, no por píxeles. Por eso un logo hecho en Illustrator se puede imprimir del tamaño de una tarjeta o de un cartel de ruta sin perder nitidez. Es la herramienta para identidad de marca, ilustración, tipografía y cualquier cosa que necesite escalarse sin límite.
+
+Si tuvieras que elegir una sola para arrancar: Canva te da resultados rápidos desde el día uno y te acostumbra a pensar en composición y jerarquía visual. Cuando empieces a sentir "esto lo necesito más a medida" o "necesito que esto se vea perfecto agrandado", ahí es el momento de sumar Photoshop o Illustrator — no antes. En la Academia de Human Glitche tenés un temario para cada uno, pensado para ir de cero a poder usarlos en proyectos reales.`
+    },
+    {
+      cat: 'herramientas digitales',
+      title: 'Qué es un shader, explicado sin una sola fórmula',
+      body: `La palabra "shader" suena técnica y asusta un poco, pero la idea de fondo es simple: un shader es un programita muy chico que le dice a la placa de video cómo pintar cada punto de la pantalla.
+
+Pensalo así: una pantalla está formada por millones de puntitos de color (píxeles). Un shader es como una receta que se aplica, al mismo tiempo, a cada uno de esos puntitos: "vos, que estás acá, mezclá este color con aquel, según qué tan lejos estás del centro" — y eso, repetido millones de veces por segundo, es lo que genera ondas, brillos, texturas, distorsiones, y un montón de efectos que ves en videojuegos, animaciones y visuales en vivo.
+
+Lo interesante es que la misma receta produce resultados distintos según los "ingredientes" que le pongas: el tiempo, el sonido, el movimiento del mouse, una cámara en vivo. Por eso los shaders son tan usados en visuales en tiempo real — generan imágenes que cambian solas, reaccionando a lo que pasa, sin que nadie tenga que dibujar cuadro por cuadro.
+
+No hace falta saber programación avanzada para empezar a usarlos: existen formatos pensados para compartirlos fácil (como ISF) y herramientas que permiten ajustar parámetros con controles simples, sin tocar código. En Human Glitche desarrollamos Aether ISF justamente con esa idea — que generar shaders sea un territorio creativo accesible, no solo terreno de programadores.
+
+La próxima vez que veas una visual que "respira", cambia de color con la música o se deforma sola, probablemente hay un shader corriendo detrás — una receta de unas pocas líneas, ejecutándose millones de veces por segundo.`
+    },
+    {
+      cat: 'creatividad para todos',
+      title: 'El mito del talento: nadie nace sabiendo crear',
+      body: `Una de las frases que más frena a la gente es "yo no nací con eso" — como si crear fuera un don que algunos tienen de fábrica y otros no. La realidad es bastante menos mística: lo que llamamos "talento" es, en la enorme mayoría de los casos, horas acumuladas haciendo, equivocándose y corrigiendo.
+
+Quien hoy edita un video con soltura, diseña un flyer en minutos o arma un set visual sin pensarlo, en algún momento no sabía nada de eso. La diferencia no es una chispa interior: es que empezó antes, practicó más seguido, y —esto es clave— se permitió hacer cosas malas al principio sin que eso signifique nada sobre su futuro.
+
+Esto tiene una consecuencia práctica: si estás esperando "sentirte listo" o "tener el ojo entrenado" antes de empezar, te estás poniendo un requisito imposible. El ojo se entrena haciendo. El criterio se construye mirando tu propio trabajo anterior y notando qué cambiarías. No hay atajo que reemplace ese proceso, pero tampoco hace falta nada más que eso.
+
+Otra idea que ayuda: comparar tu primer intento con el trabajo de alguien que lleva años es comparar dos momentos distintos de la misma película. No es información útil. Lo que sí es útil es comparar tu trabajo de hoy con el tuyo de hace un mes — ahí es donde se ve el progreso real, aunque sea chico.
+
+Crear no es un rasgo de personalidad, es una práctica. Y como toda práctica, mejora con repetición. La Academia y los Lobbies de Human Glitche existen, en parte, para darte ese espacio de práctica con otra gente que está en el mismo proceso — porque la repetición es mucho más sostenible cuando no la hacés solo.`
+    },
+    {
+      cat: 'creatividad para todos',
+      title: 'Tu primer proyecto creativo: ideas para esta semana, no para "algún día"',
+      body: `"Algún día voy a hacer algo propio" es una de las frases que más se dicen y menos se cumplen — no por falta de ganas, sino porque "algo propio" suena tan grande que da miedo arrancar. La solución no es esperar a tener más tiempo o más herramientas: es elegir algo tan chico que sea imposible no terminarlo.
+
+Algunas ideas para esta semana, ninguna te debería llevar más de una tarde:
+
+Editá una sola foto a fondo. No diez, una. Probá ajustar luz, color y recorte hasta que se vea notablemente distinta a la original. El objetivo no es que quede "perfecta", es notar qué cambia cuando le das atención de verdad a algo simple.
+
+Armá una plantilla reutilizable. Un diseño para tus posts de redes, un formato para presentar tus trabajos, una estructura de video que puedas repetir. Una vez hecha, te ahorra tiempo en todo lo que venga después — y es, en sí misma, un proyecto terminado.
+
+Grabá un loop de 10 segundos. Con el celular alcanza: una textura, un movimiento, una luz. No tiene que "significar" nada. La idea es practicar el ojo de "esto podría ser material para algo".
+
+Compartilo, aunque sea con una sola persona. Acá está el paso que más se salta y más importa: mostrar lo que hiciste, aunque te parezca poca cosa. El primer proyecto casi nunca importa por el resultado — importa porque rompe el hielo de "hacer y mostrar", que es el músculo que después vas a necesitar para todo lo demás.
+
+La perfección no es el objetivo de un primer proyecto. Terminarlo, sí.`
+    },
+    {
+      cat: 'seguridad',
+      title: 'Contraseñas: lo mínimo que necesitás saber para no sufrir un susto',
+      body: `La mayoría de los problemas de seguridad que le pasan a la gente común no son ataques sofisticados de película: son contraseñas reutilizadas, cortas, o adivinables. La buena noticia es que con tres o cuatro hábitos simples se cubre la mayor parte del riesgo.
+
+El error más común es usar la misma contraseña en varios sitios. El problema no es solo que alguien la adivine: es que, si UN solo sitio donde la usás sufre una filtración (y esto pasa más seguido de lo que parece, incluso a empresas grandes), esa misma combinación de usuario y contraseña se prueba automáticamente en miles de otros sitios. Si la repetiste, ese único robo se convierte en muchos.
+
+La longitud importa más que la "complejidad forzada". Una frase larga y fácil de recordar para vos (varias palabras seguidas, por ejemplo) suele ser más difícil de adivinar para una máquina que una contraseña corta llena de símbolos que después ni vos te acordás y terminás anotando en un papel pegado al monitor.
+
+Un gestor de contraseñas (hay opciones gratuitas y confiables) resuelve el problema de raíz: genera y recuerda una contraseña distinta y larga para cada sitio, y vos solo tenés que recordar una contraseña maestra. Suena a más esfuerzo al principio, pero es muchísimo menos esfuerzo que recuperar una cuenta robada.
+
+Por último: ningún servicio serio te va a pedir tu contraseña por mensaje, mail o llamada. Si alguien te la pide "para verificar tu cuenta", es un intento de phishing — desconfiá siempre, sin excepción.`
+    },
+    {
+      cat: 'seguridad',
+      title: 'Verificación en dos pasos: el candado extra que casi nadie usa (y debería)',
+      body: `La verificación en dos pasos (también llamada 2FA o autenticación de dos factores) es, probablemente, la medida de seguridad con mejor relación entre lo poco que cuesta activarla y lo mucho que te protege. Y sin embargo, la mayoría de la gente nunca la prendió.
+
+La idea es simple: además de tu contraseña (algo que sabés), el sistema te pide una segunda prueba de que sos vos — un código que llega a tu celular, una notificación que tenés que aprobar, o un código generado por una app (algo que tenés). Si alguien consigue tu contraseña pero no tiene tu celular, no puede entrar. Esa combinación corta el 99% de los robos de cuenta más comunes.
+
+Hay distintos tipos. El más básico es el código por SMS — mejor que nada, pero no es el más seguro, porque existen estafas para "robar" tu número de teléfono. Más recomendable es usar una app generadora de códigos (hay varias gratuitas), que funciona incluso sin señal. Y la opción más fuerte son las llaves de seguridad físicas, aunque para uso cotidiano la app ya es un salto enorme respecto a no tener nada.
+
+¿Dónde activarla primero? Por orden de importancia: tu correo electrónico (porque desde ahí se puede recuperar casi cualquier otra cuenta), tus redes sociales, y cualquier servicio donde guardes archivos o información de pago. La mayoría de los servicios grandes lo tienen en "Configuración → Seguridad", con un nombre parecido a "verificación en dos pasos" o "autenticación de dos factores".
+
+Activarla lleva, en general, menos de cinco minutos por cuenta. Es, literalmente, de las pocas veces en tecnología donde un esfuerzo tan chico cambia tanto el resultado.`
+    }
+  ];
+
+  const diarioSeedBtn = document.getElementById('diario-seed-btn');
+  const diarioSeedSt  = document.getElementById('diario-seed-status');
+
+  if(diarioSeedBtn){
+    diarioSeedBtn.addEventListener('click', async ()=>{
+      diarioSeedBtn.disabled = true;
+      diarioSeedSt.textContent = 'Publicando notas iniciales…';
+      let ok = 0;
+      for(let i = 0; i < DIARIO_SEED.length; i++){
+        const note = DIARIO_SEED[i];
+        // Espacia las fechas para que el archivo arranque ordenado, una por día hacia atrás
+        const publishedAt = Date.now() - (DIARIO_SEED.length - 1 - i) * 86400000;
+        try{
+          const r = await fetch(`${FB_URL}/diario.json?auth=${TOKEN}`, {
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({
+              title: note.title,
+              cat: note.cat,
+              body: note.body,
+              author: 'Equipo HG',
+              published: true,
+              publishedAt,
+              publishedBy: UID
+            })
+          });
+          if(r.ok) ok++;
+        }catch(e){ /* sigue con la próxima */ }
+      }
+      diarioSeedSt.textContent = `✓ ${ok} de ${DIARIO_SEED.length} notas publicadas.`;
+      diarioSeedBtn.disabled = false;
+      loadDiarioNotes();
     });
   }
 
