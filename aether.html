@@ -153,6 +153,72 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
   padding:1rem;overflow-x:auto;white-space:pre;max-height:480px;overflow-y:auto;
 }
 
+/* DROP ZONE */
+#drop-zone{
+  border:1px dashed rgba(184,255,0,0.3);border-radius:2px;
+  padding:1.1rem 1rem;text-align:center;cursor:pointer;transition:all 0.2s;
+}
+#drop-zone.drag-over{border-color:var(--acid);background:rgba(184,255,0,0.06);}
+#drop-zone .drop-icon{font-size:18px;color:var(--acid);margin-bottom:0.4rem;}
+#drop-zone .drop-label{font-family:var(--mono);font-size:9px;letter-spacing:0.1em;color:rgba(240,237,230,0.4);line-height:1.7;}
+#drop-zone .drop-label strong{color:var(--acid);}
+#drop-file{display:none;}
+
+/* REPOSITORIO GLOBAL */
+#repo-toggle{
+  position:fixed;left:1.5rem;bottom:1.5rem;z-index:50;font-family:var(--mono);
+  font-size:9px;letter-spacing:0.2em;background:rgba(5,5,5,0.9);
+  border:1px solid rgba(184,255,0,0.14);color:rgba(184,255,0,0.4);
+  padding:8px 14px;border-radius:3px;cursor:pointer;transition:all 0.2s;
+  backdrop-filter:blur(12px);display:flex;align-items:center;gap:6px;
+}
+#repo-toggle:hover{border-color:rgba(184,255,0,0.35);color:rgba(184,255,0,0.7);}
+#repo-toggle .rled{width:5px;height:5px;border-radius:50%;background:rgba(184,255,0,0.4);animation:pulse-led 2s ease-in-out infinite;}
+
+#global-repo{
+  position:fixed;left:1.5rem;bottom:1.5rem;z-index:51;width:260px;
+  font-family:var(--mono);font-size:9px;
+  background:rgba(5,5,5,0.94);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+  border:1px solid rgba(184,255,0,0.16);border-radius:3px;
+  display:none;max-height:60vh;flex-direction:column;
+}
+#global-repo.show{display:flex;}
+#repo-header{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:0.65rem 0.9rem;border-bottom:1px solid rgba(240,237,230,0.06);flex-shrink:0;
+  gap:8px;
+}
+#repo-title{font-size:8px;letter-spacing:0.28em;color:rgba(240,237,230,0.22);flex:1;}
+#repo-live{width:6px;height:6px;border-radius:50%;background:rgba(184,255,0,0.3);flex-shrink:0;animation:pulse-led 2s ease-in-out infinite;}
+#repo-count{font-size:8px;color:var(--acid);}
+#repo-close{font-size:9px;color:rgba(240,237,230,0.15);background:none;border:none;cursor:pointer;transition:color 0.2s;padding:0;}
+#repo-close:hover{color:var(--glitch);}
+
+#repo-list{overflow-y:auto;flex:1;}
+#repo-list::-webkit-scrollbar{width:2px;}
+#repo-list::-webkit-scrollbar-thumb{background:rgba(184,255,0,0.1);}
+.ritem{
+  display:grid;grid-template-columns:48px 1fr auto;align-items:center;gap:8px;
+  padding:0.5rem 0.9rem;border-bottom:1px solid rgba(240,237,230,0.04);
+  cursor:pointer;transition:background 0.2s;
+}
+.ritem:hover{background:rgba(184,255,0,0.03);}
+.ritem:last-child{border-bottom:none;}
+.r-thumb{width:48px;height:30px;border-radius:2px;border:1px solid rgba(240,237,230,0.07);
+  background:rgba(240,237,230,0.03);overflow:hidden;flex-shrink:0;}
+.r-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+.r-info{overflow:hidden;min-width:0;}
+.r-name{font-size:8px;color:rgba(240,237,230,0.65);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:0.06em;}
+.r-author{font-size:7px;color:rgba(240,237,230,0.2);margin-top:2px;}
+.r-new{font-size:7px;color:var(--acid);margin-top:1px;letter-spacing:0.15em;}
+.r-actions{display:flex;flex-direction:column;gap:3px;flex-shrink:0;align-items:flex-end;}
+.r-load,.r-code{font-size:7px;letter-spacing:0.1em;color:var(--acid);background:none;border:none;cursor:pointer;padding:0;transition:opacity 0.2s;}
+.r-code{color:rgba(240,237,230,0.35);}
+.r-load:hover,.r-code:hover{opacity:0.6;}
+#repo-empty{padding:1.5rem;text-align:center;color:rgba(240,237,230,0.1);font-size:8px;line-height:2;}
+
+@media(max-width:640px){#global-repo{width:calc(100vw - 2.4rem);left:1.2rem;}}
+
 /* ABOUT */
 .ae-links{display:flex;gap:1.4rem;flex-wrap:wrap;align-items:center;}
 .ae-link{
@@ -223,9 +289,22 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
     <div id="gen-status"></div>
   </div>
 
+  <!-- CARGAR .fs PROPIO -->
+  <div class="ae-section">
+    <div class="ae-section-title">O CARGÁ TU PROPIO .FS</div>
+    <div id="drop-zone">
+      <div class="drop-icon">⬡</div>
+      <div class="drop-label">
+        <strong>AETHER ISF DROP</strong><br>
+        Arrastrá un <code style="color:var(--acid);font-size:9px">.fs</code> acá o hacé click para elegir un archivo
+      </div>
+      <input type="file" id="drop-file" accept=".fs,.glsl,.frag">
+    </div>
+  </div>
+
   <!-- OUTPUT -->
   <div class="ae-section" id="output-box">
-    <div class="ae-section-title">SHADER GENERADO (.fs)</div>
+    <div class="ae-section-title" id="output-title">CÓDIGO DEL SHADER (.fs)</div>
     <div id="output-actions">
       <button class="ae-btn secondary" id="copy-btn">COPIAR CÓDIGO</button>
       <button class="ae-btn secondary" id="download-btn">DESCARGAR .fs</button>
@@ -252,6 +331,20 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 </div>
 
 <div id="isf-panel"></div>
+
+<!-- REPOSITORIO GLOBAL -->
+<button id="repo-toggle"><span class="rled"></span>REPO GLOBAL</button>
+<div id="global-repo">
+  <div id="repo-header">
+    <span id="repo-title">SHADER REPO GLOBAL</span>
+    <span id="repo-live"></span>
+    <span id="repo-count">—</span>
+    <button id="repo-close">✕</button>
+  </div>
+  <div id="repo-list">
+    <div id="repo-empty">Cargando repositorio...</div>
+  </div>
+</div>
 
 <script>
 (function(){
@@ -612,8 +705,9 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
     }catch(e){ return false; }
   }
 
-  // Compila, pone de fondo, arma controles, extrae paleta y guarda en el repo
-  async function loadGeneratedShader(code, label){
+  // Compila, pone de fondo, arma controles y extrae paleta. Si publish=true, además
+  // guarda en el Repo Global (solo para shaders generados por IA).
+  async function applyShader(code, label, {publish=false}={}){
     const {finalSrc} = parseAetherISF(code);
     let p;
     try{
@@ -633,6 +727,8 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
     canvas.classList.add('active');
     runProgram(p);
     buildPanel();
+    outputCode.textContent = code;
+    outputBox.style.display = 'block';
     let fc=0;
     await new Promise(resolve=>{
       (function wait(){
@@ -641,8 +737,45 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
         resolve();
       })();
     });
-    return pushToRepo(label, code);
+    if(publish) return pushToRepo(label, code);
+    return true;
   }
+
+  // ─────────────────────────────────────────────
+  // SHADER POR DEFECTO — visible apenas se carga la página
+  // ─────────────────────────────────────────────
+  const DEFAULT_SHADER = {name:'RIPPLE GRID', code:`/*{
+  "DESCRIPTION":"Ripple grid — brutalist grid warped by traveling waves",
+  "CREDIT":"Human Glitche / Visual Lab",
+  "ISFVSN":"2.0",
+  "CATEGORIES":["Generative"],
+  "INPUTS":[
+    {"NAME":"density","TYPE":"float","LABEL":"Density","DEFAULT":18.0,"MIN":4.0,"MAX":60.0},
+    {"NAME":"speed","TYPE":"float","LABEL":"Speed","DEFAULT":1.0,"MIN":0.0,"MAX":4.0},
+    {"NAME":"warp","TYPE":"float","LABEL":"Warp","DEFAULT":0.4,"MIN":0.0,"MAX":1.5}
+  ]
+}*/
+void main(){
+  vec2 uv=isf_FragNormCoord;
+  float t=TIME*speed;
+  vec2 c=uv-0.5;
+  float d=length(c);
+  float wave=sin(d*20.0-t*3.0)*warp*0.05;
+  vec2 p=(uv+c*wave)*density;
+  vec2 g=abs(fract(p)-0.5);
+  float line=smoothstep(0.48,0.5,max(g.x,g.y));
+  vec3 bg=mix(vec3(0.02,0.02,0.02),vec3(0.05,0.05,0.08),uv.y);
+  vec3 acid=vec3(0.72,1.0,0.0);
+  vec3 col=mix(bg,acid,line*(0.6+0.4*sin(d*12.0-t*2.0)));
+  gl_FragColor=vec4(col,1.0);
+}`};
+
+  setTimeout(()=>{
+    if(prog) return; // ya hay un shader cargado (generado o del repo)
+    applyShader(DEFAULT_SHADER.code, DEFAULT_SHADER.name, {publish:false}).catch(err=>{
+      console.error('No se pudo cargar el shader por defecto:', err);
+    });
+  }, 600);
 
   generateBtn.addEventListener('click', async ()=>{
     const key = localStorage.getItem(LS_KEY);
@@ -685,7 +818,8 @@ El shader debe representar esta idea: "${idea}"`;
       const label = idea.slice(0, 40).toUpperCase();
       setGenStatus('✓ Shader generado — compilando y aplicando de fondo…', 'ok');
       try{
-        const saved = await loadGeneratedShader(code, label);
+        const saved = await applyShader(code, label, {publish:true});
+        if(repoOpen) fetchRepo();
         setGenStatus(saved
           ? '✓ Shader generado, aplicado de fondo y guardado en el Repo Global.'
           : '✓ Shader generado y aplicado de fondo (no se pudo guardar en el Repo Global).', 'ok');
@@ -716,6 +850,139 @@ El shader debe representar esta idea: "${idea}"`;
     a.click();
     URL.revokeObjectURL(url);
   });
+
+  // ─────────────────────────────────────────────
+  // REPOSITORIO GLOBAL — Firebase Realtime DB
+  // ─────────────────────────────────────────────
+  let repoItems = [];
+  let repoOpen  = false;
+  let repoUnsub = null;
+
+  async function fbGet(path){
+    try{
+      const r = await fetch(`${FB_URL}${path}.json`);
+      return r.ok ? r.json() : null;
+    }catch(e){ return null; }
+  }
+
+  function renderRepoList(){
+    const list = document.getElementById('repo-list');
+    const empty = document.getElementById('repo-empty');
+    const countEl = document.getElementById('repo-count');
+    if(!list) return;
+    const items = repoItems.slice().reverse();
+    countEl.textContent = items.length || '—';
+    list.querySelectorAll('.ritem').forEach(el=>el.remove());
+    if(!items.length){
+      empty.textContent='Todavía no hay shaders en el repo.';
+      empty.style.display='block'; return;
+    }
+    empty.style.display='none';
+    items.forEach(item=>{
+      const row=document.createElement('div');row.className='ritem';
+      const thumb=document.createElement('div');thumb.className='r-thumb';
+      if(item.thumb){const img=document.createElement('img');img.src=item.thumb;img.alt='';thumb.appendChild(img);}
+      const info=document.createElement('div');info.className='r-info';
+      const isNew=(Date.now()-item.ts)<86400000;
+      info.innerHTML=`<div class="r-name">${item.name}</div>
+        <div class="r-author">${item.author||'anon'} · ${item.date||''}</div>
+        ${isNew?'<div class="r-new">● NUEVO</div>':''}`;
+      const actions=document.createElement('div');actions.className='r-actions';
+      const load=document.createElement('button');
+      load.className='r-load';load.textContent='CARGAR';
+      load.addEventListener('click',e=>{
+        e.stopPropagation();
+        applyShader(item.code, item.name, {publish:false}).catch(err=>{
+          setGenStatus(`No se pudo cargar — ${err}`, 'err');
+        });
+      });
+      const code=document.createElement('button');
+      code.className='r-code';code.textContent='VER CÓDIGO';
+      code.addEventListener('click',e=>{
+        e.stopPropagation();
+        document.getElementById('output-title').textContent = `CÓDIGO — ${item.name}`;
+        outputCode.textContent = item.code;
+        outputBox.style.display = 'block';
+        outputBox.scrollIntoView({behavior:'smooth',block:'start'});
+      });
+      actions.appendChild(load);actions.appendChild(code);
+      row.appendChild(thumb);row.appendChild(info);row.appendChild(actions);
+      list.appendChild(row);
+    });
+  }
+
+  async function fetchRepo(){
+    const data = await fbGet('/shaders');
+    if(!data){ repoItems=[]; renderRepoList(); return; }
+    repoItems = Object.values(data).filter(Boolean);
+    renderRepoList();
+  }
+
+  function startRepoPolling(){
+    fetchRepo();
+    repoUnsub = setInterval(fetchRepo, 8000);
+  }
+  function stopRepoPolling(){
+    if(repoUnsub){ clearInterval(repoUnsub); repoUnsub=null; }
+  }
+
+  document.getElementById('repo-toggle').addEventListener('click',()=>{
+    repoOpen=true;
+    document.getElementById('global-repo').classList.add('show');
+    document.getElementById('repo-toggle').style.display='none';
+    if(!repoUnsub) startRepoPolling();
+  });
+  document.getElementById('repo-close').addEventListener('click',()=>{
+    repoOpen=false;
+    document.getElementById('global-repo').classList.remove('show');
+    document.getElementById('repo-toggle').style.display='flex';
+    stopRepoPolling();
+  });
+
+  // ─────────────────────────────────────────────
+  // CARGAR .fs LOCAL — drag & drop / file picker
+  // ─────────────────────────────────────────────
+  const dz = document.getElementById('drop-zone');
+  const df = document.getElementById('drop-file');
+
+  function loadShaderFile(file){
+    document.getElementById('output-title').textContent = 'CÓDIGO DEL SHADER (.fs)';
+    setGenStatus('Cargando ' + file.name + '…');
+    const reader = new FileReader();
+    reader.onload = async e=>{
+      const src = e.target.result;
+      const label = file.name.toUpperCase().replace(/\.(FS|GLSL|FRAG)$/i,'');
+      try{
+        await applyShader(src, label, {publish:false});
+        setGenStatus(`✓ ${label} cargado de fondo.`, 'ok');
+      }catch(err){
+        setGenStatus(`No se pudo cargar — ${err}`, 'err');
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  dz.addEventListener('click', ()=>df.click());
+  df.addEventListener('change', e=>{
+    if(e.target.files[0]) loadShaderFile(e.target.files[0]);
+    e.target.value='';
+  });
+  ['dragenter','dragover'].forEach(ev=>dz.addEventListener(ev,e=>{
+    e.preventDefault();
+    dz.classList.add('drag-over');
+  }));
+  ['dragleave','drop'].forEach(ev=>dz.addEventListener(ev,e=>{
+    e.preventDefault();
+    dz.classList.remove('drag-over');
+  }));
+  dz.addEventListener('drop', e=>{
+    const file=[...e.dataTransfer.files].find(f=>/\.(fs|glsl|frag)$/i.test(f.name));
+    if(file) loadShaderFile(file);
+    else setGenStatus('Necesito un .fs — soltá un shader de Aether ISF', 'err');
+  });
+
+  // Fetch silencioso al cargar para tener el contador listo
+  fetchRepo();
 })();
 </script>
 </body>
