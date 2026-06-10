@@ -234,6 +234,67 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 #form-status.err{color:var(--glitch);}
 #form-status.ok{color:var(--acid);}
 
+/* SALA DE ESPERA */
+#room-overlay{
+  display:none;position:fixed;inset:0;z-index:910;
+  background:rgba(5,5,5,0.88);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+  align-items:center;justify-content:center;padding:1.5rem;
+}
+#room-overlay.show{display:flex;}
+#room-panel{
+  background:#0c0c0c;border:1px solid rgba(184,255,0,0.25);border-radius:4px;
+  padding:2rem 1.8rem;width:100%;max-width:480px;position:relative;
+  max-height:90vh;overflow-y:auto;text-align:center;
+}
+#room-panel::-webkit-scrollbar{width:3px;}
+#room-panel::-webkit-scrollbar-thumb{background:rgba(184,255,0,0.15);}
+#room-close{
+  position:absolute;top:1rem;right:1rem;
+  font-family:var(--mono);font-size:9px;color:rgba(240,237,230,0.3);
+  background:none;border:none;cursor:pointer;transition:color 0.2s;padding:4px;
+}
+#room-close:hover{color:var(--glitch);}
+#room-type{margin-bottom:0.8rem;}
+#room-title{font-family:var(--display);font-size:2rem;letter-spacing:0.04em;color:var(--white);margin-bottom:0.5rem;}
+#room-desc{font-family:var(--body);font-size:11px;line-height:1.6;color:rgba(240,237,230,0.45);margin-bottom:1.6rem;}
+
+#room-slots{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(64px,1fr));
+  gap:10px;margin-bottom:1.6rem;
+}
+.room-slot{
+  aspect-ratio:1;border-radius:4px;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:5px;padding:6px;
+  border:1px solid rgba(240,237,230,0.1);background:rgba(255,255,255,0.02);
+}
+.room-slot.filled{border-color:rgba(184,255,0,0.3);background:rgba(184,255,0,0.05);}
+.room-slot.empty{border-style:dashed;border-color:rgba(240,237,230,0.12);}
+.room-slot-avatar{
+  width:28px;height:28px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--display);font-size:13px;
+  background:rgba(184,255,0,0.12);color:var(--acid);
+}
+.room-slot.empty .room-slot-avatar{
+  background:rgba(255,255,255,0.03);color:rgba(240,237,230,0.2);
+  animation:pulse-led 1.8s ease-in-out infinite;
+}
+.room-slot-name{
+  font-family:var(--mono);font-size:7px;letter-spacing:0.05em;
+  color:rgba(240,237,230,0.5);max-width:90%;overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap;
+}
+.room-slot.empty .room-slot-name{color:rgba(240,237,230,0.15);}
+
+#room-status{
+  font-family:var(--mono);font-size:9px;letter-spacing:0.18em;text-transform:uppercase;
+  color:rgba(240,237,230,0.4);margin-bottom:1.6rem;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+}
+#room-status.launched{color:var(--acid);}
+
+#room-actions{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
+
 /* FOOTER */
 #footer{
   margin-top:4rem;padding-top:2rem;
@@ -316,6 +377,19 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
   </div>
 </div>
 
+<!-- MODAL SALA DE ESPERA -->
+<div id="room-overlay">
+  <div id="room-panel">
+    <button id="room-close">✕</button>
+    <div id="room-type"></div>
+    <div id="room-title"></div>
+    <div id="room-desc"></div>
+    <div id="room-slots"></div>
+    <div id="room-status"></div>
+    <div id="room-actions"></div>
+  </div>
+</div>
+
 <footer id="footer">© 2026 HUMAN GLITCHE — VISUAL LAB</footer>
 
 <script>
@@ -351,6 +425,17 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
   const formSubmit = document.getElementById('form-submit');
   const formStatus = document.getElementById('form-status');
   const filterBar  = document.getElementById('filter-bar');
+
+  const roomOv     = document.getElementById('room-overlay');
+  const roomClose  = document.getElementById('room-close');
+  const roomType   = document.getElementById('room-type');
+  const roomTitleEl= document.getElementById('room-title');
+  const roomDescEl = document.getElementById('room-desc');
+  const roomSlots  = document.getElementById('room-slots');
+  const roomStatus = document.getElementById('room-status');
+  const roomActions= document.getElementById('room-actions');
+  let roomLobbyId  = null;
+  let roomPollTimer = null;
 
   function getSession(){ try{ return JSON.parse(localStorage.getItem(LS_KEY)||'null'); }catch(e){ return null; } }
   function saveSession(s){ localStorage.setItem(LS_KEY, JSON.stringify(s)); }
@@ -485,11 +570,15 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 
     card.addEventListener('click', async (e) => {
       const btn = e.target.closest('[data-action]');
-      if(!btn || btn.disabled) return;
+      if(!btn){
+        openRoom(lobby.id);
+        return;
+      }
+      if(btn.disabled) return;
       const action = btn.dataset.action;
       const id     = btn.dataset.id;
       btn.disabled = true;
-      if(action === 'join')  await joinLobby(id, lobby);
+      if(action === 'join'){ await joinLobby(id, lobby); openRoom(id); }
       if(action === 'leave') await leaveLobby(id, btn);
       if(action === 'close') await closeLobby(id, btn);
       await loadLobbies();
@@ -597,7 +686,8 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
         }
         return { ok:false, error:`HTTP ${r.status}${errBody ? ' — ' + errBody.slice(0,150) : ''}` };
       }
-      return { ok:true };
+      const result = await r.json();
+      return { ok:true, id: result.name };
     }catch(e){ return { ok:false, error:`Error de red — ${e.message}` }; }
   }
 
@@ -619,6 +709,108 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
   modalClose.addEventListener('click', closeModal);
   modalOv.addEventListener('click', e => { if(e.target === modalOv) closeModal(); });
 
+  // ── SALA DE ESPERA ────────────────────────
+  async function fetchLobby(id){
+    try{
+      const r = await fetch(`${FB_URL}/lobbies/${id}.json`);
+      return r.ok ? await r.json() : null;
+    }catch(e){ return null; }
+  }
+
+  function renderRoom(lobby){
+    const uid      = session ? session.uid : null;
+    const count    = memberCount(lobby);
+    const cap      = parseInt(lobby.capacity) || 4;
+    const isIn     = uid && lobby.members && lobby.members[uid];
+    const isOwner  = uid && lobby.createdBy === uid;
+    const launched = lobby.status === 'launched';
+    const type     = lobby.type || 'PROYECTO';
+    const color    = TYPE_COLORS[type] || 'var(--acid)';
+
+    roomType.innerHTML = `<span class="type-tag ${type}">${type}</span>`;
+    roomTitleEl.textContent = lobby.title || '';
+    roomDescEl.textContent = lobby.desc || '';
+    roomDescEl.style.display = lobby.desc ? '' : 'none';
+
+    const members = Object.values(lobby.members || {});
+    let slotsHtml = '';
+    for(let i = 0; i < cap; i++){
+      const m = members[i];
+      if(m){
+        const initial = (m.name || '?').trim().charAt(0).toUpperCase() || '?';
+        slotsHtml += `<div class="room-slot filled">
+          <div class="room-slot-avatar" style="background:${color}22;color:${color};">${escHtml(initial)}</div>
+          <div class="room-slot-name">${escHtml(m.name || '?')}</div>
+        </div>`;
+      } else {
+        slotsHtml += `<div class="room-slot empty">
+          <div class="room-slot-avatar">?</div>
+          <div class="room-slot-name">esperando…</div>
+        </div>`;
+      }
+    }
+    roomSlots.innerHTML = slotsHtml;
+
+    if(launched){
+      roomStatus.className = 'launched';
+      roomStatus.innerHTML = `<span class="launched-dot"></span> ¡SALA COMPLETA — COORDINÁ EN DISCORD!`;
+    } else {
+      roomStatus.className = '';
+      roomStatus.innerHTML = `<span class="led-spin"></span> ESPERANDO JUGADORES… ${count}/${cap}`;
+    }
+
+    let actionsHtml = '';
+    if(launched){
+      actionsHtml += `<a class="card-btn discord" href="${DISCORD_INVITE}" target="_blank" rel="noopener">→ DISCORD</a>`;
+    } else if(!uid){
+      actionsHtml += `<a class="card-btn" href="index.html#comunidad">INICIÁ SESIÓN</a>`;
+    } else if(isIn){
+      actionsHtml += `<button class="card-btn dimmed" data-room-action="leave">SALIR DE LA SALA</button>`;
+    } else if(count < cap){
+      actionsHtml += `<button class="card-btn primary" data-room-action="join">UNIRSE A LA SALA</button>`;
+    }
+    if(isOwner && !launched){
+      actionsHtml += `<button class="card-btn danger" data-room-action="close">✕ CERRAR SALA</button>`;
+    }
+    roomActions.innerHTML = actionsHtml;
+  }
+
+  async function refreshRoom(){
+    if(!roomLobbyId) return;
+    const data = await fetchLobby(roomLobbyId);
+    if(!data){ closeRoom(); loadLobbies(); return; }
+    renderRoom({ id: roomLobbyId, ...data });
+  }
+
+  function openRoom(id){
+    roomLobbyId = id;
+    roomOv.classList.add('show');
+    refreshRoom();
+    if(roomPollTimer) clearInterval(roomPollTimer);
+    roomPollTimer = setInterval(refreshRoom, 4000);
+  }
+
+  function closeRoom(){
+    roomOv.classList.remove('show');
+    roomLobbyId = null;
+    if(roomPollTimer){ clearInterval(roomPollTimer); roomPollTimer = null; }
+  }
+
+  roomClose.addEventListener('click', closeRoom);
+  roomOv.addEventListener('click', e => { if(e.target === roomOv) closeRoom(); });
+
+  roomActions.addEventListener('click', async e => {
+    const btn = e.target.closest('[data-room-action]');
+    if(!btn || btn.disabled || !roomLobbyId) return;
+    const action = btn.dataset.roomAction;
+    btn.disabled = true;
+    if(action === 'join')  await joinLobby(roomLobbyId, {});
+    if(action === 'leave') await leaveLobby(roomLobbyId);
+    if(action === 'close'){ await closeLobby(roomLobbyId); closeRoom(); }
+    await refreshRoom();
+    await loadLobbies();
+  });
+
   lobbyForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     if(!session){ setFormStatus('Iniciá sesión primero.','err'); return; }
@@ -632,7 +824,8 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
     });
     if(result.ok){
       setFormStatus('¡Sala creada!','ok');
-      setTimeout(()=>{ closeModal(); loadLobbies(); }, 800);
+      await joinLobby(result.id, {});
+      setTimeout(()=>{ closeModal(); loadLobbies(); openRoom(result.id); }, 600);
     } else {
       setFormStatus(`No se pudo crear la sala — ${result.error}`,'err');
     }
