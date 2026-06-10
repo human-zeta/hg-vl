@@ -148,7 +148,8 @@ body.is-own #soc-edit-btn{display:inline-flex;}
 #patches-grid{display:flex;flex-wrap:wrap;gap:0.9rem;}
 #patches-empty{font-family:var(--mono);font-size:9px;color:rgba(240,237,230,0.2);padding:1rem 0;}
 .patch{display:flex;flex-direction:column;align-items:center;gap:5px;width:72px;cursor:default;}
-.patch-shield{width:44px;height:52px;background:rgba(184,255,0,0.08);border:1px solid rgba(184,255,0,0.3);clip-path:polygon(50% 0%,100% 20%,100% 75%,50% 100%,0% 75%,0% 20%);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:8px;font-weight:700;color:var(--acid);letter-spacing:0.05em;transition:background 0.2s;}
+.patch-shield{width:44px;height:52px;background:rgba(184,255,0,0.08);border:1px solid rgba(184,255,0,0.3);clip-path:polygon(50% 0%,100% 20%,100% 75%,50% 100%,0% 75%,0% 20%);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:8px;font-weight:700;color:var(--acid);letter-spacing:0.05em;transition:background 0.2s;overflow:hidden;}
+.patch-shield img{width:100%;height:100%;object-fit:cover;image-rendering:pixelated;display:block;}
 .patch.dropped .patch-shield{background:rgba(255,45,85,0.08);border-color:rgba(255,45,85,0.3);color:var(--glitch);}
 .patch-name{font-family:var(--mono);font-size:7px;letter-spacing:0.1em;color:rgba(240,237,230,0.4);text-align:center;line-height:1.4;max-width:72px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .patch-skill{font-family:var(--mono);font-size:6px;letter-spacing:0.08em;color:rgba(240,237,230,0.2);text-align:center;}
@@ -441,7 +442,10 @@ body.is-own #soc-edit-btn{display:inline-flex;}
     });
     dropped.forEach(pd=>{
       const el=document.createElement('div'); el.className='patch dropped';
-      el.innerHTML=`<div class="patch-shield">${patchInitials(pd.name)}</div><div class="patch-name">${pd.name||'Parche especial'}</div>${pd.skill?`<div class="patch-skill">${pd.skill}</div>`:''}`;
+      const shieldInner = pd.imageData
+        ? `<img src="${pd.imageData}" alt="${pd.name || 'parche'}">`
+        : patchInitials(pd.name);
+      el.innerHTML=`<div class="patch-shield">${shieldInner}</div><div class="patch-name">${pd.name||'Parche especial'}</div>${pd.skill?`<div class="patch-skill">${pd.skill}</div>`:''}`;
       grid.appendChild(el);
     });
   }
