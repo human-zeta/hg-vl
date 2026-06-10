@@ -199,10 +199,52 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
   margin-bottom:0.7rem;display:block;
 }
 
+/* MANUAL DE AUTOEVALUACIÓN — contenido del modal */
+.autoeval-intro p{font-size:13px;}
+.autoeval-intro em{color:rgba(240,237,230,0.55);}
+.autoeval-panel{margin-top:2.2rem;padding-top:1.6rem;border-top:1px solid rgba(240,237,230,0.08);}
+.autoeval-panel:first-of-type{margin-top:1.6rem;}
+.autoeval-glyph{font-family:var(--display);font-size:1.6rem;color:var(--acid);margin-bottom:0.3rem;}
+.autoeval-panel h3{margin-top:0;}
+.autoeval-q{
+  display:flex;align-items:flex-start;gap:0.7rem;cursor:pointer;
+  padding:0.5rem 0;font-size:13px;color:rgba(240,237,230,0.6);
+  transition:color 0.15s;user-select:none;
+}
+.autoeval-q:hover{color:rgba(240,237,230,0.85);}
+.autoeval-q::before{
+  content:'';flex-shrink:0;margin-top:5px;width:11px;height:11px;border-radius:50%;
+  border:1px solid rgba(184,255,0,0.4);background:rgba(184,255,0,0.04);transition:all 0.15s;
+}
+.autoeval-q.active{color:rgba(240,237,230,0.92);}
+.autoeval-q.active::before{background:var(--acid);border-color:var(--acid);box-shadow:0 0 8px rgba(184,255,0,0.5);}
+.autoeval-bar{height:3px;border-radius:2px;background:rgba(255,255,255,0.06);overflow:hidden;margin:1rem 0 0.6rem;}
+.autoeval-bar-fill{height:100%;background:linear-gradient(90deg,var(--acid),rgba(184,255,0,0.4));border-radius:2px;transition:width 0.4s ease;width:0%;}
+.autoeval-indicator{font-family:var(--mono);font-size:8.5px;letter-spacing:0.1em;color:rgba(240,237,230,0.4);text-transform:uppercase;line-height:1.7;}
+.autoeval-principle{margin-top:1rem;}
+.autoeval-closing{margin-top:2.2rem;padding-top:1.6rem;border-top:1px solid rgba(240,237,230,0.08);}
+.autoeval-summary{font-family:var(--mono);font-size:9px;letter-spacing:0.15em;color:rgba(240,237,230,0.5);text-transform:uppercase;padding:0.4rem 0;display:flex;justify-content:space-between;gap:1rem;}
+.autoeval-summary span:last-child{color:var(--acid);}
+.autoeval-symbols{font-family:var(--mono);font-size:8.5px;letter-spacing:0.2em;color:rgba(240,237,230,0.35);text-transform:uppercase;}
+
 #academy-content{display:none;}
 #academy-content.show{display:block;}
 #gate-locked{display:none;}
 #gate-locked.show{display:block;}
+
+/* EL NÚCLEO — manual de autoevaluación */
+#nucleo-card{
+  display:flex;align-items:center;gap:1.2rem;flex-wrap:wrap;
+  border:1px solid rgba(184,255,0,0.35);border-radius:3px;
+  background:rgba(184,255,0,0.05);padding:1.3rem 1.5rem;margin-bottom:1.4rem;
+  cursor:pointer;transition:background 0.2s,border-color 0.2s;
+}
+#nucleo-card:hover{background:rgba(184,255,0,0.09);border-color:rgba(184,255,0,0.55);}
+#nucleo-card .nc-glyphs{font-family:var(--display);font-size:1.4rem;letter-spacing:0.3em;color:var(--acid);flex-shrink:0;}
+#nucleo-card .nc-text{flex:1;min-width:200px;}
+#nucleo-card .nc-title{font-family:var(--mono);font-size:9px;letter-spacing:0.25em;color:var(--acid);text-transform:uppercase;margin-bottom:4px;}
+#nucleo-card .nc-sub{font-size:9px;letter-spacing:0.05em;color:rgba(240,237,230,0.45);line-height:1.6;}
+#nucleo-card .nc-cta{font-family:var(--mono);font-size:8px;letter-spacing:0.25em;color:var(--acid);border:1px solid rgba(184,255,0,0.35);border-radius:2px;padding:6px 12px;white-space:nowrap;flex-shrink:0;}
 
 /* XP / NIVEL BADGE */
 #xp-badge{
@@ -312,6 +354,14 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
       a medida que avanzás: cada autoevaluación suma <strong>experiencia (XP)</strong> y te acerca al próximo nivel
       dentro de la comunidad. Honor system — esto es para vos, para que veas tu propio recorrido.
     </div>
+    <div id="nucleo-card">
+      <div class="nc-glyphs">⌘ ✦ ☉</div>
+      <div class="nc-text">
+        <div class="nc-title">El Núcleo — Manual de Autoevaluación</div>
+        <div class="nc-sub">No es una clase ni te clasifica. Es la pregunta de fondo que sostiene todo lo demás — para llegar al núcleo de HG, primero hay que mirar hacia adentro.</div>
+      </div>
+      <div class="nc-cta">ABRIR →</div>
+    </div>
     <div id="xp-badge">
       <div>
         <div class="xb-level" id="xb-level">—</div>
@@ -390,7 +440,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
       labelEl.textContent = `${next.min - xp} XP para ${next.name}`;
     } else {
       barEl.style.width = '100%';
-      labelEl.textContent = '¡Nivel máximo alcanzado — sos parte del núcleo HG!';
+      labelEl.textContent = '¡Nivel máximo alcanzado! Pero el núcleo de HG no se mide en XP — abrí el Manual de Autoevaluación.';
     }
   }
 
@@ -803,6 +853,139 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
     }
   }
 
+  // ── MANUAL DE AUTOEVALUACIÓN — privado, solo en este dispositivo ──
+  const AUTOEVAL_KEY = 'hg_autoeval_v1';
+  const AUTOEVAL_QUESTIONS = {
+    obs: [
+      { id:'obs-1', q:'¿Reconozco cuando una narrativa intenta manipular mi percepción?' },
+      { id:'obs-2', q:'¿Distingo entre datos, opiniones y propaganda?' },
+      { id:'obs-3', q:'¿Puedo observar un problema sin reaccionar automáticamente?' },
+      { id:'obs-4', q:'¿Soy consciente de cómo influyen los algoritmos y los medios en mi visión del mundo?' }
+    ],
+    crear: [
+      { id:'crear-1', q:'¿Estoy creando algo, o solo consumiendo contenido?' },
+      { id:'crear-2', q:'¿Uso tecnología y creatividad para producir nuevas ideas?' },
+      { id:'crear-3', q:'¿Estoy combinando disciplinas diferentes?' },
+      { id:'crear-4', q:'¿Estoy construyendo algo que antes no existía?' }
+    ],
+    expandir: [
+      { id:'expandir-1', q:'¿Comparto lo que sé con otros?' },
+      { id:'expandir-2', q:'¿Ayudo a que otros piensen por sí mismos?' },
+      { id:'expandir-3', q:'¿Estoy construyendo comunidad, o solo proyectos personales?' },
+      { id:'expandir-4', q:'¿Estoy creando algo que pueda seguir sin mí?' }
+    ]
+  };
+  const AUTOEVAL_PANELS = [
+    { key:'obs', glyph:'⌘', title:'Panel 1 — Observar · El Sistema',
+      intro:'Antes de cambiar algo, tenés que entenderlo.',
+      indicator:{
+        low:'Si todavía reaccionás emocionalmente a la mayoría de los estímulos, estás entrenando la observación.',
+        mid:'Ya empezaste a observar — seguí encontrando los patrones.',
+        high:'⌘ Observación activa.'
+      },
+      principle:'"La claridad empieza cuando dejamos de reaccionar en automático."' },
+    { key:'crear', glyph:'✦', title:'Panel 2 — Crear · El Glitch',
+      intro:'Un Human Glitche no solo cuestiona el sistema. Construye alternativas.',
+      indicator:{
+        low:'Si consumís más de lo que producís, el glitch todavía no está activo.',
+        mid:'El glitch empieza a activarse — seguí construyendo.',
+        high:'✦ Glitch activo.'
+      },
+      principle:'"Crear es la forma más profunda de pensamiento."' },
+    { key:'expandir', glyph:'☉', title:'Panel 3 — Expandir · El Arquitecto',
+      intro:'El conocimiento alcanza su valor cuando se multiplica.',
+      indicator:{
+        low:'Si el conocimiento termina en vos, todavía no empezó la expansión.',
+        mid:'Ya estás compartiendo — la expansión empezó.',
+        high:'☉ Expansión activa.'
+      },
+      principle:'"El conocimiento que no se comparte se pierde."' }
+  ];
+
+  function loadAutoeval(){
+    try{ return JSON.parse(localStorage.getItem(AUTOEVAL_KEY)) || {}; }catch(e){ return {}; }
+  }
+  function saveAutoeval(state){
+    try{ localStorage.setItem(AUTOEVAL_KEY, JSON.stringify(state)); }catch(e){}
+  }
+  function panelRatio(state, key){
+    const qs = AUTOEVAL_QUESTIONS[key];
+    return qs.filter(q=>state[q.id]).length / qs.length;
+  }
+  function autoevalSummary(ratio){
+    if(ratio <= 0) return 'Todavía no';
+    if(ratio >= 1) return 'Sí';
+    return 'En proceso';
+  }
+
+  function buildAutoevalHtml(){
+    const state = loadAutoeval();
+    let html = `
+    <div class="autoeval-intro">
+      <p><em>"La humanidad avanza cuando alguien encuentra un glitch en el sistema."</em></p>
+      <p>Human Glitche no es un certificado ni un ranking. Es una práctica personal de pensamiento crítico, creatividad y construcción cultural.</p>
+      <p>Este manual no te clasifica. Te muestra un espejo. Marcá lo que sea verdad para vos hoy — las respuestas quedan guardadas solo en este dispositivo, nadie más las ve.</p>
+    </div>`;
+
+    AUTOEVAL_PANELS.forEach(panel=>{
+      const ratio = panelRatio(state, panel.key);
+      const indText = ratio >= 1 ? panel.indicator.high : (ratio > 0 ? panel.indicator.mid : panel.indicator.low);
+      html += `
+    <div class="autoeval-panel">
+      <div class="autoeval-glyph">${panel.glyph}</div>
+      <h3>${panel.title}</h3>
+      <p>${panel.intro}</p>`;
+      AUTOEVAL_QUESTIONS[panel.key].forEach(q=>{
+        const active = state[q.id] ? ' active' : '';
+        html += `<div class="autoeval-q${active}" data-qid="${q.id}">${q.q}</div>`;
+      });
+      html += `
+      <div class="autoeval-bar"><div class="autoeval-bar-fill" data-bar="${panel.key}" style="width:${(ratio*100).toFixed(0)}%"></div></div>
+      <div class="autoeval-indicator" data-indicator="${panel.key}">${indText}</div>
+      <blockquote class="autoeval-principle">${panel.principle}</blockquote>
+    </div>`;
+    });
+
+    html += `
+    <div class="autoeval-closing">
+      <h3>Evaluación final</h3>
+      <p>No existe un nivel visible. No existe un rango público. Solo tres preguntas, que se responden con lo que marcaste arriba:</p>
+      <div class="autoeval-summary"><span>¿Estoy observando?</span><span data-summary-val="obs">${autoevalSummary(panelRatio(state,'obs'))}</span></div>
+      <div class="autoeval-summary"><span>¿Estoy creando?</span><span data-summary-val="crear">${autoevalSummary(panelRatio(state,'crear'))}</span></div>
+      <div class="autoeval-summary"><span>¿Estoy expandiendo?</span><span data-summary-val="expandir">${autoevalSummary(panelRatio(state,'expandir'))}</span></div>
+      <p>La combinación de las tres es tu progreso. Pero ese progreso solo lo conocés vos.</p>
+      <p class="autoeval-symbols">⌘ control consciente — ✦ creatividad — ☉ conciencia</p>
+      <blockquote class="autoeval-principle">"Una mente que observa puede comprender.<br>Una mente que crea puede transformar.<br>Una mente que comparte puede cambiar el mundo."</blockquote>
+      <p>Esto es el núcleo de HG. No tiene puerta con llave ni examen — pero si nunca marcaste nada acá, probablemente todavía no llegaste. Volvé cuando quieras: este manual no caduca.</p>
+    </div>`;
+
+    return html;
+  }
+
+  function openAutoeval(){
+    openModal('EL NÚCLEO — MANUAL DE AUTOEVALUACIÓN', buildAutoevalHtml());
+    const m = getModal();
+    m.body.querySelectorAll('.autoeval-q').forEach(el=>{
+      el.addEventListener('click', ()=>{
+        const qid = el.dataset.qid;
+        const panelKey = qid.split('-')[0];
+        const state = loadAutoeval();
+        state[qid] = !state[qid];
+        saveAutoeval(state);
+        el.classList.toggle('active', !!state[qid]);
+
+        const ratio = panelRatio(state, panelKey);
+        const panel = AUTOEVAL_PANELS.find(p=>p.key===panelKey);
+        const bar = m.body.querySelector(`[data-bar="${panelKey}"]`);
+        if(bar) bar.style.width = (ratio*100).toFixed(0)+'%';
+        const ind = m.body.querySelector(`[data-indicator="${panelKey}"]`);
+        if(ind) ind.textContent = ratio >= 1 ? panel.indicator.high : (ratio > 0 ? panel.indicator.mid : panel.indicator.low);
+        const sumVal = m.body.querySelector(`[data-summary-val="${panelKey}"]`);
+        if(sumVal) sumVal.textContent = autoevalSummary(ratio);
+      });
+    });
+  }
+
   // ── MODAL ────────────────────────────────
   // Lazy init: #class-modal está definido después del tag de cierre del script,
   // así que se resuelve la primera vez que se necesita (DOM ya completo).
@@ -840,6 +1023,8 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
   const patchesSidebar = document.getElementById('patches-sidebar');
   const patchesToggle  = document.getElementById('patches-toggle');
   patchesToggle.addEventListener('click', ()=> patchesSidebar.classList.toggle('collapsed'));
+
+  document.getElementById('nucleo-card').addEventListener('click', openAutoeval);
 
   checkAccess();
 })();
