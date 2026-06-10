@@ -317,6 +317,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
   overflow:hidden;
 }
 .patch-shield img{width:100%;height:100%;object-fit:cover;image-rendering:pixelated;display:block;}
+.patch-shield img.app-logo{object-fit:contain;padding:10px;image-rendering:auto;transition:filter 0.4s;}
 .patch.dropped .patch-shield{
   border-color:rgba(255,45,85,0.4);background:rgba(255,45,85,0.08);color:var(--glitch);
 }
@@ -737,23 +738,48 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
     }catch(e){ DROPPED = {}; }
   }
 
-  // Parches "auto" — uno por cada eje del temario marcado como aprendido (estilo scout)
+  // Parches de aplicaciones — el logo de la app, de escala de grises a color real según el % del temario aprendido
+  const APP_LOGOS = {
+    PS:  'adobephotoshop',
+    AI:  'adobeillustrator',
+    PR:  'adobepremierepro',
+    AE:  'adobeaftereffects',
+    CV:  'canva',
+    IA:  'googlegemini',
+    TD:  'touchdesigner'
+  };
+
+  // Parches "auto" — uno por cada eje del temario marcado como aprendido (estilo scout),
+  // o un parche-logo por aplicación si tiene logo disponible (ver APP_LOGOS)
   function autoPatches(){
     const out = [];
     PROGRAMS.forEach(p=>{
       const prog = PROGRESS[p.mark];
       if(!prog) return;
-      p.topics.forEach((t, ti)=>{
-        if(prog[ti]){
-          const topicTitle = (t && typeof t === 'object') ? t.title : t;
-          out.push({
-            kind: 'auto',
-            label: p.mark,
-            name: topicTitle,
-            skill: p.name
-          });
-        }
-      });
+      const doneCount = p.topics.filter((t, ti) => !!prog[ti]).length;
+      if(!doneCount) return;
+      if(APP_LOGOS[p.mark]){
+        out.push({
+          kind: 'logo',
+          icon: APP_LOGOS[p.mark],
+          label: p.mark,
+          name: p.name,
+          skill: `${doneCount}/${p.topics.length} ejes aprendidos`,
+          progress: doneCount / p.topics.length
+        });
+      } else {
+        p.topics.forEach((t, ti)=>{
+          if(prog[ti]){
+            const topicTitle = (t && typeof t === 'object') ? t.title : t;
+            out.push({
+              kind: 'auto',
+              label: p.mark,
+              name: topicTitle,
+              skill: p.name
+            });
+          }
+        });
+      }
     });
     return out;
   }
@@ -778,8 +804,11 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
       const el = document.createElement('div');
       el.className = 'patch';
       el.title = pa.name;
+      const shieldInner = pa.kind === 'logo'
+        ? `<img class="app-logo" src="https://cdn.simpleicons.org/${pa.icon}" alt="${pa.name}" style="filter:grayscale(${Math.round((1 - pa.progress) * 100)}%);" onerror="this.outerHTML='${pa.label}';">`
+        : pa.label;
       el.innerHTML = `
-        <div class="patch-shield">${pa.label}</div>
+        <div class="patch-shield">${shieldInner}</div>
         <div class="patch-name">${pa.name}</div>
         <div class="patch-skill">${pa.skill}</div>`;
       gridEl.appendChild(el);

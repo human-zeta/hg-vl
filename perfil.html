@@ -150,6 +150,7 @@ body.is-own #soc-edit-btn{display:inline-flex;}
 .patch{display:flex;flex-direction:column;align-items:center;gap:5px;width:72px;cursor:default;}
 .patch-shield{width:44px;height:52px;background:rgba(184,255,0,0.08);border:1px solid rgba(184,255,0,0.3);clip-path:polygon(50% 0%,100% 20%,100% 75%,50% 100%,0% 75%,0% 20%);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:8px;font-weight:700;color:var(--acid);letter-spacing:0.05em;transition:background 0.2s;overflow:hidden;}
 .patch-shield img{width:100%;height:100%;object-fit:cover;image-rendering:pixelated;display:block;}
+.patch-shield img.app-logo{object-fit:contain;padding:8px;image-rendering:auto;transition:filter 0.4s;}
 .patch.dropped .patch-shield{background:rgba(255,45,85,0.08);border-color:rgba(255,45,85,0.3);color:var(--glitch);}
 .patch-name{font-family:var(--mono);font-size:7px;letter-spacing:0.1em;color:rgba(240,237,230,0.4);text-align:center;line-height:1.4;max-width:72px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .patch-skill{font-family:var(--mono);font-size:6px;letter-spacing:0.08em;color:rgba(240,237,230,0.2);text-align:center;}
@@ -371,14 +372,39 @@ body.is-own #soc-edit-btn{display:inline-flex;}
     if(words.length===1) return words[0].slice(0,3).toUpperCase();
     return words.slice(0,2).map(w=>w[0]).join('').toUpperCase();
   }
+  // Parches de aplicaciones — el logo de la app, de escala de grises a color real según el % del temario aprendido
+  const APP_LOGOS = {
+    PS:  { name:'Photoshop', icon:'adobephotoshop', total:5 },
+    AI:  { name:'Illustrator', icon:'adobeillustrator', total:5 },
+    PR:  { name:'Premiere Pro', icon:'adobepremierepro', total:5 },
+    AE:  { name:'After Effects', icon:'adobeaftereffects', total:5 },
+    CV:  { name:'Canva', icon:'canva', total:5 },
+    IA:  { name:'IA Generativa (Gemini & cía.)', icon:'googlegemini', total:5 },
+    TD:  { name:'TouchDesigner', icon:'touchdesigner', total:5 }
+  };
+
   function autoPatches(){
     const out=[];
     // We don't have PROGRAMS here — use mark keys directly from PROGRESS
     Object.entries(PROGRESS).forEach(([mark,topics])=>{
       if(!topics||typeof topics!=='object') return;
-      Object.entries(topics).forEach(([ti,done])=>{
-        if(done) out.push({kind:'auto',label:mark,name:`${mark} — tema ${parseInt(ti)+1}`,skill:mark});
-      });
+      const doneCount = Object.values(topics).filter(Boolean).length;
+      if(!doneCount) return;
+      const app = APP_LOGOS[mark];
+      if(app){
+        out.push({
+          kind:'logo',
+          icon: app.icon,
+          label: mark,
+          name: app.name,
+          skill: `${doneCount}/${app.total} ejes aprendidos`,
+          progress: doneCount / app.total
+        });
+      } else {
+        Object.entries(topics).forEach(([ti,done])=>{
+          if(done) out.push({kind:'auto',label:mark,name:`${mark} — tema ${parseInt(ti)+1}`,skill:mark});
+        });
+      }
     });
     return out;
   }
@@ -437,7 +463,10 @@ body.is-own #soc-edit-btn{display:inline-flex;}
     empty.style.display = total ? 'none' : '';
     auto.forEach(pa=>{
       const el=document.createElement('div'); el.className='patch';
-      el.innerHTML=`<div class="patch-shield">${pa.label}</div><div class="patch-name">${pa.name}</div><div class="patch-skill">${pa.skill}</div>`;
+      const shieldInner = pa.kind === 'logo'
+        ? `<img class="app-logo" src="https://cdn.simpleicons.org/${pa.icon}" alt="${pa.name}" style="filter:grayscale(${Math.round((1 - pa.progress) * 100)}%);" onerror="this.outerHTML='${pa.label}';">`
+        : pa.label;
+      el.innerHTML=`<div class="patch-shield">${shieldInner}</div><div class="patch-name">${pa.name}</div><div class="patch-skill">${pa.skill}</div>`;
       grid.appendChild(el);
     });
     dropped.forEach(pd=>{
