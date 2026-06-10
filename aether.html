@@ -307,8 +307,24 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
   }
 
   function extractShaderCode(text){
-    const fence = text.match(/```(?:glsl|isf)?\s*([\s\S]*?)```/i);
-    return (fence ? fence[1] : text).trim();
+    const fences = [...text.matchAll(/```([a-zA-Z0-9_-]*)\n?([\s\S]*?)```/g)];
+    if(!fences.length) return text.trim();
+    if(fences.length === 1) return fences[0][2].trim();
+
+    // Gemini a veces separa el JSON de metadata y el GLSL en bloques distintos —
+    // los recombinamos en un único archivo .fs con el header /*{...}*/.
+    let jsonBlock = null, codeBlock = null;
+    fences.forEach(([, lang, body])=>{
+      const l = (lang || '').toLowerCase();
+      const trimmed = body.trim();
+      if(!jsonBlock && (l === 'json' || trimmed.startsWith('{'))) jsonBlock = trimmed;
+      else if(!codeBlock) codeBlock = trimmed;
+    });
+    if(jsonBlock && codeBlock){
+      if(/^\/\*[\s\S]*?\*\//.test(codeBlock)) return codeBlock;
+      return `/*${jsonBlock}*/\n\n${codeBlock}`;
+    }
+    return fences.reduce((a, b) => b[2].length > a[2].length ? b : a)[2].trim();
   }
 
   // ─────────────────────────────────────────────
@@ -639,9 +655,9 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
     setGenStatus('Generando shader…');
 
     const systemPrompt = `Sos un generador experto de shaders ISF (Interactive Shader Format 2.0) para VJing en vivo (VDMX, Resolume).
-Devolvé ÚNICAMENTE el código de un archivo .fs ISF completo y válido, sin explicaciones adicionales:
+Devolvé ÚNICAMENTE el código de un archivo .fs ISF completo y válido, dentro de UN SOLO bloque de código (\`\`\`), sin explicaciones adicionales y sin bloques separados:
 1. Un bloque de comentario JSON al inicio /*{ ... }*/ con "DESCRIPTION", "CREDIT": "Aether ISF × Human Glitche", "CATEGORIES", e "INPUTS" (usar tipos como "float", "color", "bool" con "DEFAULT", "MIN", "MAX" según corresponda).
-2. El código GLSL del fragment shader usando las variables estándar de ISF (gl_FragCoord, isf_FragNormCoord, TIME, RENDERSIZE, etc).
+2. Inmediatamente después, en el mismo bloque de código, el GLSL del fragment shader usando las variables estándar de ISF (gl_FragCoord, isf_FragNormCoord, TIME, RENDERSIZE, etc).
 El shader debe representar esta idea: "${idea}"`;
 
     try{
