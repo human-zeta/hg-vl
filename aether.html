@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AETHER ISF — HUMAN GLITCHE</title>
+<meta name="description" content="Generador de shaders ISF con IA — describí el efecto visual que querés y recibí el código GLSL listo para VDMX, Resolume o cualquier host ISF.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --black:#050505;
+  --white:#f0ede6;
+  --acid:#b8ff00;
+  --glitch:#ff2d55;
+  --mono:'Space Mono',monospace;
+  --display:'Bebas Neue',sans-serif;
+  --body:'DM Sans',sans-serif;
+}
+html{scroll-behavior:smooth;}
+body{background:var(--black);color:var(--white);font-family:var(--body);min-height:100vh;}
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");z-index:0;pointer-events:none;opacity:0.4;}
+
+#wrap{position:relative;z-index:1;max-width:880px;margin:0 auto;padding:0 1.5rem 5rem;}
+
+/* NAV */
+.lnav{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:1.8rem 0 2.4rem;margin-bottom:0.5rem;
+}
+.lnav-back{
+  font-family:var(--mono);font-size:9px;letter-spacing:0.18em;color:rgba(240,237,230,0.4);
+  text-decoration:none;transition:color 0.2s;
+}
+.lnav-back:hover{color:var(--acid);}
+.lnav-title{font-family:var(--mono);font-size:9px;letter-spacing:0.28em;color:rgba(240,237,230,0.25);text-transform:uppercase;}
+
+/* PAGE HEADER */
+#page-header{margin-bottom:2rem;}
+#page-badge{
+  font-family:var(--mono);font-size:9px;letter-spacing:0.3em;color:var(--acid);
+  border:1px solid rgba(184,255,0,0.3);padding:5px 14px;display:inline-block;margin-bottom:1.4rem;
+}
+#page-title{font-family:var(--display);font-size:clamp(2.8rem,8vw,5.5rem);letter-spacing:0.04em;line-height:0.95;color:var(--white);}
+#page-sub{font-family:var(--mono);font-size:10px;line-height:1.9;color:rgba(240,237,230,0.4);margin-top:0.9rem;max-width:560px;}
+
+/* SECTIONS */
+.ae-section{
+  background:rgba(255,255,255,0.03);
+  border:1px solid rgba(240,237,230,0.08);
+  border-radius:4px;padding:1.4rem;
+  margin-bottom:1.2rem;
+}
+.ae-section-title{
+  font-family:var(--mono);font-size:8.5px;letter-spacing:0.22em;text-transform:uppercase;
+  color:rgba(240,237,230,0.4);margin-bottom:1rem;
+}
+
+/* FORM ELEMENTS */
+.form-field{display:flex;flex-direction:column;gap:0.35rem;margin-bottom:0.7rem;}
+.form-field:last-child{margin-bottom:0;}
+.form-label{
+  font-family:var(--mono);font-size:7.5px;letter-spacing:0.18em;text-transform:uppercase;
+  color:rgba(240,237,230,0.4);
+}
+.form-field input,.form-field textarea{
+  font-family:var(--mono);font-size:9.5px;letter-spacing:0.04em;color:var(--white);
+  background:rgba(255,255,255,0.03);border:1px solid rgba(240,237,230,0.15);border-radius:2px;
+  padding:9px 10px;outline:none;transition:border-color 0.2s;width:100%;
+}
+.form-field input:focus,.form-field textarea:focus{border-color:var(--acid);}
+.form-field textarea{resize:vertical;min-height:70px;font-family:var(--body);font-size:11px;}
+.form-hint{font-family:var(--mono);font-size:8px;letter-spacing:0.05em;color:rgba(240,237,230,0.3);margin-top:0.3rem;}
+.form-hint a{color:var(--acid);}
+
+#key-row{display:flex;gap:0.5rem;align-items:flex-end;flex-wrap:wrap;}
+#key-row .form-field{flex:1;min-width:200px;margin-bottom:0;}
+
+.ae-btn{
+  font-family:var(--mono);font-size:9px;letter-spacing:0.18em;text-transform:uppercase;
+  background:var(--acid);color:#050505;border:none;border-radius:2px;font-weight:700;
+  padding:11px 20px;cursor:pointer;transition:opacity 0.2s;white-space:nowrap;
+}
+.ae-btn:hover{opacity:0.85;}
+.ae-btn:disabled{opacity:0.35;cursor:wait;}
+.ae-btn.secondary{
+  background:transparent;color:var(--white);border:1px solid rgba(240,237,230,0.2);
+}
+.ae-btn.secondary:hover{border-color:var(--acid);color:var(--acid);opacity:1;}
+
+#key-status{
+  font-family:var(--mono);font-size:8px;letter-spacing:0.1em;margin-top:0.5rem;
+  color:rgba(240,237,230,0.3);
+}
+#key-status.ok{color:var(--acid);}
+
+/* PRESETS */
+#presets{display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:0.9rem;}
+.preset-btn{
+  font-family:var(--mono);font-size:8px;letter-spacing:0.1em;text-transform:uppercase;
+  background:transparent;border:1px solid rgba(240,237,230,0.12);border-radius:20px;
+  color:rgba(240,237,230,0.5);padding:5px 12px;cursor:pointer;transition:all 0.15s;
+}
+.preset-btn:hover{border-color:var(--acid);color:var(--acid);}
+
+/* OUTPUT */
+#gen-status{
+  font-family:var(--mono);font-size:9px;letter-spacing:0.16em;text-transform:uppercase;
+  color:rgba(240,237,230,0.4);margin:1rem 0;
+  display:flex;align-items:center;gap:8px;
+}
+#gen-status.err{color:var(--glitch);}
+#gen-status.ok{color:var(--acid);}
+.led-spin{width:6px;height:6px;border-radius:50%;background:var(--acid);animation:pulse-led 1.4s ease-in-out infinite;}
+@keyframes pulse-led{0%,100%{opacity:0.25;}50%{opacity:1;}}
+
+#output-box{display:none;}
+#output-actions{display:flex;gap:0.5rem;margin-bottom:0.7rem;flex-wrap:wrap;}
+#output-code{
+  font-family:var(--mono);font-size:10px;line-height:1.6;color:rgba(240,237,230,0.85);
+  background:#0a0a0a;border:1px solid rgba(240,237,230,0.08);border-radius:2px;
+  padding:1rem;overflow-x:auto;white-space:pre;max-height:480px;overflow-y:auto;
+}
+
+/* ABOUT */
+.ae-links{display:flex;gap:1.4rem;flex-wrap:wrap;align-items:center;}
+.ae-link{
+  font-family:var(--mono);font-size:10px;letter-spacing:0.16em;color:var(--acid);
+  text-decoration:none;border-bottom:1px solid var(--acid);padding-bottom:2px;
+}
+.ae-link:hover{opacity:0.7;}
+.ae-desc{font-family:var(--mono);font-size:10px;line-height:1.9;color:rgba(240,237,230,0.4);}
+
+/* FOOTER */
+#footer{
+  margin-top:3rem;padding-top:2rem;
+  border-top:1px solid rgba(240,237,230,0.07);
+  font-family:var(--mono);font-size:8px;letter-spacing:0.12em;
+  color:rgba(240,237,230,0.12);text-align:center;
+}
+</style>
+</head>
+<body>
+
+<div id="wrap">
+
+  <nav class="lnav">
+    <a class="lnav-back" href="index.html">← HUMAN GLITCHE</a>
+    <span class="lnav-title">AETHER ISF</span>
+  </nav>
+
+  <div id="page-header">
+    <div id="page-badge">AETHER ISF GENERATOR × IA</div>
+    <div id="page-title">SHADERS<br>INFINITOS</div>
+    <div id="page-sub">Describí el efecto visual que te imaginás y la IA lo convierte en un shader ISF (GLSL) real, listo para VDMX, Resolume o cualquier host compatible con ISF 2.0.</div>
+  </div>
+
+  <!-- API KEY (BYOK) -->
+  <div class="ae-section">
+    <div class="ae-section-title">TU API KEY DE GEMINI</div>
+    <div id="key-row">
+      <div class="form-field">
+        <label class="form-label" for="api-key">Gemini API key</label>
+        <input type="password" id="api-key" placeholder="AIza…" autocomplete="off">
+      </div>
+      <button class="ae-btn secondary" id="key-save-btn">GUARDAR</button>
+      <button class="ae-btn secondary" id="key-clear-btn">BORRAR</button>
+    </div>
+    <div class="form-hint">
+      Tu key se guarda solo en este navegador (nunca se envía a HG) y se usa para llamar directo a la API de Gemini.
+      ¿No tenés una? <a href="https://aistudio.google.com/apikey" target="_blank">Conseguila gratis en Google AI Studio →</a>
+    </div>
+    <div id="key-status"></div>
+  </div>
+
+  <!-- GENERADOR -->
+  <div class="ae-section">
+    <div class="ae-section-title">DESCRIBÍ EL EFECTO</div>
+    <div id="presets">
+      <button class="preset-btn" data-preset="Un campo de partículas de luz que reacciona al audio, con estela tipo glitch en tonos verde ácido y negro.">Partículas + audio</button>
+      <button class="preset-btn" data-preset="Ondas concéntricas tipo agua con distorsión cromática (chromatic aberration) y ruido analógico de VHS.">Ondas + VHS</button>
+      <button class="preset-btn" data-preset="Patrón de líneas de escaneo (scanlines) con glitch RGB shift que pulsa al ritmo del tiempo.">Scanlines glitch</button>
+      <button class="preset-btn" data-preset="Degradé de plasma orgánico que cambia lentamente de color, con textura granulada tipo film.">Plasma orgánico</button>
+    </div>
+    <div class="form-field">
+      <label class="form-label" for="prompt-input">Tu idea</label>
+      <textarea id="prompt-input" placeholder="Ej: un degradé tipo aurora boreal que se mueve lento, con destellos de glitch ocasionales…"></textarea>
+    </div>
+    <button class="ae-btn" id="generate-btn">GENERAR SHADER</button>
+    <div id="gen-status"></div>
+  </div>
+
+  <!-- OUTPUT -->
+  <div class="ae-section" id="output-box">
+    <div class="ae-section-title">SHADER GENERADO (.fs)</div>
+    <div id="output-actions">
+      <button class="ae-btn secondary" id="copy-btn">COPIAR CÓDIGO</button>
+      <button class="ae-btn secondary" id="download-btn">DESCARGAR .fs</button>
+    </div>
+    <pre id="output-code"></pre>
+  </div>
+
+  <!-- SOBRE AETHER -->
+  <div class="ae-section">
+    <div class="ae-section-title">SOBRE EL PROYECTO</div>
+    <p class="ae-desc">
+      Aether ISF es un generador de visuales en formato ISF (Interactive Shader Format) potenciado por IA.
+      El código que recibís acá es ISF 2.0 estándar — descargalo y soltalo directo en VDMX6, Resolume,
+      o cualquier host ISF para usarlo en vivo.
+    </p>
+    <div class="ae-links" style="margin-top:1rem;">
+      <a href="https://github.com/human-zeta/Aether-ISF-generator" class="ae-link" target="_blank">VER EN GITHUB →</a>
+      <a href="https://ai.studio/apps/8b699664-53af-4289-973b-98e5754bfafc" class="ae-link" target="_blank">⚡ APP ORIGINAL EN AI STUDIO</a>
+    </div>
+  </div>
+
+  <div id="footer">HUMAN GLITCHE — AETHER ISF — 2026</div>
+
+</div>
+
+<script>
+(function(){
+  const LS_KEY = 'hg_gemini_key';
+  const apiKeyInput = document.getElementById('api-key');
+  const keySaveBtn  = document.getElementById('key-save-btn');
+  const keyClearBtn = document.getElementById('key-clear-btn');
+  const keyStatus   = document.getElementById('key-status');
+  const promptInput = document.getElementById('prompt-input');
+  const generateBtn = document.getElementById('generate-btn');
+  const genStatus   = document.getElementById('gen-status');
+  const outputBox   = document.getElementById('output-box');
+  const outputCode  = document.getElementById('output-code');
+  const copyBtn     = document.getElementById('copy-btn');
+  const downloadBtn = document.getElementById('download-btn');
+
+  function setKeyStatus(){
+    const key = localStorage.getItem(LS_KEY);
+    if(key){
+      apiKeyInput.value = key;
+      keyStatus.textContent = '✓ Key guardada en este navegador.';
+      keyStatus.classList.add('ok');
+    }else{
+      keyStatus.textContent = 'Sin key guardada — pegá tu API key de Gemini para generar shaders.';
+      keyStatus.classList.remove('ok');
+    }
+  }
+  setKeyStatus();
+
+  keySaveBtn.addEventListener('click', ()=>{
+    const key = apiKeyInput.value.trim();
+    if(!key){ keyStatus.textContent = 'Pegá una key antes de guardar.'; keyStatus.classList.remove('ok'); return; }
+    localStorage.setItem(LS_KEY, key);
+    setKeyStatus();
+  });
+
+  keyClearBtn.addEventListener('click', ()=>{
+    localStorage.removeItem(LS_KEY);
+    apiKeyInput.value = '';
+    setKeyStatus();
+  });
+
+  document.querySelectorAll('.preset-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      promptInput.value = btn.dataset.preset;
+      promptInput.focus();
+    });
+  });
+
+  function setGenStatus(msg, kind){
+    genStatus.textContent = msg || '';
+    genStatus.className = kind || '';
+  }
+
+  function extractShaderCode(text){
+    const fence = text.match(/```(?:glsl|isf)?\s*([\s\S]*?)```/i);
+    return (fence ? fence[1] : text).trim();
+  }
+
+  generateBtn.addEventListener('click', async ()=>{
+    const key = localStorage.getItem(LS_KEY);
+    const idea = promptInput.value.trim();
+    if(!key){ setGenStatus('Primero guardá tu API key de Gemini.', 'err'); return; }
+    if(!idea){ setGenStatus('Describí el efecto que querés generar.', 'err'); return; }
+
+    generateBtn.disabled = true;
+    outputBox.style.display = 'none';
+    setGenStatus('Generando shader…');
+
+    const systemPrompt = `Sos un generador experto de shaders ISF (Interactive Shader Format 2.0) para VJing en vivo (VDMX, Resolume).
+Devolvé ÚNICAMENTE el código de un archivo .fs ISF completo y válido, sin explicaciones adicionales:
+1. Un bloque de comentario JSON al inicio /*{ ... }*/ con "DESCRIPTION", "CREDIT": "Aether ISF × Human Glitche", "CATEGORIES", e "INPUTS" (usar tipos como "float", "color", "bool" con "DEFAULT", "MIN", "MAX" según corresponda).
+2. El código GLSL del fragment shader usando las variables estándar de ISF (gl_FragCoord, isf_FragNormCoord, TIME, RENDERSIZE, etc).
+El shader debe representar esta idea: "${idea}"`;
+
+    try{
+      const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(key)}`, {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: systemPrompt }] }]
+        })
+      });
+      const data = await resp.json();
+      if(!resp.ok){
+        const msg = (data && data.error && data.error.message) || `HTTP ${resp.status}`;
+        throw new Error(msg);
+      }
+      const text = data.candidates && data.candidates[0] && data.candidates[0].content
+        && data.candidates[0].content.parts && data.candidates[0].content.parts[0]
+        && data.candidates[0].content.parts[0].text;
+      if(!text) throw new Error('La respuesta no tenía contenido.');
+
+      outputCode.textContent = extractShaderCode(text);
+      outputBox.style.display = 'block';
+      setGenStatus('✓ Shader generado.', 'ok');
+    }catch(err){
+      setGenStatus(`No se pudo generar — ${err.message}`, 'err');
+    }finally{
+      generateBtn.disabled = false;
+    }
+  });
+
+  copyBtn.addEventListener('click', async ()=>{
+    try{
+      await navigator.clipboard.writeText(outputCode.textContent);
+      copyBtn.textContent = '✓ COPIADO';
+      setTimeout(()=>{ copyBtn.textContent = 'COPIAR CÓDIGO'; }, 1500);
+    }catch(e){ /* clipboard no disponible */ }
+  });
+
+  downloadBtn.addEventListener('click', ()=>{
+    const blob = new Blob([outputCode.textContent], { type:'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'aether-shader.fs';
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+})();
+</script>
+</body>
+</html>
