@@ -198,6 +198,20 @@
       nearBottom = (msgs.scrollHeight - msgs.scrollTop - msgs.clientHeight) < 60;
     });
 
+    let displayName = null;
+    async function getDisplayName(){
+      if(displayName) return displayName;
+      try{
+        const token = await freshToken(session);
+        const r = await fetch(`${FB_URL}/profiles/${session.uid}.json?auth=${token}`);
+        const profile = r.ok ? await r.json() : null;
+        displayName = (profile && profile.displayName) || session.name || session.email;
+      }catch(e){
+        displayName = session.name || session.email;
+      }
+      return displayName;
+    }
+
     function renderFoot(){
       if(!session){
         msgs.style.display = 'none';
@@ -225,12 +239,13 @@
         status.textContent = '';
         try{
           const token = await freshToken(session);
+          const name  = await getDisplayName();
           const r = await fetch(`${FB_URL}/chat/messages.json?auth=${token}`,{
             method:'POST',
             headers:{'Content-Type':'application/json'},
             body:JSON.stringify({
               uid: session.uid,
-              name: session.name || session.email,
+              name,
               text,
               ts: Date.now()
             })
@@ -281,6 +296,22 @@
       }catch(e){ /* silencioso */ }
     }
 
+    const nameCache = {};
+    async function resolveNames(list){
+      const uids = [...new Set(list.map(m => m.uid).filter(uid => uid && !(uid in nameCache)))];
+      if(!uids.length) return;
+      try{
+        const token = await freshToken(session);
+        await Promise.all(uids.map(async uid => {
+          try{
+            const r = await fetch(`${FB_URL}/profiles/${uid}.json?auth=${token}`);
+            const profile = r.ok ? await r.json() : null;
+            nameCache[uid] = profile && profile.displayName ? profile.displayName : null;
+          }catch(e){ nameCache[uid] = null; }
+        }));
+      }catch(e){ /* silencioso */ }
+    }
+
     function renderMessages(list){
       if(!list.length){
         msgs.innerHTML = '<div class="hgchat-empty">Todavía no hay mensajes — ¡arrancá la charla!</div>';
@@ -289,8 +320,9 @@
       msgs.innerHTML = list.map(m => {
         const del = (isStaff || (session && m.uid === session.uid))
           ? `<button class="hgchat-del" data-mid="${m.id}" title="Borrar">✕</button>` : '';
+        const name = (nameCache[m.uid]) || m.name || '?';
         return `<div class="hgchat-msg">
-          <span class="hgchat-name">${escHtml(m.name || '?')}</span>${escHtml(m.text || '')}<span class="hgchat-time">${timeLabel(m.ts)}</span>${del}
+          <span class="hgchat-name">${escHtml(name)}</span>${escHtml(m.text || '')}<span class="hgchat-time">${timeLabel(m.ts)}</span>${del}
         </div>`;
       }).join('');
       msgs.querySelectorAll('.hgchat-del').forEach(btn=>{
@@ -315,6 +347,7 @@
         }
         const data = await r.json();
         const list = data ? Object.entries(data).map(([id,m]) => ({ id, ...m })).sort((a,b)=>(a.ts||0)-(b.ts||0)) : [];
+        await resolveNames(list);
         renderMessages(list);
         if(list.length){
           const newest = list[list.length-1].ts || 0;
@@ -369,10 +402,13 @@
     // re-chequea sesión periódicamente (por si el usuario inicia sesión en otra pestaña/recarga)
     setInterval(()=>{
       const s = getSession();
-      if(JSON.stringify(s) !== JSON.stringify(session)){
+      if((s && s.uid) !== (session && session.uid)){
         session = s;
+        displayName = null;
         renderFoot();
         if(session){ checkStaff().then(v => isStaff = v); loadMessages(); }
+      } else if(s){
+        session = s;
       }
     }, 5000);
   }
