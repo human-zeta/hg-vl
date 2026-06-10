@@ -739,15 +739,22 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
   }
 
   // Parches de aplicaciones — el logo de la app, de escala de grises a color real según el % del temario aprendido
+  // (badges generados localmente, sin depender de CDNs externos que pueden fallar)
   const APP_LOGOS = {
-    PS:  'adobephotoshop',
-    AI:  'adobeillustrator',
-    PR:  'adobepremierepro',
-    AE:  'adobeaftereffects',
-    CV:  'canva',
-    IA:  'googlegemini',
-    TD:  'touchdesigner'
+    PS: { bg:'#001E36', fg:'#31A8FF', mark:'Ps' },
+    AI: { bg:'#330000', fg:'#FF9A00', mark:'Ai' },
+    PR: { bg:'#00005B', fg:'#9999FF', mark:'Pr' },
+    AE: { bg:'#00005B', fg:'#9FE9C7', mark:'Ae' },
+    CV: { bg:'#00C4CC', fg:'#7D2AE8', mark:'C' },
+    IA: { bg:'#1A1A2E', fg:'#8AB4F8', mark:'✦' },
+    TD: { bg:'#000000', fg:'#FFFFFF', mark:'TD' }
   };
+
+  function appLogoDataUri(app){
+    const fontSize = app.mark.length > 1 ? 24 : 30;
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="10" fill="${app.bg}"/><text x="32" y="42" font-family="Arial, Helvetica, sans-serif" font-weight="700" font-size="${fontSize}" fill="${app.fg}" text-anchor="middle">${app.mark}</text></svg>`;
+    return 'data:image/svg+xml,' + encodeURIComponent(svg);
+  }
 
   // Parches "auto" — uno por cada eje del temario marcado como aprendido (estilo scout),
   // o un parche-logo por aplicación si tiene logo disponible (ver APP_LOGOS) — estos
@@ -760,7 +767,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
       if(APP_LOGOS[p.mark]){
         out.push({
           kind: 'logo',
-          icon: APP_LOGOS[p.mark],
+          icon: appLogoDataUri(APP_LOGOS[p.mark]),
           label: p.mark,
           name: p.name,
           skill: `${doneCount}/${p.topics.length} ejes aprendidos`,
@@ -804,7 +811,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
       el.className = 'patch';
       el.title = pa.name;
       const shieldInner = pa.kind === 'logo'
-        ? `<img class="app-logo" src="https://cdn.simpleicons.org/${pa.icon}" alt="${pa.name}" style="filter:grayscale(${Math.round((1 - pa.progress) * 100)}%);" onerror="this.outerHTML='${pa.label}';">`
+        ? `<img class="app-logo" src="${pa.icon}" alt="${pa.name}" style="filter:grayscale(${Math.round((1 - pa.progress) * 100)}%);">`
         : pa.label;
       el.innerHTML = `
         <div class="patch-shield">${shieldInner}</div>

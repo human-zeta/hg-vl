@@ -373,15 +373,22 @@ body.is-own #soc-edit-btn{display:inline-flex;}
     return words.slice(0,2).map(w=>w[0]).join('').toUpperCase();
   }
   // Parches de aplicaciones — el logo de la app, de escala de grises a color real según el % del temario aprendido
+  // (badges generados localmente, sin depender de CDNs externos que pueden fallar)
   const APP_LOGOS = {
-    PS:  { name:'Photoshop', icon:'adobephotoshop', total:5 },
-    AI:  { name:'Illustrator', icon:'adobeillustrator', total:5 },
-    PR:  { name:'Premiere Pro', icon:'adobepremierepro', total:5 },
-    AE:  { name:'After Effects', icon:'adobeaftereffects', total:5 },
-    CV:  { name:'Canva', icon:'canva', total:5 },
-    IA:  { name:'IA Generativa (Gemini & cía.)', icon:'googlegemini', total:5 },
-    TD:  { name:'TouchDesigner', icon:'touchdesigner', total:5 }
+    PS: { name:'Photoshop', bg:'#001E36', fg:'#31A8FF', mark:'Ps', total:5 },
+    AI: { name:'Illustrator', bg:'#330000', fg:'#FF9A00', mark:'Ai', total:5 },
+    PR: { name:'Premiere Pro', bg:'#00005B', fg:'#9999FF', mark:'Pr', total:5 },
+    AE: { name:'After Effects', bg:'#00005B', fg:'#9FE9C7', mark:'Ae', total:5 },
+    CV: { name:'Canva', bg:'#00C4CC', fg:'#7D2AE8', mark:'C', total:5 },
+    IA: { name:'IA Generativa (Gemini & cía.)', bg:'#1A1A2E', fg:'#8AB4F8', mark:'✦', total:5 },
+    TD: { name:'TouchDesigner', bg:'#000000', fg:'#FFFFFF', mark:'TD', total:5 }
   };
+
+  function appLogoDataUri(app){
+    const fontSize = app.mark.length > 1 ? 24 : 30;
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="10" fill="${app.bg}"/><text x="32" y="42" font-family="Arial, Helvetica, sans-serif" font-weight="700" font-size="${fontSize}" fill="${app.fg}" text-anchor="middle">${app.mark}</text></svg>`;
+    return 'data:image/svg+xml,' + encodeURIComponent(svg);
+  }
 
   function autoPatches(){
     const out=[];
@@ -391,7 +398,7 @@ body.is-own #soc-edit-btn{display:inline-flex;}
       const doneCount = Object.values(topics).filter(Boolean).length;
       out.push({
         kind:'logo',
-        icon: app.icon,
+        icon: appLogoDataUri(app),
         label: mark,
         name: app.name,
         skill: `${doneCount}/${app.total} ejes aprendidos`,
@@ -464,7 +471,7 @@ body.is-own #soc-edit-btn{display:inline-flex;}
     auto.forEach(pa=>{
       const el=document.createElement('div'); el.className='patch';
       const shieldInner = pa.kind === 'logo'
-        ? `<img class="app-logo" src="https://cdn.simpleicons.org/${pa.icon}" alt="${pa.name}" style="filter:grayscale(${Math.round((1 - pa.progress) * 100)}%);" onerror="this.outerHTML='${pa.label}';">`
+        ? `<img class="app-logo" src="${pa.icon}" alt="${pa.name}" style="filter:grayscale(${Math.round((1 - pa.progress) * 100)}%);">`
         : pa.label;
       el.innerHTML=`<div class="patch-shield">${shieldInner}</div><div class="patch-name">${pa.name}</div><div class="patch-skill">${pa.skill}</div>`;
       grid.appendChild(el);
