@@ -572,7 +572,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
   }
 
   async function createLobby(data){
-    if(!session) return false;
+    if(!session) return { ok:false, error:'No hay sesión activa.' };
     try{
       const token = await freshToken(session);
       const r = await fetch(`${FB_URL}/lobbies.json?auth=${token}`,{
@@ -590,8 +590,15 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
           createdByName: session.name || session.email
         })
       });
-      return r.ok;
-    }catch(e){ return false; }
+      if(!r.ok){
+        const errBody = await r.text().catch(()=>'');
+        if(r.status === 401 || r.status === 403){
+          return { ok:false, error:`Sin permiso para crear salas (HTTP ${r.status}) — falta la regla de Firebase para /lobbies.` };
+        }
+        return { ok:false, error:`HTTP ${r.status}${errBody ? ' — ' + errBody.slice(0,150) : ''}` };
+      }
+      return { ok:true };
+    }catch(e){ return { ok:false, error:`Error de red — ${e.message}` }; }
   }
 
   function escHtml(s){
@@ -617,17 +624,17 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
     if(!session){ setFormStatus('Iniciá sesión primero.','err'); return; }
     formSubmit.disabled = true;
     setFormStatus('Creando sala…');
-    const ok = await createLobby({
+    const result = await createLobby({
       title:    document.getElementById('f-title').value.trim(),
       type:     document.getElementById('f-type').value,
       desc:     document.getElementById('f-desc').value.trim(),
       capacity: parseInt(document.getElementById('f-cap').value)
     });
-    if(ok){
+    if(result.ok){
       setFormStatus('¡Sala creada!','ok');
       setTimeout(()=>{ closeModal(); loadLobbies(); }, 800);
     } else {
-      setFormStatus('No se pudo crear la sala — intentá de nuevo.','err');
+      setFormStatus(`No se pudo crear la sala — ${result.error}`,'err');
     }
     formSubmit.disabled = false;
   });
