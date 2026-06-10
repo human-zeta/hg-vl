@@ -194,6 +194,18 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 #repo-close{font-size:9px;color:rgba(240,237,230,0.15);background:none;border:none;cursor:pointer;transition:color 0.2s;padding:0;}
 #repo-close:hover{color:var(--glitch);}
 
+#repo-upload{padding:0.7rem 0.9rem;border-bottom:1px solid rgba(240,237,230,0.05);flex-shrink:0;}
+#repo-upload-label{
+  display:block;text-align:center;padding:7px;
+  border:1px dashed rgba(184,255,0,0.25);border-radius:2px;
+  color:rgba(184,255,0,0.5);font-size:8px;letter-spacing:0.2em;
+  cursor:pointer;transition:all 0.2s;
+}
+#repo-upload-label:hover{border-color:var(--acid);color:var(--acid);background:rgba(184,255,0,0.04);}
+#repo-upload-label.uploading{color:rgba(240,237,230,0.3);border-color:rgba(240,237,230,0.1);}
+#repo-file{display:none;}
+#repo-status{font-size:7px;color:rgba(240,237,230,0.2);margin-top:4px;text-align:center;min-height:12px;letter-spacing:0.1em;}
+
 #repo-list{overflow-y:auto;flex:1;}
 #repo-list::-webkit-scrollbar{width:2px;}
 #repo-list::-webkit-scrollbar-thumb{background:rgba(184,255,0,0.1);}
@@ -340,6 +352,11 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
     <span id="repo-live"></span>
     <span id="repo-count">—</span>
     <button id="repo-close">✕</button>
+  </div>
+  <div id="repo-upload">
+    <label id="repo-upload-label" for="repo-file">⬆ SUBIR MI .FS A LA COMUNIDAD</label>
+    <input type="file" id="repo-file" accept=".fs,.glsl,.frag">
+    <div id="repo-status"></div>
   </div>
   <div id="repo-list">
     <div id="repo-empty">Cargando repositorio...</div>
@@ -864,6 +881,19 @@ El shader debe representar esta idea: "${idea}"`;
       return r.ok ? r.json() : null;
     }catch(e){ return null; }
   }
+  async function fbPush(path, data){
+    try{
+      const r = await fetch(`${FB_URL}${path}.json`,{
+        method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify(data)
+      });
+      return r.ok ? r.json() : null;
+    }catch(e){ return null; }
+  }
+  function repoStatusMsg(msg, color='rgba(240,237,230,0.25)'){
+    const el=document.getElementById('repo-status');
+    if(el){el.textContent=msg;el.style.color=color;}
+  }
 
   function renderRepoList(){
     const list = document.getElementById('repo-list');
@@ -925,6 +955,56 @@ El shader debe representar esta idea: "${idea}"`;
   function stopRepoPolling(){
     if(repoUnsub){ clearInterval(repoUnsub); repoUnsub=null; }
   }
+
+  async function uploadToRepo(file){
+    const lbl = document.getElementById('repo-upload-label');
+    lbl.classList.add('uploading');
+    lbl.textContent='COMPILANDO...';
+    repoStatusMsg('Verificando shader...');
+    const src = await file.text();
+    try{
+      const {meta} = parseAetherISF(src);
+      makeProgram(parseAetherISF(src).finalSrc);
+      const label=(meta.LABEL||meta.DESCRIPTION||file.name).toUpperCase().replace(/\.(FS|GLSL|FRAG)$/i,'');
+      repoStatusMsg('Subiendo...');lbl.textContent='SUBIENDO...';
+      await applyShader(src, label, {publish:false});
+      let thumb=null;
+      try{
+        const tc=document.createElement('canvas');tc.width=96;tc.height=60;
+        const ctx=tc.getContext('2d');
+        ctx.drawImage(canvas,0,0,canvas.width,canvas.height,0,0,96,60);
+        thumb=tc.toDataURL('image/jpeg',0.65);
+      }catch(e){}
+      const entry={
+        name:label,code:src,thumb,
+        author:'human-zeta',
+        date:new Date().toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit',year:'2-digit'}),
+        ts:Date.now()
+      };
+      const res = await fbPush('/shaders', entry);
+      if(res){
+        repoStatusMsg('✓ Subido a la comunidad','rgba(184,255,0,0.7)');
+        fetchRepo();
+      } else {
+        repoStatusMsg('Error al subir — revisá conexión','rgba(255,45,85,0.7)');
+      }
+    } catch(err){
+      repoStatusMsg('Shader inválido: no compila','rgba(255,45,85,0.7)');
+      console.error(err);
+    }
+    lbl.classList.remove('uploading');
+    lbl.textContent='⬆ SUBIR MI .FS A LA COMUNIDAD';
+    setTimeout(()=>repoStatusMsg(''),5000);
+  }
+
+  document.getElementById('repo-file').addEventListener('change',e=>{
+    if(e.target.files[0]) uploadToRepo(e.target.files[0]);
+    e.target.value='';
+  });
+  document.getElementById('repo-upload-label').addEventListener('click',e=>{
+    e.preventDefault();
+    document.getElementById('repo-file').click();
+  });
 
   document.getElementById('repo-toggle').addEventListener('click',()=>{
     repoOpen=true;
