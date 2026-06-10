@@ -1004,6 +1004,7 @@ Activarla lleva, en general, menos de cinco minutos por cuenta. Es, literalmente
       diarioSeedBtn.disabled = true;
       diarioSeedSt.textContent = 'Publicando notas iniciales…';
       let ok = 0;
+      let lastError = '';
       for(let i = 0; i < DIARIO_SEED.length; i++){
         const note = DIARIO_SEED[i];
         // Espacia las fechas para que el archivo arranque ordenado, una por día hacia atrás
@@ -1022,10 +1023,17 @@ Activarla lleva, en general, menos de cinco minutos por cuenta. Es, literalmente
               publishedBy: UID
             })
           });
-          if(r.ok) ok++;
-        }catch(e){ /* sigue con la próxima */ }
+          if(r.ok){
+            ok++;
+          }else{
+            const txt = await r.text();
+            lastError = `HTTP ${r.status}: ${txt}`;
+          }
+        }catch(e){ lastError = e.message; }
       }
-      diarioSeedSt.textContent = `✓ ${ok} de ${DIARIO_SEED.length} notas publicadas.`;
+      diarioSeedSt.textContent = ok === DIARIO_SEED.length
+        ? `✓ ${ok} de ${DIARIO_SEED.length} notas publicadas.`
+        : `⚠ ${ok} de ${DIARIO_SEED.length} notas publicadas. Error: ${lastError || 'desconocido'}`;
       diarioSeedBtn.disabled = false;
       loadDiarioNotes();
     });
