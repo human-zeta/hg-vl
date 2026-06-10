@@ -72,6 +72,14 @@
       font-size:9px;letter-spacing:0.1em;color:rgba(240,237,230,0.25);
       text-align:center;padding:1.5rem 0.5rem;text-transform:uppercase;
     }
+    .hgchat-error{
+      font-size:8.5px;letter-spacing:0.05em;color:#ff2d55;
+      text-align:center;padding:1.5rem 0.7rem;line-height:1.7;
+    }
+    #hgchat-status{
+      font-size:8px;letter-spacing:0.05em;color:#ff2d55;
+      text-align:center;padding:0 0.7rem 0.4rem;line-height:1.6;
+    }
 
     #hgchat-foot{
       flex-shrink:0;border-top:1px solid rgba(240,237,230,0.08);
@@ -163,21 +171,23 @@
         <p>Iniciá sesión en Human Glitche para participar del chat.</p>
         <a href="index.html#comunidad">INICIAR SESIÓN</a>
       </div>
+      <div id="hgchat-status"></div>
       <div id="hgchat-foot"></div>
     `;
     document.body.appendChild(panel);
 
     return {
       bubble, panel,
-      msgs:  panel.querySelector('#hgchat-msgs'),
-      login: panel.querySelector('#hgchat-login'),
-      foot:  panel.querySelector('#hgchat-foot'),
-      close: panel.querySelector('.hgchat-close')
+      msgs:   panel.querySelector('#hgchat-msgs'),
+      login:  panel.querySelector('#hgchat-login'),
+      status: panel.querySelector('#hgchat-status'),
+      foot:   panel.querySelector('#hgchat-foot'),
+      close:  panel.querySelector('.hgchat-close')
     };
   }
 
   function init(){
-    const { bubble, panel, msgs, login, foot, close } = build();
+    const { bubble, panel, msgs, login, status, foot, close } = build();
     let session = getSession();
     let isStaff = false;
     let pollTimer = null;
@@ -194,6 +204,7 @@
         login.style.display = 'flex';
         foot.style.display = 'none';
         foot.innerHTML = '';
+        status.textContent = '';
         return;
       }
       msgs.style.display = 'flex';
@@ -203,6 +214,7 @@
         <input id="hgchat-input" type="text" maxlength="280" placeholder="Escribí algo…" autocomplete="off">
         <button id="hgchat-send" type="button">ENVIAR</button>
       `;
+      status.textContent = '';
       const input = foot.querySelector('#hgchat-input');
       const send  = foot.querySelector('#hgchat-send');
       async function doSend(){
@@ -210,9 +222,10 @@
         if(!text) return;
         send.disabled = true;
         input.disabled = true;
+        status.textContent = '';
         try{
           const token = await freshToken(session);
-          await fetch(`${FB_URL}/chat/messages.json?auth=${token}`,{
+          const r = await fetch(`${FB_URL}/chat/messages.json?auth=${token}`,{
             method:'POST',
             headers:{'Content-Type':'application/json'},
             body:JSON.stringify({
@@ -222,9 +235,20 @@
               ts: Date.now()
             })
           });
-          input.value = '';
-          await loadMessages();
-        }catch(e){ /* silencioso */ }
+          if(!r.ok){
+            const errBody = await r.text().catch(()=>'');
+            if(r.status === 401 || r.status === 403){
+              status.textContent = `Sin permiso para chatear (HTTP ${r.status}) — falta la regla de Firebase para /chat.`;
+            } else {
+              status.textContent = `No se pudo enviar — HTTP ${r.status}${errBody ? ' — ' + errBody.slice(0,120) : ''}`;
+            }
+          } else {
+            input.value = '';
+            await loadMessages();
+          }
+        }catch(e){
+          status.textContent = `Error de red — ${e.message}`;
+        }
         send.disabled = false;
         input.disabled = false;
         input.focus();
@@ -281,7 +305,15 @@
       try{
         const token = await freshToken(session);
         const r = await fetch(`${FB_URL}/chat/messages.json?orderBy="ts"&limitToLast=50&auth=${token}`);
-        const data = r.ok ? await r.json() : null;
+        if(!r.ok){
+          if(r.status === 401 || r.status === 403){
+            msgs.innerHTML = `<div class="hgchat-error">Sin permiso para leer el chat (HTTP ${r.status}) — falta la regla de Firebase para /chat.</div>`;
+          } else {
+            msgs.innerHTML = `<div class="hgchat-error">No se pudo cargar el chat (HTTP ${r.status}).</div>`;
+          }
+          return;
+        }
+        const data = await r.json();
         const list = data ? Object.entries(data).map(([id,m]) => ({ id, ...m })).sort((a,b)=>(a.ts||0)-(b.ts||0)) : [];
         renderMessages(list);
         if(list.length){
@@ -292,7 +324,9 @@
             bubble.classList.toggle('unread', newest > lastRead);
           }
         }
-      }catch(e){ /* silencioso */ }
+      }catch(e){
+        msgs.innerHTML = `<div class="hgchat-error">Error de red — ${escHtml(e.message)}</div>`;
+      }
     }
 
     function startPolling(){
