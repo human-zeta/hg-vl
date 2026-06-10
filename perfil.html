@@ -43,6 +43,7 @@ body.light-mode .patch-shield{background:rgba(80,120,0,0.08);}
 }
 #patches-sidebar.collapsed{transform:translateX(calc(100% - 34px));}
 #patches-toggle{
+  position:relative;
   writing-mode:vertical-rl;text-orientation:mixed;
   background:rgba(184,255,0,0.06);border:1px solid rgba(184,255,0,0.25);
   border-right:none;color:var(--acid);font-family:var(--mono);
@@ -51,6 +52,13 @@ body.light-mode .patch-shield{background:rgba(80,120,0,0.08);}
   transition:background 0.2s;flex-shrink:0;
 }
 #patches-toggle:hover{background:rgba(184,255,0,0.12);}
+#patches-toggle.has-new::after{
+  content:'';position:absolute;top:8px;right:8px;
+  width:8px;height:8px;border-radius:50%;
+  background:var(--glitch);box-shadow:0 0 6px var(--glitch);
+  animation:patch-pulse 1.4s ease-in-out infinite;
+}
+@keyframes patch-pulse{0%,100%{opacity:0.25;}50%{opacity:1;}}
 #patches-panel{
   width:240px;max-height:80vh;overflow-y:auto;
   background:rgba(10,10,10,0.94);backdrop-filter:blur(8px);
@@ -63,7 +71,24 @@ body.light-mode #patches-panel{background:rgba(240,237,230,0.94);}
 #patches-panel .patch{display:flex;align-items:center;gap:0.7rem;}
 #patches-panel .patch-shield{flex-shrink:0;}
 @media(max-width:760px){
-  #patches-sidebar{display:none;}
+  #patches-sidebar{
+    flex-direction:column;align-items:flex-start;
+    left:0;right:auto;top:auto;bottom:0;height:auto;
+    transform:none;
+  }
+  #patches-sidebar #patches-toggle{
+    writing-mode:horizontal-tb;text-orientation:initial;
+    border-radius:0 3px 0 0;border-left:none;border-bottom:none;
+    padding:0.55rem 1.1rem;align-self:flex-start;
+  }
+  #patches-sidebar #patches-panel{
+    position:fixed;left:0;right:0;bottom:38px;width:auto;
+    max-height:55vh;border-radius:0;margin-top:0;
+    border-left:none;border-right:none;border-bottom:none;
+  }
+  #patches-sidebar.collapsed #patches-panel{display:none;}
+  #patches-panel #patches-grid{flex-direction:row;flex-wrap:wrap;justify-content:center;}
+  #patches-panel .patch{flex-direction:column;text-align:center;width:84px;}
 }
 
 #wrap{position:relative;z-index:1;max-width:860px;margin:0 auto;padding:2.4rem 1.5rem 6rem;}
@@ -296,7 +321,14 @@ body.is-own #soc-edit-btn{display:inline-flex;}
   // PATCHES SIDEBAR TOGGLE
   const patchesSidebar = document.getElementById('patches-sidebar');
   const patchesToggle  = document.getElementById('patches-toggle');
-  patchesToggle.addEventListener('click', ()=> patchesSidebar.classList.toggle('collapsed'));
+  patchesToggle.addEventListener('click', ()=>{
+    const opening = patchesSidebar.classList.contains('collapsed');
+    patchesSidebar.classList.toggle('collapsed');
+    if(opening && IS_OWN && TARGET_UID){
+      localStorage.setItem(`hg_patches_seen_${TARGET_UID}`, String(Date.now()));
+      patchesToggle.classList.remove('has-new');
+    }
+  });
 
   const FB_URL    = 'https://hg-vl-shaders-default-rtdb.firebaseio.com';
   const FB_API_KEY= 'AIzaSyAeMKHe7dj4bnaUzkF7iDANrC_cBtg4LAA';
@@ -484,6 +516,17 @@ body.is-own #soc-edit-btn{display:inline-flex;}
       el.innerHTML=`<div class="patch-shield">${shieldInner}</div><div class="patch-name">${pd.name||'Parche especial'}</div>${pd.skill?`<div class="patch-skill">${pd.skill}</div>`:''}`;
       grid.appendChild(el);
     });
+    if(IS_OWN) updatePatchesNotice(dropped);
+  }
+
+  // Avisa con un punto en "PARCHES HG" si llegó un parche nuevo desde la última visita
+  function updatePatchesNotice(dropped){
+    const toggle = document.getElementById('patches-toggle');
+    if(!toggle || !TARGET_UID) return;
+    const seenKey = `hg_patches_seen_${TARGET_UID}`;
+    const lastSeen = parseInt(localStorage.getItem(seenKey) || '0', 10);
+    const latest = dropped.reduce((max, pd) => Math.max(max, pd.droppedAt || 0), 0);
+    toggle.classList.toggle('has-new', latest > lastSeen);
   }
 
   function fmtDate(ts){

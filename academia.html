@@ -282,6 +282,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 }
 #patches-sidebar.collapsed{transform:translateX(calc(100% - 34px));}
 #patches-toggle{
+  position:relative;
   writing-mode:vertical-rl;text-orientation:mixed;
   background:rgba(184,255,0,0.06);border:1px solid rgba(184,255,0,0.25);
   border-right:none;color:var(--acid);font-family:var(--mono);
@@ -290,6 +291,12 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
   transition:background 0.2s;flex-shrink:0;
 }
 #patches-toggle:hover{background:rgba(184,255,0,0.12);}
+#patches-toggle.has-new::after{
+  content:'';position:absolute;top:8px;right:8px;
+  width:8px;height:8px;border-radius:50%;
+  background:var(--glitch);box-shadow:0 0 6px var(--glitch);
+  animation:pulse-led 1.4s ease-in-out infinite;
+}
 #patches-panel{
   width:240px;max-height:80vh;overflow-y:auto;
   background:rgba(10,10,10,0.94);backdrop-filter:blur(8px);
@@ -303,7 +310,24 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 #patches-panel .patch-shield{flex-shrink:0;}
 #patches-empty{font-family:var(--mono);font-size:8.5px;letter-spacing:0.06em;color:rgba(240,237,230,0.25);line-height:1.8;max-width:480px;}
 @media(max-width:760px){
-  #patches-sidebar{display:none;}
+  #patches-sidebar{
+    flex-direction:column;align-items:flex-start;
+    left:0;right:auto;top:auto;bottom:0;height:auto;
+    transform:none;
+  }
+  #patches-sidebar #patches-toggle{
+    writing-mode:horizontal-tb;text-orientation:initial;
+    border-radius:0 3px 0 0;border-left:none;border-bottom:none;
+    padding:0.55rem 1.1rem;align-self:flex-start;
+  }
+  #patches-sidebar #patches-panel{
+    position:fixed;left:0;right:0;bottom:38px;width:auto;
+    max-height:55vh;border-radius:0;margin-top:0;
+    border-left:none;border-right:none;border-bottom:none;
+  }
+  #patches-sidebar.collapsed #patches-panel{display:none;}
+  #patches-panel #patches-grid{flex-direction:row;flex-wrap:wrap;justify-content:center;}
+  #patches-panel .patch{flex-direction:column;text-align:center;width:84px;}
 }
 .patch{
   width:96px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px;
@@ -832,6 +856,17 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
         ${pd.skill ? `<div class="patch-skill">${pd.skill}</div>` : ''}`;
       gridEl.appendChild(el);
     });
+    updatePatchesNotice(dropped);
+  }
+
+  // Avisa con un punto en "MIS PARCHES" si llegó un parche nuevo desde la última visita
+  function updatePatchesNotice(dropped){
+    const toggle = document.getElementById('patches-toggle');
+    if(!toggle || !UID) return;
+    const seenKey = `hg_patches_seen_${UID}`;
+    const lastSeen = parseInt(localStorage.getItem(seenKey) || '0', 10);
+    const latest = dropped.reduce((max, pd) => Math.max(max, pd.droppedAt || 0), 0);
+    toggle.classList.toggle('has-new', latest > lastSeen);
   }
 
   async function showContent(){
@@ -1057,7 +1092,14 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 
   const patchesSidebar = document.getElementById('patches-sidebar');
   const patchesToggle  = document.getElementById('patches-toggle');
-  patchesToggle.addEventListener('click', ()=> patchesSidebar.classList.toggle('collapsed'));
+  patchesToggle.addEventListener('click', ()=>{
+    const opening = patchesSidebar.classList.contains('collapsed');
+    patchesSidebar.classList.toggle('collapsed');
+    if(opening && UID){
+      localStorage.setItem(`hg_patches_seen_${UID}`, String(Date.now()));
+      patchesToggle.classList.remove('has-new');
+    }
+  });
 
   document.getElementById('nucleo-card').addEventListener('click', openAutoeval);
 
