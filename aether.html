@@ -138,8 +138,9 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
   font-family:var(--mono);font-size:9px;letter-spacing:0.16em;text-transform:uppercase;
   color:rgba(240,237,230,0.4);margin:1rem 0;
   display:flex;align-items:center;gap:8px;
+  white-space:pre-wrap;word-break:break-word;
 }
-#gen-status.err{color:var(--glitch);}
+#gen-status.err{color:var(--glitch);text-transform:none;letter-spacing:0.04em;}
 #gen-status.ok{color:var(--acid);}
 .led-spin{width:6px;height:6px;border-radius:50%;background:var(--acid);animation:pulse-led 1.4s ease-in-out infinite;}
 @keyframes pulse-led{0%,100%{opacity:0.25;}50%{opacity:1;}}
@@ -598,7 +599,21 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
   // Compila, pone de fondo, arma controles, extrae paleta y guarda en el repo
   async function loadGeneratedShader(code, label){
     const {finalSrc} = parseAetherISF(code);
-    const p = makeProgram(finalSrc);
+    let p;
+    try{
+      p = makeProgram(finalSrc);
+    }catch(err){
+      console.error('Aether ISF — fuente compilada:\n' + finalSrc);
+      const lineMatch = String(err).match(/(\d+):(\d+)/);
+      if(lineMatch){
+        const lineNum = parseInt(lineMatch[2], 10);
+        const lines = finalSrc.split('\n');
+        const ctx = lines.slice(Math.max(0, lineNum-2), lineNum+1)
+          .map((l,i)=>`${Math.max(0,lineNum-2)+i+1}: ${l}`).join('\n');
+        throw new Error(`${err}\n${ctx}\n(fuente completa en la consola del navegador)`);
+      }
+      throw err;
+    }
     canvas.classList.add('active');
     runProgram(p);
     buildPanel();
