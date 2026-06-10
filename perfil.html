@@ -385,26 +385,26 @@ body.is-own #soc-edit-btn{display:inline-flex;}
 
   function autoPatches(){
     const out=[];
+    // Parches-logo de aplicaciones — siempre visibles, en escala de grises hasta sumar progreso
+    Object.entries(APP_LOGOS).forEach(([mark,app])=>{
+      const topics = PROGRESS[mark] || {};
+      const doneCount = Object.values(topics).filter(Boolean).length;
+      out.push({
+        kind:'logo',
+        icon: app.icon,
+        label: mark,
+        name: app.name,
+        skill: `${doneCount}/${app.total} ejes aprendidos`,
+        progress: doneCount / app.total
+      });
+    });
     // We don't have PROGRAMS here — use mark keys directly from PROGRESS
     Object.entries(PROGRESS).forEach(([mark,topics])=>{
+      if(APP_LOGOS[mark]) return;
       if(!topics||typeof topics!=='object') return;
-      const doneCount = Object.values(topics).filter(Boolean).length;
-      if(!doneCount) return;
-      const app = APP_LOGOS[mark];
-      if(app){
-        out.push({
-          kind:'logo',
-          icon: app.icon,
-          label: mark,
-          name: app.name,
-          skill: `${doneCount}/${app.total} ejes aprendidos`,
-          progress: doneCount / app.total
-        });
-      } else {
-        Object.entries(topics).forEach(([ti,done])=>{
-          if(done) out.push({kind:'auto',label:mark,name:`${mark} — tema ${parseInt(ti)+1}`,skill:mark});
-        });
-      }
+      Object.entries(topics).forEach(([ti,done])=>{
+        if(done) out.push({kind:'auto',label:mark,name:`${mark} — tema ${parseInt(ti)+1}`,skill:mark});
+      });
     });
     return out;
   }

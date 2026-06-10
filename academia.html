@@ -750,14 +750,13 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
   };
 
   // Parches "auto" — uno por cada eje del temario marcado como aprendido (estilo scout),
-  // o un parche-logo por aplicación si tiene logo disponible (ver APP_LOGOS)
+  // o un parche-logo por aplicación si tiene logo disponible (ver APP_LOGOS) — estos
+  // últimos siempre se muestran, en escala de grises hasta empezar a sumar progreso
   function autoPatches(){
     const out = [];
     PROGRAMS.forEach(p=>{
-      const prog = PROGRESS[p.mark];
-      if(!prog) return;
+      const prog = PROGRESS[p.mark] || {};
       const doneCount = p.topics.filter((t, ti) => !!prog[ti]).length;
-      if(!doneCount) return;
       if(APP_LOGOS[p.mark]){
         out.push({
           kind: 'logo',
@@ -767,7 +766,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
           skill: `${doneCount}/${p.topics.length} ejes aprendidos`,
           progress: doneCount / p.topics.length
         });
-      } else {
+      } else if(doneCount){
         p.topics.forEach((t, ti)=>{
           if(prog[ti]){
             const topicTitle = (t && typeof t === 'object') ? t.title : t;
