@@ -141,6 +141,12 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 }
 .dnr-toggle:hover{border-color:var(--glitch);color:var(--glitch);}
 .dnr-toggle.publish:hover{border-color:var(--acid);color:var(--acid);}
+.dnr-delete{
+  font-family:var(--mono);font-size:7.5px;letter-spacing:0.12em;text-transform:uppercase;
+  border:1px solid rgba(255,45,85,0.3);border-radius:2px;background:transparent;
+  color:rgba(255,45,85,0.6);padding:5px 9px;cursor:pointer;transition:all 0.2s;white-space:nowrap;
+}
+.dnr-delete:hover{border-color:#ff2d55;color:#ff2d55;}
 #diario-list-status{font-family:var(--mono);font-size:8px;color:rgba(240,237,230,0.3);margin-top:0.6rem;letter-spacing:0.08em;}
 
 /* DROPEAR PARCHE — admin */
@@ -347,6 +353,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
         🌱 Tanda inicial: 10 notas ya escritas (2 por categoría), listas para cargar de una — pensadas para arrancar el archivo del Diario.
         <div style="margin-top:0.6rem;">
           <button type="button" id="diario-seed-btn" style="font-family:var(--mono);font-size:9px;letter-spacing:0.18em;text-transform:uppercase;border:1px solid rgba(184,255,0,0.4);border-radius:2px;background:rgba(184,255,0,0.08);color:var(--acid);padding:9px 18px;cursor:pointer;transition:all 0.2s;">CARGAR 10 NOTAS INICIALES 🌱</button>
+          <button type="button" id="diario-dedupe-btn" style="font-family:var(--mono);font-size:9px;letter-spacing:0.18em;text-transform:uppercase;border:1px solid rgba(255,45,85,0.4);border-radius:2px;background:rgba(255,45,85,0.06);color:#ff2d55;padding:9px 18px;cursor:pointer;transition:all 0.2s;margin-left:0.5rem;">ELIMINAR DUPLICADOS</button>
           <div id="diario-seed-status" style="margin-top:0.6rem;font-family:var(--mono);font-size:8.5px;letter-spacing:0.08em;color:rgba(240,237,230,0.4);"></div>
         </div>
       </div>
@@ -789,6 +796,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
           <span class="dnr-cat">${note.cat || ''}</span>
           <span class="dnr-date">${d.toLocaleDateString('es-AR')}</span>
           <button class="dnr-toggle ${isPublished ? '' : 'publish'}">${isPublished ? 'DESPUBLICAR' : 'PUBLICAR'}</button>
+          <button class="dnr-delete">BORRAR</button>
         `;
         row.querySelector('.dnr-toggle').addEventListener('click', async (btn)=>{
           btn.target.disabled = true;
@@ -796,6 +804,11 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
             method:'PUT', headers:{'Content-Type':'application/json'},
             body: isPublished ? 'false' : 'true'
           });
+          loadDiarioNotes();
+        });
+        row.querySelector('.dnr-delete').addEventListener('click', async ()=>{
+          if(!confirm(`¿Borrar la nota "${note.title || '—'}"? Esta acción no se puede deshacer.`)) return;
+          await fetch(`${FB_URL}/diario/${note.id}.json?auth=${TOKEN}`, { method:'DELETE' });
           loadDiarioNotes();
         });
         diarioList.appendChild(row);
@@ -1036,6 +1049,40 @@ Activarla lleva, en general, menos de cinco minutos por cuenta. Es, literalmente
         : `⚠ ${ok} de ${DIARIO_SEED.length} notas publicadas. Error: ${lastError || 'desconocido'}`;
       diarioSeedBtn.disabled = false;
       loadDiarioNotes();
+    });
+  }
+
+  const diarioDedupeBtn = document.getElementById('diario-dedupe-btn');
+  if(diarioDedupeBtn){
+    diarioDedupeBtn.addEventListener('click', async ()=>{
+      diarioDedupeBtn.disabled = true;
+      diarioSeedSt.textContent = 'Buscando duplicados…';
+      try{
+        const r = await fetch(`${FB_URL}/diario.json?auth=${TOKEN}`);
+        const data = r.ok ? (await r.json() || {}) : {};
+        const notes = Object.entries(data).map(([id, n]) => ({ id, ...n }));
+        const seen = new Set();
+        const toDelete = [];
+        notes
+          .sort((a, b) => (a.publishedAt || 0) - (b.publishedAt || 0))
+          .forEach(note=>{
+            const key = note.title || '';
+            if(seen.has(key)) toDelete.push(note.id);
+            else seen.add(key);
+          });
+        if(!toDelete.length){
+          diarioSeedSt.textContent = 'No se encontraron notas duplicadas.';
+        }else{
+          for(const id of toDelete){
+            await fetch(`${FB_URL}/diario/${id}.json?auth=${TOKEN}`, { method:'DELETE' });
+          }
+          diarioSeedSt.textContent = `✓ Se eliminaron ${toDelete.length} notas duplicadas.`;
+        }
+        loadDiarioNotes();
+      }catch(e){
+        diarioSeedSt.textContent = 'No se pudo buscar duplicados — probá de nuevo.';
+      }
+      diarioDedupeBtn.disabled = false;
     });
   }
 
