@@ -657,14 +657,9 @@ body.visual-mode #exit-visual{z-index:9000!important;}
 
 /* CATALOGO */
 #catalogo{flex-direction:column;padding:10vh 8vw;}
-.svc-list{width:100%;margin-top:3rem;}
-.srow{display:grid;grid-template-columns:70px 1fr auto;align-items:start;gap:2.5rem;padding:2.2rem 0;border-top:1px solid rgba(240,237,230,0.07);transition:border-color 0.3s;}
-.srow:hover{border-top-color:var(--acid);}
-.srow:last-child{border-bottom:1px solid rgba(240,237,230,0.07);}
-.snum{font-family:var(--mono);font-size:9px;color:rgba(240,237,230,0.18);padding-top:0.8rem;}
-.sname{font-family:var(--display);font-size:clamp(2rem,3.5vw,3.8rem);line-height:1;}
-.sprice{font-family:var(--mono);font-size:11px;color:var(--acid);white-space:nowrap;padding-top:0.8rem;transition:color 1.5s;}
-.ssub{font-family:var(--mono);font-size:10px;color:rgba(240,237,230,0.3);margin-top:0.4rem;line-height:1.8;grid-column:2;}
+.catalogo-intro{font-family:var(--mono);font-size:11px;color:rgba(240,237,230,0.4);line-height:2;max-width:640px;margin-top:1.5rem;}
+.catalogo-intro a{color:var(--acid);text-decoration:none;border-bottom:1px solid rgba(184,255,0,0.4);transition:color 1.5s,border-color 1.5s;}
+.catalogo-intro a:hover{opacity:0.8;}
 
 /* STACK — herramientas detrás de los servicios */
 .stack-intro{font-family:var(--mono);font-size:10px;letter-spacing:0.2em;color:rgba(240,237,230,0.3);margin-top:4.5rem;margin-bottom:1.5rem;text-transform:uppercase;}
@@ -1029,13 +1024,9 @@ body.visual-mode #exit-visual{z-index:9000!important;}
   <section id="catalogo">
     <div class="sec-hdr rev" style="width:100%;">
       <h2 class="sec-title">SERVICIOS</h2>
-      <a href="https://meetings.hubspot.com/juan-cruz-martinez-astorga" class="sec-link" target="_blank">REUNIÓN →</a>
+      <a href="servicios.html" class="sec-link">VER SERVICIOS →</a>
     </div>
-    <div class="svc-list">
-      <div class="srow rev"><span class="snum">01</span><span class="sname">LECTURA DE GLITCH</span><span class="sprice">CONSULTAR</span><span class="ssub">Videollamada 1h · grabación + research · diagnóstico honesto de tu show, gira o evento, con referencias a medida.</span></div>
-      <div class="srow rev rd1"><span class="snum">02</span><span class="sname">KIT PORTABLE</span><span class="sprice">PACK BASE</span><span class="ssub">+10 fondos · 2 logos animados · formatos a medida · contacto con operadores · soporte creativo y operativo incluido.</span></div>
-      <div class="srow rev rd2"><span class="snum">03</span><span class="sname">SINCRONÍA TOTAL</span><span class="sprice">A MEDIDA</span><span class="ssub">SMPTE · sincro en red · planificación luces+video · operación en vivo · FX sincronizados · circuito cerrado end-to-end.</span></div>
-    </div>
+    <p class="catalogo-intro rev">Producción audiovisual para shows, giras y eventos — desde una asesoría puntual hasta la sincronía completa de una gira. <a href="servicios.html">Conocé el detalle de cada servicio →</a></p>
 
     <div class="stack-intro rev">→ El stack detrás de cada servicio</div>
     <div class="stack-grid">

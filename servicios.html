@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SERVICIOS — HUMAN GLITCHE</title>
+<meta name="description" content="Producción audiovisual para shows, giras y eventos — asesoría, packs de contenido y proyectos de sincronía completa para managers y artistas.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --black:#050505;
+  --white:#f0ede6;
+  --acid:#b8ff00;
+  --glitch:#ff2d55;
+  --mono:'Space Mono',monospace;
+  --display:'Bebas Neue',sans-serif;
+  --body:'DM Sans',sans-serif;
+}
+html{scroll-behavior:smooth;}
+body{background:var(--black);color:var(--white);font-family:var(--body);min-height:100vh;}
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");z-index:0;pointer-events:none;opacity:0.4;}
+
+#wrap{position:relative;z-index:1;max-width:920px;margin:0 auto;padding:0 1.5rem 6rem;}
+
+/* NAV */
+.lnav{display:flex;justify-content:space-between;align-items:center;padding:1.8rem 0 2.4rem;}
+.lnav-back{font-family:var(--mono);font-size:9px;letter-spacing:0.18em;color:rgba(240,237,230,0.4);text-decoration:none;transition:color 0.2s;}
+.lnav-back:hover{color:var(--acid);}
+.lnav-title{font-family:var(--mono);font-size:9px;letter-spacing:0.28em;color:rgba(240,237,230,0.25);text-transform:uppercase;}
+
+/* HEADER */
+#page-header{margin-bottom:4rem;text-align:center;}
+#page-badge{font-family:var(--mono);font-size:9px;letter-spacing:0.3em;color:var(--acid);border:1px solid rgba(184,255,0,0.3);padding:5px 14px;display:inline-block;margin-bottom:1.4rem;}
+#page-title{font-family:var(--display);font-size:clamp(2.6rem,8vw,5rem);letter-spacing:0.04em;line-height:0.95;color:var(--white);margin-bottom:1rem;}
+#page-sub{font-family:var(--mono);font-size:11px;line-height:2;color:rgba(240,237,230,0.45);max-width:600px;margin:0 auto;}
+
+/* SERVICE BLOCKS */
+.svc{border-top:1px solid rgba(240,237,230,0.08);padding:3.2rem 0;}
+.svc:last-of-type{border-bottom:1px solid rgba(240,237,230,0.08);}
+.svc-head{display:grid;grid-template-columns:60px 1fr auto;align-items:start;gap:1.6rem;margin-bottom:1.4rem;}
+.svc-num{font-family:var(--mono);font-size:10px;color:rgba(240,237,230,0.18);padding-top:0.9rem;}
+.svc-name{font-family:var(--display);font-size:clamp(2.2rem,5vw,3.6rem);line-height:1;}
+.svc-price{font-family:var(--mono);font-size:10px;letter-spacing:0.18em;color:var(--acid);border:1px solid rgba(184,255,0,0.3);padding:6px 12px;white-space:nowrap;align-self:start;margin-top:0.6rem;}
+.svc-tag{font-family:var(--mono);font-size:9px;letter-spacing:0.25em;color:rgba(240,237,230,0.35);text-transform:uppercase;grid-column:2;margin-top:-0.6rem;margin-bottom:0.6rem;}
+.svc-desc{font-family:var(--body);font-size:0.95rem;line-height:1.85;color:rgba(240,237,230,0.7);grid-column:2;max-width:560px;}
+
+.svc-cols{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-top:1.6rem;}
+@media(max-width:680px){.svc-cols{grid-template-columns:1fr;}.svc-head{grid-template-columns:1fr;gap:0.6rem;}.svc-num{display:none;}.svc-tag{grid-column:1;}.svc-desc{grid-column:1;}.svc-price{justify-self:start;}}
+.svc-box{background:rgba(255,255,255,0.025);border:1px solid rgba(240,237,230,0.07);border-radius:3px;padding:1.2rem 1.4rem;}
+.svc-box-title{font-family:var(--mono);font-size:8.5px;letter-spacing:0.22em;text-transform:uppercase;color:rgba(240,237,230,0.35);margin-bottom:0.8rem;}
+.svc-box ul{list-style:none;}
+.svc-box li{font-family:var(--mono);font-size:11px;color:rgba(240,237,230,0.65);padding:0.45rem 0;border-bottom:1px solid rgba(240,237,230,0.05);line-height:1.6;display:flex;gap:8px;}
+.svc-box li:last-child{border-bottom:none;}
+.svc-box li::before{content:'→';color:var(--acid);flex-shrink:0;}
+
+.svc-cta{display:inline-flex;align-items:center;gap:8px;margin-top:1.8rem;font-family:var(--mono);font-size:10px;letter-spacing:0.18em;text-transform:uppercase;text-decoration:none;color:var(--black);background:var(--acid);border:1px solid var(--acid);border-radius:2px;padding:0.9rem 1.6rem;transition:opacity 0.2s;}
+.svc-cta:hover{opacity:0.85;}
+
+/* CLOSING CTA */
+#closing{margin-top:4rem;text-align:center;border-top:1px solid rgba(240,237,230,0.08);padding-top:3rem;}
+#closing-title{font-family:var(--display);font-size:clamp(1.8rem,4vw,2.6rem);margin-bottom:0.8rem;}
+#closing-sub{font-family:var(--mono);font-size:10px;line-height:1.9;color:rgba(240,237,230,0.4);max-width:480px;margin:0 auto 1.6rem;}
+
+/* FOOTER */
+#footer{margin-top:4rem;padding-top:2rem;border-top:1px solid rgba(240,237,230,0.07);font-family:var(--mono);font-size:8px;letter-spacing:0.12em;color:rgba(240,237,230,0.12);text-align:center;}
+</style>
+</head>
+<body>
+
+<div id="wrap">
+
+  <nav class="lnav">
+    <a class="lnav-back" href="index.html">← HUMAN GLITCHE</a>
+    <span class="lnav-title">SERVICIOS</span>
+  </nav>
+
+  <div id="page-header">
+    <div id="page-badge">PARA MANAGERS Y ARTISTAS</div>
+    <div id="page-title">PRODUCCIÓN<br>VISUAL PARA SHOWS</div>
+    <div id="page-sub">Desde un diagnóstico puntual hasta la sincronía completa de una gira. Elegí el punto de partida según en qué etapa esté tu proyecto — y si no estás seguro, la Lectura de Glitch te lo despeja en una llamada.</div>
+  </div>
+
+  <!-- 01 — LECTURA DE GLITCH -->
+  <div class="svc">
+    <div class="svc-head">
+      <div class="svc-num">01</div>
+      <div class="svc-name">LECTURA DE GLITCH</div>
+      <div class="svc-price">CONSULTAR</div>
+    </div>
+    <div class="svc-tag">Asesoría · diagnóstico</div>
+    <div class="svc-desc">
+      Una videollamada de una hora, con research previo sobre el artista, el show actual y las referencias del proyecto.
+      Salís con un diagnóstico honesto de qué funciona, qué no, y qué pasos concretos seguir — sea que terminemos
+      trabajando juntos o no.
+    </div>
+    <div class="svc-cols">
+      <div class="svc-box">
+        <div class="svc-box-title">Qué incluye</div>
+        <ul>
+          <li>Research previo del show, el artista y referencias del rubro</li>
+          <li>Videollamada de 1h, grabada para que la compartas con tu equipo</li>
+          <li>Diagnóstico honesto: qué visuales funcionan y qué no</li>
+          <li>Recomendaciones concretas con prioridades y presupuesto estimado</li>
+        </ul>
+      </div>
+      <div class="svc-box">
+        <div class="svc-box-title">Para quién es</div>
+        <ul>
+          <li>Managers que evalúan invertir en visuales para una gira o show</li>
+          <li>Artistas que ya tienen contenido pero no saben si está a la altura</li>
+          <li>Equipos que quieren una segunda mirada antes de contratar</li>
+          <li>El primer paso natural antes del Kit Portable o Sincronía Total</li>
+        </ul>
+      </div>
+    </div>
+    <a href="https://meetings.hubspot.com/juan-cruz-martinez-astorga" class="svc-cta" target="_blank">AGENDAR LECTURA →</a>
+  </div>
+
+  <!-- 02 — KIT PORTABLE -->
+  <div class="svc">
+    <div class="svc-head">
+      <div class="svc-num">02</div>
+      <div class="svc-name">KIT PORTABLE</div>
+      <div class="svc-price">PACK BASE</div>
+    </div>
+    <div class="svc-tag">Contenido standalone · listo para girar</div>
+    <div class="svc-desc">
+      Un pack de visuales propio, pensado para que cualquier operador o pantalla lo pueda correr sin depender de
+      nuestro equipo en vivo. Ideal cuando ya tenés la parte técnica resuelta (operador, pantallas, software) y
+      lo que falta es contenido que esté a la altura del show.
+    </div>
+    <div class="svc-cols">
+      <div class="svc-box">
+        <div class="svc-box-title">Qué incluye</div>
+        <ul>
+          <li>+10 fondos en loop, diseñados para la identidad del artista</li>
+          <li>2 logos animados (intro / transición)</li>
+          <li>Formatos a medida: 16:9, 9:16, cuadrado, mapping</li>
+          <li>Guía de uso para el operador o VJ local</li>
+          <li>Contacto directo con operadores de la red HG si necesitás uno</li>
+        </ul>
+      </div>
+      <div class="svc-box">
+        <div class="svc-box-title">Para quién es</div>
+        <ul>
+          <li>Giras o shows que ya tienen operador y pantallas propias</li>
+          <li>Artistas que necesitan contenido nuevo para redes y vivo a la vez</li>
+          <li>Proyectos con presupuesto definido que buscan un pack cerrado</li>
+          <li>Quien prefiere operar su propio show con material profesional</li>
+        </ul>
+      </div>
+    </div>
+    <a href="https://meetings.hubspot.com/juan-cruz-martinez-astorga" class="svc-cta" target="_blank">CONSULTAR KIT →</a>
+  </div>
+
+  <!-- 03 — SINCRONÍA TOTAL -->
+  <div class="svc">
+    <div class="svc-head">
+      <div class="svc-num">03</div>
+      <div class="svc-name">SINCRONÍA TOTAL</div>
+      <div class="svc-price">A MEDIDA</div>
+    </div>
+    <div class="svc-tag">Proyecto de gira · producción end-to-end</div>
+    <div class="svc-desc">
+      La producción visual completa de una gira o show, de punta a punta. Diseñamos, sincronizamos y operamos —
+      o capacitamos a tu equipo técnico para que lo haga — de forma que luces, video, audio y FX queden
+      atados al mismo timecode en cada fecha.
+    </div>
+    <div class="svc-cols">
+      <div class="svc-box">
+        <div class="svc-box-title">Qué incluye</div>
+        <ul>
+          <li>Relevamiento técnico del rider y la sala/escenario de cada fecha</li>
+          <li>Diseño del show: visuales, mapping y secuencia de luces integrados</li>
+          <li>Sincronización SMPTE / timecode en red entre todos los dispositivos</li>
+          <li>FX sincronizados al show (luces, video, disparos en vivo)</li>
+          <li>Operación en vivo por nuestro equipo, o capacitación al tuyo</li>
+          <li>Soporte técnico remoto o presencial durante la gira</li>
+        </ul>
+      </div>
+      <div class="svc-box">
+        <div class="svc-box-title">Para quién es</div>
+        <ul>
+          <li>Giras de varias fechas donde la consistencia visual es crítica</li>
+          <li>Shows con producción de luces propia que necesita sincronizarse con video</li>
+          <li>Artistas que escalan de un show puntual a una gira completa</li>
+          <li>Equipos que necesitan que "simplemente funcione" en cada plaza</li>
+        </ul>
+      </div>
+    </div>
+    <a href="https://meetings.hubspot.com/juan-cruz-martinez-astorga" class="svc-cta" target="_blank">HABLAR DEL PROYECTO →</a>
+  </div>
+
+  <div id="closing">
+    <div id="closing-title">¿NO ESTÁS SEGURO POR DÓNDE EMPEZAR?</div>
+    <div id="closing-sub">La Lectura de Glitch es la puerta de entrada — una llamada honesta para entender en qué etapa está tu proyecto y qué necesita realmente, antes de hablar de packs o presupuestos.</div>
+    <a href="https://meetings.hubspot.com/juan-cruz-martinez-astorga" class="svc-cta" target="_blank">AGENDAR REUNIÓN →</a>
+  </div>
+
+  <div id="footer">HUMAN GLITCHE — VISUAL LAB — BUENOS AIRES — 2026</div>
+
+</div>
+</body>
+</html>
