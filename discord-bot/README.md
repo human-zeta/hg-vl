@@ -43,6 +43,20 @@ cuenta de Discord en `perfil.html`.
    `Sub T1/T2/T3` en la jerarquía del servidor, si no, no va a poder
    asignarlos.
 
+## 1b. Crear los roles automáticamente (recomendado)
+
+En vez de crear los roles a mano, corré una sola vez:
+
+```bash
+npm install
+DISCORD_BOT_TOKEN=tu_token node setup-roles.js
+```
+
+El script crea `Sub T1`, `Sub T2` y `Sub T3` en el servidor (si no existen),
+imprime sus IDs y, si además le pasás `FIREBASE_SERVICE_ACCOUNT` y
+`FIREBASE_DB_URL`, guarda toda la config directamente en `/config/discord`
+de Firebase — sin pasar por admin.html.
+
 ## 2. Conseguir los IDs de Discord
 
 Activá el "Modo desarrollador" en Discord (Configuración → Avanzado), y con

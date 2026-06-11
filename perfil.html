@@ -650,14 +650,13 @@ body.is-own #discord-sec{display:block;}
     }catch(e){ /* ignore */ }
   }
 
+  const DISCORD_CLIENT_ID_DEFAULT = '1513649897352466563';
+
   async function startDiscordLink(){
     const cfg = await fbGet('/config/discord', true);
-    if(!cfg || !cfg.clientId){
-      alert('La vinculación con Discord todavía no está configurada.');
-      return;
-    }
+    const clientId = (cfg && cfg.clientId) || DISCORD_CLIENT_ID_DEFAULT;
     const redirectUri = encodeURIComponent(discordRedirectUri());
-    const url = `https://discord.com/api/oauth2/authorize?client_id=${encodeURIComponent(cfg.clientId)}&redirect_uri=${redirectUri}&response_type=token&scope=identify`;
+    const url = `https://discord.com/api/oauth2/authorize?client_id=${encodeURIComponent(clientId)}&redirect_uri=${redirectUri}&response_type=token&scope=identify`;
     location.href = url;
   }
 

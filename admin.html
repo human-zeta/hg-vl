@@ -818,8 +818,8 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
     try{
       const r = await fetch(`${FB_URL}/config/discord.json?auth=${TOKEN}`);
       const cfg = r.ok ? (await r.json() || {}) : {};
-      document.getElementById('discord-client-id').value = cfg.clientId || '';
-      document.getElementById('discord-guild-id').value = cfg.guildId || '';
+      document.getElementById('discord-client-id').value = cfg.clientId || '1513649897352466563';
+      document.getElementById('discord-guild-id').value = cfg.guildId || '1481427371574824973';
       document.getElementById('discord-role-t1').value = cfg.roleT1 || '';
       document.getElementById('discord-role-t2').value = cfg.roleT2 || '';
       document.getElementById('discord-role-t3').value = cfg.roleT3 || '';
