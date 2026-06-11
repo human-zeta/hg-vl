@@ -58,6 +58,33 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .svc-cta{display:inline-flex;align-items:center;gap:8px;margin-top:1.8rem;font-family:var(--mono);font-size:10px;letter-spacing:0.18em;text-transform:uppercase;text-decoration:none;color:var(--black);background:var(--acid);border:1px solid var(--acid);border-radius:2px;padding:0.9rem 1.6rem;transition:opacity 0.2s;}
 .svc-cta:hover{opacity:0.85;}
 
+/* CONTACT FORM */
+#contact{margin-top:4rem;border-top:1px solid rgba(240,237,230,0.08);padding-top:3rem;}
+#contact-title{font-family:var(--display);font-size:clamp(2rem,5vw,3.2rem);line-height:1;margin-bottom:0.8rem;text-align:center;}
+#contact-sub{font-family:var(--mono);font-size:10px;line-height:1.9;color:rgba(240,237,230,0.4);max-width:520px;margin:0 auto 2.2rem;text-align:center;}
+#contact-form{display:grid;grid-template-columns:1fr 1fr;gap:1rem;max-width:680px;margin:0 auto;}
+.cf-field{display:flex;flex-direction:column;gap:0.4rem;grid-column:span 1;}
+.cf-field.full{grid-column:1 / -1;}
+.cf-field label{font-family:var(--mono);font-size:8px;letter-spacing:0.18em;text-transform:uppercase;color:rgba(240,237,230,0.4);}
+.cf-field input,.cf-field select,.cf-field textarea{
+  background:rgba(255,255,255,0.03);border:1px solid rgba(240,237,230,0.12);border-radius:2px;
+  color:var(--white);font-family:var(--body);font-size:13px;padding:0.7rem 0.8rem;outline:none;transition:border-color 0.2s;
+}
+.cf-field input:focus,.cf-field select:focus,.cf-field textarea:focus{border-color:var(--acid);}
+.cf-field textarea{resize:vertical;min-height:100px;}
+.cf-field select{appearance:none;cursor:pointer;}
+#cf-submit{
+  grid-column:1 / -1;font-family:var(--mono);font-size:10px;letter-spacing:0.18em;text-transform:uppercase;
+  color:var(--black);background:var(--acid);border:1px solid var(--acid);border-radius:2px;
+  padding:0.95rem 1.6rem;cursor:pointer;transition:opacity 0.2s;
+}
+#cf-submit:hover{opacity:0.85;}
+#cf-submit:disabled{opacity:0.5;cursor:default;}
+#cf-status{grid-column:1 / -1;font-family:var(--mono);font-size:9px;letter-spacing:0.1em;color:rgba(240,237,230,0.4);min-height:1.2em;}
+#cf-status.ok{color:var(--acid);}
+#cf-status.err{color:var(--glitch);}
+@media(max-width:600px){#contact-form{grid-template-columns:1fr;}}
+
 /* CLOSING CTA */
 #closing{margin-top:4rem;text-align:center;border-top:1px solid rgba(240,237,230,0.08);padding-top:3rem;}
 #closing-title{font-family:var(--display);font-size:clamp(1.8rem,4vw,2.6rem);margin-bottom:0.8rem;}
@@ -193,8 +220,38 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
     <a href="https://meetings.hubspot.com/juan-cruz-martinez-astorga" class="svc-cta" target="_blank">HABLAR DEL PROYECTO →</a>
   </div>
 
+  <div id="contact">
+    <div id="contact-title">CONTANOS TU PROYECTO</div>
+    <div id="contact-sub">Dejanos tus datos y te respondemos en menos de 48hs — contanos en qué etapa está tu proyecto y qué necesitás.</div>
+    <form id="contact-form">
+      <div class="cf-field">
+        <label for="cf-name">Nombre</label>
+        <input type="text" id="cf-name" required>
+      </div>
+      <div class="cf-field">
+        <label for="cf-email">Email</label>
+        <input type="email" id="cf-email" required>
+      </div>
+      <div class="cf-field full">
+        <label for="cf-service">¿Qué servicio te interesa?</label>
+        <select id="cf-service">
+          <option value="Lectura de Glitch">Lectura de Glitch — asesoría / diagnóstico</option>
+          <option value="Kit Portable">Kit Portable — pack de visuales</option>
+          <option value="Sincronía Total">Sincronía Total — proyecto de gira</option>
+          <option value="No estoy seguro">No estoy seguro / quiero que me asesoren</option>
+        </select>
+      </div>
+      <div class="cf-field full">
+        <label for="cf-message">Contanos sobre tu proyecto</label>
+        <textarea id="cf-message" placeholder="Artista, fechas, lugares, qué tenés y qué te falta..." required></textarea>
+      </div>
+      <button type="submit" id="cf-submit">ENVIAR CONSULTA</button>
+      <div id="cf-status"></div>
+    </form>
+  </div>
+
   <div id="closing">
-    <div id="closing-title">¿NO ESTÁS SEGURO POR DÓNDE EMPEZAR?</div>
+    <div id="closing-title">¿PREFERÍS HABLAR DIRECTO?</div>
     <div id="closing-sub">La Lectura de Glitch es la puerta de entrada — una llamada honesta para entender en qué etapa está tu proyecto y qué necesita realmente, antes de hablar de packs o presupuestos.</div>
     <a href="https://meetings.hubspot.com/juan-cruz-martinez-astorga" class="svc-cta" target="_blank">AGENDAR REUNIÓN →</a>
   </div>
@@ -202,5 +259,46 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
   <div id="footer">HUMAN GLITCHE — VISUAL LAB — BUENOS AIRES — 2026</div>
 
 </div>
+
+<script>
+(function(){
+  const FB_URL = 'https://hg-vl-shaders-default-rtdb.firebaseio.com';
+  const form = document.getElementById('contact-form');
+  const statusEl = document.getElementById('cf-status');
+  const submitBtn = document.getElementById('cf-submit');
+
+  form.addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    const lead = {
+      name: document.getElementById('cf-name').value.trim(),
+      email: document.getElementById('cf-email').value.trim(),
+      service: document.getElementById('cf-service').value,
+      message: document.getElementById('cf-message').value.trim(),
+      page: 'servicios',
+      status: 'nuevo',
+      ts: Date.now(),
+    };
+    submitBtn.disabled = true;
+    statusEl.className = '';
+    statusEl.textContent = 'Enviando...';
+    try{
+      const r = await fetch(`${FB_URL}/leads.json`, {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify(lead),
+      });
+      if(!r.ok) throw new Error();
+      statusEl.className = 'ok';
+      statusEl.textContent = '✓ Listo — te respondemos pronto.';
+      form.reset();
+    }catch(err){
+      statusEl.className = 'err';
+      statusEl.textContent = 'No se pudo enviar. Probá de nuevo o escribinos por Discord.';
+    }finally{
+      submitBtn.disabled = false;
+    }
+  });
+})();
+</script>
 </body>
 </html>

@@ -149,6 +149,36 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .dnr-delete:hover{border-color:#ff2d55;color:#ff2d55;}
 #diario-list-status{font-family:var(--mono);font-size:8px;color:rgba(240,237,230,0.3);margin-top:0.6rem;letter-spacing:0.08em;}
 
+/* LEADS / CONSULTAS */
+#leads-section{margin-top:3.2rem;border-top:1px solid rgba(240,237,230,0.1);padding-top:2rem;}
+#leads-list{margin-top:1.6rem;display:flex;flex-direction:column;gap:0.6rem;max-width:680px;}
+.lead-row{
+  border:1px solid rgba(240,237,230,0.1);border-radius:2px;padding:0.9rem 1rem;
+  font-family:var(--mono);font-size:9px;letter-spacing:0.03em;color:rgba(240,237,230,0.65);
+}
+.lead-row.done{opacity:0.4;}
+.lead-head{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-bottom:0.5rem;}
+.lead-name{color:var(--white);font-size:10px;}
+.lead-email{color:var(--acid);}
+.lead-meta{display:flex;gap:0.6rem;flex-wrap:wrap;align-items:center;}
+.lead-svc{color:rgba(240,237,230,0.35);font-size:7.5px;letter-spacing:0.12em;border:1px solid rgba(240,237,230,0.15);border-radius:2px;padding:3px 7px;text-transform:uppercase;}
+.lead-date{color:rgba(240,237,230,0.25);font-size:7px;white-space:nowrap;}
+.lead-msg{line-height:1.7;color:rgba(240,237,230,0.55);margin-bottom:0.6rem;white-space:pre-wrap;}
+.lead-actions{display:flex;gap:0.5rem;}
+.lead-toggle{
+  font-family:var(--mono);font-size:7.5px;letter-spacing:0.12em;text-transform:uppercase;
+  border:1px solid rgba(184,255,0,0.3);border-radius:2px;background:transparent;
+  color:var(--acid);padding:5px 9px;cursor:pointer;transition:all 0.2s;white-space:nowrap;
+}
+.lead-toggle:hover{background:rgba(184,255,0,0.1);}
+.lead-delete{
+  font-family:var(--mono);font-size:7.5px;letter-spacing:0.12em;text-transform:uppercase;
+  border:1px solid rgba(255,45,85,0.3);border-radius:2px;background:transparent;
+  color:rgba(255,45,85,0.6);padding:5px 9px;cursor:pointer;transition:all 0.2s;white-space:nowrap;
+}
+.lead-delete:hover{border-color:#ff2d55;color:#ff2d55;}
+#leads-list-status{font-family:var(--mono);font-size:8px;color:rgba(240,237,230,0.3);margin-top:0.6rem;letter-spacing:0.08em;}
+
 /* DROPEAR PARCHE — admin */
 #patch-drop{margin-top:3.2rem;border-top:1px solid rgba(240,237,230,0.1);padding-top:2rem;}
 #pd-title{font-family:var(--display);font-size:1.5rem;letter-spacing:0.05em;color:var(--white);margin-bottom:0.4rem;}
@@ -340,6 +370,17 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
           <div id="pd-status"></div>
         </div>
       </form>
+    </div>
+
+    <!-- LEADS / CONSULTAS -->
+    <div id="leads-section" style="display:none;">
+      <div id="pd-title" style="margin-bottom:0.4rem;">CONSULTAS <span>DE SERVICIOS</span></div>
+      <div class="pd-intro">
+        📩 Mensajes enviados desde el formulario de <a href="servicios.html" target="_blank" style="color:var(--acid);">servicios.html</a>.
+        Marcalas como resueltas cuando ya respondiste.
+      </div>
+      <div id="leads-list"><!-- consultas --></div>
+      <div id="leads-list-status"></div>
     </div>
 
     <!-- DIARIO HG -->
@@ -784,6 +825,9 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
       const discordEl = document.getElementById('discord-section');
       if(discordEl) discordEl.style.display = '';
       loadDiscordConfig();
+      const leadsEl = document.getElementById('leads-section');
+      if(leadsEl) leadsEl.style.display = '';
+      loadLeads();
     }else if(IS_MOD){
       subEl.textContent = 'Panel de moderación — comunidad y suscripciones';
       introEl.innerHTML = `
@@ -811,6 +855,57 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
     diarioStatus.textContent = msg || '';
     diarioStatus.classList.remove('ok','err');
     if(kind) diarioStatus.classList.add(kind);
+  }
+
+  // ── Leads / consultas de servicios
+  async function loadLeads(){
+    const list = document.getElementById('leads-list');
+    const st = document.getElementById('leads-list-status');
+    if(!list) return;
+    st.textContent = 'Cargando consultas…';
+    list.innerHTML = '';
+    try{
+      const r = await fetch(`${FB_URL}/leads.json?auth=${TOKEN}`);
+      const data = r.ok ? (await r.json() || {}) : {};
+      const leads = Object.entries(data)
+        .map(([id, l]) => ({ id, ...l }))
+        .sort((a, b) => (b.ts || 0) - (a.ts || 0));
+      if(!leads.length){ st.textContent = 'Todavía no llegaron consultas.'; return; }
+      st.textContent = '';
+      leads.forEach(lead=>{
+        const isDone = lead.status === 'resuelto';
+        const row = document.createElement('div');
+        row.className = 'lead-row' + (isDone ? ' done' : '');
+        const d = new Date(lead.ts || Date.now());
+        row.innerHTML = `
+          <div class="lead-head">
+            <div><span class="lead-name">${lead.name || '—'}</span> · <span class="lead-email">${lead.email || ''}</span></div>
+            <div class="lead-meta">
+              <span class="lead-svc">${lead.service || 'general'}</span>
+              <span class="lead-date">${d.toLocaleString('es-AR')}</span>
+            </div>
+          </div>
+          <div class="lead-msg">${lead.message || ''}</div>
+          <div class="lead-actions">
+            <button class="lead-toggle">${isDone ? 'MARCAR PENDIENTE' : 'MARCAR RESUELTO'}</button>
+            <button class="lead-delete">BORRAR</button>
+          </div>
+        `;
+        row.querySelector('.lead-toggle').addEventListener('click', async ()=>{
+          await fetch(`${FB_URL}/leads/${lead.id}/status.json?auth=${TOKEN}`, {
+            method:'PUT', headers:{'Content-Type':'application/json'},
+            body: JSON.stringify(isDone ? 'nuevo' : 'resuelto')
+          });
+          loadLeads();
+        });
+        row.querySelector('.lead-delete').addEventListener('click', async ()=>{
+          if(!confirm(`¿Borrar la consulta de "${lead.name || '—'}"?`)) return;
+          await fetch(`${FB_URL}/leads/${lead.id}.json?auth=${TOKEN}`, { method:'DELETE' });
+          loadLeads();
+        });
+        list.appendChild(row);
+      });
+    }catch(e){ st.textContent = 'Error al cargar las consultas.'; }
   }
 
   // ── Discord config
