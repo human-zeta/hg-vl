@@ -405,6 +405,14 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
         como fondo animado de su perfil, desde la sección "FONDO" de <code>perfil.html</code>.
         Pegá la URL directa del video (mp4/webm).
       </div>
+      <div class="pd-intro" style="border:1px solid rgba(184,255,0,0.18);border-radius:3px;padding:0.9rem 1rem;background:rgba(184,255,0,0.03);">
+        🌱 Tanda inicial: 6 loops ya generados (Higgsfield), servidos desde <code>assets/loops/</code>.
+        Subí primero los <code>.mp4</code> al repo (ver <code>assets/loops/README.md</code>) y después cargalos de una.
+        <div style="margin-top:0.6rem;">
+          <button type="button" id="bgloop-seed-btn" style="font-family:var(--mono);font-size:9px;letter-spacing:0.18em;text-transform:uppercase;border:1px solid rgba(184,255,0,0.4);border-radius:2px;background:rgba(184,255,0,0.08);color:var(--acid);padding:9px 18px;cursor:pointer;transition:all 0.2s;">CARGAR LOOPS INICIALES 🌱</button>
+          <div id="bgloop-seed-status" style="margin-top:0.6rem;font-family:var(--mono);font-size:8.5px;letter-spacing:0.08em;color:rgba(240,237,230,0.4);"></div>
+        </div>
+      </div>
       <form id="bgloops-form" class="pd-grid">
         <div class="pd-field">
           <label for="bgloop-name">Nombre</label>
@@ -412,7 +420,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
         </div>
         <div class="pd-field">
           <label for="bgloop-url">URL del video (mp4/webm)</label>
-          <input type="url" id="bgloop-url" placeholder="https://..." required>
+          <input type="url" id="bgloop-url" placeholder="https://... o /assets/loops/foo.mp4" required>
         </div>
         <div class="pd-field full">
           <button type="submit" id="bgloop-submit">AGREGAR AL CATÁLOGO</button>
@@ -1004,6 +1012,38 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
       }
     }catch(e){ statusEl.textContent = 'Error al guardar.'; }
     setTimeout(()=>{ statusEl.textContent=''; }, 2500);
+  });
+
+  // Tanda inicial de loops (servidos desde el repo). No duplica los que ya existen.
+  const BGLOOP_SEED = [
+    { name: 'Acid Data Stream', url: '/assets/loops/acid-data-stream.mp4' },
+    { name: 'CRT Glitch',       url: '/assets/loops/crt-glitch.mp4' },
+    { name: 'Deep Drift',       url: '/assets/loops/deep-drift.mp4' },
+    { name: 'Gold Particles',   url: '/assets/loops/gold-particles.mp4' },
+    { name: 'Wireframe Mesh',   url: '/assets/loops/wireframe-mesh.mp4' },
+    { name: 'Sound Spectrum',   url: '/assets/loops/sound-spectrum.mp4' },
+  ];
+
+  document.getElementById('bgloop-seed-btn').addEventListener('click', async ()=>{
+    const st = document.getElementById('bgloop-seed-status');
+    st.textContent = 'Cargando loops iniciales…';
+    try{
+      const r = await fetch(`${FB_URL}/bgloops.json?auth=${TOKEN}`);
+      const existing = r.ok ? (await r.json() || {}) : {};
+      const haveUrls = new Set(Object.values(existing).map(l => l && l.url));
+      let added = 0;
+      for(const loop of BGLOOP_SEED){
+        if(haveUrls.has(loop.url)) continue;
+        const res = await fetch(`${FB_URL}/bgloops.json?auth=${TOKEN}`, {
+          method:'POST', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({ ...loop, ts: Date.now() })
+        });
+        if(res.ok) added++;
+      }
+      st.textContent = added ? `✓ ${added} loop(s) agregados al catálogo.` : 'Ya estaban todos cargados.';
+      loadBgLoops();
+    }catch(e){ st.textContent = 'Error al cargar los loops.'; }
+    setTimeout(()=>{ st.textContent=''; }, 3500);
   });
 
   // ── Discord config
