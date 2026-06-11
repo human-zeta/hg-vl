@@ -177,6 +177,20 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
   color:rgba(255,45,85,0.6);padding:5px 9px;cursor:pointer;transition:all 0.2s;white-space:nowrap;
 }
 .lead-delete:hover{border-color:#ff2d55;color:#ff2d55;}
+
+/* FONDOS LOOP */
+#bgloops-section{margin-top:3.2rem;border-top:1px solid rgba(240,237,230,0.1);padding-top:2rem;}
+#bgloops-list{margin-top:1.6rem;display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:0.9rem;max-width:680px;}
+.bgl-row{border:1px solid rgba(240,237,230,0.1);border-radius:2px;padding:0.6rem;font-family:var(--mono);font-size:9px;color:rgba(240,237,230,0.65);}
+.bgl-row video{width:100%;height:90px;object-fit:cover;border-radius:1px;background:#111;display:block;margin-bottom:0.5rem;}
+.bgl-name{color:var(--white);font-size:9px;margin-bottom:0.4rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.bgl-delete{
+  font-family:var(--mono);font-size:7.5px;letter-spacing:0.12em;text-transform:uppercase;
+  border:1px solid rgba(255,45,85,0.3);border-radius:2px;background:transparent;
+  color:rgba(255,45,85,0.6);padding:5px 9px;cursor:pointer;transition:all 0.2s;width:100%;
+}
+.bgl-delete:hover{border-color:#ff2d55;color:#ff2d55;}
+#bgloops-list-status{font-family:var(--mono);font-size:8px;color:rgba(240,237,230,0.3);margin-top:0.6rem;letter-spacing:0.08em;}
 #leads-list-status{font-family:var(--mono);font-size:8px;color:rgba(240,237,230,0.3);margin-top:0.6rem;letter-spacing:0.08em;}
 
 /* DROPEAR PARCHE — admin */
@@ -381,6 +395,32 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
       </div>
       <div id="leads-list"><!-- consultas --></div>
       <div id="leads-list-status"></div>
+    </div>
+
+    <!-- FONDOS LOOP -->
+    <div id="bgloops-section" style="display:none;">
+      <div id="pd-title" style="margin-bottom:0.4rem;">FONDOS <span>LOOP</span></div>
+      <div class="pd-intro">
+        ⌬ Catálogo de videos loop (generados con Higgsfield u otra fuente) que cualquier usuario puede elegir
+        como fondo animado de su perfil, desde la sección "FONDO" de <code>perfil.html</code>.
+        Pegá la URL directa del video (mp4/webm).
+      </div>
+      <form id="bgloops-form" class="pd-grid">
+        <div class="pd-field">
+          <label for="bgloop-name">Nombre</label>
+          <input type="text" id="bgloop-name" placeholder="Ej. Glitch Tunnel" required>
+        </div>
+        <div class="pd-field">
+          <label for="bgloop-url">URL del video (mp4/webm)</label>
+          <input type="url" id="bgloop-url" placeholder="https://..." required>
+        </div>
+        <div class="pd-field full">
+          <button type="submit" id="bgloop-submit">AGREGAR AL CATÁLOGO</button>
+          <div id="bgloop-status"></div>
+        </div>
+      </form>
+      <div id="bgloops-list"></div>
+      <div id="bgloops-list-status"></div>
     </div>
 
     <!-- DIARIO HG -->
@@ -828,6 +868,9 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
       const leadsEl = document.getElementById('leads-section');
       if(leadsEl) leadsEl.style.display = '';
       loadLeads();
+      const bgloopsEl = document.getElementById('bgloops-section');
+      if(bgloopsEl) bgloopsEl.style.display = '';
+      loadBgLoops();
     }else if(IS_MOD){
       subEl.textContent = 'Panel de moderación — comunidad y suscripciones';
       introEl.innerHTML = `
@@ -907,6 +950,61 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
       });
     }catch(e){ st.textContent = 'Error al cargar las consultas.'; }
   }
+
+  // ── Fondos loop (catálogo de videos para perfil.html)
+  async function loadBgLoops(){
+    const list = document.getElementById('bgloops-list');
+    const st = document.getElementById('bgloops-list-status');
+    if(!list) return;
+    st.textContent = 'Cargando catálogo…';
+    list.innerHTML = '';
+    try{
+      const r = await fetch(`${FB_URL}/bgloops.json?auth=${TOKEN}`);
+      const data = r.ok ? (await r.json() || {}) : {};
+      const loops = Object.entries(data)
+        .map(([id, l]) => ({ id, ...l }))
+        .sort((a, b) => (b.ts || 0) - (a.ts || 0));
+      if(!loops.length){ st.textContent = 'Todavía no hay videos loop en el catálogo.'; return; }
+      st.textContent = '';
+      loops.forEach(loop=>{
+        const row = document.createElement('div');
+        row.className = 'bgl-row';
+        row.innerHTML = `
+          <video src="${loop.url}" muted loop autoplay playsinline></video>
+          <div class="bgl-name">${loop.name || 'sin nombre'}</div>
+          <button class="bgl-delete">QUITAR</button>
+        `;
+        row.querySelector('.bgl-delete').addEventListener('click', async ()=>{
+          if(!confirm(`¿Quitar "${loop.name || 'sin nombre'}" del catálogo?`)) return;
+          await fetch(`${FB_URL}/bgloops/${loop.id}.json?auth=${TOKEN}`, { method:'DELETE' });
+          loadBgLoops();
+        });
+        list.appendChild(row);
+      });
+    }catch(e){ st.textContent = 'Error al cargar el catálogo.'; }
+  }
+
+  document.getElementById('bgloops-form').addEventListener('submit', async e=>{
+    e.preventDefault();
+    const statusEl = document.getElementById('bgloop-status');
+    const name = document.getElementById('bgloop-name').value.trim();
+    const url = document.getElementById('bgloop-url').value.trim();
+    statusEl.textContent = 'Guardando…';
+    try{
+      const r = await fetch(`${FB_URL}/bgloops.json?auth=${TOKEN}`, {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ name, url, ts: Date.now() })
+      });
+      if(r.ok){
+        statusEl.textContent = 'Agregado al catálogo ✓';
+        document.getElementById('bgloops-form').reset();
+        loadBgLoops();
+      } else {
+        statusEl.textContent = 'Error al guardar.';
+      }
+    }catch(e){ statusEl.textContent = 'Error al guardar.'; }
+    setTimeout(()=>{ statusEl.textContent=''; }, 2500);
+  });
 
   // ── Discord config
   async function loadDiscordConfig(){

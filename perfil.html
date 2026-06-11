@@ -169,10 +169,12 @@ body.is-own.editing-socials .soc-edit-input{display:block;}
 body.is-own #soc-edit-btn{display:inline-flex;}
 #soc-edit-btn.active{color:var(--acid);border-color:rgba(184,255,0,0.5);}
 
-/* ── FONDO SHADER ─────────────────────── */
+/* ── FONDO (shader / video loop) ─────────────────────── */
 #bg-canvas{position:fixed;inset:0;width:100vw;height:100vh;z-index:0;pointer-events:none;opacity:0;transition:opacity 1.2s ease;}
+#bg-video{position:fixed;inset:0;width:100vw;height:100vh;object-fit:cover;z-index:0;pointer-events:none;opacity:0;transition:opacity 1.2s ease;}
 body.has-bg #bg-canvas{opacity:0.45;}
-body.has-bg .sec,body.has-bg #profile-hero{position:relative;}
+body.has-bg-video #bg-video{opacity:0.45;}
+body.has-bg .sec,body.has-bg #profile-hero,body.has-bg-video .sec,body.has-bg-video #profile-hero{position:relative;}
 #bg-sec{display:none;}
 body.is-own #bg-sec{display:block;}
 #bg-current{font-family:var(--mono);font-size:10px;color:rgba(240,237,230,0.45);line-height:1.9;margin-bottom:0.9rem;}
@@ -183,7 +185,7 @@ body.is-own #bg-sec{display:block;}
 .bg-item{background:rgba(240,237,230,0.03);border:1px solid rgba(240,237,230,0.08);border-radius:2px;padding:0.6rem;cursor:pointer;transition:border-color 0.2s;}
 .bg-item:hover{border-color:rgba(184,255,0,0.4);}
 .bg-item.active{border-color:var(--acid);}
-.bg-item img{width:100%;height:60px;object-fit:cover;border-radius:1px;background:#111;display:block;margin-bottom:0.5rem;}
+.bg-item img,.bg-item video{width:100%;height:60px;object-fit:cover;border-radius:1px;background:#111;display:block;margin-bottom:0.5rem;}
 .bg-item .bg-thumb-ph{width:100%;height:60px;background:rgba(184,255,0,0.05);border-radius:1px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:14px;color:rgba(184,255,0,0.3);margin-bottom:0.5rem;}
 .bg-item .bg-name{font-family:var(--mono);font-size:8px;letter-spacing:0.12em;color:rgba(240,237,230,0.55);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 #bg-status{font-family:var(--mono);font-size:8px;letter-spacing:0.12em;color:rgba(184,255,0,0.6);margin-top:0.6rem;min-height:1em;}
@@ -253,6 +255,7 @@ body.is-own #discord-sec{display:block;}
 <body>
 
 <canvas id="bg-canvas"></canvas>
+<video id="bg-video" muted loop autoplay playsinline></video>
 
 <div id="patches-sidebar" class="collapsed">
   <button id="patches-toggle" type="button">⌬ PARCHES HG</button>
@@ -330,12 +333,13 @@ body.is-own #discord-sec{display:block;}
       </div>
     </div>
 
-    <!-- FONDO SHADER -->
+    <!-- FONDO (shader / video loop) -->
     <div class="sec" id="bg-sec">
-      <div class="sec-title">⌬ FONDO SHADER</div>
+      <div class="sec-title">⌬ FONDO</div>
       <div id="bg-current"></div>
       <div id="bg-actions">
-        <button class="btn-sm primary" id="bg-pick-btn" type="button">ELEGIR DEL REPO GLOBAL</button>
+        <button class="btn-sm primary" id="bg-pick-btn" type="button">ELEGIR SHADER</button>
+        <button class="btn-sm primary" id="bg-loop-btn" type="button">ELEGIR VIDEO LOOP</button>
         <button class="btn-sm" id="bg-remove-btn" type="button" style="display:none;">QUITAR FONDO</button>
       </div>
       <div id="bg-picker"></div>
@@ -760,8 +764,9 @@ body.is-own #discord-sec{display:block;}
     }
   }
 
-  // ── FONDO SHADER — motor ISF (mismo formato que aether.html)
+  // ── FONDO — motor ISF (mismo formato que aether.html) + video loop
   const bgCanvas = document.getElementById('bg-canvas');
+  const bgVideo = document.getElementById('bg-video');
   let bgGl = null, bgProg = null, bgAnim = null, bgT0 = 0, bgULocs = {}, bgInputs = {};
   let bgMouseX = 0.5, bgMouseY = 0.5;
   const BG_VS = 'attribute vec2 pos;void main(){gl_Position=vec4(pos,0.,1.);}';
@@ -861,7 +866,24 @@ body.is-own #discord-sec{display:block;}
     return p;
   }
 
+  function applyBgVideo(url){
+    if(!url) return false;
+    clearBgShader();
+    if(bgVideo.src !== url) bgVideo.src = url;
+    bgVideo.play().catch(()=>{});
+    document.body.classList.add('has-bg-video');
+    return true;
+  }
+
+  function clearBgVideo(){
+    document.body.classList.remove('has-bg-video');
+    bgVideo.pause();
+    bgVideo.removeAttribute('src');
+    bgVideo.load();
+  }
+
   function applyBgShader(code){
+    clearBgVideo();
     if(!bgInitGl()) return false;
     let p;
     try{ p = bgMakeProgram(bgParseISF(code)); }
@@ -908,47 +930,71 @@ body.is-own #discord-sec{display:block;}
     const bg = PROFILE && PROFILE.bgShader;
     if(!bg || !bg.id) return;
     try{
-      const entry = await fbGet(`/shaders/${bg.id}`, false);
-      if(entry && entry.code) applyBgShader(entry.code);
+      if(bg.type==='video'){
+        const entry = await fbGet(`/bgloops/${bg.id}`, false);
+        if(entry && entry.url) applyBgVideo(entry.url);
+      } else {
+        const entry = await fbGet(`/shaders/${bg.id}`, false);
+        if(entry && entry.code) applyBgShader(entry.code);
+      }
     }catch(e){}
   }
 
   // ── Picker de fondo (solo perfil propio)
   let bgPickerOpen = false;
+  let bgPickerMode = 'shader';
 
   function renderBgCurrent(){
     const cur = document.getElementById('bg-current');
     const removeBtn = document.getElementById('bg-remove-btn');
     const bg = PROFILE.bgShader;
     if(bg && bg.id){
-      cur.innerHTML = `Fondo actual: <span class="ok">${bg.name || 'shader sin nombre'}</span>`;
+      const tipo = bg.type==='video' ? 'video loop' : 'shader';
+      cur.innerHTML = `Fondo actual: <span class="ok">${bg.name || 'sin nombre'}</span> (${tipo})`;
       removeBtn.style.display='';
     } else {
-      cur.textContent = 'Elegí un shader del Repo Global de Aether como fondo de tu perfil — lo va a ver cualquiera que entre.';
+      cur.textContent = 'Elegí un shader del Repo Global de Aether o un video loop como fondo de tu perfil — lo va a ver cualquiera que entre.';
       removeBtn.style.display='none';
     }
   }
 
-  async function openBgPicker(){
+  async function openBgPicker(mode){
     const picker = document.getElementById('bg-picker');
     const status = document.getElementById('bg-status');
-    bgPickerOpen = !bgPickerOpen;
-    picker.classList.toggle('open', bgPickerOpen);
-    if(!bgPickerOpen) return;
-    status.textContent = 'Cargando shaders del repo...';
+    if(bgPickerOpen && bgPickerMode===mode){
+      bgPickerOpen = false;
+      picker.classList.remove('open');
+      return;
+    }
+    bgPickerOpen = true;
+    bgPickerMode = mode;
+    picker.classList.add('open');
+    status.textContent = mode==='video' ? 'Cargando videos loop del repo...' : 'Cargando shaders del repo...';
     picker.innerHTML='';
-    const data = await fbGet('/shaders', false);
+    const data = await fbGet(mode==='video' ? '/bgloops' : '/shaders', false);
     status.textContent='';
-    if(!data){ status.textContent='No se pudo cargar el repo.'; return; }
-    const entries = Object.entries(data).filter(([,v])=>v && v.code).sort((a,b)=>(b[1].ts||0)-(a[1].ts||0));
+    if(!data){ status.textContent = mode==='video' ? 'No hay videos loop cargados todavía.' : 'No se pudo cargar el repo.'; return; }
+    const entries = mode==='video'
+      ? Object.entries(data).filter(([,v])=>v && v.url).sort((a,b)=>(b[1].ts||0)-(a[1].ts||0))
+      : Object.entries(data).filter(([,v])=>v && v.code).sort((a,b)=>(b[1].ts||0)-(a[1].ts||0));
     if(!entries.length){ status.textContent='El repo está vacío todavía.'; return; }
     entries.forEach(([id, entry])=>{
       const item = document.createElement('div');
-      item.className = 'bg-item' + (PROFILE.bgShader && PROFILE.bgShader.id===id ? ' active' : '');
-      item.innerHTML = `${entry.thumb ? `<img src="${entry.thumb}" alt="">` : '<div class="bg-thumb-ph">⌬</div>'}<div class="bg-name">${entry.name||'sin nombre'}</div>`;
+      const isActive = PROFILE.bgShader && PROFILE.bgShader.id===id && (PROFILE.bgShader.type==='video')===(mode==='video');
+      item.className = 'bg-item' + (isActive ? ' active' : '');
+      if(mode==='video'){
+        item.innerHTML = `<video src="${entry.url}" muted loop autoplay playsinline></video><div class="bg-name">${entry.name||'sin nombre'}</div>`;
+      } else {
+        item.innerHTML = `${entry.thumb ? `<img src="${entry.thumb}" alt="">` : '<div class="bg-thumb-ph">⌬</div>'}<div class="bg-name">${entry.name||'sin nombre'}</div>`;
+      }
       item.addEventListener('click', async ()=>{
-        if(!applyBgShader(entry.code)){ status.textContent='Ese shader no compiló — probá con otro.'; return; }
-        PROFILE.bgShader = { id, name: entry.name||'shader' };
+        if(mode==='video'){
+          applyBgVideo(entry.url);
+          PROFILE.bgShader = { type:'video', id, name: entry.name||'loop' };
+        } else {
+          if(!applyBgShader(entry.code)){ status.textContent='Ese shader no compiló — probá con otro.'; return; }
+          PROFILE.bgShader = { type:'shader', id, name: entry.name||'shader' };
+        }
         const ok = await fbPut(`/profiles/${TARGET_UID}/bgShader`, PROFILE.bgShader);
         status.textContent = ok ? '✓ Fondo guardado' : 'No se pudo guardar (pero quedó aplicado en esta visita).';
         picker.querySelectorAll('.bg-item').forEach(el=>el.classList.remove('active'));
@@ -962,6 +1008,7 @@ body.is-own #discord-sec{display:block;}
 
   async function removeBgShader(){
     clearBgShader();
+    clearBgVideo();
     PROFILE.bgShader = null;
     await fbPut(`/profiles/${TARGET_UID}/bgShader`, null);
     renderBgCurrent();
@@ -1064,8 +1111,9 @@ body.is-own #discord-sec{display:block;}
   document.getElementById('discord-link-btn').addEventListener('click', startDiscordLink);
   document.getElementById('discord-unlink-btn').addEventListener('click', unlinkDiscord);
 
-  // ── Fondo shader btns
-  document.getElementById('bg-pick-btn').addEventListener('click', openBgPicker);
+  // ── Fondo (shader / video loop) btns
+  document.getElementById('bg-pick-btn').addEventListener('click', ()=>openBgPicker('shader'));
+  document.getElementById('bg-loop-btn').addEventListener('click', ()=>openBgPicker('video'));
   document.getElementById('bg-remove-btn').addEventListener('click', removeBgShader);
 
   // ── Profile edit btns
