@@ -169,6 +169,36 @@ body.is-own.editing-socials .soc-edit-input{display:block;}
 body.is-own #soc-edit-btn{display:inline-flex;}
 #soc-edit-btn.active{color:var(--acid);border-color:rgba(184,255,0,0.5);}
 
+/* ── FONDO SHADER ─────────────────────── */
+#bg-canvas{position:fixed;inset:0;width:100vw;height:100vh;z-index:0;pointer-events:none;opacity:0;transition:opacity 1.2s ease;}
+body.has-bg #bg-canvas{opacity:0.45;}
+body.has-bg .sec,body.has-bg #profile-hero{position:relative;}
+#bg-sec{display:none;}
+body.is-own #bg-sec{display:block;}
+#bg-current{font-family:var(--mono);font-size:10px;color:rgba(240,237,230,0.45);line-height:1.9;margin-bottom:0.9rem;}
+#bg-current .ok{color:var(--acid);}
+#bg-actions{display:flex;gap:0.7rem;flex-wrap:wrap;margin-bottom:1rem;}
+#bg-picker{display:none;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:0.8rem;margin-top:0.4rem;}
+#bg-picker.open{display:grid;}
+.bg-item{background:rgba(240,237,230,0.03);border:1px solid rgba(240,237,230,0.08);border-radius:2px;padding:0.6rem;cursor:pointer;transition:border-color 0.2s;}
+.bg-item:hover{border-color:rgba(184,255,0,0.4);}
+.bg-item.active{border-color:var(--acid);}
+.bg-item img{width:100%;height:60px;object-fit:cover;border-radius:1px;background:#111;display:block;margin-bottom:0.5rem;}
+.bg-item .bg-thumb-ph{width:100%;height:60px;background:rgba(184,255,0,0.05);border-radius:1px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:14px;color:rgba(184,255,0,0.3);margin-bottom:0.5rem;}
+.bg-item .bg-name{font-family:var(--mono);font-size:8px;letter-spacing:0.12em;color:rgba(240,237,230,0.55);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+#bg-status{font-family:var(--mono);font-size:8px;letter-spacing:0.12em;color:rgba(184,255,0,0.6);margin-top:0.6rem;min-height:1em;}
+
+/* ── REDES — vínculo rápido ───────────── */
+.soc-quick{background:none;border:1px dashed rgba(184,255,0,0.3);color:rgba(184,255,0,0.6);font-family:var(--mono);font-size:8px;letter-spacing:0.15em;padding:4px 8px;cursor:pointer;display:none;transition:all 0.2s;align-self:flex-start;}
+.soc-quick:hover{border-color:var(--acid);color:var(--acid);}
+body.is-own .soc-quick{display:inline-block;}
+body.is-own.editing-socials .soc-quick{display:none;}
+.social-card.linked{cursor:pointer;}
+.social-card.linked:hover .soc-handle{opacity:0.7;}
+.soc-go{font-family:var(--mono);font-size:7px;letter-spacing:0.18em;color:rgba(240,237,230,0.2);transition:color 0.2s;}
+.social-card.linked:hover .soc-go{color:var(--acid);}
+body.is-own.editing-socials .soc-go{display:none;}
+
 /* ── DISCORD & SUSCRIPCIÓN ────────────── */
 #discord-sec{display:none;}
 body.is-own #discord-sec{display:block;}
@@ -221,6 +251,8 @@ body.is-own #discord-sec{display:block;}
 </style>
 </head>
 <body>
+
+<canvas id="bg-canvas"></canvas>
 
 <div id="patches-sidebar" class="collapsed">
   <button id="patches-toggle" type="button">⌬ PARCHES HG</button>
@@ -296,6 +328,18 @@ body.is-own #discord-sec{display:block;}
         <button class="btn-sm primary" id="discord-link-btn" type="button">VINCULAR DISCORD</button>
         <button class="btn-sm" id="discord-unlink-btn" type="button" style="display:none;">DESVINCULAR</button>
       </div>
+    </div>
+
+    <!-- FONDO SHADER -->
+    <div class="sec" id="bg-sec">
+      <div class="sec-title">⌬ FONDO SHADER</div>
+      <div id="bg-current"></div>
+      <div id="bg-actions">
+        <button class="btn-sm primary" id="bg-pick-btn" type="button">ELEGIR DEL REPO GLOBAL</button>
+        <button class="btn-sm" id="bg-remove-btn" type="button" style="display:none;">QUITAR FONDO</button>
+      </div>
+      <div id="bg-picker"></div>
+      <div id="bg-status"></div>
     </div>
 
     <!-- COMENTARIOS — solo admin -->
@@ -502,12 +546,37 @@ body.is-own #discord-sec{display:block;}
       const val = socials[def.key]||'';
       if(!IS_OWN && !val) return; // viewing others: skip empty
       const card = document.createElement('div');
-      card.className='social-card';
+      card.className='social-card'+(val?' linked':'');
       const href = val ? (def.base && !val.startsWith('http') ? def.base+val : val) : '#';
       card.innerHTML=`
         <div class="soc-platform">${def.label}</div>
         <a class="soc-handle" href="${val?href:'#'}" target="_blank" rel="noopener"${!val?' style="pointer-events:none"':''}>${val||''}</a>
+        ${val?'<span class="soc-go">ABRIR →</span>':''}
+        ${!val?`<button class="soc-quick" data-key="${def.key}" type="button">+ VINCULAR</button>`:''}
         <input class="soc-edit-input" data-key="${def.key}" type="text" placeholder="${def.key==='website'?'https://tu-sitio.com':def.label.toLowerCase()}" value="${val}">`;
+      if(val){
+        // toda la tarjeta es clickeable (salvo en modo edición o sobre el input)
+        card.addEventListener('click', e=>{
+          if(document.body.classList.contains('editing-socials')) return;
+          if(e.target.closest('a') || e.target.closest('input')) return;
+          window.open(href,'_blank','noopener');
+        });
+      }
+      const quick = card.querySelector('.soc-quick');
+      if(quick){
+        quick.addEventListener('click', async ()=>{
+          const hint = def.key==='website' ? 'URL completa (https://...)' : `tu usuario de ${def.label} (sin @)`;
+          const v = prompt(`Vincular ${def.label} — ingresá ${hint}:`);
+          if(v===null) return;
+          const cleaned = v.trim().replace(/^@/,'');
+          if(!cleaned) return;
+          PROFILE.socials = PROFILE.socials || {};
+          PROFILE.socials[def.key] = cleaned;
+          PROFILE.updatedAt = Date.now();
+          await fbPut(`/profiles/${TARGET_UID}`, PROFILE);
+          renderSocials();
+        });
+      }
       grid.appendChild(card);
     });
   }
@@ -691,6 +760,214 @@ body.is-own #discord-sec{display:block;}
     }
   }
 
+  // ── FONDO SHADER — motor ISF (mismo formato que aether.html)
+  const bgCanvas = document.getElementById('bg-canvas');
+  let bgGl = null, bgProg = null, bgAnim = null, bgT0 = 0, bgULocs = {}, bgInputs = {};
+  let bgMouseX = 0.5, bgMouseY = 0.5;
+  const BG_VS = 'attribute vec2 pos;void main(){gl_Position=vec4(pos,0.,1.);}';
+
+  function bgInitGl(){
+    if(bgGl) return true;
+    bgGl = bgCanvas.getContext('webgl',{premultipliedAlpha:false,alpha:true});
+    if(!bgGl) return false;
+    const qb = bgGl.createBuffer();
+    bgGl.bindBuffer(bgGl.ARRAY_BUFFER, qb);
+    bgGl.bufferData(bgGl.ARRAY_BUFFER, new Float32Array([-1,-1,1,-1,-1,1,1,1]), bgGl.STATIC_DRAW);
+    bgResize();
+    window.addEventListener('resize', bgResize);
+    document.addEventListener('mousemove', e=>{ bgMouseX=e.clientX/window.innerWidth; bgMouseY=1-e.clientY/window.innerHeight; });
+    return true;
+  }
+
+  function bgResize(){
+    if(!bgGl) return;
+    // resolución reducida — es un fondo decorativo, prioriza performance
+    const scale = Math.min(1, 1280/window.innerWidth);
+    bgCanvas.width  = Math.round(window.innerWidth*scale);
+    bgCanvas.height = Math.round(window.innerHeight*scale);
+    bgGl.viewport(0,0,bgCanvas.width,bgCanvas.height);
+  }
+
+  function bgParseISF(raw){
+    const m = raw.match(/\/\*\s*(\{[\s\S]*?\})\s*\*\//);
+    let meta = {INPUTS:[]};
+    if(m){ try{ meta = JSON.parse(m[1]); meta.INPUTS = meta.INPUTS||[]; }catch(e){} }
+    let glsl = raw.replace(/\/\*[\s\S]*?\*\//,'').trim();
+    glsl = glsl
+      .replace(/\bisf_FragNormCoord\b/g,'(gl_FragCoord.xy/RENDERSIZE)')
+      .replace(/\bgl_FragNormCoord\b/g,'(gl_FragCoord.xy/RENDERSIZE)')
+      .replace(/IMG_THIS_PIXEL\s*\([^)]*\)/g,'vec4(0.0)')
+      .replace(/IMG_PIXEL\s*\([^,)]*,\s*[^)]*\)/g,'vec4(0.0)')
+      .replace(/IMG_NORM_PIXEL\s*\([^,)]*,\s*[^)]*\)/g,'vec4(0.0)')
+      .replace(/IMG_SIZE\s*\([^)]*\)/g,'RENDERSIZE')
+      .replace(/\bTIME_DELTA\b/g,'(1.0/60.0)')
+      .replace(/\bFRAME_INDEX\b/g,'int(TIME*60.0)')
+      .replace(/\bPASSINDEX\b/g,'0')
+      .replace(/precision\s+\w+\s+float\s*;/g,'')
+      .replace(/uniform\s+float\s+TIME\s*;/g,'')
+      .replace(/uniform\s+vec2\s+RENDERSIZE\s*;/g,'')
+      .replace(/uniform\s+float\s+PI\s*;/g,'')
+      .replace(/uniform\s+vec2\s+MOUSE\s*;/g,'');
+
+    bgInputs = {};
+    const decls = [
+      'precision mediump float;',
+      '#define PI 3.14159265358979323846',
+      'uniform float TIME;',
+      'uniform vec2  RENDERSIZE;',
+      'uniform vec2  MOUSE;',
+      'uniform float AUDIO_VOL;',
+      'uniform float AUDIO_BASS;',
+      'uniform float AUDIO_MID;',
+      'uniform float AUDIO_HIGH;',
+      'uniform float AUDIO_BEAT;',
+    ];
+    (meta.INPUTS||[]).forEach(inp=>{
+      const n = inp.NAME; if(!n) return;
+      const t = (inp.TYPE||'').toLowerCase();
+      if(t==='float'||t==='long'){
+        bgInputs[n]={type:'float',value:(inp.DEFAULT!==undefined)?parseFloat(inp.DEFAULT):0.5};
+        decls.push(`uniform float ${n};`);
+      } else if(t==='bool'){
+        bgInputs[n]={type:'bool',value:inp.DEFAULT===true||inp.DEFAULT===1||inp.DEFAULT==='true'};
+        decls.push(`uniform bool ${n};`);
+      } else if(t==='color'){
+        const d=inp.DEFAULT||[1,1,1,1];
+        bgInputs[n]={type:'color',value:[d[0]??1,d[1]??1,d[2]??1,d[3]??1]};
+        decls.push(`uniform vec4 ${n};`);
+      } else if(t==='point2d'){
+        const d=inp.DEFAULT||[0.5,0.5];
+        bgInputs[n]={type:'point2D',value:[d[0]??0.5,d[1]??0.5]};
+        decls.push(`uniform vec2 ${n};`);
+      } else if(t==='image'){
+        decls.push(`uniform sampler2D ${n};`);
+      }
+    });
+    return decls.join('\n')+'\n\n'+glsl;
+  }
+
+  function bgMakeProgram(fsSrc){
+    function sh(src,type){
+      const s=bgGl.createShader(type);
+      bgGl.shaderSource(s,src); bgGl.compileShader(s);
+      if(!bgGl.getShaderParameter(s,bgGl.COMPILE_STATUS)){ const e=bgGl.getShaderInfoLog(s); bgGl.deleteShader(s); throw e; }
+      return s;
+    }
+    const p=bgGl.createProgram();
+    bgGl.attachShader(p,sh(BG_VS,bgGl.VERTEX_SHADER));
+    bgGl.attachShader(p,sh(fsSrc,bgGl.FRAGMENT_SHADER));
+    bgGl.linkProgram(p);
+    if(!bgGl.getProgramParameter(p,bgGl.LINK_STATUS)) throw bgGl.getProgramInfoLog(p);
+    return p;
+  }
+
+  function applyBgShader(code){
+    if(!bgInitGl()) return false;
+    let p;
+    try{ p = bgMakeProgram(bgParseISF(code)); }
+    catch(e){ console.warn('Shader de fondo no compiló:', e); return false; }
+    if(bgAnim) cancelAnimationFrame(bgAnim);
+    bgProg = p;
+    bgGl.useProgram(p);
+    const posLoc = bgGl.getAttribLocation(p,'pos');
+    bgGl.enableVertexAttribArray(posLoc);
+    bgGl.vertexAttribPointer(posLoc,2,bgGl.FLOAT,false,0,0);
+    bgULocs={};
+    ['TIME','RENDERSIZE','MOUSE','AUDIO_VOL','AUDIO_BASS','AUDIO_MID','AUDIO_HIGH','AUDIO_BEAT'].forEach(n=>bgULocs[n]=bgGl.getUniformLocation(p,n));
+    Object.keys(bgInputs).forEach(n=>bgULocs[n]=bgGl.getUniformLocation(p,n));
+    bgT0 = Date.now();
+    (function frame(){
+      bgAnim = requestAnimationFrame(frame);
+      if(!bgProg) return;
+      bgGl.useProgram(bgProg);
+      const t=(Date.now()-bgT0)/1000;
+      if(bgULocs.TIME) bgGl.uniform1f(bgULocs.TIME,t);
+      if(bgULocs.RENDERSIZE) bgGl.uniform2f(bgULocs.RENDERSIZE,bgCanvas.width,bgCanvas.height);
+      if(bgULocs.MOUSE) bgGl.uniform2f(bgULocs.MOUSE,bgMouseX,bgMouseY);
+      ['AUDIO_VOL','AUDIO_BASS','AUDIO_MID','AUDIO_HIGH','AUDIO_BEAT'].forEach(n=>{ if(bgULocs[n]) bgGl.uniform1f(bgULocs[n],0); });
+      Object.entries(bgInputs).forEach(([n,inp])=>{
+        const loc=bgULocs[n]; if(!loc) return;
+        if(inp.type==='float') bgGl.uniform1f(loc,parseFloat(inp.value));
+        else if(inp.type==='bool') bgGl.uniform1i(loc,inp.value?1:0);
+        else if(inp.type==='color') bgGl.uniform4f(loc,...inp.value);
+        else if(inp.type==='point2D') bgGl.uniform2f(loc,...inp.value);
+      });
+      bgGl.drawArrays(bgGl.TRIANGLE_STRIP,0,4);
+    })();
+    document.body.classList.add('has-bg');
+    return true;
+  }
+
+  function clearBgShader(){
+    if(bgAnim) cancelAnimationFrame(bgAnim);
+    bgAnim=null; bgProg=null;
+    document.body.classList.remove('has-bg');
+  }
+
+  async function loadBgFromProfile(){
+    const bg = PROFILE && PROFILE.bgShader;
+    if(!bg || !bg.id) return;
+    try{
+      const entry = await fbGet(`/shaders/${bg.id}`, false);
+      if(entry && entry.code) applyBgShader(entry.code);
+    }catch(e){}
+  }
+
+  // ── Picker de fondo (solo perfil propio)
+  let bgPickerOpen = false;
+
+  function renderBgCurrent(){
+    const cur = document.getElementById('bg-current');
+    const removeBtn = document.getElementById('bg-remove-btn');
+    const bg = PROFILE.bgShader;
+    if(bg && bg.id){
+      cur.innerHTML = `Fondo actual: <span class="ok">${bg.name || 'shader sin nombre'}</span>`;
+      removeBtn.style.display='';
+    } else {
+      cur.textContent = 'Elegí un shader del Repo Global de Aether como fondo de tu perfil — lo va a ver cualquiera que entre.';
+      removeBtn.style.display='none';
+    }
+  }
+
+  async function openBgPicker(){
+    const picker = document.getElementById('bg-picker');
+    const status = document.getElementById('bg-status');
+    bgPickerOpen = !bgPickerOpen;
+    picker.classList.toggle('open', bgPickerOpen);
+    if(!bgPickerOpen) return;
+    status.textContent = 'Cargando shaders del repo...';
+    picker.innerHTML='';
+    const data = await fbGet('/shaders', false);
+    status.textContent='';
+    if(!data){ status.textContent='No se pudo cargar el repo.'; return; }
+    const entries = Object.entries(data).filter(([,v])=>v && v.code).sort((a,b)=>(b[1].ts||0)-(a[1].ts||0));
+    if(!entries.length){ status.textContent='El repo está vacío todavía.'; return; }
+    entries.forEach(([id, entry])=>{
+      const item = document.createElement('div');
+      item.className = 'bg-item' + (PROFILE.bgShader && PROFILE.bgShader.id===id ? ' active' : '');
+      item.innerHTML = `${entry.thumb ? `<img src="${entry.thumb}" alt="">` : '<div class="bg-thumb-ph">⌬</div>'}<div class="bg-name">${entry.name||'sin nombre'}</div>`;
+      item.addEventListener('click', async ()=>{
+        if(!applyBgShader(entry.code)){ status.textContent='Ese shader no compiló — probá con otro.'; return; }
+        PROFILE.bgShader = { id, name: entry.name||'shader' };
+        const ok = await fbPut(`/profiles/${TARGET_UID}/bgShader`, PROFILE.bgShader);
+        status.textContent = ok ? '✓ Fondo guardado' : 'No se pudo guardar (pero quedó aplicado en esta visita).';
+        picker.querySelectorAll('.bg-item').forEach(el=>el.classList.remove('active'));
+        item.classList.add('active');
+        renderBgCurrent();
+        setTimeout(()=>{ status.textContent=''; },2500);
+      });
+      picker.appendChild(item);
+    });
+  }
+
+  async function removeBgShader(){
+    clearBgShader();
+    PROFILE.bgShader = null;
+    await fbPut(`/profiles/${TARGET_UID}/bgShader`, null);
+    renderBgCurrent();
+    document.querySelectorAll('#bg-picker .bg-item').forEach(el=>el.classList.remove('active'));
+  }
+
   // ── Save profile
   async function saveProfile(){
     const nameVal = document.getElementById('name-edit').value.trim();
@@ -787,6 +1064,10 @@ body.is-own #discord-sec{display:block;}
   document.getElementById('discord-link-btn').addEventListener('click', startDiscordLink);
   document.getElementById('discord-unlink-btn').addEventListener('click', unlinkDiscord);
 
+  // ── Fondo shader btns
+  document.getElementById('bg-pick-btn').addEventListener('click', openBgPicker);
+  document.getElementById('bg-remove-btn').addEventListener('click', removeBgShader);
+
   // ── Profile edit btns
   document.getElementById('toggle-edit-btn').addEventListener('click', enterEditMode);
   document.getElementById('save-btn').addEventListener('click', saveProfile);
@@ -882,6 +1163,8 @@ body.is-own #discord-sec{display:block;}
     renderSocials();
     renderPatches();
     renderDiscord();
+    if(IS_OWN) renderBgCurrent();
+    loadBgFromProfile();
 
     // Comments visibility
     if(IS_ADMIN||IS_MOD){
