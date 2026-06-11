@@ -1,0 +1,15 @@
+{
+  "name": "hg-discord-bot",
+  "version": "1.0.0",
+  "description": "Webhook receiver que asigna roles de Discord (Sub T1/T2/T3) cuando se confirma una suscripción de MercadoPago en Human Glitche.",
+  "main": "index.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "firebase-admin": "^12.1.0",
+    "node-fetch": "^2.7.0"
+  }
+}

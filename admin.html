@@ -390,6 +390,41 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
       <div id="diario-list-status"></div>
     </div>
 
+    <!-- DISCORD / SUSCRIPCIONES -->
+    <div id="discord-section" style="display:none;">
+      <div id="pd-title" style="margin-bottom:0.4rem;">DISCORD <span>&amp; SUSCRIPCIONES</span></div>
+      <div class="pd-intro">
+        ⌬ Configurá la vinculación de cuentas de Discord y la asignación automática de roles por tier de suscripción.
+        Estos datos los usa <code>perfil.html</code> (vinculación) y el bot/webhook que asigna roles al confirmarse un pago.
+      </div>
+      <form id="discord-form" class="pd-grid">
+        <div class="pd-field full">
+          <label for="discord-client-id">Discord Client ID</label>
+          <input type="text" id="discord-client-id" placeholder="Ej. 123456789012345678">
+        </div>
+        <div class="pd-field full">
+          <label for="discord-guild-id">Guild ID (servidor)</label>
+          <input type="text" id="discord-guild-id" placeholder="Ej. 987654321098765432">
+        </div>
+        <div class="pd-field">
+          <label for="discord-role-t1">Rol Tier 1 — ID</label>
+          <input type="text" id="discord-role-t1" placeholder="Role ID Sub T1">
+        </div>
+        <div class="pd-field">
+          <label for="discord-role-t2">Rol Tier 2 — ID</label>
+          <input type="text" id="discord-role-t2" placeholder="Role ID Sub T2">
+        </div>
+        <div class="pd-field">
+          <label for="discord-role-t3">Rol Tier 3 — ID</label>
+          <input type="text" id="discord-role-t3" placeholder="Role ID Sub T3">
+        </div>
+        <div class="pd-field full">
+          <button type="submit" id="discord-submit">GUARDAR CONFIGURACIÓN ⌬</button>
+          <div id="discord-status"></div>
+        </div>
+      </form>
+    </div>
+
   </div>
 
 </div>
@@ -746,6 +781,9 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
       const diarioEl = document.getElementById('diario-section');
       if(diarioEl) diarioEl.style.display = '';
       loadDiarioNotes();
+      const discordEl = document.getElementById('discord-section');
+      if(discordEl) discordEl.style.display = '';
+      loadDiscordConfig();
     }else if(IS_MOD){
       subEl.textContent = 'Panel de moderación — comunidad y suscripciones';
       introEl.innerHTML = `
@@ -774,6 +812,39 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
     diarioStatus.classList.remove('ok','err');
     if(kind) diarioStatus.classList.add(kind);
   }
+
+  // ── Discord config
+  async function loadDiscordConfig(){
+    try{
+      const r = await fetch(`${FB_URL}/config/discord.json?auth=${TOKEN}`);
+      const cfg = r.ok ? (await r.json() || {}) : {};
+      document.getElementById('discord-client-id').value = cfg.clientId || '';
+      document.getElementById('discord-guild-id').value = cfg.guildId || '';
+      document.getElementById('discord-role-t1').value = cfg.roleT1 || '';
+      document.getElementById('discord-role-t2').value = cfg.roleT2 || '';
+      document.getElementById('discord-role-t3').value = cfg.roleT3 || '';
+    }catch(e){}
+  }
+
+  document.getElementById('discord-form').addEventListener('submit', async e=>{
+    e.preventDefault();
+    const statusEl = document.getElementById('discord-status');
+    const cfg = {
+      clientId: document.getElementById('discord-client-id').value.trim(),
+      guildId: document.getElementById('discord-guild-id').value.trim(),
+      roleT1: document.getElementById('discord-role-t1').value.trim(),
+      roleT2: document.getElementById('discord-role-t2').value.trim(),
+      roleT3: document.getElementById('discord-role-t3').value.trim(),
+    };
+    statusEl.textContent = 'Guardando…';
+    try{
+      const r = await fetch(`${FB_URL}/config/discord.json?auth=${TOKEN}`, {
+        method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(cfg)
+      });
+      statusEl.textContent = r.ok ? 'Configuración guardada ✓' : 'Error al guardar.';
+    }catch(e){ statusEl.textContent = 'Error al guardar.'; }
+    setTimeout(()=>{ statusEl.textContent=''; }, 2500);
+  });
 
   async function loadDiarioNotes(){
     if(!diarioList) return;

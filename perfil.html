@@ -169,6 +169,15 @@ body.is-own.editing-socials .soc-edit-input{display:block;}
 body.is-own #soc-edit-btn{display:inline-flex;}
 #soc-edit-btn.active{color:var(--acid);border-color:rgba(184,255,0,0.5);}
 
+/* ── DISCORD & SUSCRIPCIÓN ────────────── */
+#discord-sec{display:none;}
+body.is-own #discord-sec{display:block;}
+#sub-badge{font-family:var(--mono);font-size:9px;letter-spacing:0.18em;color:var(--acid);border:1px solid rgba(184,255,0,0.3);display:inline-block;padding:5px 12px;margin-bottom:0.9rem;}
+#sub-badge:empty{display:none;}
+#discord-status{font-family:var(--mono);font-size:10px;color:rgba(240,237,230,0.45);line-height:1.9;margin-bottom:0.9rem;}
+#discord-status .ok{color:var(--acid);}
+#discord-actions{display:flex;gap:0.7rem;flex-wrap:wrap;}
+
 /* ── PARCHES ──────────────────────────── */
 #patches-grid{display:flex;flex-wrap:wrap;gap:0.9rem;}
 #patches-empty{font-family:var(--mono);font-size:9px;color:rgba(240,237,230,0.2);padding:1rem 0;}
@@ -276,6 +285,17 @@ body.is-own #soc-edit-btn{display:inline-flex;}
       </div>
       <div id="socials-empty">Sin redes conectadas todavía.</div>
       <div id="socials-grid"></div>
+    </div>
+
+    <!-- DISCORD & SUSCRIPCIÓN -->
+    <div class="sec" id="discord-sec">
+      <div class="sec-title">⌬ DISCORD &amp; SUSCRIPCIÓN</div>
+      <div id="sub-badge"></div>
+      <div id="discord-status"></div>
+      <div id="discord-actions">
+        <button class="btn-sm primary" id="discord-link-btn" type="button">VINCULAR DISCORD</button>
+        <button class="btn-sm" id="discord-unlink-btn" type="button" style="display:none;">DESVINCULAR</button>
+      </div>
     </div>
 
     <!-- COMENTARIOS — solo admin -->
@@ -596,6 +616,82 @@ body.is-own #soc-edit-btn{display:inline-flex;}
     return r.ok;
   }
 
+  // ── Discord linking
+  const SUB_TIER_LABELS = {
+    '1': 'TIER 01 — CONCIENCIA ⌘',
+    '2': 'TIER 02 — CREACIÓN ✦',
+    '3': 'TIER 03 — COMPARTIR ☉',
+  };
+
+  function discordRedirectUri(){
+    return location.origin + location.pathname;
+  }
+
+  async function handleDiscordCallback(){
+    if(!location.hash || location.hash.indexOf('access_token') === -1) return;
+    const hashParams = new URLSearchParams(location.hash.slice(1));
+    const accessToken = hashParams.get('access_token');
+    if(!accessToken) return;
+    history.replaceState(null, '', location.pathname + location.search);
+    try{
+      const r = await fetch('https://discord.com/api/users/@me', {
+        headers: { Authorization: `Bearer ${accessToken}` }
+      });
+      if(!r.ok) return;
+      const d = await r.json();
+      PROFILE.discord = {
+        id: d.id,
+        username: d.username,
+        discriminator: d.discriminator || '0',
+        avatar: d.avatar,
+        linkedAt: Date.now(),
+      };
+      await fbPut(`/profiles/${TARGET_UID}/discord`, PROFILE.discord);
+    }catch(e){ /* ignore */ }
+  }
+
+  async function startDiscordLink(){
+    const cfg = await fbGet('/config/discord', true);
+    if(!cfg || !cfg.clientId){
+      alert('La vinculación con Discord todavía no está configurada.');
+      return;
+    }
+    const redirectUri = encodeURIComponent(discordRedirectUri());
+    const url = `https://discord.com/api/oauth2/authorize?client_id=${encodeURIComponent(cfg.clientId)}&redirect_uri=${redirectUri}&response_type=token&scope=identify`;
+    location.href = url;
+  }
+
+  async function unlinkDiscord(){
+    if(!confirm('¿Desvincular tu cuenta de Discord?')) return;
+    await fbPut(`/profiles/${TARGET_UID}/discord`, null);
+    PROFILE.discord = null;
+    renderDiscord();
+  }
+
+  function renderDiscord(){
+    if(!IS_OWN) return;
+    const statusEl = document.getElementById('discord-status');
+    const badgeEl  = document.getElementById('sub-badge');
+    const linkBtn  = document.getElementById('discord-link-btn');
+    const unlinkBtn= document.getElementById('discord-unlink-btn');
+    const discord = PROFILE.discord;
+    if(discord && discord.id){
+      statusEl.innerHTML = `<span class="ok">✓ Conectado como ${discord.username}#${discord.discriminator}</span>`;
+      linkBtn.style.display = 'none';
+      unlinkBtn.style.display = '';
+    } else {
+      statusEl.textContent = 'Vinculá tu cuenta de Discord para recibir tu rol de suscriptor automáticamente.';
+      linkBtn.style.display = '';
+      unlinkBtn.style.display = 'none';
+    }
+    const sub = PROFILE.subscription;
+    if(sub && sub.tier && SUB_TIER_LABELS[sub.tier]){
+      badgeEl.textContent = SUB_TIER_LABELS[sub.tier];
+    } else {
+      badgeEl.textContent = '';
+    }
+  }
+
   // ── Save profile
   async function saveProfile(){
     const nameVal = document.getElementById('name-edit').value.trim();
@@ -688,6 +784,10 @@ body.is-own #soc-edit-btn{display:inline-flex;}
     }
   });
 
+  // ── Discord btns
+  document.getElementById('discord-link-btn').addEventListener('click', startDiscordLink);
+  document.getElementById('discord-unlink-btn').addEventListener('click', unlinkDiscord);
+
   // ── Profile edit btns
   document.getElementById('toggle-edit-btn').addEventListener('click', enterEditMode);
   document.getElementById('save-btn').addEventListener('click', saveProfile);
@@ -740,6 +840,8 @@ body.is-own #soc-edit-btn{display:inline-flex;}
     IS_OWN = (VIEWER_UID && VIEWER_UID === TARGET_UID);
     if(IS_OWN) document.body.classList.add('is-own');
 
+    if(IS_OWN && TOKEN) await handleDiscordCallback();
+
     // Load profile data (public) + progress + patches + comments in parallel
     const authSuffix = TOKEN ? `?auth=${TOKEN}` : '';
     const [profR, progR, patchR] = await Promise.all([
@@ -780,6 +882,7 @@ body.is-own #soc-edit-btn{display:inline-flex;}
     renderHero();
     renderSocials();
     renderPatches();
+    renderDiscord();
 
     // Comments visibility
     if(IS_ADMIN||IS_MOD){
