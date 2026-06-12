@@ -225,6 +225,40 @@ body::before{
   transition:color 0.15s;
 }
 #hg-link:hover{color:var(--red);}
+
+/* ── BIBLIOTECA ── */
+#biblioteca{ padding:3rem 0 1rem; border-top:3px double var(--ink); margin-top:3rem; scroll-margin-top:1rem; }
+.biblio-head{ text-align:center; margin-bottom:2rem; }
+.biblio-eyebrow{ font-family:var(--mono); font-size:8px; letter-spacing:0.25em; text-transform:uppercase; color:var(--ink-light); }
+.biblio-title{ font-family:var(--serif); font-weight:900; font-size:clamp(2.2rem,6vw,3.5rem); line-height:1; color:var(--ink); margin:0.3rem 0; }
+.biblio-title span{ color:var(--red); }
+.biblio-sub{ font-family:var(--serif); font-style:italic; font-size:1rem; color:var(--ink-mid); }
+.biblio-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:1.4rem; margin-top:1rem; }
+@media(max-width:780px){ .biblio-grid{ grid-template-columns:repeat(2,1fr); } }
+@media(max-width:420px){ .biblio-grid{ grid-template-columns:1fr; } }
+
+.cover{
+  position:relative; display:flex; flex-direction:column; justify-content:space-between;
+  aspect-ratio:2/3; padding:1.3rem 1.1rem; text-decoration:none;
+  background:var(--c,#3d2e1a); color:#f3ece0;
+  border:1px solid rgba(0,0,0,0.3);
+  box-shadow:3px 4px 0 rgba(26,18,9,0.18); overflow:hidden;
+  transition:transform 0.18s ease, box-shadow 0.18s ease;
+}
+.cover:hover{ transform:translateY(-4px); box-shadow:5px 8px 0 rgba(26,18,9,0.25); }
+.cover::after{ /* textura de papel/lino sobre la tapa */
+  content:''; position:absolute; inset:0; pointer-events:none; opacity:0.5;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+}
+.cover-cat{ font-family:var(--mono); font-size:7px; letter-spacing:0.18em; text-transform:uppercase; color:rgba(243,236,224,0.65); position:relative; z-index:1; }
+.cover-mid{ position:relative; z-index:1; border-top:1px solid rgba(243,236,224,0.3); border-bottom:1px solid rgba(243,236,224,0.3); padding:0.9rem 0; margin:0.5rem 0; }
+.cover-title{ font-family:var(--serif); font-weight:700; font-size:1.5rem; line-height:1.1; display:block; }
+.cover-author{ font-family:var(--serif); font-style:italic; font-size:0.95rem; color:rgba(243,236,224,0.85); margin-top:0.4rem; display:block; }
+.cover-foot{ font-family:var(--mono); font-size:7px; letter-spacing:0.14em; text-transform:uppercase; color:rgba(243,236,224,0.55); position:relative; z-index:1; }
+.cover-foot::before{ content:'▸ '; color:rgba(243,236,224,0.4); }
+
+#biblio-toplink{ font-family:var(--mono); font-size:8px; letter-spacing:0.16em; color:var(--ink-light); text-decoration:none; text-transform:uppercase; transition:color 0.15s; }
+#biblio-toplink:hover{ color:var(--red); }
 </style>
 </head>
 <body>
@@ -233,6 +267,7 @@ body::before{
 
   <div id="back-bar">
     <a id="back-link" href="index.html">← Human Glitche</a>
+    <a id="biblio-toplink" href="#biblioteca">↓ Biblioteca</a>
     <a id="hg-link" href="index.html">www.hg-vl.com</a>
   </div>
 
@@ -268,6 +303,49 @@ body::before{
   </div>
 
   <div id="notes-archive" style="display:none;"></div>
+
+  <!-- ── BIBLIOTECA ── -->
+  <section id="biblioteca">
+    <div class="biblio-head">
+      <div class="biblio-eyebrow">Sección permanente · lectura libre</div>
+      <h2 class="biblio-title">La <span>Biblioteca</span></h2>
+      <p class="biblio-sub">Clásicos de dominio público, completos y para leer online.</p>
+    </div>
+    <div class="biblio-grid">
+      <a class="cover" href="libros/martin-fierro/" style="--c:#5e3618;">
+        <span class="cover-cat">Poema nacional · 1872–79</span>
+        <span class="cover-mid">
+          <span class="cover-title">Martín Fierro</span>
+          <span class="cover-author">José Hernández</span>
+        </span>
+        <span class="cover-foot">1.193 estrofas</span>
+      </a>
+      <a class="cover" href="libros/facundo/" style="--c:#7a1f14;">
+        <span class="cover-cat">Ensayo · 1845</span>
+        <span class="cover-mid">
+          <span class="cover-title">Facundo</span>
+          <span class="cover-author">D. F. Sarmiento</span>
+        </span>
+        <span class="cover-foot">Civilización y barbarie</span>
+      </a>
+      <a class="cover" href="libros/el-matadero/" style="--c:#3a1418;">
+        <span class="cover-cat">Relato · c. 1840</span>
+        <span class="cover-mid">
+          <span class="cover-title">El Matadero</span>
+          <span class="cover-author">Esteban Echeverría</span>
+        </span>
+        <span class="cover-foot">El primer cuento argentino</span>
+      </a>
+      <a class="cover" href="libros/quiroga-cuentos/" style="--c:#234027;">
+        <span class="cover-cat">Cuentos · 1917</span>
+        <span class="cover-mid">
+          <span class="cover-title">Cuentos de amor, de locura y de muerte</span>
+          <span class="cover-author">Horacio Quiroga</span>
+        </span>
+        <span class="cover-foot">18 relatos</span>
+      </a>
+    </div>
+  </section>
 
 </div>
 
