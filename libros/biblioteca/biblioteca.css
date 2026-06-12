@@ -1,0 +1,90 @@
+/* Panel de Biblioteca — drawer deslizante desde la derecha. Componente del Diario HG. */
+
+.hg-biblio, .hg-biblio * { box-sizing: border-box; }
+
+/* pestaña/handle fijo en el borde derecho */
+.hg-biblio-tab {
+  position: fixed;
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%);
+  z-index: 9998;
+  background: #1a1a1a;
+  color: #fafaf8;
+  border: none;
+  border-radius: 6px 0 0 6px;
+  padding: 0.9rem 0.5rem;
+  cursor: pointer;
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  box-shadow: -2px 0 10px rgba(0,0,0,0.15);
+  transition: background 0.2s, padding 0.2s;
+}
+.hg-biblio-tab:hover { background: #c05010; padding-right: 0.75rem; }
+.hg-biblio-tab .icono { writing-mode: horizontal-tb; font-size: 1rem; margin-bottom: 0.4rem; display: block; text-align: center; }
+
+/* fondo oscurecido */
+.hg-biblio-backdrop {
+  position: fixed; inset: 0; z-index: 9998;
+  background: rgba(20,18,15,0.35);
+  opacity: 0; visibility: hidden;
+  transition: opacity 0.28s ease;
+}
+.hg-biblio.abierto .hg-biblio-backdrop { opacity: 1; visibility: visible; }
+
+/* panel */
+.hg-biblio-panel {
+  position: fixed; top: 0; right: 0; z-index: 9999;
+  width: 340px; max-width: 86vw; height: 100%;
+  background: #f6f4ee;
+  border-left: 1px solid #ddd;
+  box-shadow: -8px 0 28px rgba(0,0,0,0.18);
+  transform: translateX(100%);
+  transition: transform 0.32s cubic-bezier(.4,0,.2,1);
+  display: flex; flex-direction: column;
+  font-family: Georgia, 'Times New Roman', serif;
+  color: #1a1a1a;
+}
+.hg-biblio.abierto .hg-biblio-panel { transform: translateX(0); }
+
+.hg-biblio-head {
+  padding: 1.3rem 1.4rem 1rem;
+  border-bottom: 1px solid #e2ded4;
+  display: flex; align-items: flex-start; justify-content: space-between;
+}
+.hg-biblio-head h2 { margin: 0; font-size: 1.3rem; font-weight: normal; color: #111; }
+.hg-biblio-head .sub { font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 0.68rem; letter-spacing: 0.14em; text-transform: uppercase; color: #999; margin-top: 0.3rem; }
+.hg-biblio-cerrar { background: none; border: none; font-size: 1.4rem; line-height: 1; color: #999; cursor: pointer; padding: 0 0.2rem; }
+.hg-biblio-cerrar:hover { color: #c05010; }
+
+.hg-biblio-lista { overflow-y: auto; padding: 0.6rem 0 1.5rem; flex: 1; }
+
+.hg-biblio-grupo { font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 0.66rem; letter-spacing: 0.16em; text-transform: uppercase; color: #b0a890; padding: 1.1rem 1.4rem 0.4rem; }
+
+.hg-libro {
+  display: block; text-decoration: none; color: inherit;
+  padding: 0.7rem 1.4rem;
+  border-left: 3px solid transparent;
+}
+.hg-libro:hover { background: #efece3; border-left-color: #c05010; }
+.hg-libro .t { font-size: 1.02rem; color: #1a1a1a; }
+.hg-libro .a { font-size: 0.82rem; color: #777; font-style: italic; }
+.hg-libro .n { font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 0.72rem; color: #999; margin-top: 0.15rem; }
+
+.hg-libro.activo { background: #ece8dd; border-left-color: #1a1a1a; }
+.hg-libro.activo .t::after { content: " · leyendo"; font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 0.62rem; letter-spacing: 0.1em; text-transform: uppercase; color: #b06a30; }
+
+.hg-libro.proximo { cursor: default; }
+.hg-libro.proximo .t { color: #999; }
+.hg-libro.proximo:hover { background: transparent; border-left-color: transparent; }
+.hg-pilar { display: inline-block; font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 0.6rem; letter-spacing: 0.08em; text-transform: uppercase; color: #b0926a; border: 1px solid #ddd3c2; border-radius: 10px; padding: 0.05rem 0.5rem; margin-top: 0.25rem; }
+
+.hg-biblio-pie { padding: 0.9rem 1.4rem; border-top: 1px solid #e2ded4; font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 0.7rem; color: #aaa; }
+
+@media (max-width: 520px) {
+  .hg-biblio-tab { padding: 0.7rem 0.4rem; font-size: 0.66rem; }
+}
