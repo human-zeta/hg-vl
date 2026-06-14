@@ -67,7 +67,24 @@
     }
   }
 
-  function run() { ensureCss(); injectBg(); glassify(); }
+  function luminancia(color) {
+    var m = String(color).match(/[\d.]+/g);
+    if (!m || m.length < 3) return 0;
+    var r = m[0] / 255, g = m[1] / 255, b = m[2] / 255;
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  }
+  function temaOscuro() {
+    // si el texto de la página es claro -> la página es de tema oscuro
+    return luminancia(getComputedStyle(document.body).color) > 0.55;
+  }
+
+  function run() {
+    var oscuro = temaOscuro();
+    document.documentElement.classList.add(oscuro ? "glass-dark" : "glass-light");
+    ensureCss();
+    if (!oscuro) injectBg();   // el fondo de color animado solo en páginas claras
+    glassify();
+  }
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", run);

@@ -14,8 +14,12 @@
   --glass-tint: 255, 255, 255;
 }
 
-/* el fondo animado va detrás de todo */
-body{ background: transparent !important; }
+/* glass.js detecta el tema y agrega una de estas clases a <html> */
+/* tema CLARO (texto oscuro): placa blanca + fondo de color animado detrás */
+html.glass-light{ --glass-tint: 255, 255, 255; --glass-alpha: 0.46; }
+html.glass-light body{ background: transparent !important; }
+/* tema OSCURO (texto claro): placa oscura translúcida sobre el fondo propio */
+html.glass-dark{ --glass-tint: 16, 14, 22; --glass-alpha: 0.40; --glass-border: 0.16; }
 
 .glass-bg{
   position: fixed; inset: 0; z-index: 0; overflow: hidden;
