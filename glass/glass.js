@@ -1,21 +1,20 @@
 /*
- * Vidrio HG — capa GLOBAL de vidrio esmerilado para toda la web.
+ * Vidrio HG — capa de vidrio cristal para home, menús y páginas oscuras.
  *
- * Uso: una sola línea en cualquier página (sin importar su estructura):
- *   <script src="/glass/glass.js" defer></script>
+ * Uso: una línea por página:
+ *   <script src="/glass/glass.js" defer data-target="#nav, #wrap"></script>
  *
- * Hace todo solo:
- *   1. inyecta /glass/glass.css (si falta)
- *   2. inyecta el fondo de color animado detrás de todo
- *   3. apoya los bloques de texto sobre placas de vidrio:
- *        - elementos con class "glass" o "glass-page" -> se respetan tal cual
- *        - si se pasa data-target="sel1, sel2" -> esos contenedores se vuelven placa
- *        - si no, se autodetecta el contenedor principal de la página
+ * - inyecta /glass/glass.css (si falta)
+ * - convierte en placa de vidrio: los elementos con class "glass"/"glass-page",
+ *   o los que coincidan con data-target, o (si no) el contenedor principal
+ * - lee el ajuste guardado en Firebase (/glass.json) y lo aplica a las variables
+ *   (lo edita y guarda el panel del admin)
  *
- * Excluir un bloque del vidrio: agregarle data-no-glass.
+ * El fondo NO se toca: el vidrio difumina lo que la página ya tiene (el shader).
  */
 (function () {
   "use strict";
+  var FB_URL = "https://hg-vl-shaders-default-rtdb.firebaseio.com";
   var script =
     document.currentScript ||
     document.querySelector('script[src*="glass.js"]');
@@ -30,61 +29,47 @@
     document.head.appendChild(link);
   }
 
-  function injectBg() {
-    if (document.querySelector(".glass-bg")) return;
-    var bg = document.createElement("div");
-    bg.className = "glass-bg";
-    bg.setAttribute("aria-hidden", "true");
-    bg.innerHTML =
-      '<div class="blob b1"></div><div class="blob b2"></div>' +
-      '<div class="blob b3"></div><div class="blob b4"></div>' +
-      '<div class="blob b5"></div>';
-    document.body.insertBefore(bg, document.body.firstChild);
-  }
-
   function glassify() {
-    // 1. los que ya están marcados en el HTML
     var marcados = document.querySelectorAll(".glass-page, .glass");
     if (marcados.length) {
       marcados.forEach(function (el) { el.classList.add("glass"); });
       return;
     }
-    // 2. objetivos explícitos por data-target
     var target = script && script.getAttribute("data-target");
     if (target) {
       document.querySelectorAll(target).forEach(function (el) {
-        if (el.hasAttribute("data-no-glass")) return;
-        el.classList.add("glass", "glass-page");
+        if (!el.hasAttribute("data-no-glass")) el.classList.add("glass");
       });
       return;
     }
-    // 3. autodetección del contenedor principal
-    var cand = document.querySelector(
-      "main, #wrap, #content, .content, article, .container"
-    );
+    var cand = document.querySelector("main, #wrap, #content, .content, article");
     if (cand && !cand.hasAttribute("data-no-glass")) {
       cand.classList.add("glass", "glass-page");
     }
   }
 
-  function luminancia(color) {
-    var m = String(color).match(/[\d.]+/g);
-    if (!m || m.length < 3) return 0;
-    var r = m[0] / 255, g = m[1] / 255, b = m[2] / 255;
-    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  var VARS = {
+    blur: "--glass-blur", alpha: "--glass-alpha", sat: "--glass-sat",
+    border: "--glass-border", radius: "--glass-radius", tint: "--glass-tint"
+  };
+  function aplicar(cfg) {
+    if (!cfg) return;
+    var r = document.documentElement.style;
+    if (cfg.blur != null) r.setProperty("--glass-blur", cfg.blur + "px");
+    if (cfg.alpha != null) r.setProperty("--glass-alpha", cfg.alpha);
+    if (cfg.sat != null) r.setProperty("--glass-sat", cfg.sat);
+    if (cfg.border != null) r.setProperty("--glass-border", cfg.border);
+    if (cfg.radius != null) r.setProperty("--glass-radius", cfg.radius + "px");
+    if (cfg.tint != null) r.setProperty("--glass-tint", cfg.tint);
   }
-  function temaOscuro() {
-    // si el texto de la página es claro -> la página es de tema oscuro
-    return luminancia(getComputedStyle(document.body).color) > 0.55;
+  function loadSettings() {
+    fetch(FB_URL + "/glass.json")
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(aplicar)
+      .catch(function () {});
   }
 
-  function run() {
-    var oscuro = temaOscuro();
-    document.documentElement.classList.add(oscuro ? "glass-dark" : "glass-light");
-    ensureCss();
-    if (!oscuro) injectBg();   // el fondo de color animado solo en páginas claras
-    glassify();
-  }
+  function run() { ensureCss(); glassify(); loadSettings(); }
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", run);

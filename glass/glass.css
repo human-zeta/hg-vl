@@ -1,71 +1,35 @@
 /*
- * Vidrio HG — fondo de color animado + placas translúcidas (estilo "cristal").
- * Compartido por todas las páginas. El fondo lo inyecta glass.js.
+ * Vidrio HG — placas de vidrio CRISTAL (sin esmerilado) para el home, sus menús
+ * y las páginas oscuras. El fondo siempre es el de la página (el shader); el
+ * vidrio solo lo difumina. Sin blobs de color, sin grano.
  *
- * Variables para afinar el look sin tocar el resto:
+ * Los valores se pueden ajustar desde el panel del admin y se guardan en
+ * Firebase; glass.js los lee y los aplica a estas variables.
  */
 :root{
-  --glass-alpha: 0.46;       /* opacidad de la placa (más alto = más legible) */
-  --glass-blur: 18px;        /* desenfoque del fondo a través del vidrio */
-  --glass-sat: 1.7;          /* saturación: realza el color que se trasluce */
-  --glass-grain: 0.12;       /* grano esmerilado sutil */
-  --glass-border: 0.40;      /* alpha del borde superior brillante */
-  --glass-radius: 22px;
-  --glass-tint: 255, 255, 255;
+  --glass-blur: 14px;        /* desenfoque del fondo a través del vidrio */
+  --glass-alpha: 0.34;       /* opacidad de la placa */
+  --glass-sat: 1.35;         /* saturación del fondo difuminado */
+  --glass-border: 0.16;      /* alpha del borde */
+  --glass-radius: 18px;
+  --glass-tint: 16, 14, 22;  /* tinte oscuro de la placa */
 }
 
-/* glass.js detecta el tema y agrega una de estas clases a <html> */
-/* tema CLARO (texto oscuro): placa blanca + fondo de color animado detrás */
-html.glass-light{ --glass-tint: 255, 255, 255; --glass-alpha: 0.46; }
-html.glass-light body{ background: transparent !important; }
-/* tema OSCURO (texto claro): placa oscura translúcida sobre el fondo propio */
-html.glass-dark{ --glass-tint: 16, 14, 22; --glass-alpha: 0.40; --glass-border: 0.16; }
-
-.glass-bg{
-  position: fixed; inset: 0; z-index: 0; overflow: hidden;
-  background: #0e0b16; pointer-events: none;
-}
-.glass-bg .blob{
-  position: absolute; border-radius: 50%; filter: blur(46px);
-  opacity: 0.85; mix-blend-mode: screen;
-  animation: glassFloat 22s ease-in-out infinite;
-}
-.glass-bg .b1{ width:48vw; height:48vw; left:-8vw; top:-10vw; background:#b8ff00; animation-delay:0s; }
-.glass-bg .b2{ width:42vw; height:42vw; right:-8vw; top:2vw; background:#ff2d6b; animation-delay:-4s; }
-.glass-bg .b3{ width:44vw; height:44vw; left:14vw; bottom:-16vw; background:#1e6bff; animation-delay:-8s; }
-.glass-bg .b4{ width:36vw; height:36vw; right:8vw; bottom:-8vw; background:#ffae00; animation-delay:-12s; }
-.glass-bg .b5{ width:32vw; height:32vw; left:38vw; top:34vw; background:#9b5cff; animation-delay:-16s; }
-@keyframes glassFloat{
-  0%,100%{ transform: translate(0,0) scale(1); }
-  33%{ transform: translate(5vw,4vw) scale(1.12); }
-  66%{ transform: translate(-4vw,3vw) scale(0.94); }
-}
-@media (prefers-reduced-motion: reduce){
-  .glass-bg .blob{ animation: none; }
-}
-
-/* la placa de vidrio */
 .glass{
-  position: relative; overflow: hidden;
+  position: relative;
   background: rgba(var(--glass-tint), var(--glass-alpha));
   -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
   backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
-  border: 1px solid rgba(var(--glass-tint), calc(var(--glass-border) + 0.1));
+  border: 1px solid rgba(255, 255, 255, var(--glass-border));
   border-radius: var(--glass-radius);
-  box-shadow: 0 10px 44px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.35);
+  box-shadow: 0 8px 36px rgba(0,0,0,0.30), inset 0 1px 0 rgba(255,255,255,0.10);
 }
-.glass::after{
-  content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 0;
-  opacity: var(--glass-grain); mix-blend-mode: overlay;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 160 160' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-}
-.glass > *{ position: relative; z-index: 1; }
 
-/* la "página" de lectura: una placa centrada que flota sobre el color */
+/* variante "página": placa centrada para el contenido de páginas oscuras */
 .glass-page{
   position: relative; z-index: 2;
-  max-width: 760px; margin: 2.5rem auto; padding: 3rem 2.6rem;
+  max-width: 880px; margin: 2rem auto; padding: 2.4rem 2.2rem;
 }
 @media (max-width: 640px){
-  .glass-page{ margin: 1rem; padding: 1.6rem 1.3rem; --glass-radius: 16px; }
+  .glass-page{ margin: 1rem; padding: 1.4rem 1.2rem; --glass-radius: 14px; }
 }

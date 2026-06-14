@@ -286,6 +286,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 #px-use-btn:disabled{opacity:0.4;cursor:default;}
 #px-img-status{font-family:var(--mono);font-size:7px;letter-spacing:0.1em;color:rgba(184,255,0,0.5);}
 </style>
+<link rel="stylesheet" href="/glass/glass.css">
 </head>
 <body>
 <div id="wrap">
@@ -512,6 +513,37 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
           <div id="discord-status"></div>
         </div>
       </form>
+    </div>
+
+    <div id="glass-section" style="display:none;">
+      <div id="pd-title" style="margin-bottom:0.4rem;">VIDRIO <span>&amp; APARIENCIA</span></div>
+      <div class="pd-intro">
+        ⌬ Ajustá el vidrio que se apoya sobre el home, los menús y las páginas oscuras.
+        Mové los controles, mirá la vista previa y guardá: el punto elegido se guarda en Firebase
+        y se aplica a todo el sitio para todos.
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 280px;gap:1.6rem;align-items:start;">
+        <form id="glass-form" class="pd-grid" style="grid-template-columns:1fr;">
+          <div class="pd-field full"><label>Desenfoque — <span id="gv-blur">14</span>px</label><input type="range" id="g-blur" min="0" max="30" step="1" value="14" style="accent-color:var(--acid);width:100%;"></div>
+          <div class="pd-field full"><label>Opacidad de la placa — <span id="gv-alpha">0.34</span></label><input type="range" id="g-alpha" min="0" max="80" step="1" value="34" style="accent-color:var(--acid);width:100%;"></div>
+          <div class="pd-field full"><label>Saturación — <span id="gv-sat">1.35</span></label><input type="range" id="g-sat" min="50" max="250" step="5" value="135" style="accent-color:var(--acid);width:100%;"></div>
+          <div class="pd-field full"><label>Borde — <span id="gv-border">0.16</span></label><input type="range" id="g-border" min="0" max="60" step="1" value="16" style="accent-color:var(--acid);width:100%;"></div>
+          <div class="pd-field full"><label>Redondeo — <span id="gv-radius">18</span>px</label><input type="range" id="g-radius" min="0" max="34" step="1" value="18" style="accent-color:var(--acid);width:100%;"></div>
+          <div class="pd-field full">
+            <button type="submit" id="glass-submit">GUARDAR VIDRIO ⌬</button>
+            <div id="glass-status"></div>
+          </div>
+        </form>
+        <div>
+          <div style="font-family:var(--mono);font-size:9px;letter-spacing:0.1em;color:rgba(240,237,230,0.4);text-transform:uppercase;margin-bottom:0.6rem;">Vista previa</div>
+          <div style="position:relative;border-radius:14px;overflow:hidden;padding:1.1rem;background:linear-gradient(135deg,rgba(30,107,255,0.5),rgba(184,255,0,0.4),rgba(255,45,107,0.5)),repeating-linear-gradient(45deg,rgba(255,255,255,0.06) 0 9px,transparent 9px 18px);">
+            <div class="glass" style="padding:1.2rem;min-height:140px;">
+              <div style="font-family:var(--mono);font-size:11px;color:var(--acid);letter-spacing:0.12em;margin-bottom:0.5rem;">HUMAN GLITCHE</div>
+              <div style="font-size:13px;color:rgba(240,237,230,0.9);line-height:1.6;">Un bloque de texto apoyado sobre la placa de vidrio. Así se verá en el home y los menús.</div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
   </div>
@@ -879,6 +911,9 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
       const bgloopsEl = document.getElementById('bgloops-section');
       if(bgloopsEl) bgloopsEl.style.display = '';
       loadBgLoops();
+      const glassEl = document.getElementById('glass-section');
+      if(glassEl) glassEl.style.display = '';
+      initGlass();
     }else if(IS_MOD){
       subEl.textContent = 'Panel de moderación — comunidad y suscripciones';
       introEl.innerHTML = `
@@ -1078,6 +1113,61 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
     }catch(e){ statusEl.textContent = 'Error al guardar.'; }
     setTimeout(()=>{ statusEl.textContent=''; }, 2500);
   });
+
+  // ── Vidrio (glass)
+  function gReadInputs(){
+    return {
+      blur:+document.getElementById('g-blur').value,
+      alpha:+(document.getElementById('g-alpha').value/100).toFixed(2),
+      sat:+(document.getElementById('g-sat').value/100).toFixed(2),
+      border:+(document.getElementById('g-border').value/100).toFixed(2),
+      radius:+document.getElementById('g-radius').value
+    };
+  }
+  function gApply(v){
+    const r=document.documentElement.style;
+    r.setProperty('--glass-blur', v.blur+'px');
+    r.setProperty('--glass-alpha', v.alpha);
+    r.setProperty('--glass-sat', v.sat);
+    r.setProperty('--glass-border', v.border);
+    r.setProperty('--glass-radius', v.radius+'px');
+    document.getElementById('gv-blur').textContent=v.blur;
+    document.getElementById('gv-alpha').textContent=v.alpha.toFixed(2);
+    document.getElementById('gv-sat').textContent=v.sat.toFixed(2);
+    document.getElementById('gv-border').textContent=v.border.toFixed(2);
+    document.getElementById('gv-radius').textContent=v.radius;
+  }
+  function gOnInput(){ gApply(gReadInputs()); }
+  async function initGlass(){
+    if(!document.getElementById('glass-form')) return;
+    ['g-blur','g-alpha','g-sat','g-border','g-radius'].forEach(id=>{
+      document.getElementById(id).addEventListener('input', gOnInput);
+    });
+    try{
+      const r=await fetch(`${FB_URL}/glass.json`);
+      const cfg=r.ok?(await r.json()):null;
+      if(cfg){
+        if(cfg.blur!=null) document.getElementById('g-blur').value=cfg.blur;
+        if(cfg.alpha!=null) document.getElementById('g-alpha').value=Math.round(cfg.alpha*100);
+        if(cfg.sat!=null) document.getElementById('g-sat').value=Math.round(cfg.sat*100);
+        if(cfg.border!=null) document.getElementById('g-border').value=Math.round(cfg.border*100);
+        if(cfg.radius!=null) document.getElementById('g-radius').value=cfg.radius;
+      }
+    }catch(e){}
+    gOnInput();
+    document.getElementById('glass-form').addEventListener('submit', async e=>{
+      e.preventDefault();
+      const st=document.getElementById('glass-status');
+      st.textContent='Guardando…';
+      try{
+        const r=await fetch(`${FB_URL}/glass.json?auth=${TOKEN}`,{
+          method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(gReadInputs())
+        });
+        st.textContent=r.ok?'Vidrio guardado ✓ — ya se aplica a todo el sitio':'Error al guardar.';
+      }catch(e){ st.textContent='Error al guardar.'; }
+      setTimeout(()=>{ st.textContent=''; }, 3500);
+    });
+  }
 
   async function loadDiarioNotes(){
     if(!diarioList) return;
