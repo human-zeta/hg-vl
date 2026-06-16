@@ -91,7 +91,162 @@
 <h2>Human.Zeta</h2>
 <h2>Queres saber mas?</h2>
   </div>
-  <nav class="bnext">
+  
+<!-- HG-NEWSLETTER · captura motor-media -->
+<!-- ═══════════════════════════════════════════════════════════════════════
+     HG — VL / BLOG — BLOQUE DE CAPTURA NEWSLETTER (Human Media · motor-media)
+     ───────────────────────────────────────────────────────────────────────
+     ARTEFACTO DE STAGING — NO ESTÁ VIVO. Se embebe en hg-vl después de la
+     compuerta humana (ver progress/cola_aprobacion.md).
+
+     QUÉ ES: capa de captura TOFU del motor de contenido. El contenido del blog
+     es GRATIS y SIN MURO; este bloque solo capta un email — la relación, no un
+     pago. Es el puente medible entre el contenido gratis y la oferta que cobra
+     (produccion/human-media.md, sección "El motor como embudo").
+
+     DÓNDE VA: al final de cada artículo de es/blog/<slug>/index.html, entre el
+     cierre del <article> y la <nav class="bnext">; y opcionalmente en
+     es/blog/index.html bajo el header. Ver web/motor-media/embudo.md.
+
+     MECANISMO: REUSA el Firebase Realtime DB que YA usa index.html
+     (hg-vl-shaders-default-rtdb) con el MISMO patrón REST anónimo fbPush()
+     del repositorio de shaders (index.html ~líneas 2049-2068). NO crea
+     base nueva, NO usa credenciales, NO crea cuenta de usuario. Solo cambia
+     el nodo de escritura: /newsletter en vez de /shaders.
+     Descriptor del nodo y campos: web/motor-media/newsletter.config.json.
+
+     ESTILO: hereda los tokens y clases de es/blog/blog.css (--acid, --mono,
+     --display, --line, --ink-soft). Clases prefijadas .nl- para no colisionar.
+═══════════════════════════════════════════════════════════════════════════ -->
+
+<style>
+/* ───── NEWSLETTER · capa de captura del motor (hereda tokens de blog.css) ───── */
+.nl-cap{
+  max-width:680px;margin:6vh auto 0;padding:2.8rem 2rem 2.6rem;
+  border:1px solid var(--line);border-top:2px solid var(--acid);
+  background:rgba(240,237,230,0.015);position:relative;z-index:2;
+}
+.nl-eyebrow{font-family:var(--mono);font-size:9px;letter-spacing:0.35em;color:var(--acid);margin-bottom:1.1rem;}
+.nl-title{font-family:var(--display);font-size:clamp(1.9rem,5vw,3rem);line-height:0.98;margin-bottom:1rem;}
+.nl-title strong{color:var(--acid);font-weight:inherit;}
+.nl-dek{font-family:var(--mono);font-size:11px;color:var(--ink-soft);line-height:1.9;max-width:520px;margin-bottom:0.6rem;}
+.nl-free{font-family:var(--mono);font-size:9px;letter-spacing:0.18em;color:var(--acid);margin-bottom:1.8rem;}
+.nl-form{display:flex;gap:1px;background:var(--line);flex-wrap:wrap;border:1px solid var(--line);}
+.nl-form input[type=email]{
+  flex:1 1 220px;min-width:0;background:var(--black);color:var(--white);
+  font-family:var(--mono);font-size:12px;letter-spacing:0.04em;
+  border:none;padding:1rem 1.1rem;outline:none;
+}
+.nl-form input[type=email]::placeholder{color:rgba(240,237,230,0.3);}
+.nl-form button{
+  flex:0 0 auto;background:var(--acid);color:var(--black);border:none;cursor:pointer;
+  font-family:var(--mono);font-size:11px;letter-spacing:0.2em;font-weight:700;
+  padding:1rem 1.6rem;transition:opacity 0.25s;
+}
+.nl-form button:hover{opacity:0.78;}
+.nl-form button:disabled{opacity:0.4;cursor:default;}
+.nl-status{font-family:var(--mono);font-size:10px;letter-spacing:0.06em;color:var(--ink-soft);min-height:1.2em;margin-top:0.9rem;}
+.nl-fine{font-family:var(--mono);font-size:8px;letter-spacing:0.1em;color:rgba(240,237,230,0.22);line-height:1.7;margin-top:1.2rem;}
+.nl-fine a{color:var(--acid);text-decoration:underline;text-underline-offset:2px;}
+@media(max-width:640px){.nl-cap{margin-left:0;margin-right:0;}.nl-form button{flex:1 1 100%;}}
+</style>
+
+<section class="nl-cap" aria-label="Suscripción a la newsletter de Human Glitche">
+  <div class="nl-eyebrow">HG — VL / NEWSLETTER</div>
+  <h2 class="nl-title">No te explicamos filósofos. Te mostramos cómo se <strong>rediseña una interfaz</strong>.</h2>
+  <p class="nl-dek">
+    Una vez por semana: el ensayo del tema de esta semana — la capa de tu realidad
+    que parecía "lo normal", cómo se ve cuando la observás, cómo se rediseña, cómo
+    se comparte. Mismo glitch, en texto, directo a tu mail.
+  </p>
+  <p class="nl-free">TODO EL CONTENIDO ES GRATIS · SIN MURO · LA NEWSLETTER ES LA RELACIÓN, NO UN COBRO</p>
+
+  <form class="nl-form" id="nl-form" novalidate>
+    <input type="email" id="nl-email" placeholder="TU EMAIL" autocomplete="email" required aria-label="Email">
+    <button type="submit" id="nl-submit">SUMARME</button>
+  </form>
+  <div class="nl-status" id="nl-status" role="status" aria-live="polite"></div>
+
+  <p class="nl-fine">
+    Capta un email, no un pago. Lo gratis sigue gratis. Cuando haya algo que sí se paga
+    —la <a href="/#servicios">oferta de Human Studio</a> o un taller— te lo contamos ahí,
+    sin presión. Te podés ir cuando quieras.
+  </p>
+</section>
+
+<script>
+/* ─────────────────────────────────────────────────────────────────────────
+   Reusa el MISMO Firebase Realtime DB y el MISMO patrón REST anónimo (fbPush)
+   que index.html (repositorio de shaders, ~líneas 2049-2068). NO credenciales,
+   NO base nueva. Solo el nodo cambia: escribe en /newsletter.
+   Si este bloque se embebe en una página que YA define FB_URL (p. ej. junto al
+   bundle de index.html), reutiliza esa constante; si no, la declara igual.
+   Campos escritos: ver web/motor-media/newsletter.config.json.
+───────────────────────────────────────────────────────────────────────────── */
+(function(){
+  // Mismo databaseURL que index.html — referenciado, no inventado.
+  var NL_FB_URL = (typeof FB_URL !== 'undefined')
+    ? FB_URL
+    : 'https://hg-vl-shaders-default-rtdb.firebaseio.com';
+  var NL_NODE = '/newsletter';
+
+  var form   = document.getElementById('nl-form');
+  var emailI = document.getElementById('nl-email');
+  var btn    = document.getElementById('nl-submit');
+  var status = document.getElementById('nl-status');
+  if(!form) return;
+
+  function say(msg, ok){
+    status.textContent = msg;
+    status.style.color = ok ? 'var(--acid)' : 'rgba(240,237,230,0.34)';
+  }
+  function validEmail(v){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); }
+
+  // Mismo método que fbPush() de index.html: POST a `${FB_URL}${node}.json`
+  async function nlPush(node, data){
+    try{
+      var r = await fetch(NL_FB_URL + node + '.json', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify(data)
+      });
+      return r.ok ? r.json() : null;
+    }catch(e){ return null; }
+  }
+
+  form.addEventListener('submit', async function(e){
+    e.preventDefault();
+    var email = (emailI.value || '').trim().toLowerCase();
+    if(!validEmail(email)){ say('Revisá el email.'); return; }
+
+    btn.disabled = true;
+    say('Sumándote…');
+
+    // Campos del descriptor newsletter.config.json (sin doble opt-in del lado cliente:
+    // el envío de confirmación lo dispara el proceso de email, gated en GATES.md).
+    var res = await nlPush(NL_NODE, {
+      email: email,
+      ts: Date.now(),
+      date: new Date().toISOString().slice(0,10),
+      source: 'blog',
+      // referrer del artículo que originó la suscripción (diagnóstico de qué pieza convierte)
+      page: (location && location.pathname) ? location.pathname : '',
+      status: 'pending'   // queda 'pending' hasta el doble opt-in (ver config.json)
+    });
+
+    if(res){
+      form.reset();
+      say('Listo. Te llega un mail para confirmar.', true);
+    }else{
+      btn.disabled = false;
+      say('No se pudo ahora. Probá de nuevo en un momento.');
+    }
+  });
+})();
+</script>
+
+<!-- /HG-NEWSLETTER -->
+<nav class="bnext">
     <a href="../">← TODOS LOS POSTS</a>
     <a href="/#blog">VOLVER AL SITIO →</a>
   </nav>
