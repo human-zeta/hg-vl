@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EL TEST DEL GLITCH — HUMAN GLITCHE</title>
+<meta name="description" content="Una práctica de auto-observación. Tres preguntas: ¿estás observando? ¿estás creando? ¿estás expandiendo? No clasifica a nadie. El progreso solo lo conocés vos.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Human Glitche">
+<meta property="og:title" content="EL TEST DEL GLITCH">
+<meta property="og:description" content="No clasifica a nadie. Te ayuda a observar tu propio progreso. ⌘ Observar · ✦ Crear · ☉ Expandir.">
+<meta property="og:url" content="https://www.hg-vl.com/test-glitch/">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="EL TEST DEL GLITCH — HUMAN GLITCHE">
+<meta name="twitter:description" content="Una práctica de auto-observación. El progreso solo lo conocés vos.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════════════════════════════════════
+   EL TEST DEL GLITCH — autoevaluación-reflexión (imán de embudo · ⌘ Observar)
+   ──────────────────────────────────────────────────────────────────────────
+   Tokens y tipografías heredados del sitio Visual Lab (hg-vl/index.html):
+   --black #050505 / --white #f0ede6 / --acid #b8ff00 / --glitch #ff2d55,
+   Bebas Neue + Space Mono + DM Sans.
+   Autocontenido: su propio <style> y <script>, sin dependencias del bundle.
+   Contenido fiel a autoevaluacion.pdf — preguntas, indicadores y principios
+   transcritos, no inventados.
+═══════════════════════════════════════════════════════════════════════════ */
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --black:#050505;
+  --white:#f0ede6;
+  --acid:#b8ff00;
+  --glitch:#ff2d55;
+  --mono:'Space Mono',monospace;
+  --display:'Bebas Neue',sans-serif;
+  --body:'DM Sans',sans-serif;
+  --line:rgba(240,237,230,0.12);
+  --ink-soft:rgba(240,237,230,0.55);
+}
+html{scroll-behavior:smooth;}
+body{
+  background:var(--black);color:var(--white);
+  font-family:var(--body);overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;line-height:1.6;
+}
+/* grano sutil, como el sitio */
+body::before{
+  content:'';position:fixed;inset:0;z-index:1;pointer-events:none;opacity:0.35;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+}
+.wrap{position:relative;z-index:2;max-width:740px;margin:0 auto;padding:0 1.5rem;}
+
+/* ───── PROGRESO ───── */
+#progress{
+  position:fixed;top:0;left:0;width:100%;height:2px;z-index:50;
+  background:rgba(240,237,230,0.06);
+}
+#progress-bar{height:100%;width:0;background:var(--acid);transition:width 0.4s ease;}
+#step-meta{
+  position:fixed;top:14px;right:1.5rem;z-index:50;
+  font-family:var(--mono);font-size:9px;letter-spacing:0.25em;
+  color:rgba(240,237,230,0.4);
+}
+
+/* ───── PANTALLAS ───── */
+.screen{display:none;padding:7rem 0 5rem;min-height:100vh;}
+.screen.active{display:block;animation:fade 0.6s ease;}
+@keyframes fade{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:none;}}
+
+.eyebrow{font-family:var(--mono);font-size:10px;letter-spacing:0.35em;color:var(--acid);margin-bottom:1.4rem;}
+.big{font-family:var(--display);line-height:0.92;font-size:clamp(2.6rem,9vw,5.4rem);letter-spacing:0.01em;}
+.big .acid{color:var(--acid);}
+.big .glitch{color:var(--glitch);}
+.lead{font-family:var(--mono);font-size:13px;line-height:2;color:var(--ink-soft);margin-top:1.8rem;max-width:560px;}
+.lead strong{color:var(--white);font-weight:700;}
+.note{font-family:var(--mono);font-size:10px;letter-spacing:0.06em;line-height:1.9;color:rgba(240,237,230,0.4);margin-top:1.6rem;max-width:540px;border-left:1px solid var(--acid);padding-left:1rem;}
+
+/* ───── BOTONES ───── */
+.btn{
+  display:inline-block;font-family:var(--mono);font-size:12px;letter-spacing:0.2em;font-weight:700;
+  background:var(--acid);color:var(--black);border:none;cursor:pointer;
+  padding:1rem 1.8rem;margin-top:2.6rem;transition:opacity 0.22s,transform 0.22s;
+  text-decoration:none;
+}
+.btn:hover{opacity:0.82;transform:translateY(-1px);}
+.btn:disabled{opacity:0.3;cursor:default;transform:none;}
+.btn.ghost{background:transparent;color:var(--acid);border:1px solid var(--acid);}
+.btn.ghost:hover{background:rgba(184,255,0,0.07);}
+.btn-row{display:flex;gap:1rem;flex-wrap:wrap;align-items:center;margin-top:2.6rem;}
+.btn-row .btn{margin-top:0;}
+.back{font-family:var(--mono);font-size:10px;letter-spacing:0.18em;color:rgba(240,237,230,0.35);background:none;border:none;cursor:pointer;padding:0.4rem 0;transition:color 0.2s;}
+.back:hover{color:var(--white);}
+
+/* ───── PANELES DE PREGUNTAS ───── */
+.panel-sym{font-family:var(--display);font-size:clamp(3rem,10vw,5rem);line-height:1;color:var(--acid);}
+.panel-tag{font-family:var(--mono);font-size:10px;letter-spacing:0.3em;color:rgba(240,237,230,0.45);margin-top:0.5rem;}
+.panel-title{font-family:var(--display);font-size:clamp(2.2rem,7vw,3.6rem);line-height:0.95;margin-top:0.6rem;}
+.panel-sub{font-family:var(--mono);font-size:12px;font-style:italic;color:var(--ink-soft);line-height:1.9;margin-top:1rem;max-width:540px;}
+
+.q{border-top:1px solid var(--line);padding:1.8rem 0 1.6rem;}
+.q-text{font-family:var(--body);font-size:clamp(1.05rem,2.6vw,1.35rem);line-height:1.45;font-weight:400;margin-bottom:1.2rem;}
+.opts{display:flex;gap:0.6rem;flex-wrap:wrap;}
+.opt{
+  font-family:var(--mono);font-size:11px;letter-spacing:0.1em;
+  background:transparent;color:var(--ink-soft);
+  border:1px solid var(--line);cursor:pointer;
+  padding:0.7rem 1.1rem;border-radius:2px;transition:all 0.18s;
+}
+.opt:hover{border-color:rgba(184,255,0,0.5);color:var(--white);}
+.opt.sel{background:var(--acid);color:var(--black);border-color:var(--acid);font-weight:700;}
+
+/* indicador + principio del panel */
+.panel-foot{margin-top:2.4rem;border-top:1px solid var(--line);padding-top:1.6rem;}
+.ind{font-family:var(--mono);font-size:11px;line-height:1.9;color:rgba(240,237,230,0.5);font-style:italic;}
+.princ{font-family:var(--display);font-size:clamp(1.4rem,4vw,2rem);line-height:1.05;color:var(--acid);margin-top:1.1rem;}
+
+.hint{font-family:var(--mono);font-size:10px;letter-spacing:0.06em;color:var(--glitch);margin-top:1rem;min-height:1.2em;opacity:0;transition:opacity 0.2s;}
+.hint.show{opacity:1;}
+
+/* ───── REFLEJO FINAL ───── */
+.mirror-pillar{border-top:1px solid var(--line);padding:1.8rem 0;}
+.mp-head{display:flex;align-items:baseline;gap:0.8rem;flex-wrap:wrap;}
+.mp-sym{font-family:var(--display);font-size:2rem;color:var(--acid);line-height:1;}
+.mp-name{font-family:var(--mono);font-size:11px;letter-spacing:0.25em;color:rgba(240,237,230,0.5);}
+/* visualización sutil: tres marcas, no un puntaje comparable */
+.mp-marks{display:flex;gap:5px;margin:1rem 0 0.6rem;height:6px;}
+.mp-mark{flex:1;border-radius:1px;background:rgba(240,237,230,0.08);transition:background-color 0.6s;}
+.mp-mark.si{background:var(--acid);}
+.mp-mark.av{background:rgba(184,255,0,0.4);}
+.mp-mark.no{background:rgba(255,45,85,0.4);}
+.mp-recap{font-family:var(--mono);font-size:10px;letter-spacing:0.05em;color:rgba(240,237,230,0.4);line-height:1.9;margin-top:0.4rem;}
+.mp-princ{font-family:var(--display);font-size:clamp(1.3rem,3.6vw,1.8rem);line-height:1.05;color:var(--white);margin-top:0.9rem;}
+.mp-ind{font-family:var(--mono);font-size:10px;font-style:italic;color:rgba(240,237,230,0.4);line-height:1.8;margin-top:0.5rem;}
+
+.closing{border-top:2px solid var(--acid);margin-top:3rem;padding-top:2.4rem;}
+.closing p{font-family:var(--mono);font-size:12px;line-height:2.1;color:var(--ink-soft);max-width:560px;}
+.closing .symline{font-family:var(--mono);font-size:11px;letter-spacing:0.04em;color:rgba(240,237,230,0.45);margin-top:1.4rem;line-height:2;}
+.closing .symline b{color:var(--acid);font-weight:700;}
+.final-quote{font-family:var(--display);font-size:clamp(1.8rem,5.5vw,3rem);line-height:1.02;margin-top:2.4rem;}
+.final-quote .acid{color:var(--acid);}
+
+/* ───── EMBUDO (newsletter + discord) ───── */
+.funnel{margin-top:3.4rem;border:1px solid var(--line);border-top:2px solid var(--acid);padding:2.6rem 1.8rem 2.4rem;background:rgba(240,237,230,0.015);}
+.f-eyebrow{font-family:var(--mono);font-size:9px;letter-spacing:0.35em;color:var(--acid);margin-bottom:1rem;}
+.f-title{font-family:var(--display);font-size:clamp(1.8rem,5vw,2.8rem);line-height:0.98;}
+.f-title .acid{color:var(--acid);}
+.f-dek{font-family:var(--mono);font-size:11px;color:var(--ink-soft);line-height:1.95;max-width:520px;margin-top:0.9rem;}
+.f-free{font-family:var(--mono);font-size:9px;letter-spacing:0.18em;color:var(--acid);margin-top:1rem;}
+.nl-form{display:flex;gap:1px;background:var(--line);flex-wrap:wrap;border:1px solid var(--line);margin-top:1.6rem;}
+.nl-form input[type=email]{
+  flex:1 1 220px;min-width:0;background:var(--black);color:var(--white);
+  font-family:var(--mono);font-size:12px;letter-spacing:0.04em;
+  border:none;padding:1rem 1.1rem;outline:none;
+}
+.nl-form input[type=email]::placeholder{color:rgba(240,237,230,0.3);}
+.nl-form button{
+  flex:0 0 auto;background:var(--acid);color:var(--black);border:none;cursor:pointer;
+  font-family:var(--mono);font-size:11px;letter-spacing:0.2em;font-weight:700;
+  padding:1rem 1.6rem;transition:opacity 0.25s;
+}
+.nl-form button:hover{opacity:0.78;}
+.nl-form button:disabled{opacity:0.4;cursor:default;}
+.nl-status{font-family:var(--mono);font-size:10px;letter-spacing:0.04em;color:var(--ink-soft);min-height:1.2em;margin-top:0.9rem;}
+.f-discord{display:flex;align-items:center;gap:0.9rem;flex-wrap:wrap;margin-top:2rem;border-top:1px solid var(--line);padding-top:1.8rem;}
+.f-discord .d-text{font-family:var(--mono);font-size:11px;color:var(--ink-soft);line-height:1.8;flex:1 1 260px;}
+.f-fine{font-family:var(--mono);font-size:8px;letter-spacing:0.08em;color:rgba(240,237,230,0.22);line-height:1.8;margin-top:1.6rem;}
+.restart{display:block;text-align:center;font-family:var(--mono);font-size:10px;letter-spacing:0.18em;color:rgba(240,237,230,0.3);background:none;border:none;cursor:pointer;margin:3rem auto 0;padding:0.5rem;transition:color 0.2s;}
+.restart:hover{color:var(--white);}
+
+footer{font-family:var(--mono);font-size:9px;letter-spacing:0.1em;color:rgba(240,237,230,0.25);text-align:center;padding:3rem 1.5rem;line-height:1.9;}
+footer a{color:rgba(184,255,0,0.6);text-decoration:none;}
+
+@media(max-width:560px){
+  .nl-form button{flex:1 1 100%;}
+  .btn-row{gap:0.8rem;}
+}
+</style>
+</head>
+<body>
+
+<div id="progress"><div id="progress-bar"></div></div>
+<div id="step-meta"></div>
+
+<!-- ───── PANTALLA 0 · INTRO ───── -->
+<section class="screen active" data-screen="0">
+  <div class="wrap">
+    <div class="eyebrow">HUMAN GLITCHE / AUTO-OBSERVACIÓN</div>
+    <h1 class="big">EL TEST<br>DEL <span class="acid">GLITCH</span></h1>
+    <p class="lead">
+      <strong>«La humanidad avanza cuando alguien encuentra un glitch en el sistema.»</strong>
+      Human Glitche es una práctica personal de pensamiento crítico, creatividad
+      y construcción cultural.
+    </p>
+    <p class="note">
+      Este test NO clasifica a nadie. No hay puntaje, no hay rango, no hay
+      ganadores. Su único propósito es ayudarte a observar tu propio progreso.
+      Doce preguntas, tres pilares. Las respuestas no salen de esta pantalla.
+    </p>
+    <button class="btn" data-go="1">EMPEZAR →</button>
+  </div>
+</section>
+
+<!-- ───── PANTALLA 1 · ⌘ OBSERVAR ───── -->
+<section class="screen" data-screen="1">
+  <div class="wrap">
+    <div class="panel-sym">⌘</div>
+    <div class="panel-tag">PANEL 1 — EL SISTEMA</div>
+    <h2 class="panel-title">OBSERVAR</h2>
+    <p class="panel-sub">«Antes de cambiar algo, debes comprenderlo.»</p>
+
+    <div class="qs" data-pillar="observar"></div>
+
+    <div class="panel-foot">
+      <p class="ind">«Si aún reaccionas emocionalmente a la mayoría de estímulos, todavía estás entrenando la observación.»</p>
+      <p class="princ">La claridad comienza cuando dejamos de reaccionar automáticamente.</p>
+    </div>
+
+    <p class="hint" data-hint="1">Respondé las cuatro para seguir.</p>
+    <div class="btn-row">
+      <button class="back" data-go="0">← VOLVER</button>
+      <button class="btn" data-go="2" data-needs="observar">SIGUIENTE →</button>
+    </div>
+  </div>
+</section>
+
+<!-- ───── PANTALLA 2 · ✦ CREAR ───── -->
+<section class="screen" data-screen="2">
+  <div class="wrap">
+    <div class="panel-sym">✦</div>
+    <div class="panel-tag">PANEL 2 — EL GLITCH</div>
+    <h2 class="panel-title">CREAR</h2>
+    <p class="panel-sub">«Un Human Glitche no sólo cuestiona el sistema. Construye alternativas.»</p>
+
+    <div class="qs" data-pillar="crear"></div>
+
+    <div class="panel-foot">
+      <p class="ind">«Si consumes más de lo que produces, el glitch todavía no está activo.»</p>
+      <p class="princ">Crear es la forma más profunda de pensamiento.</p>
+    </div>
+
+    <p class="hint" data-hint="2">Respondé las cuatro para seguir.</p>
+    <div class="btn-row">
+      <button class="back" data-go="1">← VOLVER</button>
+      <button class="btn" data-go="3" data-needs="crear">SIGUIENTE →</button>
+    </div>
+  </div>
+</section>
+
+<!-- ───── PANTALLA 3 · ☉ EXPANDIR ───── -->
+<section class="screen" data-screen="3">
+  <div class="wrap">
+    <div class="panel-sym">☉</div>
+    <div class="panel-tag">PANEL 3 — EL ARQUITECTO</div>
+    <h2 class="panel-title">EXPANDIR</h2>
+    <p class="panel-sub">«El conocimiento alcanza su valor cuando se multiplica.»</p>
+
+    <div class="qs" data-pillar="expandir"></div>
+
+    <div class="panel-foot">
+      <p class="ind">«Si el conocimiento termina en ti, aún no ha comenzado la expansión.»</p>
+      <p class="princ">El conocimiento que no se comparte se pierde.</p>
+    </div>
+
+    <p class="hint" data-hint="3">Respondé las cuatro para ver tu reflejo.</p>
+    <div class="btn-row">
+      <button class="back" data-go="2">← VOLVER</button>
+      <button class="btn" data-go="4" data-needs="expandir">VER MI REFLEJO →</button>
+    </div>
+  </div>
+</section>
+
+<!-- ───── PANTALLA 4 · REFLEJO + CIERRE + EMBUDO ───── -->
+<section class="screen" data-screen="4">
+  <div class="wrap">
+    <div class="eyebrow">TU REFLEJO</div>
+    <h2 class="big">NO HAY <span class="glitch">NIVEL</span>.<br>HAY <span class="acid">VOS</span>.</h2>
+    <p class="lead">
+      No existe un nivel visible. No existe un rango público. Acá no te devolvemos
+      un número: te devolvemos <strong>tus propias respuestas</strong>. El progreso
+      solo lo conocés vos.
+    </p>
+
+    <div id="mirror" style="margin-top:2.6rem;"></div>
+
+    <div class="closing">
+      <p>
+        Solo tres preguntas: ¿Estoy observando? ¿Estoy creando? ¿Estoy expandiendo?
+        La combinación de estas tres determina tu progreso. Pero ese progreso solo
+        lo conoces tú.
+      </p>
+      <p class="symline">
+        <b>⌘</b> control consciente · <b>✦</b> creatividad · <b>☉</b> conciencia
+      </p>
+      <p class="final-quote">
+        Una mente que observa puede comprender.<br>
+        Una mente que crea puede transformar.<br>
+        Una mente que comparte puede <span class="acid">cambiar el mundo</span>.
+      </p>
+    </div>
+
+    <!-- EMBUDO: newsletter (Firebase reusado) + Discord. Todo gratis. -->
+    <div class="funnel">
+      <div class="f-eyebrow">HG — VL / SEGUIR OBSERVANDO</div>
+      <h3 class="f-title">El test fue la grieta. La <span class="acid">práctica</span> sigue afuera.</h3>
+      <p class="f-dek">
+        Una vez por semana, en tu mail: una capa de tu realidad que parecía "lo
+        normal" — cómo se ve cuando la observás, cómo se rediseña, cómo se comparte.
+        Mismo glitch, en texto.
+      </p>
+      <p class="f-free">TODO EL CONTENIDO ES GRATIS · SIN MURO · LA NEWSLETTER ES LA RELACIÓN, NO UN COBRO</p>
+
+      <form class="nl-form" id="nl-form" novalidate>
+        <input type="email" id="nl-email" placeholder="TU EMAIL" autocomplete="email" required aria-label="Email">
+        <button type="submit" id="nl-submit">SUMARME</button>
+      </form>
+      <div class="nl-status" id="nl-status" role="status" aria-live="polite"></div>
+
+      <div class="f-discord">
+        <div class="d-text">
+          ¿Preferís hacerlo en compañía? Human Glitche no es gente que piensa
+          igual. Es gente que <b>crea</b>. El criterio de pertenencia no es creer
+          las ideas correctas: es estar haciendo algo.
+        </div>
+        <a class="btn ghost" href="https://discord.gg/CgmxdSecHY" target="_blank" rel="noopener">ENTRAR AL DISCORD →</a>
+      </div>
+
+      <p class="f-fine">
+        Capta un email, no un pago. Lo gratis sigue gratis. Cuando haya algo que sí
+        se paga —un taller, un servicio del estudio— te lo contamos ahí, sin presión.
+        Te podés ir cuando quieras.
+      </p>
+    </div>
+
+    <button class="restart" data-go="0">↺ REPETIR EL TEST</button>
+  </div>
+</section>
+
+<footer>
+  HUMAN GLITCHE — humanos que vieron la interfaz y ya no pueden dejar de rediseñarla.<br>
+  El conocimiento se comparte gratis. <a href="https://discord.gg/CgmxdSecHY" target="_blank" rel="noopener">DISCORD</a>
+</footer>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════════════════
+   LÓGICA DEL TEST — auto-reflexión, sin score público.
+   Las 12 preguntas son las EXACTAS de autoevaluacion.pdf (no inventadas).
+   El estado vive en memoria de la pestaña; no se persiste ni se transmite.
+   Solo el email (si el usuario lo deja voluntariamente) se escribe a Firebase.
+═══════════════════════════════════════════════════════════════════════════ */
+(function(){
+  'use strict';
+
+  // ── Contenido fiel a autoevaluacion.pdf ──
+  var PILLARS = {
+    observar: {
+      sym:'⌘', name:'OBSERVAR',
+      questions:[
+        '¿Reconozco cuando una narrativa intenta manipular mi percepción?',
+        '¿Distingo entre datos, opiniones y propaganda?',
+        '¿Puedo observar un problema sin reaccionar automáticamente?',
+        '¿Soy consciente de cómo influyen los algoritmos y los medios en mi visión del mundo?'
+      ],
+      ind:'Si aún reaccionas emocionalmente a la mayoría de estímulos, todavía estás entrenando la observación.',
+      princ:'La claridad comienza cuando dejamos de reaccionar automáticamente.'
+    },
+    crear: {
+      sym:'✦', name:'CREAR',
+      questions:[
+        '¿Estoy creando algo o solo consumiendo contenido?',
+        '¿Uso tecnología y creatividad para producir nuevas ideas?',
+        '¿Estoy combinando disciplinas diferentes?',
+        '¿Estoy construyendo algo que antes no existía?'
+      ],
+      ind:'Si consumes más de lo que produces, el glitch todavía no está activo.',
+      princ:'Crear es la forma más profunda de pensamiento.'
+    },
+    expandir: {
+      sym:'☉', name:'EXPANDIR',
+      questions:[
+        '¿Comparto conocimiento con otros?',
+        '¿Ayudo a otros a pensar por sí mismos?',
+        '¿Estoy construyendo comunidad o sólo proyectos personales?',
+        '¿Estoy creando algo que pueda continuar sin mí?'
+      ],
+      ind:'Si el conocimiento termina en ti, aún no ha comenzado la expansión.',
+      princ:'El conocimiento que no se comparte se pierde.'
+    }
+  };
+  var ORDER = ['observar','crear','expandir'];
+
+  // Opciones de respuesta — auto-reflexión, no examen.
+  var OPTS = [
+    {key:'si', label:'SÍ'},
+    {key:'av', label:'A VECES'},
+    {key:'no', label:'TODAVÍA NO'}
+  ];
+
+  // answers[pillar] = [key|null x4]
+  var answers = {observar:[null,null,null,null], crear:[null,null,null,null], expandir:[null,null,null,null]};
+
+  // ── Render de las preguntas en cada panel ──
+  document.querySelectorAll('.qs').forEach(function(box){
+    var pillar = box.getAttribute('data-pillar');
+    PILLARS[pillar].questions.forEach(function(text, qi){
+      var q = document.createElement('div'); q.className='q';
+      var t = document.createElement('div'); t.className='q-text';
+      t.textContent = (qi+1)+'.  '+text;
+      var opts = document.createElement('div'); opts.className='opts';
+      OPTS.forEach(function(o){
+        var b = document.createElement('button');
+        b.className='opt'; b.type='button'; b.textContent=o.label;
+        b.addEventListener('click', function(){
+          answers[pillar][qi] = o.key;
+          opts.querySelectorAll('.opt').forEach(function(x){x.classList.remove('sel');});
+          b.classList.add('sel');
+          updateHints();
+        });
+        opts.appendChild(b);
+      });
+      q.appendChild(t); q.appendChild(opts);
+      box.appendChild(q);
+    });
+  });
+
+  // ── Navegación entre pantallas ──
+  var screens = document.querySelectorAll('.screen');
+  var bar = document.getElementById('progress-bar');
+  var meta = document.getElementById('step-meta');
+  var current = 0;
+
+  function pillarComplete(pillar){
+    return answers[pillar].every(function(a){ return a !== null; });
+  }
+
+  function show(n){
+    n = parseInt(n,10);
+    screens.forEach(function(s){ s.classList.toggle('active', parseInt(s.getAttribute('data-screen'),10)===n); });
+    current = n;
+    var pct = (n/4)*100;
+    bar.style.width = pct+'%';
+    if(n===0){ meta.textContent='INTRO'; }
+    else if(n>=1 && n<=3){ meta.textContent = 'PILAR '+n+' / 3'; }
+    else { meta.textContent='REFLEJO'; }
+    window.scrollTo({top:0,behavior:'smooth'});
+    if(n===4) renderMirror();
+    updateHints();
+  }
+
+  function updateHints(){
+    // habilita/deshabilita los botones SIGUIENTE según completitud
+    document.querySelectorAll('[data-needs]').forEach(function(btn){
+      var pillar = btn.getAttribute('data-needs');
+      var ok = pillarComplete(pillar);
+      btn.disabled = !ok;
+    });
+    document.querySelectorAll('[data-hint]').forEach(function(h){
+      var scr = h.getAttribute('data-hint');
+      var pillar = ORDER[parseInt(scr,10)-1];
+      var visible = (current===parseInt(scr,10)) && !pillarComplete(pillar);
+      h.classList.toggle('show', visible);
+    });
+  }
+
+  document.addEventListener('click', function(e){
+    var t = e.target.closest('[data-go]');
+    if(!t) return;
+    if(t.disabled) return;
+    if(t.tagName==='A') return; // links externos (discord)
+    var dest = t.getAttribute('data-go');
+    // si va hacia adelante a un panel que requiere completitud, ya está gated por disabled
+    if(dest==='0'){ // reinicio total
+      answers = {observar:[null,null,null,null], crear:[null,null,null,null], expandir:[null,null,null,null]};
+      document.querySelectorAll('.opt.sel').forEach(function(x){x.classList.remove('sel');});
+      var nlf = document.getElementById('nl-form'); if(nlf) nlf.reset();
+      var nls = document.getElementById('nl-status'); if(nls) nls.textContent='';
+      var nlb = document.getElementById('nl-submit'); if(nlb) nlb.disabled=false;
+    }
+    show(dest);
+  });
+
+  // ── Reflejo final: refleja respuestas por pilar, sin ranking comparativo ──
+  function renderMirror(){
+    var mount = document.getElementById('mirror');
+    mount.innerHTML = '';
+    var recapMap = {
+      si:'lo reconocés en vos',
+      av:'aparece a veces',
+      no:'todavía no'
+    };
+    ORDER.forEach(function(pk){
+      var p = PILLARS[pk];
+      var a = answers[pk];
+      var block = document.createElement('div'); block.className='mirror-pillar';
+
+      var head = document.createElement('div'); head.className='mp-head';
+      var sym = document.createElement('span'); sym.className='mp-sym'; sym.textContent=p.sym;
+      var name = document.createElement('span'); name.className='mp-name'; name.textContent=p.name;
+      head.appendChild(sym); head.appendChild(name);
+
+      // visualización sutil: 4 marcas que reflejan tus respuestas, sin puntaje
+      var marks = document.createElement('div'); marks.className='mp-marks';
+      a.forEach(function(ans){
+        var m = document.createElement('div'); m.className='mp-mark '+(ans||'no');
+        marks.appendChild(m);
+      });
+
+      // recap textual de lo que el usuario respondió por pregunta
+      var counts = {si:0,av:0,no:0};
+      a.forEach(function(ans){ counts[ans] = (counts[ans]||0)+1; });
+      var parts = [];
+      if(counts.si)  parts.push(counts.si+' donde '+recapMap.si);
+      if(counts.av)  parts.push(counts.av+' que '+recapMap.av);
+      if(counts.no)  parts.push(counts.no+' que '+recapMap.no);
+      var recap = document.createElement('div'); recap.className='mp-recap';
+      recap.textContent = 'De cuatro preguntas: '+parts.join(' · ')+'.';
+
+      var princ = document.createElement('div'); princ.className='mp-princ'; princ.textContent=p.princ;
+      var ind = document.createElement('div'); ind.className='mp-ind'; ind.textContent='«'+p.ind+'»';
+
+      block.appendChild(head);
+      block.appendChild(marks);
+      block.appendChild(recap);
+      block.appendChild(princ);
+      block.appendChild(ind);
+      mount.appendChild(block);
+    });
+  }
+
+  // ── Captura de email — REUSA el Firebase del sitio (mismo patrón fbPush) ──
+  // Mismo databaseURL que index.html de hg-vl (repositorio de shaders,
+  // ~líneas 2049-2068). NO credenciales, NO base nueva, NO cobro.
+  // Solo cambia el nodo: escribe en /newsletter, con source:'test-glitch'.
+  (function(){
+    var NL_FB_URL = (typeof FB_URL !== 'undefined')
+      ? FB_URL
+      : 'https://hg-vl-shaders-default-rtdb.firebaseio.com';
+    var NL_NODE = '/newsletter';
+
+    var form   = document.getElementById('nl-form');
+    var emailI = document.getElementById('nl-email');
+    var btn    = document.getElementById('nl-submit');
+    var status = document.getElementById('nl-status');
+    if(!form) return;
+
+    function say(msg, ok){
+      status.textContent = msg;
+      status.style.color = ok ? 'var(--acid)' : 'rgba(240,237,230,0.34)';
+    }
+    function validEmail(v){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); }
+
+    // Mismo método REST anónimo que fbPush() de index.html.
+    async function nlPush(node, data){
+      try{
+        var r = await fetch(NL_FB_URL + node + '.json', {
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify(data)
+        });
+        return r.ok ? r.json() : null;
+      }catch(e){ return null; }
+    }
+
+    form.addEventListener('submit', async function(e){
+      e.preventDefault();
+      var email = (emailI.value || '').trim().toLowerCase();
+      if(!validEmail(email)){ say('Revisá el email.'); return; }
+
+      btn.disabled = true;
+      say('Sumándote…');
+
+      // Mismos campos del descriptor newsletter.config.json; source identifica
+      // que el alta vino del Test del Glitch (diagnóstico de qué imán convierte).
+      var res = await nlPush(NL_NODE, {
+        email: email,
+        ts: Date.now(),
+        date: new Date().toISOString().slice(0,10),
+        source: 'test-glitch',
+        page: (location && location.pathname) ? location.pathname : '',
+        status: 'pending'   // queda pending hasta el doble opt-in (gated, GATES.md)
+      });
+
+      if(res){
+        form.reset();
+        say('Listo. Te llega un mail para confirmar.', true);
+      }else{
+        btn.disabled = false;
+        say('No se pudo ahora. Probá de nuevo en un momento.');
+      }
+    });
+  })();
+
+  // init
+  show(0);
+})();
+</script>
+</body>
+</html>

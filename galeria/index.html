@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ARCHIVO — GALERÍA VISUAL · HUMAN STUDIO</title>
+<meta name="description" content="De 80 obras en Photoshop por gusto al contenido de más alta calidad para artistas masivos. La trayectoria del estudio: crear, dominar, enseñar. Proyecto Marea, Luck Ra, Malena Narvay, Martín Cirio.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Human Glitche">
+<meta property="og:title" content="ARCHIVO — GALERÍA VISUAL · HUMAN STUDIO">
+<meta property="og:description" content="No es un grid de trabajos. Es un recorrido: de crear por gusto a crear el contenido de más alta calidad, y enseñarlo. ⌘ Observar · ✦ Crear · ☉ Expandir.">
+<meta property="og:url" content="https://www.hg-vl.com/galeria-visual/">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="ARCHIVO — GALERÍA VISUAL · HUMAN STUDIO">
+<meta name="twitter:description" content="La trayectoria del estudio que hoy crea el contenido de más alta calidad. Crear, dominar, enseñar.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════════════════════════════════════
+   ARCHIVO — GALERÍA VISUAL · HUMAN STUDIO  (portfolio como TRAYECTORIA · ☉ Expandir)
+   ──────────────────────────────────────────────────────────────────────────
+   Tokens y tipografías heredados del sitio Visual Lab (hg-vl/index.html):
+   --black #050505 / --white #f0ede6 / --acid #b8ff00 / --glitch #ff2d55,
+   Bebas Neue + Space Mono + DM Sans.
+   Autocontenido: su propio <style> y <script>, sin dependencias del bundle.
+   FACTUALIDAD: contenido fiel a _fuente-trayectoria.md. Los videos son de los
+   canales de artistas/eventos; HG aportó mapping / visuales en vivo / VFX /
+   contenido — no se sobre-atribuye. No se fuerza El Ghetto donde el autor no lo
+   atribuyó (Malena Narvay y Martín Cirio NO vienen "vía El Ghetto").
+   EMBEDS: facade — miniatura hqdefault + ▶; el iframe nocookie se inyecta al
+   click (no se cargan 9 iframes de entrada).
+═══════════════════════════════════════════════════════════════════════════ */
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --black:#050505;
+  --white:#f0ede6;
+  --acid:#b8ff00;
+  --glitch:#ff2d55;
+  --mono:'Space Mono',monospace;
+  --display:'Bebas Neue',sans-serif;
+  --body:'DM Sans',sans-serif;
+  --line:rgba(240,237,230,0.12);
+  --ink-soft:rgba(240,237,230,0.55);
+  --ink-faint:rgba(240,237,230,0.32);
+}
+html{scroll-behavior:smooth;}
+body{
+  background:var(--black);color:var(--white);
+  font-family:var(--body);overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;line-height:1.6;
+}
+/* grano sutil, como el sitio */
+body::before{
+  content:'';position:fixed;inset:0;z-index:1;pointer-events:none;opacity:0.35;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+}
+.wrap{position:relative;z-index:2;max-width:980px;margin:0 auto;padding:0 1.5rem;}
+.narrow{max-width:720px;}
+a{color:var(--acid);text-decoration:none;}
+a:hover{color:var(--white);}
+
+/* ───── BARRA DE PROGRESO ───── */
+#progress{position:fixed;top:0;left:0;width:100%;height:2px;z-index:50;background:rgba(240,237,230,0.06);}
+#progress-bar{height:100%;width:0;background:var(--acid);transition:width 0.25s ease;}
+
+/* ───── NAV MÍNIMA ───── */
+.topbar{position:relative;z-index:2;display:flex;justify-content:space-between;align-items:baseline;
+  padding:1.4rem 1.5rem 0;max-width:980px;margin:0 auto;}
+.topbar .brand{font-family:var(--mono);font-size:10px;letter-spacing:0.28em;color:var(--ink-soft);}
+.topbar .brand b{color:var(--acid);font-weight:700;}
+.topbar .back{font-family:var(--mono);font-size:10px;letter-spacing:0.18em;color:var(--ink-faint);}
+
+/* ───── HERO / TESIS ───── */
+.hero{padding:5.5rem 0 3.5rem;}
+.kicker{font-family:var(--mono);font-size:11px;letter-spacing:0.32em;color:var(--acid);
+  text-transform:uppercase;margin-bottom:1.6rem;}
+.hero h1{font-family:var(--display);font-weight:400;line-height:0.92;letter-spacing:0.01em;
+  font-size:clamp(2.8rem,9vw,6rem);margin-bottom:1.4rem;}
+.hero h1 .gl{color:var(--acid);}
+.hero .lede{font-size:clamp(1.05rem,2.3vw,1.35rem);max-width:680px;color:var(--white);font-weight:300;}
+.hero .lede b{font-weight:500;color:var(--acid);}
+.hero .sub{margin-top:1.4rem;max-width:660px;color:var(--ink-soft);font-size:0.98rem;}
+.anchor-frase{margin-top:2.4rem;font-family:var(--mono);font-size:12px;letter-spacing:0.12em;
+  color:var(--ink-soft);border-left:2px solid var(--acid);padding-left:1rem;max-width:560px;}
+
+/* ───── DIVISOR DE SECCIÓN ───── */
+.sec-head{margin:4.5rem 0 2.2rem;}
+.sec-head .n{font-family:var(--mono);font-size:11px;letter-spacing:0.28em;color:var(--acid);display:block;margin-bottom:0.7rem;}
+.sec-head h2{font-family:var(--display);font-weight:400;font-size:clamp(2rem,6vw,3.4rem);line-height:1;letter-spacing:0.01em;}
+.sec-head p{margin-top:0.9rem;color:var(--ink-soft);max-width:680px;}
+
+/* ───── EL ARCO (timeline) ───── */
+#arco-track{position:relative;border-left:1px solid var(--line);margin-left:0.5rem;padding-left:0;}
+.etapa{position:relative;padding:0 0 2.4rem 2rem;opacity:0;transform:translateY(18px);
+  transition:opacity 0.7s ease,transform 0.7s ease;}
+.etapa.in{opacity:1;transform:none;}
+.etapa::before{content:'';position:absolute;left:-5px;top:6px;width:9px;height:9px;border-radius:50%;
+  background:var(--black);border:1px solid var(--ink-faint);transition:all 0.4s;}
+.etapa.in::before{background:var(--acid);border-color:var(--acid);box-shadow:0 0 0 4px rgba(184,255,0,0.08);}
+.etapa .yr{font-family:var(--mono);font-size:10px;letter-spacing:0.22em;color:var(--acid);text-transform:uppercase;}
+.etapa h3{font-family:var(--display);font-weight:400;font-size:clamp(1.4rem,3.6vw,2.1rem);line-height:1.02;margin:0.35rem 0 0.5rem;}
+.etapa p{color:var(--ink-soft);max-width:640px;font-size:0.98rem;}
+.etapa p b{color:var(--white);font-weight:500;}
+.etapa .pilar{display:inline-block;margin-top:0.7rem;font-family:var(--mono);font-size:10px;
+  letter-spacing:0.12em;color:var(--ink-faint);border:1px solid var(--line);border-radius:2px;padding:0.25rem 0.55rem;}
+.etapa.final::before{background:var(--glitch);border-color:var(--glitch);box-shadow:0 0 0 4px rgba(255,45,85,0.12);}
+.etapa.final h3{color:var(--white);}
+.etapa.final .closer{margin-top:0.9rem;border-left:2px solid var(--glitch);padding-left:0.9rem;
+  font-family:var(--mono);font-size:12px;letter-spacing:0.06em;color:var(--white);max-width:560px;}
+.etapa.final .closer b{color:var(--acid);}
+
+/* ───── CASOS CON VIDEO ───── */
+.case{border-top:1px solid var(--line);padding:2.6rem 0;}
+.case-top{display:flex;flex-wrap:wrap;justify-content:space-between;gap:0.6rem 2rem;align-items:baseline;margin-bottom:0.5rem;}
+.case h3{font-family:var(--display);font-weight:400;font-size:clamp(1.8rem,5vw,3rem);line-height:0.98;letter-spacing:0.01em;}
+.case .tag{font-family:var(--mono);font-size:10px;letter-spacing:0.18em;color:var(--acid);text-transform:uppercase;white-space:nowrap;}
+.case .role{color:var(--white);font-weight:300;max-width:760px;margin-bottom:0.4rem;}
+.case .role b{color:var(--acid);font-weight:500;}
+.case .factual{font-family:var(--mono);font-size:11px;letter-spacing:0.04em;color:var(--ink-faint);max-width:760px;margin-bottom:1.4rem;}
+
+/* grilla de videos (facade) */
+.vids{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1rem;}
+.vid{position:relative;aspect-ratio:16/9;border:1px solid var(--line);border-radius:3px;overflow:hidden;
+  background:#0b0b0b;cursor:pointer;transition:border-color 0.3s;}
+.vid:hover{border-color:rgba(184,255,0,0.5);}
+.vid .thumb{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
+  filter:grayscale(0.35) contrast(1.05);transition:filter 0.4s,transform 0.6s;}
+.vid:hover .thumb{filter:grayscale(0) contrast(1.05);transform:scale(1.03);}
+.vid .scrim{position:absolute;inset:0;background:linear-gradient(180deg,rgba(5,5,5,0.05) 30%,rgba(5,5,5,0.82) 100%);}
+.vid .play{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  width:54px;height:54px;border-radius:50%;border:1px solid var(--acid);
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(5,5,5,0.55);backdrop-filter:blur(4px);transition:all 0.3s;}
+.vid:hover .play{background:var(--acid);}
+.vid .play svg{width:18px;height:18px;fill:var(--acid);margin-left:3px;transition:fill 0.3s;}
+.vid:hover .play svg{fill:var(--black);}
+.vid .vtitle{position:absolute;left:0;right:0;bottom:0;padding:0.7rem 0.8rem;
+  font-family:var(--mono);font-size:10px;letter-spacing:0.04em;color:var(--white);line-height:1.4;z-index:2;}
+.vid .vkind{display:block;color:var(--acid);font-size:9px;letter-spacing:0.16em;margin-bottom:3px;text-transform:uppercase;}
+.vid iframe{position:absolute;inset:0;width:100%;height:100%;border:0;}
+.vid.playing .thumb,.vid.playing .scrim,.vid.playing .play,.vid.playing .vtitle{display:none;}
+
+.case .funnel{margin-top:1.6rem;}
+.case .funnel a{font-family:var(--mono);font-size:11px;letter-spacing:0.12em;color:var(--acid);
+  border:1px solid rgba(184,255,0,0.4);border-radius:2px;padding:0.55rem 0.9rem;display:inline-block;transition:all 0.25s;}
+.case .funnel a:hover{background:var(--acid);color:var(--black);}
+.case .funnel .arr{color:var(--ink-faint);margin-left:0.4rem;}
+
+/* ───── CRÉDITOS SIN VIDEO ───── */
+.creds{border:1px solid var(--line);border-radius:3px;padding:2rem 1.6rem;margin-top:1rem;}
+.creds .lead{font-family:var(--mono);font-size:11px;letter-spacing:0.16em;color:var(--ink-soft);
+  text-transform:uppercase;margin-bottom:1.4rem;}
+.cred-group{margin-bottom:1.4rem;}
+.cred-group:last-child{margin-bottom:0;}
+.cred-group .gl{font-family:var(--mono);font-size:10px;letter-spacing:0.14em;color:var(--acid);display:block;margin-bottom:0.6rem;}
+.chips{display:flex;flex-wrap:wrap;gap:0.5rem;}
+.chip{font-family:var(--mono);font-size:12px;letter-spacing:0.04em;color:var(--white);
+  border:1px solid var(--line);border-radius:2px;padding:0.4rem 0.7rem;background:rgba(240,237,230,0.02);}
+.chip.place{color:var(--ink-soft);}
+.creds .note{margin-top:1.4rem;font-family:var(--mono);font-size:10px;letter-spacing:0.04em;color:var(--ink-faint);}
+
+/* ───── OBRAS ORIGINALES · EL ORIGEN ───── */
+.origen{border:1px solid rgba(184,255,0,0.28);border-radius:3px;padding:2.4rem 1.8rem;margin-top:1rem;
+  background:rgba(184,255,0,0.015);}
+.origen .big{font-family:var(--display);font-size:clamp(3.5rem,12vw,7rem);line-height:0.85;color:var(--acid);letter-spacing:0.01em;}
+.origen .lbl{font-family:var(--mono);font-size:11px;letter-spacing:0.2em;color:var(--white);text-transform:uppercase;margin:0.6rem 0 1.2rem;}
+.origen p{color:var(--ink-soft);max-width:620px;}
+.origen p b{color:var(--white);font-weight:500;}
+.origen .pilar{display:inline-block;margin-top:1rem;font-family:var(--mono);font-size:10px;
+  letter-spacing:0.12em;color:var(--ink-faint);border:1px solid var(--line);border-radius:2px;padding:0.25rem 0.55rem;}
+/* grilla real de obras */
+#obras-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:0.7rem;margin-top:1.8rem;}
+.obra{position:relative;border:1px solid var(--line);border-radius:2px;overflow:hidden;
+  background:#0b0b0b;aspect-ratio:1;}
+.obra img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
+  filter:grayscale(0.18) contrast(1.04);transition:filter 0.4s,transform 0.6s;}
+.obra:hover img{filter:grayscale(0) contrast(1.04);transform:scale(1.04);}
+.obra .ometa{position:absolute;left:0;right:0;bottom:0;z-index:2;padding:0.55rem 0.6rem;
+  background:linear-gradient(180deg,rgba(5,5,5,0) 0%,rgba(5,5,5,0.88) 70%);
+  font-family:var(--mono);font-size:10px;letter-spacing:0.03em;color:var(--white);line-height:1.35;}
+.obra .ometa .on{color:var(--acid);font-size:9px;letter-spacing:0.16em;display:block;margin-bottom:2px;}
+.origen .collect{margin-top:2rem;border-top:1px solid var(--line);padding-top:1.6rem;}
+.origen .collect .clbl{font-family:var(--mono);font-size:10px;letter-spacing:0.16em;color:var(--ink-soft);
+  text-transform:uppercase;margin-bottom:0.9rem;}
+.origen .collect .cbtns{display:flex;gap:0.7rem;flex-wrap:wrap;}
+.origen .collect a{font-family:var(--mono);font-size:11px;letter-spacing:0.12em;color:var(--acid);
+  border:1px solid rgba(184,255,0,0.4);border-radius:2px;padding:0.6rem 1rem;display:inline-block;transition:all 0.25s;text-transform:uppercase;}
+.origen .collect a:hover{background:var(--acid);color:var(--black);}
+.origen .collect a .arr{color:var(--ink-faint);margin-left:0.4rem;}
+.origen .collect a:hover .arr{color:var(--black);}
+.origen .note{margin-top:1.4rem;font-family:var(--mono);font-size:10px;letter-spacing:0.04em;color:var(--ink-faint);
+  border-left:2px solid rgba(184,255,0,0.3);padding-left:0.9rem;max-width:640px;}
+
+/* ───── 3D / MOTION — el músculo de render ───── */
+.motion-intro{border:1px solid rgba(184,255,0,0.28);border-radius:3px;padding:1.8rem 1.6rem;margin-top:1rem;
+  background:rgba(184,255,0,0.015);}
+.motion-intro p{color:var(--ink-soft);max-width:720px;}
+.motion-intro p b{color:var(--white);font-weight:500;}
+.motion-intro .stack-line{font-family:var(--mono);font-size:11px;letter-spacing:0.1em;color:var(--acid);
+  margin-top:1rem;border-left:2px solid var(--acid);padding-left:0.9rem;max-width:640px;line-height:1.7;}
+.motion-intro .stack-line b{color:var(--white);}
+.motion-intro .pilar{display:inline-block;margin-top:1.2rem;font-family:var(--mono);font-size:10px;
+  letter-spacing:0.12em;color:var(--ink-faint);border:1px solid var(--line);border-radius:2px;padding:0.25rem 0.55rem;}
+/* grilla masonry tolerante a aspectos mixtos */
+#motion-grid{margin-top:1.8rem;column-count:3;column-gap:0.8rem;}
+@media(max-width:880px){#motion-grid{column-count:2;}}
+@media(max-width:520px){#motion-grid{column-count:1;}}
+.mtile{position:relative;display:block;width:100%;margin:0 0 0.8rem;break-inside:avoid;
+  border:1px solid var(--line);border-radius:3px;overflow:hidden;background:#0b0b0b;}
+.mtile video{display:block;width:100%;height:auto;object-fit:cover;
+  filter:grayscale(0.12) contrast(1.04);transition:filter 0.4s;}
+.mtile:hover video{filter:grayscale(0) contrast(1.04);}
+.mtile .mscrim{position:absolute;left:0;right:0;bottom:0;height:55%;pointer-events:none;
+  background:linear-gradient(180deg,rgba(5,5,5,0) 0%,rgba(5,5,5,0.78) 100%);}
+.mtile .mtitle{position:absolute;left:0;right:0;bottom:0;padding:0.7rem 0.8rem;z-index:2;
+  font-family:var(--mono);font-size:10px;letter-spacing:0.04em;color:var(--white);line-height:1.4;}
+.mtile .mkind{display:block;color:var(--acid);font-size:9px;letter-spacing:0.16em;margin-bottom:3px;text-transform:uppercase;}
+.mtile .mload{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:1;
+  font-family:var(--mono);font-size:9px;letter-spacing:0.18em;color:var(--ink-faint);text-transform:uppercase;opacity:0;transition:opacity 0.3s;}
+.motion-funnel{margin-top:1.8rem;}
+.motion-funnel a{font-family:var(--mono);font-size:11px;letter-spacing:0.12em;color:var(--acid);
+  border:1px solid rgba(184,255,0,0.4);border-radius:2px;padding:0.55rem 0.9rem;display:inline-block;transition:all 0.25s;}
+.motion-funnel a:hover{background:var(--acid);color:var(--black);}
+.motion-funnel .arr{color:var(--ink-faint);margin-left:0.4rem;}
+.motion-funnel a:hover .arr{color:var(--black);}
+
+/* ───── CTA FINAL ───── */
+.cta{margin:5rem 0 2rem;border:1px solid rgba(184,255,0,0.4);border-radius:4px;
+  padding:3rem 2rem;text-align:center;background:rgba(184,255,0,0.02);}
+.cta .k{font-family:var(--mono);font-size:11px;letter-spacing:0.28em;color:var(--acid);text-transform:uppercase;margin-bottom:1.2rem;}
+.cta h2{font-family:var(--display);font-weight:400;font-size:clamp(2rem,6vw,3.6rem);line-height:0.98;margin-bottom:1.1rem;}
+.cta p{color:var(--ink-soft);max-width:580px;margin:0 auto 1.8rem;}
+.cta .btns{display:flex;gap:0.9rem;justify-content:center;flex-wrap:wrap;}
+.cta .btn{font-family:var(--mono);font-size:12px;letter-spacing:0.14em;padding:0.85rem 1.5rem;border-radius:3px;
+  text-transform:uppercase;transition:all 0.25s;}
+.cta .btn.primary{background:var(--acid);color:var(--black);font-weight:700;}
+.cta .btn.primary:hover{background:var(--white);}
+.cta .btn.ghost{border:1px solid var(--line);color:var(--white);}
+.cta .btn.ghost:hover{border-color:var(--acid);color:var(--acid);}
+
+/* ───── PIE / NOTA GRATIS ───── */
+.foot{border-top:1px solid var(--line);margin-top:3rem;padding:2.4rem 0 4rem;color:var(--ink-faint);
+  font-family:var(--mono);font-size:10px;letter-spacing:0.06em;line-height:2;}
+.foot b{color:var(--acid);}
+.pilares-foot{display:flex;gap:1.4rem;flex-wrap:wrap;margin-bottom:1.2rem;}
+.pilares-foot span{color:var(--ink-soft);}
+
+@media(max-width:600px){
+  .hero{padding:4rem 0 2.5rem;}
+  .vids{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<div id="progress"><div id="progress-bar"></div></div>
+
+<header class="topbar">
+  <div class="brand"><b>HUMAN</b> STUDIO · ARCHIVO</div>
+  <div class="back">⌘ OBSERVAR · ✦ CREAR · ☉ EXPANDIR</div>
+</header>
+
+<!-- ════════════ HERO / TESIS ════════════ -->
+<section class="wrap hero">
+  <div class="kicker">Archivo / Galería Visual</div>
+  <h1>El estudio que hoy crea<br>el contenido de <span class="gl">más alta calidad</span>.</h1>
+  <p class="lede">No empezó como agencia. Empezó como alguien <b>creando por gusto</b>: 80 animaciones en Photoshop, sin cliente. Lo que ves acá es a dónde llegó ese impulso.</p>
+  <p class="sub">Mapping a gran escala, visuales en vivo que reaccionan al momento, VFX con IA, contenido de gira para artistas masivos. Todo nació de la misma grieta: ver la interfaz visual de una realidad y rediseñarla. Esto no es un grid de trabajos sueltos — es un recorrido.</p>
+  <p class="anchor-frase">Crear por gusto. Dominar el oficio. Enseñarlo. El portfolio no es la prueba del talento: es la prueba de que el talento se volvió red.</p>
+</section>
+
+<!-- ════════════ EL ARCO ════════════ -->
+<section class="wrap narrow">
+  <div class="sec-head">
+    <span class="n">01 — EL ARCO</span>
+    <h2>De crear por gusto<br>a crear el contenido.</h2>
+    <p>Siete etapas. Cada una sostiene un pilar: primero <b>crear y observar</b>, después la <b>maestría</b>, al final <b>enseñar y expandir</b>. El estudio de hoy es la suma de todas.</p>
+  </div>
+  <div id="arco-track"></div>
+</section>
+
+<!-- ════════════ CASOS CON VIDEO ════════════ -->
+<section class="wrap">
+  <div class="sec-head">
+    <span class="n">02 — CASOS DESTACADOS</span>
+    <h2>Qué hizo el estudio.</h2>
+    <p>Trabajos confirmados, con su registro en video. Los videos son de los canales de los artistas y eventos; lo que aportó Human Studio se nombra con precisión, sin adornar. Cada miniatura abre el video al tocarla.</p>
+  </div>
+  <div id="casos"></div>
+</section>
+
+<!-- ════════════ 3D / MOTION — EL MÚSCULO DE RENDER ════════════ -->
+<section class="wrap">
+  <div class="sec-head">
+    <span class="n">03 — 3D / MOTION</span>
+    <h2>El músculo de render.</h2>
+    <p>Acá no hay show en vivo: es el <b>motion y el render de marca y artista</b> que produce el estudio. Loops propios, no plantillas de banco. Es la <b>ventaja más difícil de igualar</b> — IA para explorar a alta velocidad, y producción 3D propia para construir con control total lo que la IA no ejecuta con calidad real.</p>
+  </div>
+  <div class="motion-intro">
+    <p><b>Producción 3D propia con Cinema 4D + Octane + Insydium.</b> La mayoría usa solo IA (resultado genérico) o solo 3D tradicional (lento). El estudio cruza las dos cosas: simulaciones de partículas y fluidos, render fotorrealista y motion de identidad que pocos pueden ejecutar dentro del mismo servicio.</p>
+    <div class="stack-line">⌘ Explorar con IA a alta velocidad · ✦ Construir en <b>C4D + Octane + Insydium</b> con control total · ☉ Cada loop alimenta el archivo y el feed de Human Media.</div>
+    <span class="pilar">✦ Crear — el render propio es el contenido, no comprarlo</span>
+    <div id="motion-grid"></div>
+    <div class="motion-funnel">
+      <a href="/servicios.html#seccion-managers">¿Necesitás una pieza así? → A2 · Reality Reel (videoclip / contenido de gira)<span class="arr">→</span></a>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════ CRÉDITOS SIN VIDEO ════════════ -->
+<section class="wrap narrow">
+  <div class="sec-head">
+    <span class="n">04 — TRABAJÓ CON / FUE PARTE DE</span>
+    <h2>La red.</h2>
+    <p>Nunca hizo publicidad de lo que hace — todo llegó por trabajo y por red. Estos son los nombres y colectivos de los que la trayectoria fue parte, más allá de los casos con video.</p>
+  </div>
+  <div id="creditos" class="creds"></div>
+</section>
+
+<!-- ════════════ OBRAS ORIGINALES · EL ORIGEN ════════════ -->
+<section class="wrap narrow">
+  <div class="sec-head">
+    <span class="n">05 — EL ORIGEN</span>
+    <h2>Las 80 obras originales.</h2>
+    <p>Antes del primer cliente, antes del primer escenario: animaciones nacidas <b>por gusto en 2018</b>, sin encargo. El germen de todo lo demás. Crear como la forma más profunda de pensamiento (✦). Hoy están minteadas como NFT.</p>
+  </div>
+  <div class="origen">
+    <div class="big">2018</div>
+    <div class="lbl">obras originales — el origen del arco</div>
+    <p><b>Animaciones en Photoshop, sin cliente.</b> El impulso que después se volvió mapping de 80 × 200 metros y VFX con IA empezó como pura exploración. Estas piezas son la raíz de la trayectoria — y la prueba de que todo nació de crear por gusto.</p>
+    <span class="pilar">✦ Crear — crear por gusto, antes de que existiera un encargo</span>
+    <div id="obras-grid"></div>
+    <div class="collect">
+      <div class="clbl">Coleccionar — las obras viven como NFT</div>
+      <div class="cbtns">
+        <a href="https://og.rarible.com/humanglitche" target="_blank" rel="noopener noreferrer">Ver la colección en Rarible<span class="arr">→</span></a>
+        <a href="https://opensea.io/es/human-glitche" target="_blank" rel="noopener noreferrer">Ver en OpenSea<span class="arr">→</span></a>
+      </div>
+    </div>
+    <p class="note">Verlas acá es <b>gratis</b>: son la prueba y el origen. Coleccionarlas es vía Rarible / OpenSea. Las imágenes traen su marca HUMAN GLITCHE de 2018. Por ahora se muestran las <b id="obras-count">29</b> piezas que conservan título; la grilla es extensible — el resto se suma sin tocar el resto de la página.</p>
+  </div>
+</section>
+
+<!-- ════════════ CTA AL EMBUDO ════════════ -->
+<section class="wrap narrow">
+  <div class="cta">
+    <div class="k">Managers &amp; Artistas</div>
+    <h2>¿Tu show merece esto?</h2>
+    <p>Si armás una gira, lanzás un álbum o montás un show, este estudio diseña la interfaz visual de la experiencia que tu público va a vivir. Del set en vivo al mapping a gran escala, del videoclip a la identidad escénica.</p>
+    <div class="btns">
+      <a class="btn primary" href="/servicios.html#seccion-managers">VER LA OFERTA — STUDIO</a>
+      <a class="btn ghost" href="/servicios.html#proceso">CÓMO TRABAJAMOS</a>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════ PIE ════════════ -->
+<footer class="wrap foot">
+  <div class="pilares-foot">
+    <span>⌘ <b>OBSERVAR</b> — ver la interfaz visual de cada show.</span>
+    <span>✦ <b>CREAR</b> — el contenido, no comprarlo.</span>
+    <span>☉ <b>EXPANDIR</b> — ya lo hacen 7 personas más.</span>
+  </div>
+  Este archivo es <b>gratis</b>: es prueba, es información, y la información se comparte.
+  Lo que se cobra es la transformación — diseñar la interfaz visual de tu show o tu marca.
+  · Human Glitche · Visual Lab.
+</footer>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════════════════
+   DATA-DRIVEN — sumar etapas, casos, créditos u obras es editar estos arrays.
+   Fuente: web/galeria-visual/_fuente-trayectoria.md  (relato fiel del autor).
+═══════════════════════════════════════════════════════════════════════════ */
+
+// ── EL ARCO (7 etapas) ─────────────────────────────────────────────────────
+const ARCO = [
+  { yr:'01 · El origen',
+    h:'Crear por gusto',
+    p:'Empezó haciendo <b>animaciones en Photoshop por gusto</b>: sus <b>80 obras originales</b>. Sin cliente, sin escenario. Solo el impulso de crear.',
+    pilar:'✦ Crear — crear es la forma más profunda de pensamiento' },
+  { yr:'02 · Primeros visuales',
+    h:'VJ en John Doe',
+    p:'Aprendió a hacer visuales e hizo de <b>VJ en un bar llamado John Doe</b>. La primera vez que el contenido se proyectó frente a gente.',
+    pilar:'⌘ Observar — leer la energía de una sala en vivo' },
+  { yr:'03 · Electrónica',
+    h:'Visuales para la pista',
+    p:'Pasó a <b>fiestas de electrónica</b> y le hizo visuales a varios artistas: <b>Kolombo, Mellino, Bastida</b> y varios más.',
+    pilar:'✦ Crear — el oficio en movimiento' },
+  { yr:'04 · Alta precisión',
+    h:'VonHarv',
+    p:'Entró en eventos para un lugar llamado <b>VonHarv</b>, donde se dedican a <b>operar con alta precisión</b>. El salto de hacer visuales a ejecutarlos con rigor.',
+    pilar:'✦ Crear — maestría: precisión bajo presión' },
+  { yr:'05 · La red',
+    h:'El Ghetto Producciones',
+    p:'Siempre, a la par de su avance, fue parte de <b>El Ghetto Producciones</b>, que le acercó muchos trabajos. <b>Nunca hizo publicidad de lo que hace</b> — todo por trabajo y red.',
+    pilar:'☉ Expandir — la red multiplica lo que uno solo no alcanza' },
+  { yr:'06 · Escala masiva',
+    h:'Artistas masivos + mapping a gran escala',
+    p:'Vía El Ghetto llegó a <b>Luck Ra, Lautaro López, Lil Cake, Un Verano</b> y muchas bandas. Y el <b>mapping a gran escala con Proyecto Marea</b>: una superficie de <b>80 m × 200 m</b>.',
+    pilar:'✦ Crear — del bar a 80 × 200 metros' },
+  { yr:'07 · Hoy',
+    h:'Enseñar y crear el contenido',
+    p:'Ya <b>no opera visuales en lugares</b>. Le <b>enseñó a 7 personas</b> que lo hacen, y él se dedica a <b>crear el contenido de más alta calidad</b>.',
+    pilar:'☉ Expandir — ¿estoy creando algo que pueda continuar sin mí?',
+    final:true,
+    closer:'El cierre del arco <b>es</b> el pilar ☉ Expandir respondido: le enseñó a 7 personas y ahora crea el contenido. El talento dejó de depender de él para existir.' }
+];
+
+// ── CASOS CON VIDEO (facade) ───────────────────────────────────────────────
+// Cada caso: nombre, etiqueta, qué aportó HG (factual), nota, y videos {id,kind,title}.
+// FACTUALIDAD: HG aportó mapping / visuales / VFX / contenido — los videos son de
+// los canales de artistas/eventos. No sobre-atribuir. El Ghetto NO se asocia a
+// Malena Narvay ni a Martín Cirio (el autor no lo atribuyó).
+const CASOS = [
+  {
+    nombre:'Proyecto Marea',
+    tag:'Mapping a gran escala',
+    role:'<b>Mapping de 80 m × 200 m sobre los silos del puerto + show de luces</b> en el Festival Marea (Mar del Plata).',
+    factual:'Proyección a gran escala sobre la fachada de los silos. Registro de los videos: canales del festival/evento.',
+    funnel:{ texto:'Este nivel de show → A1 · Live Reality (visuales en vivo & mapping)',
+             href:'/servicios.html#seccion-managers' },
+    videos:[
+      { id:'UixJ_ggrkoE', kind:'Mapping', title:'MAREA Puerto MDP — Mapping sobre silos' },
+      { id:'__Yv6AI9KXI', kind:'Show de luces', title:'Festival MAREA en vivo — show de luces' }
+    ]
+  },
+  {
+    nombre:'Luck Ra',
+    tag:'Visuales para shows · artista masivo',
+    role:'<b>Visuales para shows</b> de un artista masivo. Llegó vía El Ghetto Producciones.',
+    factual:'HG aportó visuales en los shows; los recitales y registros pertenecen a los canales del artista y los festivales (AGS Flow, Lollapalooza Argentina 2022).',
+    funnel:{ texto:'Visuales de gira → A1 · Live Reality · A2 · Reality Reel',
+             href:'/servicios.html#seccion-managers' },
+    videos:[
+      { id:'9XTxag6klRc', kind:'En vivo', title:'#AGSFlow2022 — Luck Ra by FILTR' },
+      { id:'OMT6lk5wmas', kind:'Recital', title:'Luck Ra — Lollapalooza Argentina 2022 (completo)' }
+    ]
+  },
+  {
+    nombre:'Malena Narvay',
+    tag:'VFX con IA · creación total del contenido',
+    role:'<b>VFX con IA en los videoclips</b> (Dame Calor, Manada) y <b>creación total del contenido</b> para los shows en vivo con <b>SMPTE</b> (Dualidad, AGS Tecnópolis 2025).',
+    factual:'VFX con IA en los videoclips oficiales y contenido propio para el show en vivo sincronizado por SMPTE. Los videos son de los canales oficiales de la artista.',
+    funnel:{ texto:'VFX + contenido de show → A2 · Reality Reel · A1 · Live Reality',
+             href:'/servicios.html#seccion-managers' },
+    videos:[
+      { id:'rvpuVnhwp9s', kind:'VFX IA · videoclip', title:'Malena Narvay — DAME CALOR (Video Oficial)' },
+      { id:'D3j9QXKkcoY', kind:'VFX IA · videoclip', title:'Malena Narvay, Oh My Pop! — Manada (Official Video)' },
+      { id:'94wwxbwZ-4g', kind:'En vivo · SMPTE', title:'Malena Narvay — DUALIDAD (Full Band · Live)' },
+      { id:'JdgMZnNayGU', kind:'En vivo · SMPTE', title:'Malena Narvay — AGS Tecnópolis 2025 (Full Band · Live)' }
+    ]
+  },
+  {
+    nombre:'Martín Cirio',
+    tag:'VFX',
+    role:'<b>VFX</b> para la pieza “Mani for Supermarket”.',
+    factual:'Aporte de VFX. El video es del canal asociado a la pieza.',
+    funnel:{ texto:'VFX para contenido → A2 · Reality Reel',
+             href:'/servicios.html#seccion-managers' },
+    videos:[
+      { id:'egVeg8gXhEA', kind:'VFX', title:'MANI FOR SUPERMARKET — Martín Cirio' }
+    ]
+  }
+];
+
+// ── CRÉDITOS SIN VIDEO ─────────────────────────────────────────────────────
+const CREDITOS = [
+  { gl:'Electrónica (visuales)', tipo:'artist', items:['Kolombo','Mellino','Bastida','…y varios más'] },
+  { gl:'Vía El Ghetto Producciones', tipo:'artist', items:['Lautaro López','Lil Cake','Un Verano','…y muchas bandas'] },
+  { gl:'Origen visual', tipo:'artist', items:['John Doe (VJ)'] },
+  { gl:'Lugares / colectivos', tipo:'place', items:['VonHarv (eventos de precisión)','El Ghetto Producciones (la red)'] }
+];
+
+/* ── RENDER: ARCO ── */
+const track = document.getElementById('arco-track');
+ARCO.forEach(e=>{
+  const d = document.createElement('div');
+  d.className = 'etapa' + (e.final ? ' final' : '');
+  let html = `<span class="yr">${e.yr}</span><h3>${e.h}</h3><p>${e.p}</p><span class="pilar">${e.pilar}</span>`;
+  if(e.closer) html += `<div class="closer">${e.closer}</div>`;
+  d.innerHTML = html;
+  track.appendChild(d);
+});
+
+/* ── RENDER: CASOS ── */
+const casosEl = document.getElementById('casos');
+CASOS.forEach(c=>{
+  const sec = document.createElement('article');
+  sec.className = 'case';
+  let vids = '';
+  c.videos.forEach(v=>{
+    vids += `
+      <div class="vid" data-yt="${v.id}" role="button" tabindex="0" aria-label="Reproducir: ${v.title}">
+        <img class="thumb" loading="lazy" src="https://i.ytimg.com/vi/${v.id}/hqdefault.jpg" alt="${v.title}">
+        <div class="scrim"></div>
+        <div class="play"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg></div>
+        <div class="vtitle"><span class="vkind">${v.kind}</span>${v.title}</div>
+      </div>`;
+  });
+  sec.innerHTML = `
+    <div class="case-top">
+      <h3>${c.nombre}</h3>
+      <span class="tag">${c.tag}</span>
+    </div>
+    <p class="role">${c.role}</p>
+    <p class="factual">${c.factual}</p>
+    <div class="vids">${vids}</div>
+    <div class="funnel"><a href="${c.funnel.href}">${c.funnel.texto}<span class="arr">→</span></a></div>`;
+  casosEl.appendChild(sec);
+});
+
+/* ── FACADE: click/teclado carga el iframe nocookie (no antes) ── */
+function playVid(box){
+  if(box.classList.contains('playing')) return;
+  const id = box.getAttribute('data-yt');
+  const f = document.createElement('iframe');
+  f.src = `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0`;
+  f.title = 'Reproductor de video';
+  f.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+  f.setAttribute('allowfullscreen','');
+  f.loading = 'lazy';
+  box.appendChild(f);
+  box.classList.add('playing');
+}
+document.addEventListener('click', e=>{
+  const box = e.target.closest('.vid');
+  if(box) playVid(box);
+});
+document.addEventListener('keydown', e=>{
+  if((e.key==='Enter'||e.key===' ') && document.activeElement.classList.contains('vid')){
+    e.preventDefault(); playVid(document.activeElement);
+  }
+});
+
+/* ── 3D / MOTION (loops propios) ─────────────────────────────────────────────
+   Fuente: web/galeria-visual/labs.json — SOLO piezas con "video" (las finales).
+   Títulos limpios pero factuales: si no se conoce el cliente, se usa el nombre
+   del archivo. NO se inventan clientes. Loops mudos, h264 720p.
+   Reproducción gobernada por IntersectionObserver: play al entrar al viewport,
+   pause al salir — nunca 13 videos a la vez. El poster se ve antes de cargar. */
+const MOTION = [
+  { src:'labs/luckra.mp4',                                          poster:'labs/luckra.jpg',                                          kind:'Render · artista',  title:'Luck Ra' },
+  { src:'labs/luckratest.mp4',                                      poster:'labs/luckratest.jpg',                                      kind:'Render · test',     title:'Luck Ra — test' },
+  { src:'labs/malena-narvay-dualidad-electronic-band-live.mp4',     poster:'labs/malena-narvay-dualidad-electronic-band-live.jpg',     kind:'Contenido de show', title:'Malena Narvay — Dualidad' },
+  { src:'labs/oscu-vertical.mp4',                                   poster:'labs/oscu-vertical.jpg',                                   kind:'Render · artista',  title:'Oscu' },
+  { src:'labs/lil-cake.mp4',                                        poster:'labs/lil-cake.jpg',                                        kind:'Render · artista',  title:'Lil Cake' },
+  { src:'labs/simon.mp4',                                           poster:'labs/simon.jpg',                                           kind:'Render · motion',   title:'Simon' },
+  { src:'labs/mai.mp4',                                             poster:'labs/mai.jpg',                                             kind:'Render · motion',   title:'Mai' },
+  { src:'labs/magdalena.mp4',                                       poster:'labs/magdalena.jpg',                                       kind:'Render · motion',   title:'Magdalena' },
+  { src:'labs/rio.mp4',                                             poster:'labs/rio.jpg',                                             kind:'Render · motion',   title:'Río' },
+  { src:'labs/kook-01.mp4',                                         poster:'labs/kook-01.jpg',                                         kind:'Render · marca',    title:'Kook' },
+  { src:'labs/kook-aniver.mp4',                                     poster:'labs/kook-aniver.jpg',                                     kind:'Render · marca',    title:'Kook — aniversario' },
+  { src:'labs/feed-kook.mp4',                                       poster:'labs/feed-kook.jpg',                                       kind:'Render · feed',     title:'Kook — feed' },
+  { src:'labs/latas-arg.mp4',                                       poster:'labs/latas-arg.jpg',                                       kind:'Render · producto', title:'Latas — producto' }
+];
+const motionGrid = document.getElementById('motion-grid');
+MOTION.forEach(m=>{
+  const fig = document.createElement('figure');
+  fig.className = 'mtile';
+  fig.innerHTML =
+    `<video loop muted playsinline preload="none" poster="${esc(m.poster)}" aria-label="${esc(m.title)} — loop 3D/motion">`
+      + `<source src="${esc(m.src)}" type="video/mp4">`
+    + `</video>`
+    + `<div class="mscrim"></div>`
+    + `<figcaption class="mtitle"><span class="mkind">${esc(m.kind)}</span>${esc(m.title)}</figcaption>`;
+  motionGrid.appendChild(fig);
+});
+/* IntersectionObserver: reproducir solo lo visible, pausar al salir.
+   El <source> se setea en preload="none"; al entrar al viewport se hace .load()
+   una sola vez y se reproduce. Al salir, se pausa (no se descarga). */
+const motionIO = new IntersectionObserver(entries=>{
+  entries.forEach(en=>{
+    const v = en.target.querySelector('video');
+    if(!v) return;
+    if(en.isIntersecting){
+      if(!v.dataset.loaded){ v.load(); v.dataset.loaded = '1'; }
+      const p = v.play();
+      if(p && p.catch) p.catch(()=>{}); // ignora rechazos de autoplay
+    } else {
+      v.pause();
+    }
+  });
+}, {threshold:0.35});
+document.querySelectorAll('.mtile').forEach(t=>motionIO.observe(t));
+
+/* ── RENDER: CRÉDITOS ── */
+const credEl = document.getElementById('creditos');
+credEl.innerHTML = `<div class="lead">Trabajó con · fue parte de</div>`;
+CREDITOS.forEach(g=>{
+  const chips = g.items.map(i=>`<span class="chip ${g.tipo==='place'?'place':''}">${i}</span>`).join('');
+  credEl.innerHTML += `<div class="cred-group"><span class="gl">${g.gl}</span><div class="chips">${chips}</div></div>`;
+});
+credEl.innerHTML += `<div class="note">Lista factual y abierta: estos son los nombres y colectivos mencionados por el autor. Se suman créditos a medida que se confirman — sin inventar atribuciones.</div>`;
+
+/* ── RENDER: OBRAS ORIGINALES (29 reales desde obras.json) ──────────────────
+   Datos reales en obras.json {n, titulo, img}. Inline como fuente de verdad para
+   que la grilla funcione abriendo el archivo directo (file://) sin servidor.
+   Imágenes: obras/NNN_titulo.jpg (traen el branding HUMAN GLITCHE de 2018).
+   Extensible: sumar el resto de las ~80 = agregar entradas a este array. */
+const OBRAS = [
+  { n:1,  titulo:'Consumibles', img:'obras/001_consumibles.jpg' },
+  { n:3,  titulo:'Fluir y Elevarse', img:'obras/003_fluir-y-elevarse.jpg' },
+  { n:4,  titulo:'People like universe', img:'obras/004_people-like-universe.jpg' },
+  { n:5,  titulo:'Equilibr1um', img:'obras/005_equilibr1um.jpg' },
+  { n:6,  titulo:'Universo comestible', img:'obras/006_universo-comestible.jpg' },
+  { n:10, titulo:'Digiland', img:'obras/010_digiland.jpg' },
+  { n:11, titulo:'Cree y Crea', img:'obras/011_cree-y-crea.jpg' },
+  { n:13, titulo:'Lighter', img:'obras/013_lighter.jpg' },
+  { n:15, titulo:'I Have Diamonds', img:'obras/015_i-have-diamonds.jpg' },
+  { n:17, titulo:'growing inside me', img:'obras/017_growing-inside-me.jpg' },
+  { n:22, titulo:'This flame on your heart', img:'obras/022_this-flame-on-your-heart.jpg' },
+  { n:23, titulo:'Absorbing planets', img:'obras/023_absorbing-planets.jpg' },
+  { n:27, titulo:'sweet like a sun', img:'obras/027_sweet-like-a-sun.jpg' },
+  { n:28, titulo:'hypnotise me', img:'obras/028_hypnotise-me.jpg' },
+  { n:33, titulo:'Campbells Planet Soup', img:'obras/033_campbells-planet-soup.jpg' },
+  { n:34, titulo:'Flush', img:'obras/034_flush.jpg' },
+  { n:36, titulo:'religion', img:'obras/036_religion.jpg' },
+  { n:41, titulo:'get the way out', img:'obras/041_get-the-way-out.jpg' },
+  { n:43, titulo:'pearls', img:'obras/043_pearls.jpg' },
+  { n:56, titulo:'Small and humble thoughts can disarm empires', img:'obras/056_small-and-humble-thoughts-can-disarm-empires.jpg' },
+  { n:58, titulo:'My bubble & world', img:'obras/058_my-bubble-world.jpg' },
+  { n:59, titulo:'rels b', img:'obras/059_rels-b.jpg' },
+  { n:77, titulo:'Russo Gessara', img:'obras/077_russo-gessara.jpg' },
+  { n:78, titulo:'Matt', img:'obras/078_matt.jpg' },
+  { n:79, titulo:'Lit Killa', img:'obras/079_lit-killa.jpg' },
+  { n:80, titulo:'Coco Swing', img:'obras/080_coco-swing.jpg' },
+  { n:81, titulo:'Monkid', img:'obras/081_monkid.jpg' },
+  { n:82, titulo:'Space Special', img:'obras/082_space-special.jpg' },
+  { n:84, titulo:'Franqui', img:'obras/084_franqui.jpg' }
+];
+const obrasGrid = document.getElementById('obras-grid');
+function esc(s){ return String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+OBRAS.forEach(o=>{
+  const num = '#' + String(o.n).padStart(3,'0');
+  const t = esc(o.titulo);
+  const s = document.createElement('figure'); s.className='obra';
+  s.innerHTML = `<img loading="lazy" src="${esc(o.img)}" alt="Obra original ${num} — ${t} · Human Glitche, 2018">`
+    + `<figcaption class="ometa"><span class="on">${num}</span>${t}</figcaption>`;
+  obrasGrid.appendChild(s);
+});
+const cnt = document.getElementById('obras-count');
+if(cnt) cnt.textContent = OBRAS.length;
+
+/* ── BARRA DE PROGRESO + REVELADO DE ETAPAS ── */
+const bar = document.getElementById('progress-bar');
+window.addEventListener('scroll', ()=>{
+  const h = document.documentElement.scrollHeight - window.innerHeight;
+  bar.style.width = (h>0 ? (window.scrollY/h*100) : 0) + '%';
+}, {passive:true});
+
+const io = new IntersectionObserver(entries=>{
+  entries.forEach(en=>{ if(en.isIntersecting) en.target.classList.add('in'); });
+}, {threshold:0.2});
+document.querySelectorAll('.etapa').forEach(el=>io.observe(el));
+</script>
+
+</body>
+</html>
