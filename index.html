@@ -686,20 +686,82 @@ body.visual-mode #exit-visual{z-index:9000!important;}
 /* PLANES */
 #comunidad{flex-direction:column;padding:10vh 8vw;}
 .plans{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:rgba(240,237,230,0.06);width:100%;margin-top:4rem;}
-.plan{background:var(--black);padding:2.8rem 2.2rem;}
-.plan.feat{background:#b8ff00;transition:background-color 1.5s;}
-.plan.feat *{color:var(--black)!important;}
+.plan{background:var(--black);padding:2.8rem 2.2rem;position:relative;}
+/* Plan destacado: mismo fondo oscuro que los otros para no romper la
+   legibilidad (el sitio usa mix-blend-mode:difference globalmente, lo
+   cual cancela texto negro sobre fondo acid). Se destaca con borde acid,
+   glow sutil y un badge "POPULAR" arriba a la derecha. */
+.plan.feat{
+  background:var(--black);
+  border:1px solid var(--acid);
+  box-shadow:0 0 0 1px var(--acid) inset, 0 0 40px rgba(184,255,0,0.12);
+  z-index:1;
+}
+.plan.feat::before{
+  content:'★ POPULAR';
+  position:absolute; top:0; right:0;
+  font-family:var(--mono); font-size:8px; letter-spacing:0.25em;
+  background:var(--acid); color:var(--black);
+  padding:4px 10px; border-radius:0 0 0 2px;
+  text-shadow:none;
+}
 .ptier{font-family:var(--mono);font-size:8px;letter-spacing:0.3em;color:rgba(240,237,230,0.25);margin-bottom:1.8rem;text-transform:uppercase;}
+.plan.feat .ptier{color:rgba(184,255,0,0.65);}
 .pprice{font-family:var(--display);font-size:5rem;line-height:1;margin-bottom:0.3rem;}
+.plan.feat .pprice{color:var(--acid);
+  text-shadow:0 0 14px rgba(184,255,0,0.4),0 0 32px rgba(184,255,0,0.18);}
 .pper{font-family:var(--mono);font-size:10px;color:rgba(240,237,230,0.35);margin-bottom:2rem;}
 .pname{font-family:var(--display);font-size:1.7rem;line-height:1;margin-bottom:1.3rem;}
 .pfeat{list-style:none;}
 .pfeat li{font-family:var(--mono);font-size:10px;color:rgba(240,237,230,0.45);padding:0.45rem 0;border-bottom:1px solid rgba(240,237,230,0.05);line-height:1.6;}
 .pfeat li::before{content:'→ ';color:var(--acid);transition:color 1.5s;}
-.plan.feat .pfeat li::before{color:var(--black);}
+.plan.feat .pfeat li{color:rgba(240,237,230,0.65);}
 .pcta{display:block;margin-top:2rem;font-family:var(--mono);font-size:10px;letter-spacing:0.2em;text-decoration:none;padding:0.9rem;border:1px solid rgba(240,237,230,0.15);text-align:center;color:var(--white);transition:all 0.3s;}
-.plan.feat .pcta{border-color:var(--black);color:var(--black);}
+.plan.feat .pcta{
+  background:var(--acid); color:var(--black); border-color:var(--acid);
+  mix-blend-mode:normal;
+}
+.plan.feat .pcta:hover{background:transparent;color:var(--acid);}
 .pcta:hover{background:var(--acid);color:var(--black);border-color:var(--acid);}
+
+/* ── EMPEZÁ POR ACÁ — blogs principales en Comunidad ──────────── */
+.start-here{
+  display:grid; grid-template-columns:repeat(4,1fr);
+  gap:1px; background:rgba(240,237,230,0.06);
+  width:100%; margin-top:2.5rem; margin-bottom:1rem;
+}
+.start-card{
+  background:var(--black); padding:1.8rem 1.4rem;
+  text-decoration:none; color:inherit;
+  display:flex; flex-direction:column; gap:0.8rem;
+  position:relative; overflow:hidden;
+  transition:background 0.25s;
+}
+.start-card:hover{background:rgba(184,255,0,0.04);}
+.start-card .sc-num{
+  font-family:var(--mono); font-size:8px; letter-spacing:0.25em;
+  color:var(--acid); opacity:0.7;
+}
+.start-card .sc-title{
+  font-family:var(--display); font-size:1.3rem; line-height:1.05;
+  color:var(--white);
+}
+.start-card .sc-desc{
+  font-family:var(--mono); font-size:10px; line-height:1.7;
+  color:rgba(240,237,230,0.35); flex:1;
+}
+.start-card .sc-arrow{
+  font-family:var(--mono); font-size:9px; letter-spacing:0.25em;
+  color:var(--acid); margin-top:0.4rem;
+}
+.start-intro{
+  font-family:var(--mono); font-size:10px; letter-spacing:0.25em;
+  color:rgba(240,237,230,0.4); margin-top:3rem;
+  text-transform:uppercase;
+}
+@media(max-width:760px){
+  .start-here{grid-template-columns:1fr;}
+}
 
 /* LIVE */
 #live{flex-direction:column;align-items:center;justify-content:center;text-align:center;min-height:70vh;}
@@ -776,6 +838,101 @@ body.visual-mode #exit-visual{z-index:9000!important;}
   /* TOGGLES FLOTANTES — no se amontonen */
   #gallery-toggle,#repo-toggle,#profile-toggle{right:1rem;}
 }
+
+/* ─────────────────────────────────────────────────────────────
+   REORG MÓVIL — HUD CONSOLIDADO
+   En móvil los 6 botones flotantes del shader (drop, ISF, ctrl,
+   gallery, repo, profile) molestan al hero. Los escondemos y los
+   agrupamos detrás de un FAB único abajo-derecha. REPO y PERFIL
+   también entran al nav superior. Bloque pensado para ser
+   eliminable sin romper desktop.
+   ───────────────────────────────────────────────────────────── */
+.nav-mobile-only{display:none;}
+
+@media(max-width:768px){
+  /* Entradas REPO / PERFIL dentro del nav móvil */
+  .nav-mobile-only{display:inline-block !important;}
+
+  /* Esconder los flotantes individuales del shader */
+  #drop-zone,
+  #isf-panel,
+  #ctrl-toggle,
+  #gallery-toggle,
+  #repo-toggle,
+  #profile-toggle{display:none !important;}
+
+  /* Cuando el HUD está abierto y el panel correspondiente está
+     activo, drop-zone e isf-panel reaparecen como hoja por encima
+     del bottom-sheet (que mide ~200px). */
+  body.hud-open #drop-zone.show-mobile,
+  body.hud-open #isf-panel.show-mobile{
+    display:block !important;
+    position:fixed !important;
+    left:1rem !important; right:1rem !important;
+    bottom:calc(220px + env(safe-area-inset-bottom)) !important;
+    width:auto !important; max-width:none !important; z-index:9550 !important;
+  }
+  body.hud-open #isf-panel.show-mobile{max-height:45vh !important;}
+
+  /* FAB */
+  #mobile-fab{
+    display:flex !important; position:fixed; right:1rem; bottom:calc(1rem + env(safe-area-inset-bottom));
+    z-index:9700; width:52px; height:52px; border-radius:50%;
+    background:rgba(184,255,0,0.95); color:var(--black);
+    font-family:var(--mono); font-size:20px; font-weight:bold;
+    border:none; align-items:center; justify-content:center;
+    box-shadow:0 6px 22px rgba(184,255,0,0.35),0 0 50px rgba(184,255,0,0.15);
+    transition:transform 0.2s, background 0.2s;
+    cursor:pointer; padding:0; line-height:1;
+  }
+  #mobile-fab:active{transform:scale(0.9);}
+  body.hud-open #mobile-fab{
+    background:rgba(255,45,85,0.95);
+    color:var(--white);
+    box-shadow:0 6px 22px rgba(255,45,85,0.4);
+  }
+
+  /* Bottom-sheet HUD */
+  #mobile-hud{
+    display:none; position:fixed; left:0; right:0; bottom:0;
+    z-index:9600;
+    background:rgba(5,5,5,0.96);
+    backdrop-filter:blur(22px); -webkit-backdrop-filter:blur(22px);
+    border-top:1px solid rgba(184,255,0,0.22);
+    padding:14px 12px calc(14px + env(safe-area-inset-bottom)) 12px;
+    grid-template-columns:repeat(3,1fr); gap:8px;
+  }
+  body.hud-open #mobile-hud{display:grid;}
+  .hud-btn{
+    font-family:var(--mono); font-size:9px; letter-spacing:0.12em;
+    background:rgba(184,255,0,0.05);
+    border:1px solid rgba(184,255,0,0.25);
+    color:var(--acid);
+    padding:12px 4px; border-radius:3px;
+    min-height:50px; text-align:center; line-height:1.35;
+    cursor:pointer; transition:background 0.2s;
+    display:flex; align-items:center; justify-content:center;
+    text-decoration:none;
+  }
+  .hud-btn:active{background:rgba(184,255,0,0.18);}
+  .hud-btn.wide{grid-column:span 3;}
+  .hud-btn.glitch-style{
+    background:rgba(255,45,85,0.05);
+    border-color:rgba(255,45,85,0.25);
+    color:var(--glitch);
+  }
+  .hud-btn[hidden]{display:none !important;}
+  .nav-mobile-only.auth-hidden{display:none !important;}
+
+  /* Esconder el viejo botón "ctrl-toggle" / "reset" / "fs-btn"
+     que vivían adentro del drop-zone — ahora el HUD los reemplaza */
+  #drop-zone #fs-btn,
+  #drop-zone #reset-btn{display:none !important;}
+}
+
+/* En desktop el FAB y el HUD no existen */
+#mobile-fab{display:none;}
+#mobile-hud{display:none;}
 </style>
 </head>
 <body>
@@ -951,13 +1108,13 @@ body.visual-mode #exit-visual{z-index:9000!important;}
   <div class="nav-links">
     <a href="#manifiesto">SISTEMA</a>
     <a href="test/">TEST</a>
-    <a href="aether.html">AETHER</a>
+    <a href="aether-2/">AETHER</a>
     <a href="#blog">BLOG</a>
     <a href="#catalogo">SERVICIOS</a>
     <a href="galeria/">GALERÍA</a>
     <a href="#comunidad">COMUNIDAD</a>
-    <a href="diario.html">DIARIO</a>
-    <a href="diario.html#biblioteca">BIBLIOTECA</a>
+    <a href="#" id="nav-repo-mobile" class="nav-auth-btn nav-mobile-only" data-hud-tog="repo-toggle">⛒ REPO</a>
+    <a href="#" id="nav-profile-mobile" class="nav-auth-btn nav-mobile-only auth-hidden" data-hud-tog="profile-toggle" data-needs-auth="1">⌬ PERFIL</a>
     <a href="#" id="nav-auth-btn" class="nav-auth-btn">INGRESAR / REGISTRO</a>
     <a href="#" id="nav-area-btn" class="nav-area-btn" style="display:none;">⌘ ÁREA PERSONAL</a>
   </div>
@@ -997,18 +1154,18 @@ body.visual-mode #exit-visual{z-index:9000!important;}
   <!-- AETHER SECTION -->
   <section id="aether-sec">
     <div>
-      <div class="aether-badge rev">AETHER ISF GENERATOR × GEMINI AI</div>
-      <h2 class="aether-title rev rd1">SHADERS<br>INFINITOS</h2>
-      <p class="aether-desc rev rd2">Generador de visuales ISF alimentado por Gemini. Describís un efecto, la IA lo compila en GLSL real listo para VDMX6, Resolume, o cualquier host ISF. Descargás el <code style="color:#fff;font-size:10px">.fs</code> y lo droppeas acá — el site se transforma.</p>
+      <div class="aether-badge rev">AETHER 2.0 — THE GLITCH FORGE</div>
+      <h2 class="aether-title rev rd1">SHADERS<br>EN VIVO</h2>
+      <p class="aether-desc rev rd2">Describí un efecto, el motor lo compila y lo ves <strong>renderizando ahí mismo</strong> — con controles auto-generados. Si el shader falla, el bucle cerrado <em>genera→compila→corrige</em> lo arregla antes de mostrártelo. Después lo bajás como <code style="color:#fff;font-size:10px">.fs</code> para VDMX6 / Resolume / cualquier host ISF.</p>
       <div class="aether-links rev rd3">
-        <a href="aether.html" class="aether-app-btn">⚡ GENERAR SHADER</a>
-        <a href="https://github.com/human-zeta/Aether-ISF-generator" class="aether-link" target="_blank">VER EN GITHUB →</a>
-        <a href="https://ai.studio/apps/8b699664-53af-4289-973b-98e5754bfafc" class="aether-link" target="_blank">APP ORIGINAL →</a>
+        <a href="aether-2/" class="aether-app-btn">⚡ ENTRAR AL FORGE</a>
+        <a href="aether.html" class="aether-link">VERSIÓN 1.0 →</a>
+        <a href="https://github.com/human-zeta/Aether-ISF-generator" class="aether-link" target="_blank">GITHUB →</a>
       </div>
       <div class="viz-stat rev rd3">
         <div><div class="stat-num">ISF</div><div class="stat-label">2.0 SPEC</div></div>
-        <div><div class="stat-num">AI</div><div class="stat-label">GEMINI GEN</div></div>
-        <div><div class="stat-num">∞</div><div class="stat-label">VISUALES</div></div>
+        <div><div class="stat-num">LIVE</div><div class="stat-label">PREVIEW</div></div>
+        <div><div class="stat-num">∞</div><div class="stat-label">VARIACIONES</div></div>
       </div>
     </div>
   </section>
@@ -1061,6 +1218,35 @@ body.visual-mode #exit-visual{z-index:9000!important;}
       <h2 class="sec-title">COMUNIDAD</h2>
       <span style="font-family:var(--mono);font-size:10px;color:#fff;">SI NO TE SOBRA, NO TE GASTES</span>
     </div>
+
+    <div class="start-intro rev">⌘ EMPEZÁ POR ACÁ — entendé el proyecto antes de sumarte</div>
+    <div class="start-here rev">
+      <a class="start-card" href="es/blog/que-es-human-glitche/">
+        <span class="sc-num">01 / QUÉ ES</span>
+        <span class="sc-title">QUÉ ES HUMAN GLITCHE</span>
+        <span class="sc-desc">La realidad es una interfaz diseñada por alguien. El glitch es el momento en que se vuelve visible.</span>
+        <span class="sc-arrow">LEER →</span>
+      </a>
+      <a class="start-card" href="es/blog/los-tres-pilares/">
+        <span class="sc-num">02 / FILOSOFÍA</span>
+        <span class="sc-title">LOS TRES PILARES</span>
+        <span class="sc-desc">Conciencia, Creación, Compartir — los 3 ejes que sostienen todo lo que hacemos, con ejemplos reales.</span>
+        <span class="sc-arrow">LEER →</span>
+      </a>
+      <a class="start-card" href="es/blog/mapa-del-ecosistema/">
+        <span class="sc-num">03 / ECOSISTEMA</span>
+        <span class="sc-title">EL MAPA DEL ECOSISTEMA</span>
+        <span class="sc-desc">HG no es un proyecto, es un ecosistema en capas. Qué existe hoy, qué viene y en qué orden.</span>
+        <span class="sc-arrow">LEER →</span>
+      </a>
+      <a class="start-card" href="es/blog/por-que-compartimos-todo/">
+        <span class="sc-num">04 / MÉTODO</span>
+        <span class="sc-title">POR QUÉ COMPARTIMOS TODO</span>
+        <span class="sc-desc">Publicamos shaders, manuales y procesos no por buena onda — es la jugada más inteligente.</span>
+        <span class="sc-arrow">LEER →</span>
+      </a>
+    </div>
+
     <div class="plans">
       <div class="plan rev">
         <div class="ptier">TIER 01 — CONCIENCIA ⌘</div><div class="pprice">$0</div><div class="pper">/ mensual</div>
@@ -2762,6 +2948,99 @@ document.querySelectorAll('.bcard').forEach(c=>{
   document.addEventListener('hg-auth-changed', refreshAuthUI);
 })();
 </script>
+<!-- ─── MOBILE HUD (FAB + bottom-sheet) ──────────────────────────── -->
+<button id="mobile-fab" aria-label="Abrir HUD de shaders" type="button">⌘</button>
+<div id="mobile-hud" role="dialog" aria-label="HUD de shaders">
+  <button type="button" class="hud-btn" data-hud-tog="drop-zone-mobile">⬇ DROP .FS</button>
+  <button type="button" class="hud-btn" data-hud-tog="isf-panel-mobile">⛯ ISF</button>
+  <button type="button" class="hud-btn" data-hud-tog="gallery-toggle">⬡ SHADERS</button>
+  <button type="button" class="hud-btn" data-hud-tog="repo-toggle">⛒ REPO</button>
+  <button type="button" class="hud-btn" id="hud-profile-btn" data-hud-tog="profile-toggle" hidden>⌬ PERFIL</button>
+  <button type="button" class="hud-btn" data-hud-tog="fs-btn">⛶ MODO VISUAL</button>
+  <button type="button" class="hud-btn glitch-style wide" data-hud-tog="reset-btn">✕ RESET SHADER</button>
+</div>
+<script>
+/* HUD móvil: el FAB abre un bottom-sheet con accesos a los toggles
+   originales. No duplica lógica — cada botón dispara click() sobre
+   el toggle existente. drop-zone e isf-panel se reposicionan como
+   overlay full-width vía la clase .show-mobile. */
+(function(){
+  const fab = document.getElementById('mobile-fab');
+  const hud = document.getElementById('mobile-hud');
+  if(!fab || !hud) return;
+
+  const dropZone = document.getElementById('drop-zone');
+  const isfPanel = document.getElementById('isf-panel');
+
+  function closeHud(){
+    document.body.classList.remove('hud-open');
+    dropZone && dropZone.classList.remove('show-mobile');
+    isfPanel && isfPanel.classList.remove('show-mobile');
+  }
+  function openHud(){
+    document.body.classList.add('hud-open');
+  }
+
+  fab.addEventListener('click', () => {
+    if(document.body.classList.contains('hud-open')) closeHud();
+    else openHud();
+  });
+
+  function hudBtnClick(e){
+    const btn = e.currentTarget;
+    const tgt = btn.dataset.hudTog;
+    if(!tgt) return;
+    e.preventDefault();
+
+    if(tgt === 'drop-zone-mobile'){
+      isfPanel && isfPanel.classList.remove('show-mobile');
+      dropZone && dropZone.classList.toggle('show-mobile');
+      return;
+    }
+    if(tgt === 'isf-panel-mobile'){
+      dropZone && dropZone.classList.remove('show-mobile');
+      if(isfPanel){
+        isfPanel.classList.add('show');
+        isfPanel.classList.toggle('show-mobile');
+      }
+      return;
+    }
+    const orig = document.getElementById(tgt);
+    if(orig){
+      orig.click();
+      closeHud();
+    }
+  }
+
+  document.querySelectorAll('#mobile-hud .hud-btn').forEach(b => {
+    b.addEventListener('click', hudBtnClick);
+  });
+  document.querySelectorAll('.nav-mobile-only[data-hud-tog]').forEach(a => {
+    a.addEventListener('click', (e) => {
+      e.preventDefault();
+      const orig = document.getElementById(a.dataset.hudTog);
+      if(orig) orig.click();
+    });
+  });
+
+  // Sincronizar visibilidad de PERFIL con el estado del profile-toggle original
+  const profOrig = document.getElementById('profile-toggle');
+  const profHud  = document.getElementById('hud-profile-btn');
+  const profNav  = document.getElementById('nav-profile-mobile');
+  function syncProfile(){
+    if(!profOrig) return;
+    const inline = profOrig.getAttribute('style') || '';
+    const isHidden = inline.indexOf('display:none') !== -1 || inline.indexOf('display: none') !== -1;
+    if(profHud) profHud.hidden = isHidden;
+    if(profNav) profNav.classList.toggle('auth-hidden', isHidden);
+  }
+  syncProfile();
+  if(profOrig){
+    new MutationObserver(syncProfile).observe(profOrig, {attributes:true, attributeFilter:['style']});
+  }
+})();
+</script>
+
 <script defer src="chat-widget.js"></script>
   <script src="/glass/glass.js" defer data-target="#nav, #manifiesto, #aether-sec, #blog, #catalogo, #comunidad, #live, #footer"></script>
 </body>
