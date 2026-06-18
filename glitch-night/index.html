@@ -261,14 +261,14 @@ function makeRT(){ const w=Math.floor(innerWidth*renderer.getPixelRatio()),
 function rsize(){ renderer.setSize(innerWidth,innerHeight,false); makeRT(); fishUniforms.uRes.value.set(innerWidth,innerHeight); }
 const fishUniforms = {
   tDiffuse:{value:null}, uRes:{value:new THREE.Vector2(innerWidth,innerHeight)},
-  uStrength:{value:0.85}, uVignette:{value:0.6}, uChroma:{value:0.018}, uScanline:{value:0.2}, uTime:{value:0}
+  uStrength:{value:0.75}, uVignette:{value:0.55}, uChroma:{value:0.006}, uScanline:{value:0.04}, uPosterize:{value:7.0}, uTime:{value:0}
 };
 const fishMat = new THREE.ShaderMaterial({
   uniforms:fishUniforms,
   vertexShader:`varying vec2 vUv; void main(){ vUv=uv; gl_Position=vec4(position,1.0); }`,
   fragmentShader:`precision highp float;
     varying vec2 vUv; uniform sampler2D tDiffuse; uniform vec2 uRes;
-    uniform float uStrength,uVignette,uChroma,uScanline,uTime;
+    uniform float uStrength,uVignette,uChroma,uScanline,uPosterize,uTime;
     // distorsión radial — fisheye real (positivo = barrel) + chroma sutil + vignette + scanlines
     vec2 fish(vec2 uv, float k){
       vec2 c = uv - 0.5;
@@ -305,7 +305,9 @@ const fishMat = new THREE.ShaderMaterial({
       col *= mix(1.0-uVignette, 1.0, v);
       // grain sutil
       float grain = fract(sin(dot(gl_FragCoord.xy*0.01+uTime, vec2(12.9898,78.233)))*43758.5453);
-      col += (grain-0.5)*0.025;
+      col += (grain-0.5)*0.020;
+      // posterización suave — aplana colores hacia el look cómic cel-shaded
+      col = floor(col*uPosterize + 0.5)/uPosterize;
       gl_FragColor = vec4(col,1.0);
     }`
 });
@@ -315,10 +317,43 @@ fishScene.add(new THREE.Mesh(new THREE.PlaneGeometry(2,2), fishMat));
 addEventListener('resize',rsize); rsize();
 
 /* ---- HUB scene (mundo) ---- */
-const hub=new THREE.Scene(); hub.fog=new THREE.FogExp2(0x05060a,0.045);
+const hub=new THREE.Scene(); hub.fog=new THREE.FogExp2(0x05060a,0.030);
 const hubCam=new THREE.PerspectiveCamera(55,1,0.1,200);
 function camAspect(){ hubCam.aspect=innerWidth/innerHeight; hubCam.updateProjectionMatrix(); }
 addEventListener('resize',camAspect); camAspect();
+
+// luz para que MeshToonMaterial responda (clave en estilo cómic cel-shaded)
+hub.add(new THREE.AmbientLight(0x445566, 0.65));
+const sunLight = new THREE.DirectionalLight(0xfff3d8, 1.1);
+sunLight.position.set(8,18,6); hub.add(sunLight);
+// rim light acid para que las siluetas tengan el borde neón del cómic
+const rimLight = new THREE.DirectionalLight(0xb8ff00, 0.45);
+rimLight.position.set(-10,5,-12); hub.add(rimLight);
+
+// rampa de toon — 4 pasos, da el shading celular plano del cómic
+function makeToonRamp(){
+  const c=document.createElement('canvas'); c.width=4; c.height=1;
+  const ctx=c.getContext('2d');
+  // 4 niveles: oscuro / sombra / luz / brillo
+  const tones=['#1a1a26','#48485a','#9a9aaa','#ffffff'];
+  tones.forEach((t,i)=>{ ctx.fillStyle=t; ctx.fillRect(i,0,1,1); });
+  const tex=new THREE.CanvasTexture(c);
+  tex.magFilter=THREE.NearestFilter; tex.minFilter=THREE.NearestFilter; tex.needsUpdate=true;
+  return tex;
+}
+const toonRamp = makeToonRamp();
+function toonMat(hex){ return new THREE.MeshToonMaterial({color:hex, gradientMap:toonRamp}); }
+
+// outline cómic: clon del mesh escalado 1.04, BackSide, negro plano
+const OUTLINE_MAT = new THREE.MeshBasicMaterial({color:0x000000, side:THREE.BackSide});
+function withOutline(mesh, scale=1.06){
+  const out = new THREE.Mesh(mesh.geometry, OUTLINE_MAT);
+  out.scale.multiplyScalar(scale);
+  out.renderOrder = -1; // se dibuja antes para que el original tape el centro
+  const g = new THREE.Group();
+  g.add(out); g.add(mesh);
+  return g;
+}
 // piso (asfalto noche) + grid sutil
 const floor=new THREE.Mesh(new THREE.PlaneGeometry(WORLD*2,WORLD*2), new THREE.MeshBasicMaterial({color:0x05070d}));
 floor.rotation.x=-Math.PI/2; floor.position.y=-0.02; hub.add(floor);
@@ -342,36 +377,42 @@ const starG=new THREE.BufferGeometry(); const sp=[];
 for(let i=0;i<600;i++) sp.push((Math.random()-0.5)*WORLD*3, Math.random()*80+8, (Math.random()-0.5)*WORLD*3);
 starG.setAttribute('position',new THREE.Float32BufferAttribute(sp,3));
 hub.add(new THREE.Points(starG,new THREE.PointsMaterial({color:0x9fb,size:0.32,sizeAttenuation:true,transparent:true,opacity:.6})));
-// avatar (personaje con mochila, 3ra persona)
+// avatar (personaje con mochila, 3ra persona) — toon shading, sin outline en
+// las partes finas (delgadas con outline grueso se ven raras). Outline solo
+// en el grupo completo (silueta exterior) vía una caja contenedora.
 const avatar=new THREE.Group();
-const skinMat = new THREE.MeshBasicMaterial({color:0xfff3d8});
-const darkMat = new THREE.MeshBasicMaterial({color:0x4a4a58});
-const bagMat  = new THREE.MeshBasicMaterial({color:0x6a3a8a}); // mochila violeta sutil — se distingue de la calle
-const acidEdge = new THREE.MeshBasicMaterial({color:0xb8ff00, transparent:true, opacity:.85, depthWrite:false});
-// torso (caja chata vertical)
-const torso = new THREE.Mesh(new THREE.BoxGeometry(0.7,1.0,0.4), darkMat);
+// torso
+const torso = new THREE.Mesh(new THREE.BoxGeometry(0.7,1.0,0.4), toonMat(0x4a4a58));
 torso.position.y=1.15; avatar.add(torso);
-// cabeza (cubo pequeño + un sutil halo)
-const head = new THREE.Mesh(new THREE.BoxGeometry(0.42,0.42,0.42), skinMat);
+// cabeza
+const head = new THREE.Mesh(new THREE.BoxGeometry(0.42,0.42,0.42), toonMat(0xfff3d8));
 head.position.y=1.95; avatar.add(head);
-// gorro / capucha sutil (más oscura que la cara)
-const hood = new THREE.Mesh(new THREE.BoxGeometry(0.48,0.18,0.48), darkMat);
+// gorro
+const hood = new THREE.Mesh(new THREE.BoxGeometry(0.48,0.18,0.48), toonMat(0x202028));
 hood.position.y=2.18; avatar.add(hood);
-// piernas
-const legL = new THREE.Mesh(new THREE.BoxGeometry(0.24,0.65,0.28), darkMat); legL.position.set(-0.18,0.48,0); avatar.add(legL);
-const legR = new THREE.Mesh(new THREE.BoxGeometry(0.24,0.65,0.28), darkMat); legR.position.set( 0.18,0.48,0); avatar.add(legR);
+// piernas (van en grupos para que la rotación de caminata pivote bien)
+const legL=new THREE.Group(); legL.position.set(-0.18,0.65,0);
+const legLMesh = new THREE.Mesh(new THREE.BoxGeometry(0.24,0.65,0.28), toonMat(0x2a2a38));
+legLMesh.position.y=-0.32; legL.add(legLMesh); avatar.add(legL);
+const legR=new THREE.Group(); legR.position.set( 0.18,0.65,0);
+const legRMesh = new THREE.Mesh(new THREE.BoxGeometry(0.24,0.65,0.28), toonMat(0x2a2a38));
+legRMesh.position.y=-0.32; legR.add(legRMesh); avatar.add(legR);
 // brazos
-const armL = new THREE.Mesh(new THREE.BoxGeometry(0.18,0.78,0.22), darkMat); armL.position.set(-0.46,1.18,0); avatar.add(armL);
-const armR = new THREE.Mesh(new THREE.BoxGeometry(0.18,0.78,0.22), darkMat); armR.position.set( 0.46,1.18,0); avatar.add(armR);
-// mochila — detrás del torso, ancha y alta — lo más reconocible de la silueta
-const bag = new THREE.Mesh(new THREE.BoxGeometry(0.62,0.95,0.32), bagMat);
+const armL=new THREE.Group(); armL.position.set(-0.46,1.55,0);
+const armLMesh = new THREE.Mesh(new THREE.BoxGeometry(0.18,0.78,0.22), toonMat(0x4a4a58));
+armLMesh.position.y=-0.39; armL.add(armLMesh); avatar.add(armL);
+const armR=new THREE.Group(); armR.position.set( 0.46,1.55,0);
+const armRMesh = new THREE.Mesh(new THREE.BoxGeometry(0.18,0.78,0.22), toonMat(0x4a4a58));
+armRMesh.position.y=-0.39; armR.add(armRMesh); avatar.add(armR);
+// mochila — el toque violeta es la firma de silueta del personaje
+const bag = new THREE.Mesh(new THREE.BoxGeometry(0.62,0.95,0.32), toonMat(0x8a4ab8));
 bag.position.set(0,1.20,-0.32); avatar.add(bag);
-// tirantes de la mochila (dos cilindros delgados acid)
+// tirantes y detalle acid
 const strapGeo = new THREE.BoxGeometry(0.07,0.78,0.05);
-const strapL = new THREE.Mesh(strapGeo, acidEdge.clone()); strapL.material.opacity=.55; strapL.position.set(-0.22,1.20,0.22); avatar.add(strapL);
-const strapR = new THREE.Mesh(strapGeo, acidEdge.clone()); strapR.material.opacity=.55; strapR.position.set( 0.22,1.20,0.22); avatar.add(strapR);
-// detalle acid en la mochila (línea / bolsillo)
-const bagDetail = new THREE.Mesh(new THREE.BoxGeometry(0.5,0.05,0.34), new THREE.MeshBasicMaterial({color:0xb8ff00}));
+const strapMat = new THREE.MeshBasicMaterial({color:0xb8ff00});
+const strapL = new THREE.Mesh(strapGeo, strapMat); strapL.position.set(-0.22,1.20,0.22); avatar.add(strapL);
+const strapR = new THREE.Mesh(strapGeo, strapMat); strapR.position.set( 0.22,1.20,0.22); avatar.add(strapR);
+const bagDetail = new THREE.Mesh(new THREE.BoxGeometry(0.5,0.05,0.34), strapMat);
 bagDetail.position.set(0,1.18,-0.49); avatar.add(bagDetail);
 // halo bajo los pies
 const halo=new THREE.Mesh(new THREE.RingGeometry(0.85,1.05,32), new THREE.MeshBasicMaterial({color:0xb8ff00,side:THREE.DoubleSide,transparent:true,opacity:.85,depthWrite:false}));
@@ -408,8 +449,12 @@ function makeLabel(text, hex, sub){
 // monolitos (boliches + tienda)
 const monos=[];
 function makeMono(pos,color,labelText,subText){ const g=new THREE.Group();
-  const m=new THREE.Mesh(new THREE.BoxGeometry(3,5,1.2), new THREE.MeshBasicMaterial({color, transparent:true, opacity:.92}));
-  m.position.y=2.5; g.add(m);
+  // box principal con toon shading + outline cómic
+  const m=new THREE.Mesh(new THREE.BoxGeometry(3,5,1.2), toonMat(color));
+  m.position.y=2.5;
+  const mOut = new THREE.Mesh(m.geometry, OUTLINE_MAT);
+  mOut.position.copy(m.position); mOut.scale.set(1.06,1.04,1.12);
+  g.add(mOut); g.add(m);
   // glow exterior — caja más grande, opacidad baja, no escribe en depth
   const glowMat=new THREE.MeshBasicMaterial({color,transparent:true,opacity:.18,depthWrite:false});
   const glow=new THREE.Mesh(new THREE.BoxGeometry(3.6,5.4,1.7),glowMat); glow.position.y=2.5; g.add(glow);
@@ -839,7 +884,15 @@ function loop(t){ requestAnimationFrame(loop); const dt=Math.min(0.05,(t-last)/1
 requestAnimationFrame(loop);
 
 /* ======================= arranque ======================= */
-function toHub(){ document.querySelectorAll('.screen').forEach(s=>s.classList.add('hidden')); showMode('hub'); setCoins(); }
+function toHub(){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.add('hidden'));
+  showMode('hub'); setCoins();
+  // posición inicial de la cámara — sino arranca en (0,0,0) pegada al avatar
+  const dir = new THREE.Vector3(Math.sin(avatar.rotation.y), 0, -Math.cos(avatar.rotation.y));
+  const co  = dir.clone().multiplyScalar(-9).add(new THREE.Vector3(0,7,0));
+  hubCam.position.set(avatar.position.x+co.x, co.y, avatar.position.z+co.z);
+  hubCam.lookAt(avatar.position.x+dir.x*4, 1.2, avatar.position.z+dir.z*4);
+}
 document.getElementById('startBtn').addEventListener('click',()=>{ if(!actx)initAudio(); if(actx.state==='suspended')actx.resume(); toHub(); });
 document.getElementById('resBtn').addEventListener('click',()=>{ document.getElementById('results').classList.add('hidden'); showMode('hub'); });
 setCoins();
