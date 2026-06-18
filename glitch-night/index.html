@@ -195,23 +195,32 @@ import * as THREE from 'three';
 
 /* ======================= DATA ======================= */
 const TOOLS = {
-  loops:  { name:'Pack de Loops', cat:'contenido', price:0,   desc:'Tus 80 obras como base visual. El kit con el que todo VJ arranca.', unlock:'JOHN DOE' },
-  shaders:{ name:'Shaders Audio-Reactivos', cat:'tiempo real', price:140, desc:'ISF/GLSL que reaccionan al sonido. +30% de score: la pared respira con la música.', unlock:'CLUB ELECTRÓNICA', scoreMul:1.3 },
-  smpte:  { name:'Sync SMPTE', cat:'precisión', price:420, desc:'Timecode: todo sincronizado al frame. Ventana de timing más amplia — operás fino.', unlock:'VONHARV', window:1.5 },
-  mapping:{ name:'Rig de Mapping + Octane', cat:'3D / mapping', price:950, desc:'C4D + Octane + proyección a gran escala. Desbloquea el festival. Pago doble.', unlock:'FESTIVAL MAREA', payMul:2 },
+  loops:  { name:'Pack de Loops', cat:'contenido', price:0,   desc:'Tus 80 obras como base visual. El kit con el que todo VJ arranca.', unlock:'EL BAR' },
+  shaders:{ name:'Shaders Audio-Reactivos', cat:'tiempo real', price:140, desc:'ISF/GLSL que reaccionan al sonido. +30% de score: la pared respira con la música.', unlock:'EL BOLICHE', scoreMul:1.3 },
+  smpte:  { name:'Sync SMPTE', cat:'precisión', price:420, desc:'Timecode: todo sincronizado al frame. Ventana de timing más amplia — operás fino.', unlock:'EL SALÓN', window:1.5 },
+  mapping:{ name:'Rig de Mapping + Octane', cat:'3D / mapping', price:950, desc:'C4D + Octane + proyección a gran escala. Desbloquea el escenario. Pago doble.', unlock:'EL ESCENARIO', payMul:2 },
 };
 const CLUBS = [
-  { id:'john',   name:'JOHN DOE',       sub:'EL SÓTANO',       req:'loops',   bpm:124, density:0.42, hue:0.30, basePay:90,  pos:[-9,0,6],  color:0x6655ff },
-  { id:'club',   name:'CLUB ELECTRÓNICA',sub:'LA PISTA',       req:'shaders', bpm:130, density:0.55, hue:0.85, basePay:180, pos:[8,0,7],   color:0xff2d55 },
-  { id:'von',    name:'VONHARV',        sub:'ALTA PRECISIÓN',  req:'smpte',   bpm:134, density:0.62, hue:0.55, basePay:300, pos:[10,0,-8], color:0x3ad0ff },
-  { id:'marea',  name:'FESTIVAL MAREA', sub:'MAPPING 80×200m', req:'mapping', bpm:140, density:0.72, hue:0.12, basePay:520, pos:[-10,0,-9],color:0xb8ff00 },
+  { id:'bar',       name:'EL BAR',       sub:'CALENTANDO',         req:'loops',   bpm:118, density:0.42, hue:0.30, basePay:90,  pos:[-22,0,12], color:0x6655ff },
+  { id:'boliche',   name:'EL BOLICHE',   sub:'LA PISTA',           req:'shaders', bpm:128, density:0.55, hue:0.85, basePay:180, pos:[22,0,14],  color:0xff2d55 },
+  { id:'salon',     name:'EL SALÓN',     sub:'ALTA PRECISIÓN',     req:'smpte',   bpm:134, density:0.62, hue:0.55, basePay:300, pos:[24,0,-18], color:0x3ad0ff },
+  { id:'escenario', name:'EL ESCENARIO', sub:'MAPPING A GRAN ESCALA',req:'mapping', bpm:140, density:0.72, hue:0.12, basePay:520, pos:[-24,0,-20],color:0xb8ff00 },
 ];
-const SHOP_POS=[0,0,-13];
+const SHOP_POS=[0,0,-26];
+// tamaño del mundo cíclico — el avatar wrap-aroundea al llegar al borde
+const WORLD=72;
 
 /* ======================= STATE + persistencia ======================= */
 const SAVE='glitchnight_v1';
 let S = load();
-function load(){ try{ const s=JSON.parse(localStorage.getItem(SAVE)); if(s&&s.tools) return {coins:s.coins||0, tools:s.tools, hs:s.hs||{}}; }catch(e){}
+function load(){ try{ const s=JSON.parse(localStorage.getItem(SAVE));
+    if(s&&s.tools){
+      // migrar IDs viejos de highscore al nuevo naming
+      const map={john:'bar',club:'boliche',von:'salon',marea:'escenario'};
+      const hs={}; for(const k of Object.keys(s.hs||{})){ hs[map[k]||k]=s.hs[k]; }
+      return {coins:s.coins||0, tools:s.tools, hs};
+    }
+  }catch(e){}
   return { coins:0, tools:['loops'], hs:{} }; }
 function save(){ localStorage.setItem(SAVE, JSON.stringify(S)); }
 function has(t){ return S.tools.includes(t); }
@@ -244,7 +253,65 @@ const BASSLINE=[55,55,82.4,55,65.4,55,98,82.4];
 const canvas=document.getElementById('gl');
 const renderer=new THREE.WebGLRenderer({canvas,antialias:true,powerPreference:'high-performance'});
 renderer.setPixelRatio(Math.min(devicePixelRatio,1.6));
-function rsize(){ renderer.setSize(innerWidth,innerHeight,false); }
+// post-processing fisheye para el HUB — RenderTarget + quad fullscreen
+let hubRT;
+function makeRT(){ const w=Math.floor(innerWidth*renderer.getPixelRatio()),
+                   h=Math.floor(innerHeight*renderer.getPixelRatio());
+  if(hubRT){ hubRT.dispose(); } hubRT=new THREE.WebGLRenderTarget(w,h,{depthBuffer:true,stencilBuffer:false}); }
+function rsize(){ renderer.setSize(innerWidth,innerHeight,false); makeRT(); fishUniforms.uRes.value.set(innerWidth,innerHeight); }
+const fishUniforms = {
+  tDiffuse:{value:null}, uRes:{value:new THREE.Vector2(innerWidth,innerHeight)},
+  uStrength:{value:0.85}, uVignette:{value:0.6}, uChroma:{value:0.018}, uScanline:{value:0.2}, uTime:{value:0}
+};
+const fishMat = new THREE.ShaderMaterial({
+  uniforms:fishUniforms,
+  vertexShader:`varying vec2 vUv; void main(){ vUv=uv; gl_Position=vec4(position,1.0); }`,
+  fragmentShader:`precision highp float;
+    varying vec2 vUv; uniform sampler2D tDiffuse; uniform vec2 uRes;
+    uniform float uStrength,uVignette,uChroma,uScanline,uTime;
+    // distorsión radial — fisheye real (positivo = barrel) + chroma sutil + vignette + scanlines
+    vec2 fish(vec2 uv, float k){
+      vec2 c = uv - 0.5;
+      // corregir ratio para que la curvatura sea esférica, no elíptica
+      float ar = uRes.x/uRes.y;
+      c.x *= ar;
+      float r2 = dot(c,c);
+      // barrel positivo: lo de afuera se acerca al centro
+      vec2 d = c * (1.0 + k*r2);
+      d.x /= ar;
+      return d + 0.5;
+    }
+    void main(){
+      vec2 uvR = fish(vUv, uStrength*1.02);
+      vec2 uvG = fish(vUv, uStrength*1.00);
+      vec2 uvB = fish(vUv, uStrength*0.98);
+      // chroma split sutil hacia el borde
+      vec2 toCenter = vUv-0.5;
+      float edge = length(toCenter)*2.0;
+      vec2 shift = normalize(toCenter+1e-5) * uChroma * edge;
+      vec3 col;
+      col.r = texture2D(tDiffuse, uvR + shift).r;
+      col.g = texture2D(tDiffuse, uvG).g;
+      col.b = texture2D(tDiffuse, uvB - shift).b;
+      // muestreos fuera del rango: negro (no estirar bordes)
+      vec2 q = (uvG-0.5);
+      float outMask = step(0.5, max(abs(q.x), abs(q.y)));
+      col *= 1.0 - outMask;
+      // scanlines
+      float sl = 0.5 + 0.5*sin(gl_FragCoord.y*1.6);
+      col *= 1.0 - uScanline*(1.0-sl)*0.7;
+      // vignette
+      float v = smoothstep(0.95, 0.35, edge);
+      col *= mix(1.0-uVignette, 1.0, v);
+      // grain sutil
+      float grain = fract(sin(dot(gl_FragCoord.xy*0.01+uTime, vec2(12.9898,78.233)))*43758.5453);
+      col += (grain-0.5)*0.025;
+      gl_FragColor = vec4(col,1.0);
+    }`
+});
+const fishScene = new THREE.Scene();
+const fishCam = new THREE.OrthographicCamera(-1,1,1,-1,0,1);
+fishScene.add(new THREE.Mesh(new THREE.PlaneGeometry(2,2), fishMat));
 addEventListener('resize',rsize); rsize();
 
 /* ---- HUB scene (mundo) ---- */
@@ -252,24 +319,69 @@ const hub=new THREE.Scene(); hub.fog=new THREE.FogExp2(0x05060a,0.045);
 const hubCam=new THREE.PerspectiveCamera(55,1,0.1,200);
 function camAspect(){ hubCam.aspect=innerWidth/innerHeight; hubCam.updateProjectionMatrix(); }
 addEventListener('resize',camAspect); camAspect();
-// piso grid neón
-const grid=new THREE.GridHelper(80,80,0x223,0x111a2a); grid.position.y=0; hub.add(grid);
-const floor=new THREE.Mesh(new THREE.PlaneGeometry(80,80), new THREE.MeshBasicMaterial({color:0x04060c}));
+// piso (asfalto noche) + grid sutil
+const floor=new THREE.Mesh(new THREE.PlaneGeometry(WORLD*2,WORLD*2), new THREE.MeshBasicMaterial({color:0x05070d}));
 floor.rotation.x=-Math.PI/2; floor.position.y=-0.02; hub.add(floor);
-// estrellas
+const grid=new THREE.GridHelper(WORLD*2,WORLD*2/4,0x16223a,0x0c1424); grid.position.y=0; hub.add(grid);
+// calles anchas — dos avenidas que cruzan el mundo, una N-S y otra E-O
+const avMat=new THREE.MeshBasicMaterial({color:0x0a1020});
+const avNS=new THREE.Mesh(new THREE.PlaneGeometry(6,WORLD*2), avMat); avNS.rotation.x=-Math.PI/2; avNS.position.y=0.005; hub.add(avNS);
+const avEW=new THREE.Mesh(new THREE.PlaneGeometry(WORLD*2,6), avMat); avEW.rotation.x=-Math.PI/2; avEW.position.y=0.006; hub.add(avEW);
+// líneas centrales acid sobre las avenidas
+const lineMat=new THREE.MeshBasicMaterial({color:0xb8ff00, transparent:true, opacity:.35});
+for(let i=-WORLD;i<=WORLD;i+=4){
+  const dashNS=new THREE.Mesh(new THREE.PlaneGeometry(0.14,1.6),lineMat); dashNS.rotation.x=-Math.PI/2; dashNS.position.set(0,0.012,i); hub.add(dashNS);
+  const dashEW=new THREE.Mesh(new THREE.PlaneGeometry(1.6,0.14),lineMat); dashEW.rotation.x=-Math.PI/2; dashEW.position.set(i,0.013,0); hub.add(dashEW);
+}
+// bordes de las avenidas (líneas finas neón cyan)
+const edgeMat=new THREE.MeshBasicMaterial({color:0x3ad0ff, transparent:true, opacity:.4});
+[+3.05,-3.05].forEach(x=>{ const e=new THREE.Mesh(new THREE.PlaneGeometry(0.08,WORLD*2),edgeMat); e.rotation.x=-Math.PI/2; e.position.set(x,0.014,0); hub.add(e); });
+[+3.05,-3.05].forEach(z=>{ const e=new THREE.Mesh(new THREE.PlaneGeometry(WORLD*2,0.08),edgeMat); e.rotation.x=-Math.PI/2; e.position.set(0,0.015,z); hub.add(e); });
+// estrellas (más altas para que se sientan lejos en el fisheye)
 const starG=new THREE.BufferGeometry(); const sp=[];
-for(let i=0;i<400;i++) sp.push((Math.random()-0.5)*160, Math.random()*60+5, (Math.random()-0.5)*160);
+for(let i=0;i<600;i++) sp.push((Math.random()-0.5)*WORLD*3, Math.random()*80+8, (Math.random()-0.5)*WORLD*3);
 starG.setAttribute('position',new THREE.Float32BufferAttribute(sp,3));
-hub.add(new THREE.Points(starG,new THREE.PointsMaterial({color:0x9fb,size:0.25})));
-// avatar (figura glitch)
+hub.add(new THREE.Points(starG,new THREE.PointsMaterial({color:0x9fb,size:0.32,sizeAttenuation:true,transparent:true,opacity:.6})));
+// avatar (personaje con mochila, 3ra persona)
 const avatar=new THREE.Group();
-const body=new THREE.Mesh(new THREE.CapsuleGeometry(0.5,1.0,4,8), new THREE.MeshBasicMaterial({color:0xf0ede6}));
-body.position.y=1.0; avatar.add(body);
-const halo=new THREE.Mesh(new THREE.RingGeometry(0.9,1.1,24), new THREE.MeshBasicMaterial({color:0xb8ff00,side:THREE.DoubleSide,transparent:true,opacity:.85,depthWrite:false}));
+const skinMat = new THREE.MeshBasicMaterial({color:0xfff3d8});
+const darkMat = new THREE.MeshBasicMaterial({color:0x4a4a58});
+const bagMat  = new THREE.MeshBasicMaterial({color:0x6a3a8a}); // mochila violeta sutil — se distingue de la calle
+const acidEdge = new THREE.MeshBasicMaterial({color:0xb8ff00, transparent:true, opacity:.85, depthWrite:false});
+// torso (caja chata vertical)
+const torso = new THREE.Mesh(new THREE.BoxGeometry(0.7,1.0,0.4), darkMat);
+torso.position.y=1.15; avatar.add(torso);
+// cabeza (cubo pequeño + un sutil halo)
+const head = new THREE.Mesh(new THREE.BoxGeometry(0.42,0.42,0.42), skinMat);
+head.position.y=1.95; avatar.add(head);
+// gorro / capucha sutil (más oscura que la cara)
+const hood = new THREE.Mesh(new THREE.BoxGeometry(0.48,0.18,0.48), darkMat);
+hood.position.y=2.18; avatar.add(hood);
+// piernas
+const legL = new THREE.Mesh(new THREE.BoxGeometry(0.24,0.65,0.28), darkMat); legL.position.set(-0.18,0.48,0); avatar.add(legL);
+const legR = new THREE.Mesh(new THREE.BoxGeometry(0.24,0.65,0.28), darkMat); legR.position.set( 0.18,0.48,0); avatar.add(legR);
+// brazos
+const armL = new THREE.Mesh(new THREE.BoxGeometry(0.18,0.78,0.22), darkMat); armL.position.set(-0.46,1.18,0); avatar.add(armL);
+const armR = new THREE.Mesh(new THREE.BoxGeometry(0.18,0.78,0.22), darkMat); armR.position.set( 0.46,1.18,0); avatar.add(armR);
+// mochila — detrás del torso, ancha y alta — lo más reconocible de la silueta
+const bag = new THREE.Mesh(new THREE.BoxGeometry(0.62,0.95,0.32), bagMat);
+bag.position.set(0,1.20,-0.32); avatar.add(bag);
+// tirantes de la mochila (dos cilindros delgados acid)
+const strapGeo = new THREE.BoxGeometry(0.07,0.78,0.05);
+const strapL = new THREE.Mesh(strapGeo, acidEdge.clone()); strapL.material.opacity=.55; strapL.position.set(-0.22,1.20,0.22); avatar.add(strapL);
+const strapR = new THREE.Mesh(strapGeo, acidEdge.clone()); strapR.material.opacity=.55; strapR.position.set( 0.22,1.20,0.22); avatar.add(strapR);
+// detalle acid en la mochila (línea / bolsillo)
+const bagDetail = new THREE.Mesh(new THREE.BoxGeometry(0.5,0.05,0.34), new THREE.MeshBasicMaterial({color:0xb8ff00}));
+bagDetail.position.set(0,1.18,-0.49); avatar.add(bagDetail);
+// halo bajo los pies
+const halo=new THREE.Mesh(new THREE.RingGeometry(0.85,1.05,32), new THREE.MeshBasicMaterial({color:0xb8ff00,side:THREE.DoubleSide,transparent:true,opacity:.85,depthWrite:false}));
 halo.rotation.x=-Math.PI/2; halo.position.y=0.03; avatar.add(halo);
 // halo exterior — adopta el color del nearest cuando hay uno
-const haloOuter=new THREE.Mesh(new THREE.RingGeometry(1.25,1.55,32), new THREE.MeshBasicMaterial({color:0xb8ff00,side:THREE.DoubleSide,transparent:true,opacity:0,depthWrite:false}));
+const haloOuter=new THREE.Mesh(new THREE.RingGeometry(1.20,1.50,40), new THREE.MeshBasicMaterial({color:0xb8ff00,side:THREE.DoubleSide,transparent:true,opacity:0,depthWrite:false}));
 haloOuter.rotation.x=-Math.PI/2; haloOuter.position.y=0.04; avatar.add(haloOuter);
+// el personaje arranca mirando hacia adelante (cámara está atrás)
+// guardamos refs a piernas/brazos para animar la caminata
+const animParts = {legL, legR, armL, armR};
 hub.add(avatar);
 // helper: sprite de texto sobre cada monolito (nombre + estado)
 function makeLabel(text, hex, sub){
@@ -404,19 +516,53 @@ addEventListener('keydown',e=>{ keys[e.key.toLowerCase()]=true;
 });
 addEventListener('keyup',e=>{ keys[e.key.toLowerCase()]=false; });
 let nearest=null;
+let walkPhase=0;
 function updateHub(dt){
   let vx=0,vz=0;
   if(keys['w']||keys['arrowup'])vz-=1; if(keys['s']||keys['arrowdown'])vz+=1;
   if(keys['a']||keys['arrowleft'])vx-=1; if(keys['d']||keys['arrowright'])vx+=1;
-  const len=Math.hypot(vx,vz)||1; const sp=11*dt;
-  avatar.position.x=Math.max(-30,Math.min(30,avatar.position.x+vx/len*sp*(vx||vz?1:0)));
-  avatar.position.z=Math.max(-30,Math.min(30,avatar.position.z+vz/len*sp*(vx||vz?1:0)));
+  const moving = !!(vx||vz);
+  const len=Math.hypot(vx,vz)||1; const sp=12*dt;
+  // wrap-around (mundo cíclico): si salís por un lado, aparecés del otro
+  avatar.position.x += (vx/len)*sp*(moving?1:0);
+  avatar.position.z += (vz/len)*sp*(moving?1:0);
+  if(avatar.position.x>WORLD) avatar.position.x-=WORLD*2;
+  if(avatar.position.x<-WORLD) avatar.position.x+=WORLD*2;
+  if(avatar.position.z>WORLD) avatar.position.z-=WORLD*2;
+  if(avatar.position.z<-WORLD) avatar.position.z+=WORLD*2;
+  // orientar el cuerpo en la dirección de movimiento (suave)
+  if(moving){
+    const targetRot = Math.atan2(vx, -vz); // mira hacia donde camina
+    let d = targetRot - avatar.rotation.y;
+    while(d>Math.PI)d-=2*Math.PI; while(d<-Math.PI)d+=2*Math.PI;
+    avatar.rotation.y += d*0.18;
+  }
+  // animación caminata: piernas/brazos alternan
+  if(moving){
+    walkPhase += dt*9;
+    const a = Math.sin(walkPhase)*0.5;
+    animParts.legL.rotation.x =  a;
+    animParts.legR.rotation.x = -a;
+    animParts.armL.rotation.x = -a*0.7;
+    animParts.armR.rotation.x =  a*0.7;
+  } else {
+    animParts.legL.rotation.x *= 0.85;
+    animParts.legR.rotation.x *= 0.85;
+    animParts.armL.rotation.x *= 0.85;
+    animParts.armR.rotation.x *= 0.85;
+  }
   halo.rotation.z+=dt*2;
-  // cámara sigue (3/4 desde arriba)
+  // cámara 3ra persona: detrás del personaje, baja, mirando hacia adelante
+  // detrás = +Z relativo al cuerpo (que mira -Z por defecto). Con rotación, calculamos vector
   const tx=avatar.position.x, tz=avatar.position.z;
-  hubCam.position.x+= (tx - hubCam.position.x)*0.08;
-  hubCam.position.z+= (tz+15 - hubCam.position.z)*0.08;
-  hubCam.position.y=16; hubCam.lookAt(tx,0,tz-2);
+  const dir = new THREE.Vector3(Math.sin(avatar.rotation.y), 0, -Math.cos(avatar.rotation.y));
+  const camOffset = dir.clone().multiplyScalar(-9).add(new THREE.Vector3(0,7,0));
+  hubCam.position.x+= ((tx+camOffset.x) - hubCam.position.x)*0.10;
+  hubCam.position.y+= ((camOffset.y) - hubCam.position.y)*0.10;
+  hubCam.position.z+= ((tz+camOffset.z) - hubCam.position.z)*0.10;
+  // mira un poco adelante del personaje
+  const lookAhead = dir.clone().multiplyScalar(4);
+  hubCam.lookAt(tx+lookAhead.x, 1.2, tz+lookAhead.z);
   // proximidad
   nearest=null; let nd=5.2;
   const goal = nextGoal();
@@ -658,9 +804,17 @@ laneEls.forEach(el=>{ const ln=+el.dataset.lane; el.addEventListener('pointerdow
 
 /* ======================= LOOP ======================= */
 let last=performance.now();
+function renderHubFisheye(){
+  // render del hub al RT, luego post fisheye al framebuffer principal
+  renderer.setRenderTarget(hubRT); renderer.render(hub,hubCam);
+  renderer.setRenderTarget(null);
+  fishUniforms.tDiffuse.value = hubRT.texture;
+  fishUniforms.uTime.value = performance.now()*0.0005;
+  renderer.render(fishScene, fishCam);
+}
 function loop(t){ requestAnimationFrame(loop); const dt=Math.min(0.05,(t-last)/1000); last=t;
   let audio=0; if(analyser&&mode==='club'){ analyser.getByteFrequencyData(freq); let s=0; for(let i=0;i<12;i++)s+=freq[i]; audio=(s/12)/255; }
-  if(mode==='hub'){ updateHub(dt); renderer.render(hub,hubCam); return; }
+  if(mode==='hub'){ updateHub(dt); renderHubFisheye(); return; }
   if(mode==='club'){
     U.uTime.value+=dt*(0.6+audio); U.uAudio.value+=(audio-U.uAudio.value)*0.3;
     U.uEnergy.value+=((energy/100)-U.uEnergy.value)*0.05;
@@ -680,7 +834,7 @@ function loop(t){ requestAnimationFrame(loop); const dt=Math.min(0.05,(t-last)/1
     }
     renderer.render(club,clubCam); return;
   }
-  renderer.render(hub,hubCam); // fondo en start/results/shop
+  renderHubFisheye(); // fondo en start/results/shop (con fisheye también)
 }
 requestAnimationFrame(loop);
 
