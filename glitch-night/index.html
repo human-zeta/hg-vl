@@ -334,8 +334,9 @@ rimLight.position.set(-10,5,-12); hub.add(rimLight);
 function makeToonRamp(){
   const c=document.createElement('canvas'); c.width=4; c.height=1;
   const ctx=c.getContext('2d');
-  // 4 niveles: oscuro / sombra / luz / brillo
-  const tones=['#1a1a26','#48485a','#9a9aaa','#ffffff'];
+  // 4 niveles: sombra / medio / luz / brillo — base elevada para que el
+  // cel-shading no caiga a negro (ciudad nocturna pero legible)
+  const tones=['#363b52','#5e6578','#b0b6c8','#ffffff'];
   tones.forEach((t,i)=>{ ctx.fillStyle=t; ctx.fillRect(i,0,1,1); });
   const tex=new THREE.CanvasTexture(c);
   tex.magFilter=THREE.NearestFilter; tex.minFilter=THREE.NearestFilter; tex.needsUpdate=true;
@@ -375,9 +376,10 @@ const chunks = new Map();
 const SIDEWALK_W = 6.5; // ancho de avenida central por chunk
 function sRand(x,z,salt){ const h=Math.sin(x*374.213 + z*817.97 + salt*9.11)*43758.5453; return h-Math.floor(h); }
 
-// paleta de noche para los edificios — tonos oscuros con un toque saturado
-const BUILD_PALETTE = [0x1a2030, 0x2a1838, 0x182840, 0x301a2a, 0x1a1f20, 0x252840];
+// paleta de noche para los edificios — saturada pero nocturna
+const BUILD_PALETTE = [0x2c3a5e, 0x3e2a5c, 0x223e64, 0x4a2640, 0x2a3340, 0x343e6a];
 const WINDOW_COLORS = [0xb8ff00, 0x3ad0ff, 0xff2d55, 0xfff3d8];
+const NEON_COLORS = [0xb8ff00, 0xff2d55, 0x3ad0ff];
 
 // retorna true si la posición mundial está cerca de un CLUB fijo (no construir ahí)
 function nearAnyClub(wx, wz, minDist){
@@ -423,6 +425,25 @@ function spawnBuilding(group, lx, lz, seed){
       }
     }
   }
+  // cartel neón vertical en edificios altos (firma de ciudad)
+  if(h > 7 && sRand(seed,0,20) > 0.45){
+    const neon = NEON_COLORS[Math.floor(sRand(seed,0,21)*NEON_COLORS.length)];
+    const sgnH = 1.2 + sRand(seed,0,22)*2.0;
+    const sign = new THREE.Mesh(new THREE.BoxGeometry(0.5, sgnH, 0.18),
+      new THREE.MeshBasicMaterial({color:neon}));
+    sign.position.set(lx + w/2*0.55, h*0.62, lz + d/2 + 0.2);
+    group.add(sign);
+    const halo = new THREE.Mesh(new THREE.PlaneGeometry(1.4, sgnH+1.0),
+      new THREE.MeshBasicMaterial({color:neon, transparent:true, opacity:.16, depthWrite:false}));
+    halo.position.set(lx + w/2*0.55, h*0.62, lz + d/2 + 0.1);
+    group.add(halo);
+  }
+  // remate de azotea neón (línea de borde superior, definición cómic)
+  if(sRand(seed,0,23) > 0.5){
+    const cap = new THREE.Mesh(new THREE.BoxGeometry(w*1.02, 0.18, d*1.02),
+      new THREE.MeshBasicMaterial({color: NEON_COLORS[Math.floor(sRand(seed,0,24)*NEON_COLORS.length)], transparent:true, opacity:.55}));
+    cap.position.set(lx, h+0.05, lz); group.add(cap);
+  }
 }
 function makeChunk(cx, cz){
   const g = new THREE.Group();
@@ -442,6 +463,19 @@ function makeChunk(cx, cz){
     const dEW = new THREE.Mesh(new THREE.PlaneGeometry(1.4,0.16), dashMat);
     dEW.rotation.x=-Math.PI/2; dEW.position.set(i, 0.013, 0); g.add(dEW);
   }
+  // faroles en las 4 esquinas de la intersección — poste oscuro + cabeza acid + pozo de luz
+  const lampPos = [[-3.6,-3.6],[3.6,-3.6],[-3.6,3.6],[3.6,3.6]];
+  lampPos.forEach(lp=>{
+    const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.08,0.1,3.4,6), toonMat(0x1a1f2e));
+    pole.position.set(lp[0], 1.7, lp[1]); g.add(pole);
+    const headColor = NEON_COLORS[Math.floor(sRand(cx,cz,lp[0]+lp[1])*NEON_COLORS.length)];
+    const head = new THREE.Mesh(new THREE.SphereGeometry(0.22,8,8), new THREE.MeshBasicMaterial({color:headColor}));
+    head.position.set(lp[0], 3.45, lp[1]); g.add(head);
+    // pozo de luz en el piso (charco de color)
+    const pool = new THREE.Mesh(new THREE.CircleGeometry(1.6,18),
+      new THREE.MeshBasicMaterial({color:headColor, transparent:true, opacity:.10, depthWrite:false}));
+    pool.rotation.x=-Math.PI/2; pool.position.set(lp[0],0.02,lp[1]); g.add(pool);
+  });
   // 4 manzanas: una en cada cuadrante del chunk
   const ofs = CHUNK_HALF - 4;
   const quads = [[-ofs,-ofs],[+ofs,-ofs],[-ofs,+ofs],[+ofs,+ofs]];
@@ -607,13 +641,15 @@ const clubCam=new THREE.OrthographicCamera(-1,1,1,-1,0,1);
 const U={uTime:{value:0},uRes:{value:new THREE.Vector2()},uAudio:{value:0},uEnergy:{value:.5},
   uHue:{value:.3},uStrobe:{value:0},uGlitch:{value:0},uPulse:{value:0},uWarp:{value:0},uLevel:{value:0},uShaderTool:{value:0}};
 const frag=`precision highp float;
+varying vec2 vUv;
 uniform vec2 uRes;uniform float uTime,uAudio,uEnergy,uHue,uStrobe,uGlitch,uPulse,uWarp,uLevel,uShaderTool;
 #define PI 3.14159265
 mat2 rot(float a){float c=cos(a),s=sin(a);return mat2(c,-s,s,c);}
 vec3 hsv(float h,float s,float v){vec3 c=clamp(abs(mod(h*6.+vec3(0.,4.,2.),6.)-3.)-1.,0.,1.);return v*mix(vec3(1.),c,s);}
 float hash(vec2 p){return fract(sin(dot(p,vec2(41.3,289.1)))*43758.5);}
 void main(){
-  vec2 uv=(gl_FragCoord.xy-0.5*uRes)/uRes.y;
+  // coordenada centrada, aspecto del target (cuadrado) — la pantalla LED reescala
+  vec2 uv=(vUv-0.5)*2.0; uv.x*=uRes.x/uRes.y;
   uv+=uWarp*0.25*vec2(sin(uv.y*9.+uTime*4.),cos(uv.x*9.+uTime*4.));
   vec2 p=uv*rot(uTime*0.10+uEnergy*0.5);
   float r=length(p)+1e-3, ang=atan(p.y,p.x);
@@ -627,17 +663,135 @@ void main(){
   col+=vec3(0.9,1.0,0.2)*smoothstep(0.5,0.0,r)*(0.15+uPulse*0.6);
   // bonus shaders comprados: capa audio-reactiva extra
   if(uShaderTool>0.5){ float w=sin(r*16.-uTime*5.+uAudio*8.)*0.5+0.5; col+=hsv(uHue+0.33,0.7,1.0)*w*uAudio*0.5; }
-  if(uGlitch>0.001){ float bl=step(1.0-uGlitch*0.8,hash(vec2(floor(uv.y*22.),floor(uTime*30.))));
+  if(uGlitch>0.001){ float bl=step(1.0-uGlitch*0.8,hash(vec2(floor(vUv.y*22.),floor(uTime*30.))));
     float s=uGlitch*0.02; col=mix(col,vec3(col.r,col.g*0.7+bl,col.b),uGlitch*0.5); col.rg+=vec2(s,-s)*20.0*line; }
-  col*=0.85+0.15*sin(gl_FragCoord.y*0.7);
-  col*=smoothstep(1.25,0.2,r);
+  col*=0.85+0.15*sin(vUv.y*420.0);
+  col*=smoothstep(1.6,0.2,r);
   col=mix(col,vec3(1.0),uStrobe);
   gl_FragColor=vec4(col,1.0);
 }`;
 club.add(new THREE.Mesh(new THREE.PlaneGeometry(2,2),
-  new THREE.ShaderMaterial({uniforms:U,fragmentShader:frag,vertexShader:`void main(){gl_Position=vec4(position,1.0);}`})));
-function clubRes(){ U.uRes.value.set(innerWidth*renderer.getPixelRatio(),innerHeight*renderer.getPixelRatio()); }
-addEventListener('resize',clubRes); clubRes();
+  new THREE.ShaderMaterial({uniforms:U,fragmentShader:frag,vertexShader:`varying vec2 vUv; void main(){ vUv=uv; gl_Position=vec4(position,1.0); }`})));
+// RenderTarget del shader del club — su textura alimenta las pantallas LED del interior
+const clubRT = new THREE.WebGLRenderTarget(1024,1024,{depthBuffer:false});
+U.uRes.value.set(1024,1024);
+function renderClubToRT(){
+  renderer.setRenderTarget(clubRT);
+  renderer.render(club, clubCam);
+  renderer.setRenderTarget(null);
+}
+
+/* ---- VENUE scene (interior físico) ----
+   Al entrar a un lugar, construimos su interior 3D: piso, paredes, cabina
+   del VJ, pantallas LED que muestran el shader (clubRT.texture) y público
+   que rebota al beat. El avatar pasa del hub a esta escena (3ra persona). */
+const venue = new THREE.Scene();
+venue.fog = new THREE.FogExp2(0x04050a, 0.018);
+const venueCam = new THREE.PerspectiveCamera(60,1,0.1,200);
+function venueAspect(){ venueCam.aspect=innerWidth/innerHeight; venueCam.updateProjectionMatrix(); }
+addEventListener('resize',venueAspect); venueAspect();
+venue.add(new THREE.AmbientLight(0x334455, 0.7));
+const venueKey = new THREE.DirectionalLight(0xffffff, 0.6); venueKey.position.set(0,10,8); venue.add(venueKey);
+// material de las pantallas LED: emisivo con la textura del shader del club
+const ledMat = new THREE.MeshBasicMaterial({map: clubRT.texture});
+let venueBuilt=null;       // id del lugar actualmente construido
+let crowd=[];              // meshes del público (rebotan al beat)
+let venueDynamic=new THREE.Group(); venue.add(venueDynamic);
+function clearVenue(){
+  venue.remove(venueDynamic);
+  venueDynamic.traverse(o=>{ if(o.geometry && o.geometry!==undefined) o.geometry.dispose(); });
+  venueDynamic = new THREE.Group(); venue.add(venueDynamic);
+  crowd=[];
+}
+// presets de interior por lugar — escala y nº de pantallas según el tier
+const VENUE_PRESETS = {
+  bar:       { w:14, dpt:18, screens:1, crowd:14, wall:0x161a26, accent:0x6655ff },
+  boliche:   { w:20, dpt:24, screens:2, crowd:40, wall:0x241430, accent:0xff2d55 },
+  salon:     { w:24, dpt:28, screens:3, crowd:55, wall:0x12202e, accent:0x3ad0ff },
+  escenario: { w:34, dpt:40, screens:3, crowd:90, wall:0x1a1410, accent:0xb8ff00 },
+};
+function buildVenue(club){
+  clearVenue();
+  venueBuilt = club.id;
+  const P = VENUE_PRESETS[club.id] || VENUE_PRESETS.bar;
+  const G = venueDynamic;
+  const hw = P.w/2, dz = P.dpt;
+  // piso
+  const fl = new THREE.Mesh(new THREE.PlaneGeometry(P.w, dz), new THREE.MeshToonMaterial({color:0x0a0c14, gradientMap:toonRamp}));
+  fl.rotation.x=-Math.PI/2; G.add(fl);
+  // reflejo del escenario en el piso (franja tenue del color de acento)
+  const refl = new THREE.Mesh(new THREE.PlaneGeometry(P.w*0.8, dz*0.4), new THREE.MeshBasicMaterial({color:P.accent, transparent:true, opacity:.06, depthWrite:false}));
+  refl.rotation.x=-Math.PI/2; refl.position.set(0,0.01,-dz/2+dz*0.22); G.add(refl);
+  // paredes (cajas finas con toon + outline)
+  function wall(w,h,d,x,y,z){
+    const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d), toonMat(P.wall));
+    m.position.set(x,y,z);
+    const o=new THREE.Mesh(m.geometry, OUTLINE_MAT); o.position.copy(m.position); o.scale.set(1.01,1.02,1.01);
+    G.add(o); G.add(m);
+  }
+  wall(P.w, 9, 0.4, 0, 4.5, -dz/2);          // fondo
+  wall(0.4, 9, dz, -hw, 4.5, 0);              // izquierda
+  wall(0.4, 9, dz,  hw, 4.5, 0);              // derecha
+  // techo bajo (sensación de interior)
+  const ceil=new THREE.Mesh(new THREE.PlaneGeometry(P.w,dz), new THREE.MeshBasicMaterial({color:0x05060c}));
+  ceil.rotation.x=Math.PI/2; ceil.position.y=9; G.add(ceil);
+  // PANTALLAS LED en la pared del fondo
+  const scrY = 4.6, scrZ = -dz/2 + 0.3;
+  if(P.screens===1){
+    addScreen(G, 0, scrY, scrZ, P.w*0.5, 3.2, P.accent);
+  } else if(P.screens===2){
+    addScreen(G, -P.w*0.26, scrY, scrZ, P.w*0.42, 3.4, P.accent);
+    addScreen(G,  P.w*0.26, scrY, scrZ, P.w*0.42, 3.4, P.accent);
+  } else {
+    addScreen(G, 0, 5.2, scrZ, P.w*0.5, 4.0, P.accent);
+    addScreen(G, -P.w*0.36, 3.8, scrZ+0.05, P.w*0.26, 2.6, P.accent);
+    addScreen(G,  P.w*0.36, 3.8, scrZ+0.05, P.w*0.26, 2.6, P.accent);
+  }
+  // cabina del VJ — frente a las pantallas, donde se para el avatar
+  const booth = new THREE.Mesh(new THREE.BoxGeometry(3.4,1.1,1.4), toonMat(0x14161f));
+  booth.position.set(0,0.55,-dz/2+4.2);
+  const bo=new THREE.Mesh(booth.geometry, OUTLINE_MAT); bo.position.copy(booth.position); bo.scale.set(1.03,1.05,1.05);
+  G.add(bo); G.add(booth);
+  // borde acid de la cabina
+  const bEdge=new THREE.Mesh(new THREE.BoxGeometry(3.5,0.12,1.5), new THREE.MeshBasicMaterial({color:P.accent}));
+  bEdge.position.set(0,1.16,-dz/2+4.2); G.add(bEdge);
+  // PÚBLICO — boxes que miran al escenario, rebotan al beat
+  const crowdMat = [0xff2d55,0x3ad0ff,0xb8ff00,0xfff3d8,0x8a4ab8];
+  for(let i=0;i<P.crowd;i++){
+    const cm = new THREE.Mesh(new THREE.BoxGeometry(0.5,1.3,0.4),
+      new THREE.MeshToonMaterial({color:crowdMat[i%crowdMat.length], gradientMap:toonRamp}));
+    const row = Math.floor(i/Math.ceil(P.w/1.2));
+    const px = -hw+1 + (i%Math.ceil(P.w/1.2))*1.2 + (row%2?0.6:0);
+    const pz = -dz/2 + 7 + row*1.3;
+    cm.position.set(px, 0.65, pz);
+    cm.userData.baseY=0.65; cm.userData.phase=Math.random()*6.28;
+    G.add(cm); crowd.push(cm);
+  }
+}
+function addScreen(G, x, y, z, w, h, accent){
+  // marco
+  const frame=new THREE.Mesh(new THREE.BoxGeometry(w+0.3,h+0.3,0.2), new THREE.MeshBasicMaterial({color:0x000000}));
+  frame.position.set(x,y,z-0.01); G.add(frame);
+  // pantalla con la textura del shader
+  const scr=new THREE.Mesh(new THREE.PlaneGeometry(w,h), ledMat);
+  scr.position.set(x,y,z+0.11); G.add(scr);
+  // glow del escenario hacia el público
+  const glow=new THREE.Mesh(new THREE.PlaneGeometry(w*1.6,h*2.2), new THREE.MeshBasicMaterial({color:accent, transparent:true, opacity:.05, depthWrite:false}));
+  glow.position.set(x,y,z+0.2); G.add(glow);
+}
+function updateVenue(dt, audio){
+  // público rebota al beat
+  const t=performance.now()*0.001;
+  for(const c of crowd){
+    c.position.y = c.userData.baseY + Math.abs(Math.sin(t*4 + c.userData.phase))*(0.15+audio*0.9);
+  }
+  // cámara 3ra persona detrás del avatar mirando a las pantallas (fondo -Z)
+  const tx=avatar.position.x, tz=avatar.position.z;
+  venueCam.position.x += (tx - venueCam.position.x)*0.12;
+  venueCam.position.y += (3.2 - venueCam.position.y)*0.12;
+  venueCam.position.z += ((tz+6) - venueCam.position.z)*0.12;
+  venueCam.lookAt(tx, 3.0, tz-8);
+}
 
 /* ======================= MODE / flujo ======================= */
 let mode='start';   // start | hub | club | results | shop
@@ -816,6 +970,12 @@ function startSet(c){ cur=c; showMode('club');
   pendingDropAt=-1; lastBigComboMilestone=0;
   U.uHue.value=c.hue; U.uLevel.value=CLUBS.indexOf(c); U.uShaderTool.value=has('shaders')?1:0;
   venueEl.innerHTML=`${c.name}<small>${c.sub} · ${c.bpm} BPM</small>`;
+  // construir interior y mover al avatar a la cabina del VJ
+  buildVenue(c);
+  const P = VENUE_PRESETS[c.id] || VENUE_PRESETS.bar;
+  hub.remove(avatar); venue.add(avatar);
+  avatar.position.set(0, 0, -P.dpt/2 + 5.4); avatar.rotation.y = 0; // rot 0 = mira a -Z = a las pantallas del fondo
+  venueCam.position.set(0, 3.2, avatar.position.z+6);
   refreshHUD();
   // countdown 3·2·1·GO antes de arrancar el scheduler
   showCountdown(3, ()=>{
@@ -978,15 +1138,26 @@ function loop(t){ requestAnimationFrame(loop); const dt=Math.min(0.05,(t-last)/1
       if(energy<=0){ endSet(true); }
       else if(now>=setEndsAt){ endSet(false); }
     }
-    renderer.render(club,clubCam); return;
+    // 1) el shader del club se renderiza a su textura; 2) el interior 3D usa
+    // esa textura en las pantallas LED; 3) el público rebota al beat.
+    renderClubToRT();
+    updateVenue(dt, audio);
+    renderer.render(venue, venueCam); return;
   }
   renderHubFisheye(); // fondo en start/results/shop (con fisheye también)
 }
 requestAnimationFrame(loop);
 
 /* ======================= arranque ======================= */
+// devuelve el avatar al hub, frente a la puerta del lugar que acaba de operar
+function avatarBackToHub(){
+  if(avatar.parent !== hub){ venue.remove(avatar); hub.add(avatar); }
+  if(cur){ avatar.position.set(cur.pos[0], 0, cur.pos[2]+6); avatar.rotation.y=0; }
+  else { avatar.position.set(0,0,0); avatar.rotation.y=0; }
+}
 function toHub(){
   document.querySelectorAll('.screen').forEach(s=>s.classList.add('hidden'));
+  avatarBackToHub();
   showMode('hub'); setCoins();
   // posición inicial de la cámara — sino arranca en (0,0,0) pegada al avatar
   const dir = new THREE.Vector3(Math.sin(avatar.rotation.y), 0, -Math.cos(avatar.rotation.y));
@@ -994,8 +1165,8 @@ function toHub(){
   hubCam.position.set(avatar.position.x+co.x, co.y, avatar.position.z+co.z);
   hubCam.lookAt(avatar.position.x+dir.x*4, 1.2, avatar.position.z+dir.z*4);
 }
-document.getElementById('startBtn').addEventListener('click',()=>{ if(!actx)initAudio(); if(actx.state==='suspended')actx.resume(); toHub(); });
-document.getElementById('resBtn').addEventListener('click',()=>{ document.getElementById('results').classList.add('hidden'); showMode('hub'); });
+document.getElementById('startBtn').addEventListener('click',()=>{ if(!actx)initAudio(); if(actx.state==='suspended')actx.resume(); avatar.position.set(0,0,0); toHub(); });
+document.getElementById('resBtn').addEventListener('click',()=>{ document.getElementById('results').classList.add('hidden'); toHub(); });
 setCoins();
 </script>
 </body>
