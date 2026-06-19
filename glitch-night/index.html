@@ -354,29 +354,133 @@ function withOutline(mesh, scale=1.06){
   g.add(out); g.add(mesh);
   return g;
 }
-// piso (asfalto noche) + grid sutil
-const floor=new THREE.Mesh(new THREE.PlaneGeometry(WORLD*2,WORLD*2), new THREE.MeshBasicMaterial({color:0x05070d}));
+// piso (asfalto noche) — un único plano gigante
+const floor=new THREE.Mesh(new THREE.PlaneGeometry(WORLD*4,WORLD*4), new THREE.MeshBasicMaterial({color:0x05070d}));
 floor.rotation.x=-Math.PI/2; floor.position.y=-0.02; hub.add(floor);
-const grid=new THREE.GridHelper(WORLD*2,WORLD*2/4,0x16223a,0x0c1424); grid.position.y=0; hub.add(grid);
-// calles anchas — dos avenidas que cruzan el mundo, una N-S y otra E-O
-const avMat=new THREE.MeshBasicMaterial({color:0x0a1020});
-const avNS=new THREE.Mesh(new THREE.PlaneGeometry(6,WORLD*2), avMat); avNS.rotation.x=-Math.PI/2; avNS.position.y=0.005; hub.add(avNS);
-const avEW=new THREE.Mesh(new THREE.PlaneGeometry(WORLD*2,6), avMat); avEW.rotation.x=-Math.PI/2; avEW.position.y=0.006; hub.add(avEW);
-// líneas centrales acid sobre las avenidas
-const lineMat=new THREE.MeshBasicMaterial({color:0xb8ff00, transparent:true, opacity:.35});
-for(let i=-WORLD;i<=WORLD;i+=4){
-  const dashNS=new THREE.Mesh(new THREE.PlaneGeometry(0.14,1.6),lineMat); dashNS.rotation.x=-Math.PI/2; dashNS.position.set(0,0.012,i); hub.add(dashNS);
-  const dashEW=new THREE.Mesh(new THREE.PlaneGeometry(1.6,0.14),lineMat); dashEW.rotation.x=-Math.PI/2; dashEW.position.set(i,0.013,0); hub.add(dashEW);
-}
-// bordes de las avenidas (líneas finas neón cyan)
-const edgeMat=new THREE.MeshBasicMaterial({color:0x3ad0ff, transparent:true, opacity:.4});
-[+3.05,-3.05].forEach(x=>{ const e=new THREE.Mesh(new THREE.PlaneGeometry(0.08,WORLD*2),edgeMat); e.rotation.x=-Math.PI/2; e.position.set(x,0.014,0); hub.add(e); });
-[+3.05,-3.05].forEach(z=>{ const e=new THREE.Mesh(new THREE.PlaneGeometry(WORLD*2,0.08),edgeMat); e.rotation.x=-Math.PI/2; e.position.set(0,0.015,z); hub.add(e); });
-// estrellas (más altas para que se sientan lejos en el fisheye)
+// estrellas
 const starG=new THREE.BufferGeometry(); const sp=[];
-for(let i=0;i<600;i++) sp.push((Math.random()-0.5)*WORLD*3, Math.random()*80+8, (Math.random()-0.5)*WORLD*3);
+for(let i=0;i<800;i++) sp.push((Math.random()-0.5)*WORLD*4, Math.random()*90+10, (Math.random()-0.5)*WORLD*4);
 starG.setAttribute('position',new THREE.Float32BufferAttribute(sp,3));
-hub.add(new THREE.Points(starG,new THREE.PointsMaterial({color:0x9fb,size:0.32,sizeAttenuation:true,transparent:true,opacity:.6})));
+hub.add(new THREE.Points(starG,new THREE.PointsMaterial({color:0x9fb,size:0.32,sizeAttenuation:true,transparent:true,opacity:.55})));
+
+/* ─── ciudad procedural por chunks ─────────────────────────────
+   El mundo se divide en chunks de CHUNK×CHUNK. Los chunks alrededor
+   del jugador se generan/destruyen on the fly. El contenido de cada
+   chunk es determinístico (mismo seed = mismo edificio) — siempre
+   ves la misma manzana al pasar por ahí. */
+const CHUNK = 18;
+const CHUNK_HALF = CHUNK/2;
+const VISIBLE_CHUNKS = 2; // 5×5 chunks visibles (90×90 unidades de ciudad)
+const chunks = new Map();
+const SIDEWALK_W = 6.5; // ancho de avenida central por chunk
+function sRand(x,z,salt){ const h=Math.sin(x*374.213 + z*817.97 + salt*9.11)*43758.5453; return h-Math.floor(h); }
+
+// paleta de noche para los edificios — tonos oscuros con un toque saturado
+const BUILD_PALETTE = [0x1a2030, 0x2a1838, 0x182840, 0x301a2a, 0x1a1f20, 0x252840];
+const WINDOW_COLORS = [0xb8ff00, 0x3ad0ff, 0xff2d55, 0xfff3d8];
+
+// retorna true si la posición mundial está cerca de un CLUB fijo (no construir ahí)
+function nearAnyClub(wx, wz, minDist){
+  for(const c of CLUBS){
+    const d = Math.hypot(wx - c.pos[0], wz - c.pos[2]);
+    if(d < minDist) return true;
+  }
+  return false;
+}
+function spawnBuilding(group, lx, lz, seed){
+  const w = 3 + sRand(seed,0,1)*3;
+  const h = 3 + sRand(seed,0,2)*9;
+  const d = 3 + sRand(seed,0,3)*3;
+  const colIdx = Math.floor(sRand(seed,0,4)*BUILD_PALETTE.length);
+  const color = BUILD_PALETTE[colIdx];
+  // box principal con toon + outline
+  const m = new THREE.Mesh(new THREE.BoxGeometry(w,h,d), toonMat(color));
+  m.position.set(lx, h/2, lz);
+  const out = new THREE.Mesh(m.geometry, OUTLINE_MAT);
+  out.position.copy(m.position); out.scale.set(1.04,1.02,1.04);
+  group.add(out); group.add(m);
+  // ventanas: filas de planos pequeños en las caras frontal y lateral
+  const winRows = Math.max(1, Math.floor(h/1.8));
+  const winCols = Math.max(1, Math.floor(w/0.9));
+  for(let row=0; row<winRows; row++){
+    for(let col=0; col<winCols; col++){
+      if(sRand(seed, row*7+col, 5) < 0.45) continue; // ventana apagada
+      const wColor = WINDOW_COLORS[Math.floor(sRand(seed, row, col+8)*WINDOW_COLORS.length)];
+      const wMat = new THREE.MeshBasicMaterial({color: wColor, transparent:true, opacity:.75});
+      // ventana frontal (cara +Z)
+      const wy = 1.2 + row*1.6;
+      const wx = -w/2 + 0.5 + col*(w/winCols);
+      if(wy > h-0.4) continue;
+      const win = new THREE.Mesh(new THREE.PlaneGeometry(0.35,0.5), wMat);
+      win.position.set(lx+wx, wy, lz+d/2+0.005);
+      group.add(win);
+      // ventana trasera (-Z) — menor probabilidad
+      if(sRand(seed,row,col+11) > 0.5){
+        const winB = new THREE.Mesh(new THREE.PlaneGeometry(0.35,0.5), wMat);
+        winB.position.set(lx+wx, wy, lz-d/2-0.005);
+        winB.rotation.y = Math.PI;
+        group.add(winB);
+      }
+    }
+  }
+}
+function makeChunk(cx, cz){
+  const g = new THREE.Group();
+  const baseX = cx*CHUNK, baseZ = cz*CHUNK;
+  g.position.set(baseX, 0, baseZ);
+  // calles dentro del chunk: una franja N-S y una E-O en el centro del chunk
+  const stMat = new THREE.MeshBasicMaterial({color:0x080c14});
+  const stNS = new THREE.Mesh(new THREE.PlaneGeometry(SIDEWALK_W, CHUNK), stMat);
+  stNS.rotation.x=-Math.PI/2; stNS.position.y=0.005; g.add(stNS);
+  const stEW = new THREE.Mesh(new THREE.PlaneGeometry(CHUNK, SIDEWALK_W), stMat);
+  stEW.rotation.x=-Math.PI/2; stEW.position.y=0.006; g.add(stEW);
+  // dashed central acid (líneas de la avenida)
+  const dashMat = new THREE.MeshBasicMaterial({color:0xb8ff00, transparent:true, opacity:.4});
+  for(let i=-CHUNK_HALF+1; i<CHUNK_HALF; i+=3){
+    const dNS = new THREE.Mesh(new THREE.PlaneGeometry(0.16,1.4), dashMat);
+    dNS.rotation.x=-Math.PI/2; dNS.position.set(0, 0.012, i); g.add(dNS);
+    const dEW = new THREE.Mesh(new THREE.PlaneGeometry(1.4,0.16), dashMat);
+    dEW.rotation.x=-Math.PI/2; dEW.position.set(i, 0.013, 0); g.add(dEW);
+  }
+  // 4 manzanas: una en cada cuadrante del chunk
+  const ofs = CHUNK_HALF - 4;
+  const quads = [[-ofs,-ofs],[+ofs,-ofs],[-ofs,+ofs],[+ofs,+ofs]];
+  quads.forEach((q,qi)=>{
+    const wx = baseX + q[0], wz = baseZ + q[1];
+    if(nearAnyClub(wx, wz, 7)) return; // no construir cerca de un CLUB
+    // 1-2 edificios dentro de cada cuadrante
+    const n = 1 + Math.floor(sRand(cx, cz, qi*3)*2);
+    for(let i=0;i<n;i++){
+      const jitterX = (sRand(cx,cz,qi*5+i)-0.5)*2;
+      const jitterZ = (sRand(cx,cz,qi*7+i)-0.5)*2;
+      spawnBuilding(g, q[0]+jitterX, q[1]+jitterZ, cx*1000 + cz*97 + qi*11 + i);
+    }
+  });
+  return g;
+}
+function updateChunks(){
+  if(!avatar) return;
+  const px = Math.round(avatar.position.x / CHUNK);
+  const pz = Math.round(avatar.position.z / CHUNK);
+  const want = new Set();
+  for(let dx=-VISIBLE_CHUNKS; dx<=VISIBLE_CHUNKS; dx++){
+    for(let dz=-VISIBLE_CHUNKS; dz<=VISIBLE_CHUNKS; dz++){
+      const k = (px+dx)+','+(pz+dz);
+      want.add(k);
+      if(!chunks.has(k)){
+        const ch = makeChunk(px+dx, pz+dz);
+        hub.add(ch); chunks.set(k, ch);
+      }
+    }
+  }
+  for(const [k,ch] of chunks){
+    if(!want.has(k)){
+      hub.remove(ch);
+      ch.traverse(o=>{ if(o.geometry) o.geometry.dispose(); });
+      chunks.delete(k);
+    }
+  }
+}
 // avatar (personaje con mochila, 3ra persona) — toon shading, sin outline en
 // las partes finas (delgadas con outline grueso se ven raras). Outline solo
 // en el grupo completo (silueta exterior) vía una caja contenedora.
@@ -568,13 +672,10 @@ function updateHub(dt){
   if(keys['a']||keys['arrowleft'])vx-=1; if(keys['d']||keys['arrowright'])vx+=1;
   const moving = !!(vx||vz);
   const len=Math.hypot(vx,vz)||1; const sp=12*dt;
-  // wrap-around (mundo cíclico): si salís por un lado, aparecés del otro
+  // ciudad infinita: el jugador camina libre, los chunks se generan alrededor
   avatar.position.x += (vx/len)*sp*(moving?1:0);
   avatar.position.z += (vz/len)*sp*(moving?1:0);
-  if(avatar.position.x>WORLD) avatar.position.x-=WORLD*2;
-  if(avatar.position.x<-WORLD) avatar.position.x+=WORLD*2;
-  if(avatar.position.z>WORLD) avatar.position.z-=WORLD*2;
-  if(avatar.position.z<-WORLD) avatar.position.z+=WORLD*2;
+  updateChunks();
   // orientar el cuerpo en la dirección de movimiento (suave)
   if(moving){
     const targetRot = Math.atan2(vx, -vz); // mira hacia donde camina
