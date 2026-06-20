@@ -198,6 +198,7 @@
     </select>
     <label>API key de <span id="keyprov">Gemini</span> (se guarda local en tu browser)</label>
     <input id="apikey" type="password" placeholder="pegá tu key…">
+    <div class="small" style="margin:4px 0 8px"><a id="keylink" href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">→ conseguir una key de Gemini</a></div>
     <button id="keySave">GUARDAR</button>
     <button id="keyDemo" style="background:transparent;color:var(--ink);border:1px solid var(--line);margin-left:6px">PROBAR EN MODO DEMO</button>
     <p class="note">Cada proveedor usa su <b>propia key</b> (Gemini · Claude · Grok), guardada por separado en tu navegador. Sin key, el proveedor corre en <b>modo demo</b> (simula el bucle generá→error→corregí→renderá). La key queda en el cliente (PoC); en producción iría por un <b>proxy serverless</b>.</p>
@@ -420,6 +421,7 @@ void main(){
 
 const MODELS={ gemini:'gemini-2.0-flash', claude:'claude-sonnet-4-6', grok:'grok-4' };
 const PROVNAME={ gemini:'Gemini', claude:'Claude', grok:'Grok' };
+const KEYURL={ gemini:'https://aistudio.google.com/apikey', claude:'https://console.anthropic.com/settings/keys', grok:'https://console.x.ai/' };
 const provSel=()=>{ const e=document.getElementById('provider'); return e?e.value:'gemini'; };
 const keyLS=p=>'aether2_key_'+(p||provSel());
 const getKey=()=>localStorage.getItem(keyLS())||'';
@@ -516,7 +518,8 @@ document.getElementById('keyDemo').addEventListener('click',()=>{ setKey(''); do
 // Key por proveedor: al cambiar de proveedor, refresca el input/label con la key de ESE proveedor.
 function syncKeyUI(){ const p=provSel(), nm=PROVNAME[p]||p;
   const kp=document.getElementById('keyprov'); if(kp) kp.textContent=nm;
-  const ai=document.getElementById('apikey'); if(ai){ ai.value=getKey(); ai.placeholder='pegá tu key de '+nm+'…'; } }
+  const ai=document.getElementById('apikey'); if(ai){ ai.value=getKey(); ai.placeholder='pegá tu key de '+nm+'…'; }
+  const kl=document.getElementById('keylink'); if(kl){ kl.href=KEYURL[p]||'#'; kl.textContent='→ conseguir una key de '+nm; } }
 document.getElementById('provider').addEventListener('change', syncKeyUI);
 syncKeyUI();
 
