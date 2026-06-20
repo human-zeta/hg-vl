@@ -425,15 +425,34 @@ async function mockLLM(history){ await new Promise(r=>setTimeout(r,500));
   const lastUser=(history.filter(m=>m.role==='user').pop()||{}).text||'';
   if(/vari|evolucio|mut|estilo|como este|forke/i.test(lastUser)) return mockShader(Math.random());
   return history.filter(m=>m.role==='model').length===0 ? MOCK_BROKEN : MOCK_FIXED; }
+const MODEL='gemini-2.0-flash';                 // free tier con RPM razonable; cambiá acá si querés otro
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+function retryDelaySec(txt){ const m=/"retryDelay"\s*:\s*"(\d+(?:\.\d+)?)s"/.exec(txt||''); return m?Math.ceil(parseFloat(m[1])):null; }
 async function callGemini(history){
   const body={ systemInstruction:{parts:[{text:SYSTEM}]},
     contents:history.map(m=>({role:m.role==='model'?'model':'user',parts:[{text:m.text}]})),
     generationConfig:{temperature:0.9} };
-  const res=await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key='+encodeURIComponent(getKey()),
-    {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-  if(!res.ok) throw new Error('Gemini '+res.status+': '+(await res.text()).slice(0,160));
-  const j=await res.json();
-  return j.candidates&&j.candidates[0]&&j.candidates[0].content.parts[0].text || '';
+  const url='https://generativelanguage.googleapis.com/v1beta/models/'+MODEL+':generateContent?key='+encodeURIComponent(getKey());
+  let lastErr='Gemini: error de red';
+  for(let attempt=0; attempt<3; attempt++){
+    let res; try{ res=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}); }
+    catch(e){ lastErr='Red: '+e.message; if(attempt<2){ await sleep(1500); continue; } throw new Error(lastErr); }
+    if(res.ok){
+      const j=await res.json(); const cand=j.candidates&&j.candidates[0];
+      const parts=cand&&cand.content&&cand.content.parts;
+      if(!parts||!parts.length) throw new Error('Gemini devolvió una respuesta vacía ('+((cand&&cand.finishReason)||'sin contenido')+'). Reformulá el prompt.');
+      return parts[0].text||'';
+    }
+    const txt=await res.text(); lastErr='Gemini '+res.status+': '+txt.slice(0,160);
+    if(res.status===429){
+      if(attempt<2){ const w=Math.min(retryDelaySec(txt)||(4*(attempt+1)),30);
+        try{ logStep('Límite de la API (429) — reintentando en '+w+'s…','err'); }catch(e){}
+        await sleep(w*1000); continue; }
+      throw new Error('Límite de Gemini (429): cuota o frecuencia superada. Si es por minuto, esperá unos segundos y reintentá; si es la cuota diaria del plan gratis, probá más tarde o subí el plan en aistudio.google.com.');
+    }
+    throw new Error(lastErr);   // 400/403/404/5xx: reintentar no ayuda
+  }
+  throw new Error(lastErr);
 }
 
 const logEl=document.getElementById('forgelog');
