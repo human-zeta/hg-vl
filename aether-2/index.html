@@ -191,15 +191,19 @@
 
   <div id="keypop" class="hidden">
     <label>Proveedor</label>
-    <select id="provider"><option value="gemini">Google Gemini</option></select>
-    <label>API key (se guarda local en tu browser)</label>
-    <input id="apikey" type="password" placeholder="pegá tu key de Gemini…">
+    <select id="provider">
+      <option value="gemini">Google Gemini</option>
+      <option value="claude">Anthropic Claude</option>
+      <option value="grok">xAI Grok</option>
+    </select>
+    <label>API key de <span id="keyprov">Gemini</span> (se guarda local en tu browser)</label>
+    <input id="apikey" type="password" placeholder="pegá tu key…">
     <button id="keySave">GUARDAR</button>
     <button id="keyDemo" style="background:transparent;color:var(--ink);border:1px solid var(--line);margin-left:6px">PROBAR EN MODO DEMO</button>
-    <p class="note">Sin key corre en <b>modo demo</b> (simula el bucle generá→error→corregí→renderá). En producción la key va por un <b>proxy serverless</b>, nunca en el cliente — esto es para probar local.</p>
+    <p class="note">Cada proveedor usa su <b>propia key</b> (Gemini · Claude · Grok), guardada por separado en tu navegador. Sin key, el proveedor corre en <b>modo demo</b> (simula el bucle generá→error→corregí→renderá). La key queda en el cliente (PoC); en producción iría por un <b>proxy serverless</b>.</p>
   </div>
 
-  <div class="small"><a href="/galeria/">portfolio</a> · <a href="/">human glitche</a> · Aether 2.0 · Fase 1 (bucle LLM)</div>
+  <div class="small"><a href="/galeria/">portfolio</a> · <a href="/home.html">human glitche</a> · Aether 2.0 · Fase 1 (bucle LLM)</div>
 </div>
 
 <script type="module">
@@ -414,45 +418,68 @@ void main(){
   gl_FragColor = vec4(c, 1.0);
 }`;
 
-const KEYLS='aether2_key';
-const getKey=()=>localStorage.getItem(KEYLS)||'';
-const setKey=k=>localStorage.setItem(KEYLS,k);
+const MODELS={ gemini:'gemini-2.0-flash', claude:'claude-sonnet-4-6', grok:'grok-4' };
+const PROVNAME={ gemini:'Gemini', claude:'Claude', grok:'Grok' };
+const provSel=()=>{ const e=document.getElementById('provider'); return e?e.value:'gemini'; };
+const keyLS=p=>'aether2_key_'+(p||provSel());
+const getKey=()=>localStorage.getItem(keyLS())||'';
+const setKey=k=>localStorage.setItem(keyLS(),k);
 function extractISF(t){ t=String(t).replace(/```[a-z]*\n?/gi,'').replace(/```/g,'').trim();
   const i=t.indexOf('/*'); return i>=0? t.slice(i) : t; }
 
-async function callLLM(history){ return getKey()? callGemini(history) : mockLLM(history); }
+async function callLLM(history){ if(!getKey()) return mockLLM(history);
+  const p=provSel(); if(p==='claude') return callClaude(history); if(p==='grok') return callGrok(history); return callGemini(history); }
 async function mockLLM(history){ await new Promise(r=>setTimeout(r,500));
   const lastUser=(history.filter(m=>m.role==='user').pop()||{}).text||'';
   if(/vari|evolucio|mut|estilo|como este|forke/i.test(lastUser)) return mockShader(Math.random());
   return history.filter(m=>m.role==='model').length===0 ? MOCK_BROKEN : MOCK_FIXED; }
-const MODEL='gemini-2.0-flash';                 // free tier con RPM razonable; cambiá acá si querés otro
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 function retryDelaySec(txt){ const m=/"retryDelay"\s*:\s*"(\d+(?:\.\d+)?)s"/.exec(txt||''); return m?Math.ceil(parseFloat(m[1])):null; }
+// fetch resiliente compartido por los 3 proveedores: backoff ante 429 (respeta retryDelay) + reintento de red.
+async function fetchRetry(url,opts,label){
+  let lastErr=label+': error de red';
+  for(let attempt=0; attempt<3; attempt++){
+    let res; try{ res=await fetch(url,opts); }
+    catch(e){ lastErr='Red: '+e.message; if(attempt<2){ await sleep(1500); continue; } throw new Error(lastErr); }
+    if(res.ok) return res;
+    const txt=await res.text(); lastErr=label+' '+res.status+': '+txt.slice(0,180);
+    if(res.status===429){
+      if(attempt<2){ const w=Math.min(retryDelaySec(txt)||(4*(attempt+1)),30);
+        try{ logStep('Límite de '+label+' (429) — reintentando en '+w+'s…','err'); }catch(e){}
+        await sleep(w*1000); continue; }
+      throw new Error('Límite de '+label+' (429): cuota o frecuencia superada. Esperá unos segundos y reintentá, o subí el plan del proveedor.');
+    }
+    throw new Error(lastErr);   // 400/401/403/404/5xx: reintentar no ayuda
+  }
+  throw new Error(lastErr);
+}
 async function callGemini(history){
   const body={ systemInstruction:{parts:[{text:SYSTEM}]},
     contents:history.map(m=>({role:m.role==='model'?'model':'user',parts:[{text:m.text}]})),
     generationConfig:{temperature:0.9} };
-  const url='https://generativelanguage.googleapis.com/v1beta/models/'+MODEL+':generateContent?key='+encodeURIComponent(getKey());
-  let lastErr='Gemini: error de red';
-  for(let attempt=0; attempt<3; attempt++){
-    let res; try{ res=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}); }
-    catch(e){ lastErr='Red: '+e.message; if(attempt<2){ await sleep(1500); continue; } throw new Error(lastErr); }
-    if(res.ok){
-      const j=await res.json(); const cand=j.candidates&&j.candidates[0];
-      const parts=cand&&cand.content&&cand.content.parts;
-      if(!parts||!parts.length) throw new Error('Gemini devolvió una respuesta vacía ('+((cand&&cand.finishReason)||'sin contenido')+'). Reformulá el prompt.');
-      return parts[0].text||'';
-    }
-    const txt=await res.text(); lastErr='Gemini '+res.status+': '+txt.slice(0,160);
-    if(res.status===429){
-      if(attempt<2){ const w=Math.min(retryDelaySec(txt)||(4*(attempt+1)),30);
-        try{ logStep('Límite de la API (429) — reintentando en '+w+'s…','err'); }catch(e){}
-        await sleep(w*1000); continue; }
-      throw new Error('Límite de Gemini (429): cuota o frecuencia superada. Si es por minuto, esperá unos segundos y reintentá; si es la cuota diaria del plan gratis, probá más tarde o subí el plan en aistudio.google.com.');
-    }
-    throw new Error(lastErr);   // 400/403/404/5xx: reintentar no ayuda
-  }
-  throw new Error(lastErr);
+  const res=await fetchRetry('https://generativelanguage.googleapis.com/v1beta/models/'+MODELS.gemini+':generateContent?key='+encodeURIComponent(getKey()),
+    {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)},'Gemini');
+  const j=await res.json(); const cand=j.candidates&&j.candidates[0]; const parts=cand&&cand.content&&cand.content.parts;
+  if(!parts||!parts.length) throw new Error('Gemini devolvió una respuesta vacía ('+((cand&&cand.finishReason)||'sin contenido')+'). Reformulá el prompt.');
+  return parts[0].text||'';
+}
+async function callClaude(history){
+  const msgs=history.map(m=>({role:m.role==='model'?'assistant':'user', content:m.text}));
+  const res=await fetchRetry('https://api.anthropic.com/v1/messages',
+    {method:'POST',headers:{'content-type':'application/json','x-api-key':getKey(),'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+     body:JSON.stringify({model:MODELS.claude,max_tokens:4096,temperature:0.9,system:SYSTEM,messages:msgs})},'Claude');
+  const j=await res.json(); const blk=(j.content||[]).find(b=>b&&b.type==='text');
+  if(!blk) throw new Error('Claude devolvió una respuesta vacía ('+(j.stop_reason||'sin texto')+').');
+  return blk.text||'';
+}
+async function callGrok(history){
+  const msgs=[{role:'system',content:SYSTEM}].concat(history.map(m=>({role:m.role==='model'?'assistant':'user', content:m.text})));
+  const res=await fetchRetry('https://api.x.ai/v1/chat/completions',
+    {method:'POST',headers:{'content-type':'application/json','authorization':'Bearer '+getKey()},
+     body:JSON.stringify({model:MODELS.grok,messages:msgs,temperature:0.9})},'Grok');
+  const j=await res.json(); const c=j.choices&&j.choices[0]&&j.choices[0].message;
+  if(!c||c.content==null) throw new Error('Grok devolvió una respuesta vacía.');
+  return c.content||'';
 }
 
 const logEl=document.getElementById('forgelog');
@@ -464,7 +491,7 @@ async function forge(prompt){
   if(forging||!prompt) return; forging=true;
   const btn=document.getElementById('forgeBtn'); btn.disabled=true;
   logEl.classList.remove('hidden');
-  logEl.innerHTML='<div class="ttl">FORJANDO</div>'; logStep('vía '+(getKey()?'Gemini':'modo demo')+' · prompt: "'+prompt+'"');
+  logEl.innerHTML='<div class="ttl">FORJANDO</div>'; logStep('vía '+(getKey()?(PROVNAME[provSel()]||'IA'):'modo demo')+' · prompt: "'+prompt+'"');
   const history=[{role:'user',text:prompt}]; const MAX=3;
   try{
     for(let att=1; att<=MAX; att++){
@@ -486,7 +513,12 @@ document.getElementById('prompt').addEventListener('keydown',e=>{ if(e.key==='En
 document.getElementById('keyBtn').addEventListener('click',()=>document.getElementById('keypop').classList.toggle('hidden'));
 document.getElementById('keySave').addEventListener('click',()=>{ setKey(document.getElementById('apikey').value.trim()); document.getElementById('keypop').classList.add('hidden'); });
 document.getElementById('keyDemo').addEventListener('click',()=>{ setKey(''); document.getElementById('apikey').value=''; document.getElementById('keypop').classList.add('hidden'); });
-document.getElementById('apikey').value=getKey();
+// Key por proveedor: al cambiar de proveedor, refresca el input/label con la key de ESE proveedor.
+function syncKeyUI(){ const p=provSel(), nm=PROVNAME[p]||p;
+  const kp=document.getElementById('keyprov'); if(kp) kp.textContent=nm;
+  const ai=document.getElementById('apikey'); if(ai){ ai.value=getKey(); ai.placeholder='pegá tu key de '+nm+'…'; } }
+document.getElementById('provider').addEventListener('change', syncKeyUI);
+syncKeyUI();
 
 /* ===================== FASE 2 · variaciones, evolve, export ===================== */
 function hsv(h,s,v){ const i=Math.floor(h*6),f=h*6-i,p=v*(1-s),q=v*(1-f*s),t=v*(1-(1-f)*s);
