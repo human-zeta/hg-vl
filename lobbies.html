@@ -145,6 +145,16 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
   display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
 }
 
+/* META CHIPS (campos ricos en la card) */
+.card-meta{display:flex;flex-wrap:wrap;gap:5px;}
+.meta-chip{
+  font-family:var(--mono);font-size:7px;letter-spacing:0.08em;
+  color:rgba(240,237,230,0.5);border:1px solid rgba(240,237,230,0.12);
+  border-radius:20px;padding:2px 7px;white-space:nowrap;
+  display:inline-flex;align-items:center;gap:4px;max-width:100%;overflow:hidden;text-overflow:ellipsis;
+}
+.meta-chip .mk{color:rgba(240,237,230,0.3);}
+
 .cap-bar{display:flex;gap:3px;align-items:center;}
 .cap-sq{width:10px;height:10px;border-radius:1px;flex-shrink:0;}
 .cap-sq.filled{opacity:1;}
@@ -208,18 +218,23 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 }
 #lobby-form{display:flex;flex-direction:column;gap:0.7rem;}
 .form-field{display:flex;flex-direction:column;gap:0.35rem;}
+.form-row{display:flex;gap:0.7rem;}
+.form-row .form-field{flex:1;min-width:0;}
 .form-label{
   font-family:var(--mono);font-size:7.5px;letter-spacing:0.18em;text-transform:uppercase;
   color:rgba(240,237,230,0.4);
 }
+.form-label .opt{color:rgba(240,237,230,0.25);letter-spacing:0.1em;}
 .form-field input,.form-field select,.form-field textarea{
   font-family:var(--mono);font-size:9.5px;letter-spacing:0.04em;color:var(--white);
   background:rgba(255,255,255,0.03);border:1px solid rgba(240,237,230,0.15);border-radius:2px;
-  padding:9px 10px;outline:none;transition:border-color 0.2s;
+  padding:9px 10px;outline:none;transition:border-color 0.2s;width:100%;
 }
 .form-field input:focus,.form-field select:focus,.form-field textarea:focus{border-color:var(--acid);}
+.form-field input.invalid{border-color:var(--glitch);}
 .form-field textarea{resize:vertical;min-height:60px;font-family:var(--body);font-size:11px;}
 .form-field select option{background:#111;}
+.field-hint{font-family:var(--mono);font-size:7px;letter-spacing:0.06em;color:rgba(240,237,230,0.25);}
 #form-submit{
   margin-top:0.5rem;font-family:var(--mono);font-size:9px;letter-spacing:0.18em;text-transform:uppercase;
   background:var(--acid);color:#050505;border:none;border-radius:2px;font-weight:700;
@@ -243,8 +258,8 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 #room-overlay.show{display:flex;}
 #room-panel{
   background:#0c0c0c;border:1px solid rgba(184,255,0,0.25);border-radius:4px;
-  padding:2rem 1.8rem;width:100%;max-width:480px;position:relative;
-  max-height:90vh;overflow-y:auto;text-align:center;
+  padding:2rem 1.8rem;width:100%;max-width:520px;position:relative;
+  max-height:92vh;overflow-y:auto;text-align:center;
 }
 #room-panel::-webkit-scrollbar{width:3px;}
 #room-panel::-webkit-scrollbar-thumb{background:rgba(184,255,0,0.15);}
@@ -256,11 +271,29 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 #room-close:hover{color:var(--glitch);}
 #room-type{margin-bottom:0.8rem;}
 #room-title{font-family:var(--display);font-size:2rem;letter-spacing:0.04em;color:var(--white);margin-bottom:0.5rem;}
-#room-desc{font-family:var(--body);font-size:11px;line-height:1.6;color:rgba(240,237,230,0.45);margin-bottom:1.6rem;}
+#room-desc{font-family:var(--body);font-size:11px;line-height:1.6;color:rgba(240,237,230,0.45);margin-bottom:1rem;}
+
+/* META completa en la sala */
+#room-meta{
+  display:flex;flex-direction:column;gap:6px;text-align:left;
+  margin-bottom:1.4rem;
+}
+#room-meta:empty{display:none;}
+.room-meta-row{
+  display:flex;gap:8px;align-items:baseline;
+  font-family:var(--mono);font-size:8px;letter-spacing:0.04em;
+  color:rgba(240,237,230,0.55);line-height:1.5;
+}
+.room-meta-row .rk{
+  color:rgba(240,237,230,0.3);text-transform:uppercase;letter-spacing:0.14em;
+  flex-shrink:0;min-width:64px;
+}
+.room-meta-row a{color:var(--acid);text-decoration:none;word-break:break-all;}
+.room-meta-row a:hover{text-decoration:underline;}
 
 #room-slots{
   display:grid;grid-template-columns:repeat(auto-fit,minmax(64px,1fr));
-  gap:10px;margin-bottom:1.6rem;
+  gap:10px;margin-bottom:1.4rem;
 }
 .room-slot{
   aspect-ratio:1;border-radius:4px;display:flex;flex-direction:column;
@@ -288,10 +321,69 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 
 #room-status{
   font-family:var(--mono);font-size:9px;letter-spacing:0.18em;text-transform:uppercase;
-  color:rgba(240,237,230,0.4);margin-bottom:1.6rem;
+  color:rgba(240,237,230,0.4);margin-bottom:1.4rem;
   display:flex;align-items:center;justify-content:center;gap:8px;
 }
 #room-status.launched{color:var(--acid);}
+
+/* CHAT IN-APP */
+#room-chat{
+  margin-bottom:1.4rem;text-align:left;
+  border:1px solid rgba(240,237,230,0.08);border-radius:4px;
+  background:rgba(255,255,255,0.015);overflow:hidden;
+}
+.chat-head{
+  font-family:var(--mono);font-size:7.5px;letter-spacing:0.2em;text-transform:uppercase;
+  color:rgba(240,237,230,0.35);padding:8px 12px;
+  border-bottom:1px solid rgba(240,237,230,0.07);
+  display:flex;align-items:center;gap:6px;
+}
+.chat-head .led-spin{width:5px;height:5px;}
+#chat-log{
+  max-height:200px;overflow-y:auto;padding:10px 12px;
+  display:flex;flex-direction:column;gap:8px;
+}
+#chat-log::-webkit-scrollbar{width:3px;}
+#chat-log::-webkit-scrollbar-thumb{background:rgba(184,255,0,0.15);}
+.chat-empty{
+  font-family:var(--mono);font-size:8px;letter-spacing:0.08em;
+  color:rgba(240,237,230,0.2);text-align:center;padding:1rem 0;
+}
+.chat-msg{display:flex;flex-direction:column;gap:2px;}
+.chat-msg-head{
+  display:flex;align-items:baseline;gap:6px;
+  font-family:var(--mono);font-size:7.5px;letter-spacing:0.05em;
+}
+.chat-msg-name{color:var(--acid);}
+.chat-msg.mine .chat-msg-name{color:#00d4ff;}
+.chat-msg-time{color:rgba(240,237,230,0.22);font-size:7px;}
+.chat-msg-text{
+  font-family:var(--body);font-size:11px;line-height:1.5;
+  color:rgba(240,237,230,0.8);word-break:break-word;white-space:pre-wrap;
+}
+#chat-compose{
+  display:flex;gap:6px;padding:10px 12px;
+  border-top:1px solid rgba(240,237,230,0.07);
+}
+#chat-input{
+  flex:1;min-width:0;font-family:var(--body);font-size:11px;color:var(--white);
+  background:rgba(255,255,255,0.03);border:1px solid rgba(240,237,230,0.15);border-radius:2px;
+  padding:8px 10px;outline:none;transition:border-color 0.2s;
+}
+#chat-input:focus{border-color:var(--acid);}
+#chat-input:disabled{opacity:0.5;}
+#chat-send{
+  font-family:var(--mono);font-size:8px;letter-spacing:0.14em;text-transform:uppercase;
+  background:var(--acid);color:#050505;border:none;border-radius:2px;font-weight:700;
+  padding:0 14px;cursor:pointer;transition:opacity 0.2s;white-space:nowrap;
+}
+#chat-send:hover{opacity:0.85;}
+#chat-send:disabled{opacity:0.35;cursor:not-allowed;}
+.chat-note{
+  font-family:var(--mono);font-size:7px;letter-spacing:0.06em;
+  color:rgba(240,237,230,0.25);padding:8px 12px;border-top:1px solid rgba(240,237,230,0.07);
+  text-align:center;
+}
 
 #room-actions{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
 
@@ -309,7 +401,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 <div id="wrap">
 
   <nav class="lnav">
-    <a class="lnav-back" href="index.html">← HUMAN GLITCHE</a>
+    <a class="lnav-back" href="home.html">← HUMAN GLITCHE</a>
     <span class="lnav-title">SALAS HG</span>
   </nav>
 
@@ -346,30 +438,59 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
         <label class="form-label" for="f-title">Título</label>
         <input type="text" id="f-title" placeholder="Nombre del proyecto o sala" maxlength="60" required>
       </div>
-      <div class="form-field">
-        <label class="form-label" for="f-type">Tipo</label>
-        <select id="f-type" required>
-          <option value="PROYECTO">PROYECTO</option>
-          <option value="COLLAB">COLLAB</option>
-          <option value="JAM">JAM</option>
-          <option value="BRAINSTORM">BRAINSTORM</option>
-          <option value="PRODUCCIÓN">PRODUCCIÓN</option>
-        </select>
+      <div class="form-row">
+        <div class="form-field">
+          <label class="form-label" for="f-type">Tipo</label>
+          <select id="f-type" required>
+            <option value="PROYECTO">PROYECTO</option>
+            <option value="COLLAB">COLLAB</option>
+            <option value="JAM">JAM</option>
+            <option value="BRAINSTORM">BRAINSTORM</option>
+            <option value="PRODUCCIÓN">PRODUCCIÓN</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label class="form-label" for="f-cap">Capacidad</label>
+          <select id="f-cap">
+            <option value="2">2 personas</option>
+            <option value="3">3 personas</option>
+            <option value="4" selected>4 personas</option>
+            <option value="5">5 personas</option>
+            <option value="6">6 personas</option>
+            <option value="8">8 personas</option>
+          </select>
+        </div>
       </div>
       <div class="form-field">
         <label class="form-label" for="f-desc">Descripción</label>
         <textarea id="f-desc" placeholder="Contá de qué se trata la sala…" maxlength="200"></textarea>
       </div>
       <div class="form-field">
-        <label class="form-label" for="f-cap">Capacidad</label>
-        <select id="f-cap">
-          <option value="2">2 personas</option>
-          <option value="3">3 personas</option>
-          <option value="4" selected>4 personas</option>
-          <option value="5">5 personas</option>
-          <option value="6">6 personas</option>
-          <option value="8">8 personas</option>
-        </select>
+        <label class="form-label" for="f-roles">Qué buscás <span class="opt">/ opcional</span></label>
+        <input type="text" id="f-roles" placeholder="VJ, productor, 3D…" maxlength="80">
+        <span class="field-hint">Roles o skills que necesita la sala.</span>
+      </div>
+      <div class="form-row">
+        <div class="form-field">
+          <label class="form-label" for="f-tool">Herramienta <span class="opt">/ opcional</span></label>
+          <select id="f-tool">
+            <option value="">—</option>
+            <option value="TouchDesigner">TouchDesigner</option>
+            <option value="Cinema 4D">Cinema 4D</option>
+            <option value="VDMX">VDMX</option>
+            <option value="Blender">Blender</option>
+            <option value="Otro">Otro</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label class="form-label" for="f-start">Arranque <span class="opt">/ opcional</span></label>
+          <input type="text" id="f-start" placeholder="Hoy 21h / 12-jul…" maxlength="40">
+        </div>
+      </div>
+      <div class="form-field">
+        <label class="form-label" for="f-ref">Link de referencia <span class="opt">/ opcional</span></label>
+        <input type="url" id="f-ref" placeholder="https://… (moodboard, set, brief)" maxlength="300">
+        <span class="field-hint">Tiene que empezar con http:// o https://</span>
       </div>
       <button type="submit" id="form-submit">CREAR SALA</button>
       <div id="form-status"></div>
@@ -384,8 +505,18 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
     <div id="room-type"></div>
     <div id="room-title"></div>
     <div id="room-desc"></div>
+    <div id="room-meta"></div>
     <div id="room-slots"></div>
     <div id="room-status"></div>
+    <div id="room-chat">
+      <div class="chat-head"><span class="led-spin"></span> CHAT DE LA SALA</div>
+      <div id="chat-log"><div class="chat-empty">Cargando…</div></div>
+      <div id="chat-compose">
+        <input type="text" id="chat-input" placeholder="Escribí en la sala…" maxlength="500" autocomplete="off">
+        <button id="chat-send" type="button">→</button>
+      </div>
+      <div class="chat-note" id="chat-note"></div>
+    </div>
     <div id="room-actions"></div>
   </div>
 </div>
@@ -393,10 +524,19 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 <footer id="footer">© 2026 HUMAN GLITCHE — VISUAL LAB</footer>
 
 <script>
-// Firebase rules needed in /lobbies:
-// "lobbies": { ".read": true, "$lid": { ".write": "auth != null" } }
-// Config webhook (admin sets en Firebase console):
-// /config/discordLobbyWebhook = "https://discord.com/api/webhooks/..."
+// ════════════════════════════════════════════════════════════════════════
+// REGLAS DE FIREBASE NECESARIAS — esta página y el bloque granular se publican
+// JUNTOS. El bloque actual del sitio es permisivo:
+//   "lobbies": { ".read": true, "$lid": { ".write": "auth != null" } }
+// El rework necesita el bloque granular de lobbies.rules.json (create+validate,
+// dueño/admin edita-borra, self-join/leave, chat solo miembros, GC de expiradas).
+// Hasta que se publiquen las reglas nuevas, la página DEGRADA con gracia:
+//   · el grid se ve igual; el GC oportunista es best-effort (si la regla niega
+//     el DELETE no rompe nada);
+//   · crear/unirse/chatear siguen funcionando con la regla permisiva.
+// Config webhook (admin lo setea en Firebase console):
+//   /config/discordLobbyWebhook = "https://discord.com/api/webhooks/..."
+// ════════════════════════════════════════════════════════════════════════
 
 (function(){
   const FB_URL     = 'https://hg-vl-shaders-default-rtdb.firebaseio.com';
@@ -405,6 +545,13 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
   const LS_KEY     = 'hg_auth_session';
   const DISCORD_INVITE = 'https://discord.gg/CgmxdSecHY';
 
+  // ── Ciclo de vida (timestamps en ms) ──────────────────────────────────
+  const H = 60 * 60 * 1000;
+  const D = 24 * H;
+  const EXP_EMPTY  = 24 * H;   // (a) sin miembros y creada hace >24h
+  const EXP_ANY    = 7  * D;   // (b) cualquiera creada hace >7 días
+  const EXP_LAUNCH = 48 * H;   // (c) launched hace >48h
+
   const TYPE_COLORS = {
     'PROYECTO':  '#b8ff00',
     'COLLAB':    '#00d4ff',
@@ -412,10 +559,12 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
     'BRAINSTORM':'#9b59ff',
     'PRODUCCIÓN':'#ff2d8a'
   };
+  const VALID_TYPES = Object.keys(TYPE_COLORS);
 
   let session = null;
   let allLobbies = [];
   let activeFilter = 'TODAS';
+  let gcDone = false; // GC oportunista una vez por carga de página
 
   const grid       = document.getElementById('lobby-grid');
   const createBtn  = document.getElementById('create-btn');
@@ -431,11 +580,17 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
   const roomType   = document.getElementById('room-type');
   const roomTitleEl= document.getElementById('room-title');
   const roomDescEl = document.getElementById('room-desc');
+  const roomMeta   = document.getElementById('room-meta');
   const roomSlots  = document.getElementById('room-slots');
   const roomStatus = document.getElementById('room-status');
   const roomActions= document.getElementById('room-actions');
+  const chatLog    = document.getElementById('chat-log');
+  const chatInput  = document.getElementById('chat-input');
+  const chatSend   = document.getElementById('chat-send');
+  const chatNote   = document.getElementById('chat-note');
   let roomLobbyId  = null;
   let roomPollTimer = null;
+  let lastChatSig  = null; // para evitar re-render/auto-scroll innecesario
 
   function getSession(){ try{ return JSON.parse(localStorage.getItem(LS_KEY)||'null'); }catch(e){ return null; } }
   function saveSession(s){ localStorage.setItem(LS_KEY, JSON.stringify(s)); }
@@ -463,24 +618,81 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
     if(type) formStatus.classList.add(type);
   }
 
+  // ── FRENTE 1 — CICLO DE VIDA ───────────────────────────────────────────
+  function memberCount(lobby){
+    return Object.keys(lobby.members || {}).length;
+  }
+
+  // "última señal de vida" de la sala: el mayor entre lastActivity y createdAt.
+  function lastSignal(lobby){
+    return Math.max(lobby.lastActivity || 0, lobby.createdAt || 0);
+  }
+
+  // Una sala está EXPIRADA si:
+  //  (a) está vacía y se creó hace >24h
+  //  (b) se creó hace >7 días (sin importar nada)
+  //  (c) está lanzada y la última señal fue hace >48h
+  function isExpired(lobby){
+    const now = Date.now();
+    const created = lobby.createdAt || 0;
+    if(!created) return false; // sin createdAt: no la tocamos (dato incompleto)
+    const age = now - created;
+    if(age > EXP_ANY) return true;                                  // (b)
+    if(memberCount(lobby) === 0 && age > EXP_EMPTY) return true;    // (a)
+    if(lobby.status === 'launched' && (now - lastSignal(lobby)) > EXP_LAUNCH) return true; // (c)
+    return false;
+  }
+
+  // GC oportunista: cuando entra un usuario AUTENTICADO, intenta borrar las
+  // salas expiradas que ve. Best-effort y silencioso: si la regla lo niega
+  // (DELETE de sala ajena), no rompe nada.
+  async function gcExpired(expired){
+    if(!session || gcDone || !expired.length) return;
+    gcDone = true;
+    let token = null;
+    try{ token = await freshToken(session); }catch(e){ token = null; }
+    if(!token) return;
+    for(const lobby of expired){
+      try{
+        await fetch(`${FB_URL}/lobbies/${lobby.id}.json?auth=${token}`, { method:'DELETE' });
+      }catch(e){ /* silencioso: la regla puede negar el borrado de salas ajenas */ }
+    }
+  }
+
   async function loadLobbies(){
     try{
-      const r = await fetch(`${FB_URL}/lobbies.json?orderBy="createdAt"&limitToLast=40`);
+      const r = await fetch(`${FB_URL}/lobbies.json?orderBy="createdAt"&limitToLast=60`);
       const data = r.ok ? await r.json() : null;
       if(!data){ allLobbies = []; renderLobbies(); return; }
-      allLobbies = Object.entries(data)
+      const parsed = Object.entries(data)
         .map(([id, lobby]) => ({ id, ...lobby }))
-        .filter(l => l && l.title)
-        .sort((a,b) => (b.createdAt||0) - (a.createdAt||0));
+        .filter(l => l && l.title);
+
+      // separar vivas de expiradas
+      const expired = parsed.filter(isExpired);
+      allLobbies = parsed
+        .filter(l => !isExpired(l))
+        .sort((a,b) => lastSignal(b) - lastSignal(a)); // orden por actividad
+
       renderLobbies();
+      // GC oportunista (una vez): limpia las salas muertas cuando entra un logueado
+      gcExpired(expired);
     }catch(e){
       allLobbies = [];
       renderLobbies();
     }
   }
 
-  function memberCount(lobby){
-    return Object.keys(lobby.members || {}).length;
+  // marca actividad en la sala (al unirse/salir/chatear) — best-effort
+  async function touchActivity(id, token){
+    try{
+      const t = token || await freshToken(session);
+      await fetch(`${FB_URL}/lobbies/${id}/lastActivity.json?auth=${t}`,{
+        method:'PUT',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify(Date.now())
+      });
+    }catch(e){ /* silencioso */ }
   }
 
   function memberNames(lobby){
@@ -517,6 +729,18 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
     });
   }
 
+  // chips compactos de los campos ricos para la card
+  function cardMetaHTML(lobby){
+    const chips = [];
+    if(lobby.roles) chips.push(`<span class="meta-chip"><span class="mk">BUSCA</span> ${escHtml(trunc(lobby.roles,40))}</span>`);
+    if(lobby.tool)  chips.push(`<span class="meta-chip"><span class="mk">⚙</span> ${escHtml(lobby.tool)}</span>`);
+    if(lobby.startAt) chips.push(`<span class="meta-chip"><span class="mk">⏱</span> ${escHtml(trunc(lobby.startAt,24))}</span>`);
+    if(!chips.length) return '';
+    return `<div class="card-meta">${chips.join('')}</div>`;
+  }
+
+  function trunc(s, n){ s = String(s||''); return s.length > n ? s.slice(0,n) + '…' : s; }
+
   function buildCard(lobby){
     const uid      = session ? session.uid : null;
     const count    = memberCount(lobby);
@@ -541,7 +765,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 
     let actionsHTML = '';
     if(!uid){
-      actionsHTML = `<a class="card-btn" href="index.html#comunidad">INICIÁ SESIÓN</a>`;
+      actionsHTML = `<a class="card-btn" href="home.html#comunidad">INICIÁ SESIÓN</a>`;
     } else if(launched){
       actionsHTML = `<a class="card-btn discord" href="${DISCORD_INVITE}" target="_blank" rel="noopener">→ DISCORD</a>`;
     } else {
@@ -563,6 +787,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
       </div>
       <div class="card-title">${escHtml(lobby.title)}</div>
       ${desc ? `<div class="card-desc">${escHtml(desc)}</div>` : ''}
+      ${cardMetaHTML(lobby)}
       ${capBarHTML(count, cap, type)}
       <div class="members-line">${escHtml(memberNames(lobby)) || '—'}</div>
       <div class="card-actions">${actionsHTML}</div>
@@ -596,6 +821,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
         headers:{'Content-Type':'application/json'},
         body:JSON.stringify({ name: session.name || session.email, joinedAt: Date.now() })
       });
+      touchActivity(id, token); // ciclo de vida: la sala sigue viva
       const rFresh = await fetch(`${FB_URL}/lobbies/${id}.json`);
       if(rFresh.ok){
         const fresh = await rFresh.json();
@@ -614,6 +840,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
       await fetch(`${FB_URL}/lobbies/${id}/members/${session.uid}.json?auth=${token}`,{
         method:'DELETE'
       });
+      touchActivity(id, token);
     }catch(e){ /* silencioso */ }
   }
 
@@ -635,7 +862,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
       await fetch(`${FB_URL}/lobbies/${id}.json?auth=${token}`,{
         method:'PATCH',
         headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({ status:'launched' })
+        body:JSON.stringify({ status:'launched', lastActivity: Date.now() })
       });
       try{
         const wR = await fetch(`${FB_URL}/config/discordLobbyWebhook.json?auth=${token}`);
@@ -664,20 +891,29 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
     if(!session) return { ok:false, error:'No hay sesión activa.' };
     try{
       const token = await freshToken(session);
+      const now = Date.now();
+      const payload = {
+        title:      data.title,
+        type:       data.type,
+        desc:       data.desc,
+        capacity:   data.capacity,
+        status:     'waiting',
+        members:    {},
+        createdAt:  now,
+        lastActivity: now,
+        createdBy:  session.uid,
+        createdByName: session.name || session.email
+      };
+      // campos ricos opcionales: solo se mandan si tienen valor
+      if(data.roles)   payload.roles   = data.roles;
+      if(data.tool)    payload.tool    = data.tool;
+      if(data.startAt) payload.startAt = data.startAt;
+      if(data.refLink) payload.refLink = data.refLink;
+
       const r = await fetch(`${FB_URL}/lobbies.json?auth=${token}`,{
         method:'POST',
         headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({
-          title:      data.title,
-          type:       data.type,
-          desc:       data.desc,
-          capacity:   data.capacity,
-          status:     'waiting',
-          members:    {},
-          createdAt:  Date.now(),
-          createdBy:  session.uid,
-          createdByName: session.name || session.email
-        })
+        body:JSON.stringify(payload)
       });
       if(!r.ok){
         const errBody = await r.text().catch(()=>'');
@@ -692,8 +928,17 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
   }
 
   function escHtml(s){
+    if(s === 0) return '0';
     if(!s) return '';
-    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  // valida http(s) en cliente; devuelve '' si no es válido
+  function sanitizeUrl(u){
+    u = String(u||'').trim();
+    if(!u) return '';
+    if(!/^https?:\/\/.+/i.test(u)) return null; // null = inválido (≠ vacío)
+    return u;
   }
 
   function openModal(){
@@ -717,6 +962,19 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
     }catch(e){ return null; }
   }
 
+  // meta completa de la sala (campos ricos) en el overlay
+  function roomMetaHTML(lobby){
+    const rows = [];
+    if(lobby.roles)   rows.push(`<div class="room-meta-row"><span class="rk">Busca</span><span>${escHtml(lobby.roles)}</span></div>`);
+    if(lobby.tool)    rows.push(`<div class="room-meta-row"><span class="rk">Herram.</span><span>${escHtml(lobby.tool)}</span></div>`);
+    if(lobby.startAt) rows.push(`<div class="room-meta-row"><span class="rk">Arranque</span><span>${escHtml(lobby.startAt)}</span></div>`);
+    if(lobby.refLink){
+      const safe = sanitizeUrl(lobby.refLink);
+      if(safe) rows.push(`<div class="room-meta-row"><span class="rk">Ref</span><a href="${escHtml(safe)}" target="_blank" rel="noopener nofollow">${escHtml(lobby.refLink)}</a></div>`);
+    }
+    return rows.join('');
+  }
+
   function renderRoom(lobby){
     const uid      = session ? session.uid : null;
     const count    = memberCount(lobby);
@@ -731,6 +989,8 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
     roomTitleEl.textContent = lobby.title || '';
     roomDescEl.textContent = lobby.desc || '';
     roomDescEl.style.display = lobby.desc ? '' : 'none';
+
+    roomMeta.innerHTML = roomMetaHTML(lobby);
 
     const members = Object.values(lobby.members || {});
     let slotsHtml = '';
@@ -753,21 +1013,37 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 
     if(launched){
       roomStatus.className = 'launched';
-      roomStatus.innerHTML = `<span class="launched-dot"></span> ¡SALA COMPLETA — COORDINÁ EN DISCORD!`;
+      roomStatus.innerHTML = `<span class="launched-dot"></span> ¡SALA COMPLETA — COORDINÁ ACÁ O EN DISCORD!`;
     } else {
       roomStatus.className = '';
       roomStatus.innerHTML = `<span class="led-spin"></span> ESPERANDO JUGADORES… ${count}/${cap}`;
+    }
+
+    // ── chat: habilitar compositor solo a MIEMBROS (cliente; la regla lo refuerza)
+    if(isIn){
+      chatInput.disabled = false;
+      chatSend.disabled  = false;
+      chatInput.placeholder = 'Escribí en la sala…';
+      chatNote.textContent = '';
+    } else {
+      chatInput.disabled = true;
+      chatSend.disabled  = true;
+      chatInput.placeholder = uid ? 'Unite a la sala para escribir' : 'Iniciá sesión para escribir';
+      chatNote.textContent = uid ? 'Solo los miembros de la sala pueden escribir.' : 'Cualquiera puede leer; los miembros escriben.';
     }
 
     let actionsHtml = '';
     if(launched){
       actionsHtml += `<a class="card-btn discord" href="${DISCORD_INVITE}" target="_blank" rel="noopener">→ DISCORD</a>`;
     } else if(!uid){
-      actionsHtml += `<a class="card-btn" href="index.html#comunidad">INICIÁ SESIÓN</a>`;
+      actionsHtml += `<a class="card-btn" href="home.html#comunidad">INICIÁ SESIÓN</a>`;
     } else if(isIn){
       actionsHtml += `<button class="card-btn dimmed" data-room-action="leave">SALIR DE LA SALA</button>`;
     } else if(count < cap){
       actionsHtml += `<button class="card-btn primary" data-room-action="join">UNIRSE A LA SALA</button>`;
+    }
+    if(launched && uid){
+      // Discord queda secundario; recordatorio de que el chat in-app sigue vivo
     }
     if(isOwner && !launched){
       actionsHtml += `<button class="card-btn danger" data-room-action="close">✕ CERRAR SALA</button>`;
@@ -775,15 +1051,109 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
     roomActions.innerHTML = actionsHtml;
   }
 
+  // ── FRENTE 2 — CHAT IN-APP ─────────────────────────────────────────────
+  async function fetchChat(id){
+    try{
+      const r = await fetch(`${FB_URL}/lobbies/${id}/chat.json?orderBy="ts"&limitToLast=80`);
+      if(!r.ok) return null;
+      const data = await r.json();
+      if(!data) return [];
+      return Object.values(data)
+        .filter(m => m && typeof m.text === 'string')
+        .sort((a,b) => (a.ts||0) - (b.ts||0));
+    }catch(e){ return null; }
+  }
+
+  function fmtTime(ts){
+    if(!ts) return '';
+    try{
+      const d = new Date(ts);
+      return d.toLocaleTimeString('es-AR',{ hour:'2-digit', minute:'2-digit' });
+    }catch(e){ return ''; }
+  }
+
+  function renderChat(msgs){
+    if(msgs === null){ return; } // fallo de red puntual: no pisar lo mostrado
+    const sig = msgs.map(m => `${m.ts}|${m.uid}`).join(',');
+    if(sig === lastChatSig) return; // sin cambios → no re-render ni auto-scroll
+    lastChatSig = sig;
+
+    if(!msgs.length){
+      chatLog.innerHTML = `<div class="chat-empty">Todavía no habló nadie. Rompé el hielo.</div>`;
+      return;
+    }
+    const uid = session ? session.uid : null;
+    chatLog.innerHTML = msgs.map(m => {
+      const mine = uid && m.uid === uid ? ' mine' : '';
+      return `<div class="chat-msg${mine}">
+        <div class="chat-msg-head">
+          <span class="chat-msg-name">${escHtml(m.name || '?')}</span>
+          <span class="chat-msg-time">${escHtml(fmtTime(m.ts))}</span>
+        </div>
+        <div class="chat-msg-text">${escHtml(m.text)}</div>
+      </div>`;
+    }).join('');
+    chatLog.scrollTop = chatLog.scrollHeight; // auto-scroll al fondo
+  }
+
+  async function refreshChat(){
+    if(!roomLobbyId) return;
+    const msgs = await fetchChat(roomLobbyId);
+    renderChat(msgs);
+  }
+
+  async function sendChat(){
+    if(!roomLobbyId || !session) return;
+    const text = chatInput.value.trim();
+    if(!text) return;
+    if(text.length > 500){ return; }
+    chatInput.value = '';
+    chatSend.disabled = true;
+    try{
+      const token = await freshToken(session);
+      const msg = {
+        uid: session.uid,
+        name: session.name || session.email || 'anónimo',
+        text: text,
+        ts: Date.now()
+      };
+      const r = await fetch(`${FB_URL}/lobbies/${roomLobbyId}/chat.json?auth=${token}`,{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify(msg)
+      });
+      if(r.ok){
+        touchActivity(roomLobbyId, token); // chatear mantiene viva la sala
+        await refreshChat();
+      } else {
+        // si la regla niega (no miembro / validación), devolvemos el texto
+        chatInput.value = text;
+      }
+    }catch(e){
+      chatInput.value = text;
+    }finally{
+      chatSend.disabled = chatInput.disabled;
+    }
+  }
+
+  chatSend.addEventListener('click', sendChat);
+  chatInput.addEventListener('keydown', e => {
+    if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); sendChat(); }
+  });
+
   async function refreshRoom(){
     if(!roomLobbyId) return;
     const data = await fetchLobby(roomLobbyId);
     if(!data){ closeRoom(); loadLobbies(); return; }
     renderRoom({ id: roomLobbyId, ...data });
+    refreshChat(); // chat poll junto al refreshRoom (cada ~4s)
   }
 
   function openRoom(id){
     roomLobbyId = id;
+    lastChatSig = null;
+    chatLog.innerHTML = `<div class="chat-empty">Cargando…</div>`;
+    chatInput.value = '';
     roomOv.classList.add('show');
     refreshRoom();
     if(roomPollTimer) clearInterval(roomPollTimer);
@@ -814,13 +1184,28 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
   lobbyForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     if(!session){ setFormStatus('Iniciá sesión primero.','err'); return; }
+
+    const refEl = document.getElementById('f-ref');
+    const refRaw = refEl.value.trim();
+    const refClean = sanitizeUrl(refRaw);
+    refEl.classList.remove('invalid');
+    if(refClean === null){ // tiene texto pero no es http(s) válido
+      refEl.classList.add('invalid');
+      setFormStatus('El link de referencia debe empezar con http:// o https://','err');
+      return;
+    }
+
     formSubmit.disabled = true;
     setFormStatus('Creando sala…');
     const result = await createLobby({
       title:    document.getElementById('f-title').value.trim(),
       type:     document.getElementById('f-type').value,
       desc:     document.getElementById('f-desc').value.trim(),
-      capacity: parseInt(document.getElementById('f-cap').value)
+      capacity: parseInt(document.getElementById('f-cap').value),
+      roles:    document.getElementById('f-roles').value.trim(),
+      tool:     document.getElementById('f-tool').value,
+      startAt:  document.getElementById('f-start').value.trim(),
+      refLink:  refClean // '' si vacío, url limpia si válida
     });
     if(result.ok){
       setFormStatus('¡Sala creada!','ok');

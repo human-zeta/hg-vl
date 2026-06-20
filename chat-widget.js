@@ -169,7 +169,7 @@
       <div id="hgchat-msgs"><div class="hgchat-loading">CARGANDO…</div></div>
       <div id="hgchat-login">
         <p>Iniciá sesión en Human Glitche para participar del chat.</p>
-        <a href="index.html#comunidad">INICIAR SESIÓN</a>
+        <a href="home.html#comunidad">INICIAR SESIÓN</a>
       </div>
       <div id="hgchat-status"></div>
       <div id="hgchat-foot"></div>

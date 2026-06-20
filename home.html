@@ -1,0 +1,3049 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HUMAN GLITCHE — VISUAL LAB</title>
+<meta name="description" content="Laboratorio de visuales en tiempo real, shaders y comunidad. Arte · Código · Comunidad · Visuales en vivo desde Buenos Aires.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Human Glitche">
+<meta property="og:title" content="HUMAN GLITCHE — VISUAL LAB">
+<meta property="og:description" content="Laboratorio de visuales en tiempo real, shaders y comunidad. Arte · Código · Comunidad · Visuales en vivo.">
+<meta property="og:image" content="https://www.hg-vl.com/assets/og/home.png">
+<meta property="og:url" content="https://www.hg-vl.com/">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="HUMAN GLITCHE — VISUAL LAB">
+<meta name="twitter:description" content="Laboratorio de visuales en tiempo real, shaders y comunidad.">
+<meta name="twitter:image" content="https://www.hg-vl.com/assets/og/home.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Bebas+Neue&family=DM+Sans:wght@300;400;500&family=Archivo+Black&family=IBM+Plex+Mono:wght@500;700&family=Playfair+Display:ital,wght@0,700;1,700&family=Syne:wght@700;800&family=Courier+Prime:wght@700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --black:#050505;
+  --white:#f0ede6;
+  --acid:#b8ff00;
+  --glitch:#ff2d55;
+  --mono:'Space Mono',monospace;
+  --display:'Bebas Neue',sans-serif;
+  --body:'DM Sans',sans-serif;
+}
+html{scroll-behavior:smooth;}
+body{background:var(--black);color:var(--white);font-family:var(--body);overflow-x:hidden;cursor:none;}
+
+/* CURSOR */
+#cursor{position:fixed;width:8px;height:8px;background:var(--acid);border-radius:50%;pointer-events:none;z-index:9999;transition:transform 0.1s,background-color 1.5s;mix-blend-mode:difference;}
+#cursor-ring{position:fixed;width:32px;height:32px;border:1px solid var(--acid);border-radius:50%;pointer-events:none;z-index:9998;transition:all 0.15s ease,border-color 1.5s;opacity:0.5;mix-blend-mode:difference;}
+
+/* SHADER CANVAS BG */
+#shader-canvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:0;transition:opacity 2.5s ease;}
+#shader-canvas.active{opacity:1;}
+
+/* NOISE */
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");z-index:1;pointer-events:none;opacity:0.4;}
+
+#scroll-container{position:relative;z-index:2;}
+
+/* ===== DROP ZONE ===== */
+#drop-zone{
+  position:fixed;bottom:2rem;right:2rem;z-index:500;
+  width:210px;cursor:none;
+}
+#drop-inner{
+  border:1px dashed rgba(184,255,0,0.3);
+  padding:1.1rem 1rem;
+  background:rgba(5,5,5,0.9);
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+  border-radius:3px;
+  transition:border-color 0.3s,background 0.3s;
+}
+#drop-zone.drag-over #drop-inner{border-color:var(--acid);background:rgba(184,255,0,0.06);}
+#drop-zone.loaded #drop-inner{border-style:solid;border-color:rgba(184,255,0,0.6);}
+.drop-icon{font-size:18px;margin-bottom:0.5rem;color:var(--acid);transition:color 1.5s;letter-spacing:0;}
+.drop-label{font-family:var(--mono);font-size:9px;letter-spacing:0.15em;color:rgba(240,237,230,0.4);line-height:1.8;}
+.drop-label strong{color:var(--acid);display:block;margin-bottom:3px;font-size:10px;transition:color 1.5s;}
+#drop-file{display:none;}
+
+#status-led{display:inline-block;width:5px;height:5px;border-radius:50%;background:rgba(240,237,230,0.15);margin-right:5px;vertical-align:middle;transition:background-color 0.5s;}
+#status-led.on{background:var(--acid);}
+#status-txt{font-family:var(--mono);font-size:8px;letter-spacing:0.2em;color:rgba(240,237,230,0.3);vertical-align:middle;transition:color 1.5s;}
+
+#shader-name{font-family:var(--mono);font-size:8px;letter-spacing:0.12em;color:var(--acid);margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;opacity:0;transition:opacity 0.5s,color 1.5s;line-height:1;}
+#shader-name.show{opacity:1;}
+
+#pal-row{display:flex;gap:3px;margin-top:8px;height:4px;opacity:0;transition:opacity 0.6s;}
+#pal-row.show{opacity:1;}
+.psw{flex:1;border-radius:1px;transition:background-color 1.2s;}
+
+#reset-btn{display:none;margin-top:8px;font-family:var(--mono);font-size:8px;letter-spacing:0.15em;color:rgba(240,237,230,0.25);background:none;border:none;cursor:none;padding:2px 0;transition:color 0.2s;}
+#reset-btn:hover{color:var(--glitch);}
+#reset-btn.show{display:block;}
+
+/* TOGGLE CONTROLES SHADER */
+#ctrl-toggle{
+  position:fixed;bottom:calc(2rem + 10px);right:2rem;z-index:501;
+  font-family:var(--mono);font-size:8px;letter-spacing:0.18em;
+  background:rgba(5,5,5,0.88);border:1px solid rgba(184,255,0,0.2);
+  color:rgba(184,255,0,0.5);padding:5px 10px;border-radius:2px;
+  cursor:none;transition:all 0.2s;backdrop-filter:blur(12px);
+  display:none; /* solo aparece cuando hay shader cargado */
+}
+#ctrl-toggle:hover{border-color:rgba(184,255,0,0.5);color:var(--acid);}
+body.ctrl-collapsed #drop-inner{display:none;}
+body.ctrl-collapsed #isf-panel{display:none!important;}
+body.ctrl-collapsed #ctrl-toggle{bottom:2rem;}
+
+/* ISF INPUTS PANEL */
+#isf-panel{
+  position:fixed;bottom:calc(2rem + 10px);right:2rem;z-index:499;
+  width:210px;
+  font-family:var(--mono);font-size:9px;
+  background:rgba(5,5,5,0.9);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  border:1px solid rgba(184,255,0,0.15);border-radius:3px;
+  padding:0.7rem;display:none;max-height:45vh;overflow-y:auto;
+}
+#isf-panel.show{display:block;}
+#isf-panel::-webkit-scrollbar{width:3px;}
+#isf-panel::-webkit-scrollbar-track{background:transparent;}
+#isf-panel::-webkit-scrollbar-thumb{background:rgba(184,255,0,0.2);border-radius:1px;}
+.irow{margin-bottom:8px;}
+.irow:last-child{margin-bottom:0;}
+.ilabel{display:block;color:rgba(240,237,230,0.3);letter-spacing:0.12em;margin-bottom:3px;font-size:8px;}
+.irow input[type=range]{width:100%;height:2px;accent-color:var(--acid);background:rgba(240,237,230,0.08);border-radius:1px;outline:none;-webkit-appearance:none;appearance:none;}
+.irow input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:10px;height:10px;border-radius:50%;background:var(--acid);cursor:none;}
+.irow input[type=color]{width:28px;height:16px;border:none;background:none;cursor:none;border-radius:2px;padding:0;}
+.irow input[type=checkbox]{accent-color:var(--acid);}
+.ival{color:var(--acid);font-size:8px;float:right;}
+.ipanel-title{font-size:8px;letter-spacing:0.25em;color:rgba(240,237,230,0.2);margin-bottom:8px;text-transform:uppercase;}
+
+/* ERROR TOAST */
+#err-toast{
+  position:fixed;bottom:calc(2rem + 10px);right:2rem;z-index:600;
+  font-family:var(--mono);font-size:8px;letter-spacing:0.12em;
+  background:rgba(255,45,85,0.12);border:1px solid rgba(255,45,85,0.4);
+  color:var(--glitch);padding:0.7rem 0.9rem;border-radius:3px;
+  max-width:210px;line-height:1.7;
+  opacity:0;pointer-events:none;transition:opacity 0.4s;
+}
+#err-toast.show{opacity:1;}
+
+/* TIPOGRAFÍAS EN DIFFERENCE — se leen sobre cualquier fondo de shader.
+   OJO: el texto en color acid (verde) se saca de este grupo más abajo,
+   porque cuando el shader tiene tonos verdes parecidos la resta los
+   cancela y el texto desaparece (le pasaba a "GLITCHE"). */
+.hero-title,
+.mline span,
+.aether-title,.viz-title,.sec-title,
+.sname,.pprice,.live-t,.ctitle,
+.hero-socials a,.nav-links a,
+.hero-sub,.mfine,.aether-desc,.ssub,.pfeat li,
+.cmeta,.nav-logo{
+  mix-blend-mode:difference;
+}
+
+/* LEGIBILIDAD — los textos chicos quedan opacos/oscuros sobre los shaders;
+   les subimos brillo + un glow sutil, y al pasar el cursor "zoomean"
+   levemente con más brillo todavía: feedback directo para poder leerlos. */
+.hero-label,.aether-badge,.aether-link,.sec-link,
+.sprice,.live-a,.facid,.hero-socials a,.nav-links a,
+.hero-sub,.mfine,.aether-desc,.ssub,.pfeat li,
+.cmeta,.nav-logo,.drop-label,#status-txt,#shader-name,
+.stat-label,.cnum,.ctag,.snum,.hero-scroll,.hero-tag{
+  filter:brightness(1.4) contrast(1.08);
+  text-shadow:0 0 10px rgba(240,237,230,0.22),0 0 22px rgba(184,255,0,0.07);
+  transition:color 0.25s,border-color 0.25s,
+             transform 0.2s ease-out,filter 0.2s ease-out,text-shadow 0.2s ease-out;
+  transform-origin:left center;
+}
+/* .hero-label y .hero-sub ya tienen su transform controlado por el parallax
+   de profundidad (glassDepth) — para ellos el "zoom" es solo de brillo/glow,
+   sin escala, para no pelear con esa animación. */
+.hero-label:hover,.hero-sub:hover{
+  filter:brightness(2.1) contrast(1.25);
+  text-shadow:0 0 16px rgba(240,237,230,0.45),0 0 32px rgba(184,255,0,0.18);
+}
+.aether-badge:hover,.aether-link:hover,.sec-link:hover,
+.sprice:hover,.live-a:hover,.facid:hover,.hero-socials a:hover,.nav-links a:hover,
+.mfine:hover,.aether-desc:hover,.ssub:hover,.pfeat li:hover,
+.cmeta:hover,.nav-logo:hover,.drop-label:hover,#status-txt:hover,#shader-name:hover,
+.stat-label:hover,.cnum:hover,.ctag:hover,.snum:hover,.hero-scroll:hover,.hero-tag:hover{
+  transform:scale(1.16) !important;
+  filter:brightness(2.1) contrast(1.25);
+  text-shadow:0 0 16px rgba(240,237,230,0.45),0 0 32px rgba(184,255,0,0.18);
+  z-index:5;
+  position:relative;
+}
+
+/* TEXTO EN COLOR ACID — mismo problema que tenía "GLITCHE": en difference,
+   contra un shader de tonos verdes parecidos, la resta lo cancela y
+   desaparece. Se saca de difference y se le da bloom propio (halo acid +
+   núcleo blanco) para que siempre se distinga del fondo, sea cual sea su color. */
+.mline:nth-child(4) span,.stat-num,
+.hero-label,.aether-badge,.aether-link,.sec-link,
+.sprice,.live-a,.facid{
+  mix-blend-mode:normal;
+  text-shadow:
+    0 0 4px rgba(184,255,0,0.65),
+    0 0 12px rgba(184,255,0,0.4),
+    0 0 28px rgba(184,255,0,0.22),
+    0 0 1px rgba(255,255,255,0.5);
+}
+.mline:nth-child(4) span:hover,.stat-num:hover,
+.hero-label:hover,.aether-badge:hover,.aether-link:hover,.sec-link:hover,
+.sprice:hover,.live-a:hover,.facid:hover{
+  text-shadow:
+    0 0 6px rgba(184,255,0,0.85),
+    0 0 18px rgba(184,255,0,0.55),
+    0 0 38px rgba(184,255,0,0.32),
+    0 0 2px rgba(255,255,255,0.65);
+}
+
+
+/* REPOSITORIO GLOBAL */
+#global-repo{
+  position:fixed;left:2rem;bottom:2rem;z-index:500;width:260px;
+  font-family:var(--mono);font-size:9px;
+  background:rgba(5,5,5,0.94);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+  border:1px solid rgba(184,255,0,0.16);border-radius:3px;
+  display:none;max-height:72vh;flex-direction:column;
+}
+#global-repo.show{display:flex;}
+#repo-header{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:0.65rem 0.9rem;border-bottom:1px solid rgba(240,237,230,0.06);flex-shrink:0;
+  gap:8px;
+}
+#repo-title{font-size:8px;letter-spacing:0.28em;color:rgba(240,237,230,0.22);flex:1;}
+#repo-live{width:6px;height:6px;border-radius:50%;background:rgba(184,255,0,0.3);flex-shrink:0;animation:pulse-led 2s ease-in-out infinite;}
+@keyframes pulse-led{0%,100%{background:rgba(184,255,0,0.3)}50%{background:rgba(184,255,0,0.9);box-shadow:0 0 6px rgba(184,255,0,0.6);}}
+#repo-count{font-size:8px;color:var(--acid);}
+#repo-close{font-size:9px;color:rgba(240,237,230,0.15);background:none;border:none;cursor:none;transition:color 0.2s;padding:0;}
+#repo-close:hover{color:var(--glitch);}
+
+/* Upload form */
+#repo-upload{padding:0.7rem 0.9rem;border-bottom:1px solid rgba(240,237,230,0.05);flex-shrink:0;}
+#repo-upload-label{
+  display:block;text-align:center;padding:7px;
+  border:1px dashed rgba(184,255,0,0.25);border-radius:2px;
+  color:rgba(184,255,0,0.5);font-size:8px;letter-spacing:0.2em;
+  cursor:none;transition:all 0.2s;
+}
+#repo-upload-label:hover{border-color:var(--acid);color:var(--acid);background:rgba(184,255,0,0.04);}
+#repo-upload-label.uploading{color:rgba(240,237,230,0.3);border-color:rgba(240,237,230,0.1);}
+#repo-file{display:none;}
+#repo-status{font-size:7px;color:rgba(240,237,230,0.2);margin-top:4px;text-align:center;min-height:12px;letter-spacing:0.1em;}
+
+/* AUTH MODAL */
+#auth-overlay{
+  position:fixed;inset:0;z-index:900;display:none;
+  align-items:center;justify-content:center;
+  background:rgba(5,5,5,0.78);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+}
+#auth-overlay.show{display:flex;}
+#auth-modal{
+  position:relative;width:280px;max-width:90vw;
+  background:rgba(8,8,8,0.96);border:1px solid rgba(184,255,0,0.18);border-radius:3px;
+  padding:1.6rem 1.4rem;font-family:var(--mono);
+}
+#auth-close{
+  position:absolute;top:0.6rem;right:0.7rem;background:none;border:none;
+  color:rgba(240,237,230,0.2);font-size:11px;cursor:none;transition:color 0.2s;
+}
+#auth-close:hover{color:var(--glitch);}
+#auth-tabs{display:flex;gap:0.4rem;margin-bottom:1.1rem;}
+.auth-tab{
+  flex:1;background:none;border:1px solid rgba(240,237,230,0.1);color:rgba(240,237,230,0.3);
+  font-family:var(--mono);font-size:8px;letter-spacing:0.2em;padding:7px 0;cursor:none;
+  border-radius:2px;transition:all 0.2s;
+}
+.auth-tab.active{color:var(--acid);border-color:rgba(184,255,0,0.35);background:rgba(184,255,0,0.05);}
+#auth-title{font-size:9px;letter-spacing:0.24em;color:rgba(240,237,230,0.4);text-align:center;margin-bottom:1rem;}
+#auth-form{display:flex;flex-direction:column;gap:0.6rem;}
+#auth-form input{
+  background:rgba(255,255,255,0.03);border:1px solid rgba(240,237,230,0.1);border-radius:2px;
+  color:#f0ede6;font-family:var(--mono);font-size:10px;letter-spacing:0.08em;
+  padding:9px 10px;outline:none;transition:border-color 0.2s;
+}
+#auth-form input::placeholder{color:rgba(240,237,230,0.2);}
+#auth-form input:focus{border-color:rgba(184,255,0,0.4);}
+#auth-submit{
+  margin-top:0.3rem;background:var(--acid);color:#050505;border:none;border-radius:2px;
+  font-family:var(--mono);font-size:9px;letter-spacing:0.22em;font-weight:700;
+  padding:10px 0;cursor:none;transition:opacity 0.2s;
+}
+#auth-submit:hover{opacity:0.85;}
+#auth-submit:disabled{opacity:0.4;cursor:default;}
+#auth-status{font-size:7px;color:rgba(240,237,230,0.25);text-align:center;min-height:14px;letter-spacing:0.08em;margin-top:2px;}
+#auth-status.err{color:var(--glitch);}
+#auth-status.ok{color:var(--acid);}
+#auth-userbox{text-align:center;}
+#auth-greeting{font-size:9px;letter-spacing:0.12em;color:rgba(240,237,230,0.6);margin-bottom:1rem;line-height:1.6;}
+#auth-greeting b{color:var(--acid);}
+#auth-logout{
+  background:none;border:1px solid rgba(255,45,85,0.3);color:var(--glitch);border-radius:2px;
+  font-family:var(--mono);font-size:8px;letter-spacing:0.2em;padding:8px 14px;cursor:none;transition:all 0.2s;
+}
+#auth-logout:hover{background:rgba(255,45,85,0.08);}
+#auth-open-profile{
+  display:block;width:100%;margin-bottom:0.6rem;background:rgba(184,255,0,0.08);
+  border:1px solid rgba(184,255,0,0.3);color:var(--acid);border-radius:2px;
+  font-family:var(--mono);font-size:8px;letter-spacing:0.2em;padding:9px 0;cursor:none;transition:all 0.2s;
+}
+#auth-open-profile:hover{background:rgba(184,255,0,0.14);}
+
+/* PROFILE TOGGLE */
+#profile-toggle{
+  position:fixed;right:2rem;bottom:2rem;z-index:498;font-family:var(--mono);
+  font-size:9px;letter-spacing:0.2em;background:rgba(5,5,5,0.9);
+  border:1px solid rgba(184,255,0,0.14);color:rgba(184,255,0,0.4);
+  padding:8px 14px;border-radius:3px;cursor:none;transition:all 0.2s;
+  backdrop-filter:blur(12px);align-items:center;gap:6px;
+}
+#profile-toggle:hover{border-color:rgba(184,255,0,0.35);color:rgba(184,255,0,0.7);}
+#profile-toggle .rled{width:5px;height:5px;border-radius:50%;background:rgba(184,255,0,0.4);animation:pulse-led 2s ease-in-out infinite;}
+
+/* PROFILE PANEL */
+#profile-overlay{
+  position:fixed;inset:0;z-index:850;display:none;
+  align-items:center;justify-content:center;
+  background:rgba(5,5,5,0.78);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+}
+#profile-overlay.show{display:flex;}
+#profile-panel{
+  position:relative;width:380px;max-width:92vw;max-height:84vh;
+  background:rgba(8,8,8,0.96);border:1px solid rgba(184,255,0,0.18);border-radius:3px;
+  display:flex;flex-direction:column;font-family:var(--mono);
+}
+#profile-header{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:0.9rem 1.1rem;border-bottom:1px solid rgba(240,237,230,0.06);flex-shrink:0;
+}
+#profile-htitle{font-size:9px;letter-spacing:0.28em;color:rgba(240,237,230,0.3);}
+#profile-close{font-size:11px;color:rgba(240,237,230,0.2);background:none;border:none;cursor:none;transition:color 0.2s;padding:0;}
+#profile-close:hover{color:var(--glitch);}
+#profile-body{overflow-y:auto;padding:1.1rem;display:flex;flex-direction:column;gap:1.3rem;}
+#profile-body::-webkit-scrollbar{width:2px;}
+#profile-body::-webkit-scrollbar-thumb{background:rgba(184,255,0,0.1);}
+#profile-id{display:flex;align-items:center;gap:12px;}
+#profile-avatar{
+  width:42px;height:42px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(184,255,0,0.08);border:1px solid rgba(184,255,0,0.3);
+  color:var(--acid);font-size:18px;
+}
+#profile-dname{font-size:11px;letter-spacing:0.1em;color:#f0ede6;}
+#profile-demail{font-size:8px;letter-spacing:0.06em;color:rgba(240,237,230,0.3);margin-top:2px;}
+.profile-block-title{
+  font-size:8px;letter-spacing:0.18em;color:rgba(184,255,0,0.5);margin-bottom:0.7rem;
+}
+#profile-form{display:flex;flex-direction:column;gap:0.55rem;}
+#profile-form input,#profile-form textarea{
+  background:rgba(255,255,255,0.03);border:1px solid rgba(240,237,230,0.1);border-radius:2px;
+  color:#f0ede6;font-family:var(--mono);font-size:9px;letter-spacing:0.06em;
+  padding:8px 10px;outline:none;transition:border-color 0.2s;resize:vertical;
+}
+#profile-form input::placeholder,#profile-form textarea::placeholder{color:rgba(240,237,230,0.2);}
+#profile-form input:focus,#profile-form textarea:focus{border-color:rgba(184,255,0,0.4);}
+#prof-save{
+  margin-top:0.2rem;background:var(--acid);color:#050505;border:none;border-radius:2px;
+  font-family:var(--mono);font-size:9px;letter-spacing:0.2em;font-weight:700;
+  padding:9px 0;cursor:none;transition:opacity 0.2s;
+}
+#prof-save:hover{opacity:0.85;}
+#prof-save:disabled{opacity:0.4;cursor:default;}
+#profile-status{font-size:7px;color:rgba(240,237,230,0.25);text-align:center;min-height:12px;letter-spacing:0.08em;}
+#profile-status.err{color:var(--glitch);}
+#profile-status.ok{color:var(--acid);}
+#exclusive-list{display:flex;flex-direction:column;gap:6px;}
+#exclusive-empty{font-size:8px;letter-spacing:0.08em;color:rgba(240,237,230,0.2);text-align:center;padding:0.6rem 0;}
+.ex-item{
+  display:block;padding:9px 11px;border:1px solid rgba(184,255,0,0.14);border-radius:2px;
+  background:rgba(184,255,0,0.03);text-decoration:none;transition:all 0.2s;
+}
+.ex-item:hover{border-color:rgba(184,255,0,0.4);background:rgba(184,255,0,0.07);}
+.ex-name{font-size:9px;letter-spacing:0.1em;color:#f0ede6;}
+.ex-desc{font-size:7.5px;letter-spacing:0.05em;color:rgba(240,237,230,0.3);margin-top:3px;line-height:1.5;}
+#lobby-list{display:flex;flex-direction:column;gap:6px;}
+#lobby-empty{font-size:8px;letter-spacing:0.08em;color:rgba(240,237,230,0.2);text-align:center;padding:0.6rem 0;}
+.lobby-item{
+  display:block;padding:9px 11px;border:1px solid rgba(240,237,230,0.1);border-radius:2px;
+  background:rgba(255,255,255,0.02);text-decoration:none;transition:all 0.2s;cursor:pointer;
+}
+.lobby-item:hover{border-color:rgba(184,255,0,0.25);background:rgba(184,255,0,0.03);}
+.lobby-item.launched{border-color:rgba(255,45,85,0.2);background:rgba(255,45,85,0.02);}
+.li-top{display:flex;align-items:center;gap:6px;margin-bottom:3px;}
+.li-type{
+  font-size:7px;letter-spacing:0.16em;text-transform:uppercase;
+  padding:2px 6px;border-radius:20px;border:1px solid transparent;
+}
+.li-title{font-size:9px;letter-spacing:0.08em;color:#f0ede6;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.li-status{font-size:7px;letter-spacing:0.12em;text-transform:uppercase;color:rgba(240,237,230,0.3);margin-top:2px;}
+.li-status.lanzada{color:var(--glitch);}
+#lobby-see-all{
+  display:block;margin-top:8px;font-size:8px;letter-spacing:0.14em;
+  color:rgba(184,255,0,0.5);text-decoration:none;transition:color 0.2s;text-align:center;padding:4px 0;
+}
+#lobby-see-all:hover{color:var(--acid);}
+#profile-doc-links{display:flex;flex-direction:column;gap:7px;}
+#profile-doc-links a{
+  font-size:8.5px;letter-spacing:0.1em;color:rgba(240,237,230,0.45);text-decoration:none;
+  transition:color 0.2s;
+}
+#profile-doc-links a:hover{color:var(--acid);}
+#profile-academy-link{color:rgba(184,255,0,0.6);font-weight:700;}
+#profile-academy-link:hover{color:var(--acid);}
+#profile-admin-link{color:rgba(255,45,85,0.65);font-weight:700;display:none;}
+#profile-admin-link:hover{color:var(--glitch);}
+#profile-logout{
+  background:none;border:1px solid rgba(255,45,85,0.3);color:var(--glitch);border-radius:2px;
+  font-family:var(--mono);font-size:8px;letter-spacing:0.2em;padding:9px 0;cursor:none;transition:all 0.2s;
+}
+#profile-logout:hover{background:rgba(255,45,85,0.08);}
+
+/* Lista */
+#repo-list{overflow-y:auto;flex:1;}
+#repo-list::-webkit-scrollbar{width:2px;}
+#repo-list::-webkit-scrollbar-thumb{background:rgba(184,255,0,0.1);}
+.ritem{
+  display:grid;grid-template-columns:48px 1fr auto;align-items:center;gap:8px;
+  padding:0.5rem 0.9rem;border-bottom:1px solid rgba(240,237,230,0.04);
+  cursor:none;transition:background 0.2s;
+}
+.ritem:hover{background:rgba(184,255,0,0.03);}
+.ritem:last-child{border-bottom:none;}
+.r-thumb{width:48px;height:30px;border-radius:2px;border:1px solid rgba(240,237,230,0.07);
+  background:rgba(240,237,230,0.03);overflow:hidden;flex-shrink:0;}
+.r-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+.r-info{overflow:hidden;min-width:0;}
+.r-name{font-size:8px;color:rgba(240,237,230,0.65);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:0.06em;}
+.r-author{font-size:7px;color:rgba(240,237,230,0.2);margin-top:2px;}
+.r-new{font-size:7px;color:var(--acid);margin-top:1px;letter-spacing:0.15em;}
+.r-load{font-size:7px;letter-spacing:0.1em;color:var(--acid);background:none;border:none;cursor:none;padding:0;transition:opacity 0.2s;flex-shrink:0;}
+.r-load:hover{opacity:0.6;}
+#repo-empty{padding:1.5rem;text-align:center;color:rgba(240,237,230,0.1);font-size:8px;line-height:2;}
+
+/* Toggle repo — arriba del toggle galería local */
+#repo-toggle{
+  position:fixed;left:2rem;bottom:2rem;z-index:498;font-family:var(--mono);
+  font-size:9px;letter-spacing:0.2em;background:rgba(5,5,5,0.9);
+  border:1px solid rgba(184,255,0,0.14);color:rgba(184,255,0,0.4);
+  padding:8px 14px;border-radius:3px;cursor:none;transition:all 0.2s;
+  backdrop-filter:blur(12px);display:flex;align-items:center;gap:6px;
+}
+#repo-toggle:hover{border-color:rgba(184,255,0,0.35);color:rgba(184,255,0,0.7);}
+#repo-toggle .rled{width:5px;height:5px;border-radius:50%;background:rgba(184,255,0,0.4);animation:pulse-led 2s ease-in-out infinite;}
+
+/* SECTIONS */
+section{min-height:100vh;display:flex;align-items:center;position:relative;padding:0 8vw;}
+#nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:2rem 8vw;display:flex;justify-content:space-between;align-items:center;}
+.nav-logo{font-family:var(--mono);font-size:11px;letter-spacing:0.2em;color:rgba(240,237,230,0.4);}
+.nav-links{display:flex;gap:2.5rem;}
+.nav-links a{font-family:var(--mono);font-size:10px;letter-spacing:0.25em;color:rgba(240,237,230,0.25);text-decoration:none;transition:color 0.2s;}
+.nav-links a:hover{color:var(--acid);}
+.nav-auth-btn,.nav-area-btn{
+  border:1px solid rgba(184,255,0,0.25);border-radius:2px;padding:6px 12px;
+  color:rgba(184,255,0,0.55) !important;letter-spacing:0.18em !important;
+  background:rgba(184,255,0,0.04);transition:all 0.2s;
+}
+.nav-auth-btn:hover,.nav-area-btn:hover{background:rgba(184,255,0,0.1);border-color:rgba(184,255,0,0.5);color:var(--acid) !important;}
+.nav-area-btn{border-color:rgba(184,255,0,0.4);background:rgba(184,255,0,0.07);color:var(--acid) !important;}
+
+/* HERO — capas con profundidad: el shader queda "atrás", la tipografía "flota" delante */
+#hero{min-height:100vh;justify-content:flex-end;flex-direction:column;padding:0 8vw 10vh;perspective:1400px;perspective-origin:50% 60%;position:relative;}
+#hero *{transform-style:preserve-3d;}
+/* "vidrio" entre la tipografía y el fondo: capas con distinto desenfoque/aumento
+   que distorsionan el shader detrás, dando sensación de profundidad real
+   (como mirar el fondo a través de paneles de vidrio de distinto grosor/lente) */
+.hero-glass{position:absolute;left:6vw;right:6vw;top:18%;height:62%;z-index:1;pointer-events:none;border-radius:6px;overflow:hidden;transition:transform 0.5s ease-out;will-change:transform;
+  -webkit-mask-image:radial-gradient(ellipse 60% 65% at 50% 50%, #000 35%, transparent 78%);
+  mask-image:radial-gradient(ellipse 60% 65% at 50% 50%, #000 35%, transparent 78%);
+}
+.hero-glass,.hero-glass::before,.hero-glass::after{
+  backdrop-filter:blur(2px) saturate(1.25) contrast(1.08);
+  -webkit-backdrop-filter:blur(2px) saturate(1.25) contrast(1.08);
+}
+.hero-glass::before,.hero-glass::after{content:'';position:absolute;inset:-10%;border-radius:inherit;transition:transform 0.6s ease-out, filter 0.6s ease-out;will-change:transform;}
+.hero-glass::before{
+  backdrop-filter:blur(11px) saturate(1.7) contrast(1.18);
+  -webkit-backdrop-filter:blur(11px) saturate(1.7) contrast(1.18);
+  clip-path:polygon(0 0,52% 0,38% 100%,0 100%);
+  transform:scale(1.06);
+}
+.hero-glass::after{
+  backdrop-filter:blur(0.5px) saturate(1.1) contrast(1.3);
+  -webkit-backdrop-filter:blur(0.5px) saturate(1.1) contrast(1.3);
+  clip-path:polygon(58% 0,100% 0,100% 100%,44% 100%);
+  transform:scale(0.965);
+}
+.hero-title,.hero-label,.hero-sub,.hero-socials{position:relative;z-index:2;}
+.hero-label{font-family:var(--mono);font-size:11px;letter-spacing:0.3em;color:var(--acid);margin-bottom:1rem;opacity:0.7;transition:color 1.5s, transform 0.25s ease-out;will-change:transform;}
+.hero-title{
+  font-family:var(--display);font-size:clamp(6rem,15vw,14rem);line-height:0.88;color:var(--white);
+  transition:transform 0.18s ease-out, text-shadow 0.18s ease-out;will-change:transform;
+  /* la profundidad principal la da .hero-glass (vidrio entre tipografía y fondo);
+     acá solo un poco de sombra para separar la letra del vidrio */
+  text-shadow:
+    1px 2px 6px rgba(0,0,0,0.35),
+    0 0 40px rgba(184,255,0,0.05);
+}
+.hero-title .ac{
+  color:var(--acid);
+  /* "GLITCHE" queda en difference como el resto del título y a veces el shader
+     tiene tonos verdes parecidos al acid → la resta los anula y la palabra
+     desaparece. Acá la sacamos de difference y la diferenciamos con bloom:
+     un halo de luz propio (como vidrio iluminado desde adentro / con aumento)
+     que la separa del fondo sea cual sea su color. */
+  mix-blend-mode:normal;
+  position:relative;
+  z-index:3;
+  text-shadow:
+    0 0 6px rgba(184,255,0,0.85),
+    0 0 18px rgba(184,255,0,0.55),
+    0 0 42px rgba(184,255,0,0.35),
+    0 0 90px rgba(184,255,0,0.18),
+    0 0 2px rgba(255,255,255,0.6);
+  filter:saturate(1.3) brightness(1.08);
+  transition:color 1.5s, text-shadow 0.4s ease, filter 0.4s ease;
+}
+.hero-title .ac:hover{
+  text-shadow:
+    0 0 8px rgba(184,255,0,1),
+    0 0 24px rgba(184,255,0,0.7),
+    0 0 56px rgba(184,255,0,0.45),
+    0 0 120px rgba(184,255,0,0.22),
+    0 0 3px rgba(255,255,255,0.75);
+  filter:saturate(1.5) brightness(1.2);
+}
+.hero-sub{font-family:var(--mono);font-size:12px;color:rgba(240,237,230,0.35);margin-top:1.5rem;max-width:420px;line-height:1.9;transition:transform 0.3s ease-out;will-change:transform;}
+.hero-socials{display:flex;gap:2rem;margin-top:2.5rem;transition:transform 0.35s ease-out;will-change:transform;}
+.hero-socials a{font-family:var(--mono);font-size:10px;letter-spacing:0.2em;color:rgba(240,237,230,0.3);text-decoration:none;transition:color 0.2s;}
+.hero-socials a:hover{color:var(--acid);}
+.hero-scroll{position:absolute;bottom:3rem;right:calc(230px + 2rem);font-family:var(--mono);font-size:10px;letter-spacing:0.3em;color:rgba(240,237,230,0.2);writing-mode:vertical-rl;display:flex;align-items:center;gap:1rem;}
+.hero-scroll::after{content:'';display:block;width:1px;height:60px;background:var(--acid);animation:sline 1.5s ease-in-out infinite;transition:background-color 1.5s;}
+@keyframes sline{0%{height:0;opacity:0}50%{height:60px;opacity:1}100%{height:0;opacity:0}}
+.hero-tag{position:absolute;top:3rem;right:calc(230px + 2rem);font-family:var(--mono);font-size:10px;letter-spacing:0.2em;color:rgba(240,237,230,0.18);}
+
+/* GLITCH */
+.glitch{position:relative;}
+.glitch::before,.glitch::after{content:attr(data-text);position:absolute;top:0;left:0;width:100%;pointer-events:none;}
+.glitch::before{animation:g1 4s infinite;color:var(--glitch);clip-path:polygon(0 0,100% 0,100% 33%,0 33%);opacity:0;transition:color 1.5s;}
+.glitch::after{animation:g2 4s infinite;color:var(--acid);clip-path:polygon(0 67%,100% 67%,100% 100%,0 100%);opacity:0;transition:color 1.5s;}
+@keyframes g1{0%,88%,100%{transform:none;opacity:0}90%{transform:translate(-4px);opacity:0.8}92%{transform:translate(4px);opacity:0.8}94%{transform:none;opacity:0}}
+@keyframes g2{0%,88%,100%{transform:none;opacity:0}91%{transform:translate(3px);opacity:0.6}93%{transform:translate(-2px);opacity:0.6}95%{transform:none;opacity:0}}
+
+/* MANIFIESTO */
+#manifiesto{flex-direction:column;justify-content:center;}
+.mline{font-family:var(--display);font-size:clamp(2.8rem,6.5vw,7.5rem);line-height:0.95;overflow:hidden;display:block;}
+.mline span{display:block;transform:translateY(110%);transition:transform 0.9s cubic-bezier(0.16,1,0.3,1);}
+.mline.vis span{transform:translateY(0);}
+.mline:nth-child(2) span{transition-delay:0.08s;}
+.mline:nth-child(3) span{transition-delay:0.16s;}
+.mline:nth-child(4) span{transition-delay:0.25s;color:var(--acid);transition:color 1.5s,transform 0.9s cubic-bezier(0.16,1,0.3,1) 0.25s;}
+.mfine{font-family:var(--mono);font-size:11px;color:rgba(240,237,230,0.3);margin-top:3rem;letter-spacing:0.15em;line-height:1.9;max-width:460px;}
+
+/* FULLSCREEN / VISUAL MODE BTN */
+#fs-btn{
+  display:none;margin-top:10px;width:100%;
+  font-family:var(--mono);font-size:9px;letter-spacing:0.2em;
+  background:rgba(184,255,0,0.08);border:1px solid rgba(184,255,0,0.35);
+  color:var(--acid);padding:7px 0;border-radius:2px;cursor:none;
+  transition:background 0.2s,border-color 0.2s,color 1.5s;text-align:center;
+}
+#fs-btn:hover{background:rgba(184,255,0,0.15);border-color:var(--acid);}
+#fs-btn.show{display:block;}
+
+/* MODO VISUAL — oculta web, solo canvas + controles */
+body.visual-mode #scroll-container{display:none;}
+body.visual-mode #nav{display:none;}
+body.visual-mode #shader-canvas{opacity:1!important;}
+body.visual-mode #exit-visual{display:flex;}
+
+/* BOTON SALIR VISUAL */
+#exit-visual{
+  display:none;position:fixed;top:1.5rem;left:50%;transform:translateX(-50%);
+  z-index:9000;font-family:var(--mono);font-size:9px;letter-spacing:0.2em;
+  background:rgba(5,5,5,0.85);border:1px solid rgba(240,237,230,0.12);
+  color:rgba(240,237,230,0.35);padding:7px 20px;border-radius:2px;cursor:none;
+  align-items:center;gap:8px;transition:color 0.2s,border-color 0.2s;
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+}
+#exit-visual:hover{color:var(--glitch);border-color:rgba(255,45,85,0.4);}
+
+/* GALERÍA DE SHADERS */
+#shader-gallery{
+  position:fixed;left:2rem;bottom:2rem;z-index:500;width:230px;
+  font-family:var(--mono);font-size:9px;
+  background:rgba(5,5,5,0.93);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  border:1px solid rgba(184,255,0,0.14);border-radius:3px;
+  display:none;max-height:72vh;flex-direction:column;
+}
+#shader-gallery.show{display:flex;}
+#gallery-header{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:0.65rem 0.9rem;border-bottom:1px solid rgba(240,237,230,0.06);flex-shrink:0;
+}
+#gallery-title{font-size:8px;letter-spacing:0.28em;color:rgba(240,237,230,0.22);}
+#gallery-count{font-size:8px;color:var(--acid);}
+#gallery-close{font-size:9px;color:rgba(240,237,230,0.15);background:none;border:none;cursor:none;transition:color 0.2s;padding:0;}
+#gallery-close:hover{color:var(--glitch);}
+#gallery-list{overflow-y:auto;flex:1;}
+#gallery-list::-webkit-scrollbar{width:2px;}
+#gallery-list::-webkit-scrollbar-thumb{background:rgba(184,255,0,0.12);}
+.gitem{
+  display:grid;grid-template-columns:48px 1fr auto;align-items:center;gap:8px;
+  padding:0.55rem 0.9rem;border-bottom:1px solid rgba(240,237,230,0.04);
+  cursor:none;transition:background 0.2s;
+}
+.gitem:hover{background:rgba(184,255,0,0.04);}
+.gitem:last-child{border-bottom:none;}
+.g-thumb{width:48px;height:30px;border-radius:2px;border:1px solid rgba(240,237,230,0.07);background:rgba(240,237,230,0.03);overflow:hidden;flex-shrink:0;}
+.g-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+.g-info{overflow:hidden;min-width:0;}
+.g-name{font-size:8px;color:rgba(240,237,230,0.65);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:0.06em;}
+.g-date{font-size:7px;color:rgba(240,237,230,0.18);margin-top:2px;}
+.g-actions{display:flex;flex-direction:column;gap:4px;flex-shrink:0;}
+.g-load{font-size:7px;letter-spacing:0.1em;color:var(--acid);background:none;border:none;cursor:none;padding:0;transition:opacity 0.2s;}
+.g-load:hover{opacity:0.6;}
+.g-del{font-size:7px;letter-spacing:0.1em;color:rgba(240,237,230,0.12);background:none;border:none;cursor:none;padding:0;transition:color 0.2s;}
+.g-del:hover{color:var(--glitch);}
+#gallery-empty{padding:1.5rem;text-align:center;color:rgba(240,237,230,0.12);font-size:8px;line-height:2;}
+
+/* TOGGLE GALERÍA — arriba del repo toggle */
+#gallery-toggle{
+  position:fixed;left:2rem;bottom:calc(2rem + 42px);z-index:499;font-family:var(--mono);
+  font-size:9px;letter-spacing:0.2em;background:rgba(5,5,5,0.9);
+  border:1px dashed rgba(240,237,230,0.1);color:rgba(240,237,230,0.22);
+  padding:8px 14px;border-radius:3px;cursor:none;transition:all 0.2s;
+  backdrop-filter:blur(12px);display:flex;align-items:center;gap:6px;
+}
+#gallery-toggle:hover{border-color:rgba(184,255,0,0.25);color:rgba(184,255,0,0.6);}
+#gallery-toggle.has-items{border-color:rgba(184,255,0,0.18);color:rgba(184,255,0,0.45);}
+
+/* en visual mode todo queda encima */
+body.visual-mode #shader-gallery,
+body.visual-mode #gallery-toggle,
+body.visual-mode #drop-zone,
+body.visual-mode #isf-panel,
+body.visual-mode #exit-visual{z-index:9000!important;}
+
+#audio-map.show{opacity:1!important;}
+#audio-btn.active{border-color:rgba(184,255,0,0.5)!important;color:var(--acid)!important;background:rgba(184,255,0,0.06)!important;}
+
+/* AETHER SECTION */
+#aether-sec{flex-direction:column;min-height:80vh;padding:8vh 8vw;}
+.aether-badge{font-family:var(--mono);font-size:9px;letter-spacing:0.3em;color:var(--acid);border:1px solid rgba(184,255,0,0.3);padding:5px 14px;display:inline-block;margin-bottom:2rem;transition:color 1.5s,border-color 1.5s;}
+.aether-title{font-family:var(--display);font-size:clamp(3rem,7vw,8rem);line-height:0.9;margin-bottom:1.5rem;}
+.aether-desc{font-family:var(--mono);font-size:11px;line-height:2;color:rgba(240,237,230,0.4);max-width:400px;margin-bottom:2.5rem;}
+.aether-links{display:flex;gap:1.5rem;align-items:center;flex-wrap:wrap;}
+.aether-link{font-family:var(--mono);font-size:10px;letter-spacing:0.2em;color:var(--acid);text-decoration:none;border-bottom:1px solid var(--acid);padding-bottom:2px;transition:color 1.5s,border-color 1.5s;}
+.aether-app-btn{
+  font-family:var(--mono);font-size:10px;letter-spacing:0.2em;
+  color:var(--black);background:var(--acid);
+  text-decoration:none;padding:8px 18px;
+  border:1px solid var(--acid);
+  transition:background 0.2s,color 0.2s,border-color 1.5s;
+  display:inline-block;
+}
+.aether-app-btn:hover{background:transparent;color:var(--acid);}
+.viz-stat{display:flex;gap:4rem;margin-top:3rem;}
+.stat-num{font-family:var(--display);font-size:4rem;color:var(--acid);line-height:1;transition:color 1.5s;}
+.stat-label{font-family:var(--mono);font-size:9px;letter-spacing:0.3em;color:rgba(240,237,230,0.3);margin-top:3px;}
+
+/* BLOG */
+#blog{flex-direction:column;padding:10vh 8vw;}
+.sec-hdr{display:flex;justify-content:space-between;align-items:flex-end;width:100%;margin-bottom:4rem;}
+.sec-title{font-family:var(--display);font-size:clamp(3rem,6vw,6rem);line-height:0.9;}
+.sec-link{font-family:var(--mono);font-size:10px;letter-spacing:0.2em;color:var(--acid);text-decoration:none;border-bottom:1px solid var(--acid);padding-bottom:2px;transition:color 1.5s,border-color 1.5s;}
+.blog-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:1px;background:rgba(240,237,230,0.06);width:100%;}
+.bcard{background:var(--black);padding:2.2rem 1.8rem;cursor:none;position:relative;overflow:hidden;transition:background 0.3s;}
+.bcard::before{content:'';position:absolute;inset:0;background:var(--acid);transform:translateY(101%);transition:transform 0.45s cubic-bezier(0.16,1,0.3,1),background-color 1.5s;z-index:0;}
+.bcard:hover::before{transform:translateY(0);}
+.bcard:hover .cnum,.bcard:hover .ctitle,.bcard:hover .cmeta,.bcard:hover .ctag{color:var(--black)!important;}
+.bcard:hover .ctag{border-color:rgba(0,0,0,0.2)!important;}
+.cnum{font-family:var(--mono);font-size:9px;color:rgba(240,237,230,0.2);margin-bottom:1.8rem;position:relative;z-index:1;transition:color 0.3s;}
+.ctitle{font-family:var(--display);font-size:1.8rem;line-height:1.05;margin-bottom:0.8rem;position:relative;z-index:1;transition:color 0.3s;}
+.cmeta{font-family:var(--mono);font-size:9px;color:rgba(240,237,230,0.25);position:relative;z-index:1;transition:color 0.3s;}
+.ctag{display:inline-block;font-family:var(--mono);font-size:8px;letter-spacing:0.2em;border:1px solid rgba(240,237,230,0.12);padding:3px 9px;margin-top:1.3rem;position:relative;z-index:1;transition:color 0.3s,border-color 0.3s;}
+
+/* CATALOGO */
+#catalogo{flex-direction:column;padding:10vh 8vw;}
+.catalogo-intro{font-family:var(--mono);font-size:11px;color:rgba(240,237,230,0.4);line-height:2;max-width:640px;margin-top:1.5rem;}
+.catalogo-intro a{color:var(--acid);text-decoration:none;border-bottom:1px solid rgba(184,255,0,0.4);transition:color 1.5s,border-color 1.5s;}
+.catalogo-intro a:hover{opacity:0.8;}
+
+/* STACK — herramientas detrás de los servicios */
+.stack-intro{font-family:var(--mono);font-size:10px;letter-spacing:0.2em;color:rgba(240,237,230,0.3);margin-top:4.5rem;margin-bottom:1.5rem;text-transform:uppercase;}
+.stack-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:rgba(240,237,230,0.06);width:100%;}
+.stack-item{background:var(--black);padding:1.7rem 1.6rem;transition:background-color 0.25s;}
+.stack-item:hover{background:rgba(184,255,0,0.04);}
+.stack-item h4{font-family:var(--mono);font-size:11px;letter-spacing:0.16em;color:var(--acid);margin-bottom:0.6rem;
+  text-shadow:0 0 4px rgba(184,255,0,0.6),0 0 12px rgba(184,255,0,0.35),0 0 24px rgba(184,255,0,0.18),0 0 1px rgba(255,255,255,0.45);
+}
+.stack-item p{font-family:var(--mono);font-size:10px;color:rgba(240,237,230,0.35);line-height:1.8;}
+@media (max-width:760px){.stack-grid{grid-template-columns:1fr;}}
+
+/* PLANES */
+#comunidad{flex-direction:column;padding:10vh 8vw;}
+.plans{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:rgba(240,237,230,0.06);width:100%;margin-top:4rem;}
+.plan{background:var(--black);padding:2.8rem 2.2rem;position:relative;}
+/* Plan destacado: mismo fondo oscuro que los otros para no romper la
+   legibilidad (el sitio usa mix-blend-mode:difference globalmente, lo
+   cual cancela texto negro sobre fondo acid). Se destaca con borde acid,
+   glow sutil y un badge "POPULAR" arriba a la derecha. */
+.plan.feat{
+  background:var(--black);
+  border:1px solid var(--acid);
+  box-shadow:0 0 0 1px var(--acid) inset, 0 0 40px rgba(184,255,0,0.12);
+  z-index:1;
+}
+.plan.feat::before{
+  content:'★ POPULAR';
+  position:absolute; top:0; right:0;
+  font-family:var(--mono); font-size:8px; letter-spacing:0.25em;
+  background:var(--acid); color:var(--black);
+  padding:4px 10px; border-radius:0 0 0 2px;
+  text-shadow:none;
+}
+.ptier{font-family:var(--mono);font-size:8px;letter-spacing:0.3em;color:rgba(240,237,230,0.25);margin-bottom:1.8rem;text-transform:uppercase;}
+.plan.feat .ptier{color:rgba(184,255,0,0.65);}
+.pprice{font-family:var(--display);font-size:5rem;line-height:1;margin-bottom:0.3rem;}
+.plan.feat .pprice{color:var(--acid);
+  text-shadow:0 0 14px rgba(184,255,0,0.4),0 0 32px rgba(184,255,0,0.18);}
+.pper{font-family:var(--mono);font-size:10px;color:rgba(240,237,230,0.35);margin-bottom:2rem;}
+.pname{font-family:var(--display);font-size:1.7rem;line-height:1;margin-bottom:1.3rem;}
+.pfeat{list-style:none;}
+.pfeat li{font-family:var(--mono);font-size:10px;color:rgba(240,237,230,0.45);padding:0.45rem 0;border-bottom:1px solid rgba(240,237,230,0.05);line-height:1.6;}
+.pfeat li::before{content:'→ ';color:var(--acid);transition:color 1.5s;}
+.plan.feat .pfeat li{color:rgba(240,237,230,0.65);}
+.pcta{display:block;margin-top:2rem;font-family:var(--mono);font-size:10px;letter-spacing:0.2em;text-decoration:none;padding:0.9rem;border:1px solid rgba(240,237,230,0.15);text-align:center;color:var(--white);transition:all 0.3s;}
+.plan.feat .pcta{
+  background:var(--acid); color:var(--black); border-color:var(--acid);
+  mix-blend-mode:normal;
+}
+.plan.feat .pcta:hover{background:transparent;color:var(--acid);}
+.pcta:hover{background:var(--acid);color:var(--black);border-color:var(--acid);}
+
+/* ── EMPEZÁ POR ACÁ — blogs principales en Comunidad ──────────── */
+.start-here{
+  display:grid; grid-template-columns:repeat(4,1fr);
+  gap:1px; background:rgba(240,237,230,0.06);
+  width:100%; margin-top:2.5rem; margin-bottom:1rem;
+}
+.start-card{
+  background:var(--black); padding:1.8rem 1.4rem;
+  text-decoration:none; color:inherit;
+  display:flex; flex-direction:column; gap:0.8rem;
+  position:relative; overflow:hidden;
+  transition:background 0.25s;
+}
+.start-card:hover{background:rgba(184,255,0,0.04);}
+.start-card .sc-num{
+  font-family:var(--mono); font-size:8px; letter-spacing:0.25em;
+  color:var(--acid); opacity:0.7;
+}
+.start-card .sc-title{
+  font-family:var(--display); font-size:1.3rem; line-height:1.05;
+  color:var(--white);
+}
+.start-card .sc-desc{
+  font-family:var(--mono); font-size:10px; line-height:1.7;
+  color:rgba(240,237,230,0.35); flex:1;
+}
+.start-card .sc-arrow{
+  font-family:var(--mono); font-size:9px; letter-spacing:0.25em;
+  color:var(--acid); margin-top:0.4rem;
+}
+.start-intro{
+  font-family:var(--mono); font-size:10px; letter-spacing:0.25em;
+  color:rgba(240,237,230,0.4); margin-top:3rem;
+  text-transform:uppercase;
+}
+@media(max-width:760px){
+  .start-here{grid-template-columns:1fr;}
+}
+
+/* LIVE */
+#live{flex-direction:column;align-items:center;justify-content:center;text-align:center;min-height:70vh;}
+.live-badge{font-family:var(--mono);font-size:9px;letter-spacing:0.3em;color:var(--glitch);border:1px solid var(--glitch);padding:5px 14px;margin-bottom:2rem;display:inline-block;animation:blink 1.2s ease-in-out infinite;transition:color 1.5s,border-color 1.5s;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.25}}
+.live-t{font-family:var(--display);font-size:clamp(4rem,10vw,11rem);line-height:0.88;margin-bottom:1.5rem;}
+.live-sub{font-family:var(--mono);font-size:11px;color:rgba(240,237,230,0.3);letter-spacing:0.15em;}
+.live-a{display:inline-block;margin-top:2rem;font-family:var(--mono);font-size:10px;letter-spacing:0.2em;color:var(--acid);text-decoration:none;border-bottom:1px solid var(--acid);padding-bottom:2px;transition:color 1.5s,border-color 1.5s;}
+
+/* FOOTER */
+#footer{min-height:auto;padding:5rem 8vw 3.5rem;flex-direction:column;border-top:1px solid rgba(240,237,230,0.07);}
+.ftop{display:flex;justify-content:space-between;align-items:flex-start;width:100%;margin-bottom:4rem;}
+.flogo{font-family:var(--display);font-size:5rem;line-height:0.88;color:rgba(240,237,230,0.06);}
+.flinks{display:flex;gap:2.5rem;flex-wrap:wrap;}
+.flinks a{font-family:var(--mono);font-size:9px;letter-spacing:0.2em;color:rgba(240,237,230,0.25);text-decoration:none;transition:color 0.2s;}
+.flinks a:hover{color:var(--acid);}
+.fbot{display:flex;justify-content:space-between;width:100%;}
+.fcopy{font-family:var(--mono);font-size:9px;color:rgba(240,237,230,0.12);letter-spacing:0.12em;}
+.facid{font-family:var(--mono);font-size:9px;color:var(--acid);letter-spacing:0.12em;opacity:0.4;transition:color 1.5s;}
+
+/* SEP */
+.sep{font-family:var(--mono);font-size:9px;letter-spacing:0.3em;color:rgba(240,237,230,0.08);text-align:center;padding:1.5rem;display:block;}
+
+/* REVEAL */
+.rev{opacity:0;transform:translateY(36px);transition:opacity 0.8s ease,transform 0.8s ease;}
+.rev.vis{opacity:1;transform:translateY(0);}
+.rd1{transition-delay:0.1s;}.rd2{transition-delay:0.2s;}.rd3{transition-delay:0.32s;}
+
+@media(max-width:768px){
+  /* NAV */
+  #nav{padding:1.2rem 5vw;}
+  .nav-links a:not(.nav-auth-btn):not(.nav-area-btn){display:none;}
+  .nav-links{gap:1rem;}
+
+  /* HERO */
+  #hero{padding:0 5vw 8vh;}
+  .hero-glass{display:none;}
+
+  /* SECCIONES */
+  #aether-sec,#blog,#catalogo,#comunidad,#live,#footer{padding-left:5vw;padding-right:5vw;}
+
+  /* MANIFESTO — evitar textos cortados */
+  .mfine{font-size:12px;line-height:1.9;}
+
+  /* BLOG GRID — 1 columna */
+  .blog-grid{grid-template-columns:1fr;}
+
+  /* CATALOGO — filas de servicios */
+  .srow{grid-template-columns:36px 1fr;gap:1rem;}
+  .sprice{grid-column:2;padding-top:0;}
+  .ssub{grid-column:2;}
+  .sname{font-size:clamp(1.6rem,7vw,2.8rem);}
+
+  /* STACK */
+  .stack-grid{grid-template-columns:1fr;}
+
+  /* PLANES */
+  .plans{grid-template-columns:1fr;}
+
+  /* VIZ STATS */
+  .viz-stat{gap:2rem;flex-wrap:wrap;}
+
+  /* FOOTER */
+  .ftop{flex-direction:column;gap:2rem;}
+  .flinks{gap:1.2rem;}
+  .fbot{flex-direction:column;gap:0.5rem;}
+
+  /* CONTROLES SHADER — esquina inferior izquierda en móvil para no tapar contenido */
+  #drop-zone{width:calc(100vw - 2.4rem);max-width:260px;bottom:1rem;right:auto;left:1.2rem;}
+  #isf-panel{width:calc(100vw - 2.4rem);max-width:260px;bottom:calc(1rem + 10px);right:auto;left:1.2rem;}
+  #ctrl-toggle{right:auto;left:1.2rem;bottom:calc(1rem + 10px);}
+  body.ctrl-collapsed #ctrl-toggle{bottom:1rem;}
+
+  /* TOGGLES FLOTANTES — no se amontonen */
+  #gallery-toggle,#repo-toggle,#profile-toggle{right:1rem;}
+}
+
+/* ─────────────────────────────────────────────────────────────
+   REORG MÓVIL — HUD CONSOLIDADO
+   En móvil los 6 botones flotantes del shader (drop, ISF, ctrl,
+   gallery, repo, profile) molestan al hero. Los escondemos y los
+   agrupamos detrás de un FAB único abajo-derecha. REPO y PERFIL
+   también entran al nav superior. Bloque pensado para ser
+   eliminable sin romper desktop.
+   ───────────────────────────────────────────────────────────── */
+.nav-mobile-only{display:none;}
+
+@media(max-width:768px){
+  /* Entradas REPO / PERFIL dentro del nav móvil */
+  .nav-mobile-only{display:inline-block !important;}
+
+  /* Esconder los flotantes individuales del shader */
+  #drop-zone,
+  #isf-panel,
+  #ctrl-toggle,
+  #gallery-toggle,
+  #repo-toggle,
+  #profile-toggle{display:none !important;}
+
+  /* Cuando el HUD está abierto y el panel correspondiente está
+     activo, drop-zone e isf-panel reaparecen como hoja por encima
+     del bottom-sheet (que mide ~200px). */
+  body.hud-open #drop-zone.show-mobile,
+  body.hud-open #isf-panel.show-mobile{
+    display:block !important;
+    position:fixed !important;
+    left:1rem !important; right:1rem !important;
+    bottom:calc(220px + env(safe-area-inset-bottom)) !important;
+    width:auto !important; max-width:none !important; z-index:9550 !important;
+  }
+  body.hud-open #isf-panel.show-mobile{max-height:45vh !important;}
+
+  /* FAB */
+  #mobile-fab{
+    display:flex !important; position:fixed; right:1rem; bottom:calc(1rem + env(safe-area-inset-bottom));
+    z-index:9700; width:52px; height:52px; border-radius:50%;
+    background:rgba(184,255,0,0.95); color:var(--black);
+    font-family:var(--mono); font-size:20px; font-weight:bold;
+    border:none; align-items:center; justify-content:center;
+    box-shadow:0 6px 22px rgba(184,255,0,0.35),0 0 50px rgba(184,255,0,0.15);
+    transition:transform 0.2s, background 0.2s;
+    cursor:pointer; padding:0; line-height:1;
+  }
+  #mobile-fab:active{transform:scale(0.9);}
+  body.hud-open #mobile-fab{
+    background:rgba(255,45,85,0.95);
+    color:var(--white);
+    box-shadow:0 6px 22px rgba(255,45,85,0.4);
+  }
+
+  /* Bottom-sheet HUD */
+  #mobile-hud{
+    display:none; position:fixed; left:0; right:0; bottom:0;
+    z-index:9600;
+    background:rgba(5,5,5,0.96);
+    backdrop-filter:blur(22px); -webkit-backdrop-filter:blur(22px);
+    border-top:1px solid rgba(184,255,0,0.22);
+    padding:14px 12px calc(14px + env(safe-area-inset-bottom)) 12px;
+    grid-template-columns:repeat(3,1fr); gap:8px;
+  }
+  body.hud-open #mobile-hud{display:grid;}
+  .hud-btn{
+    font-family:var(--mono); font-size:9px; letter-spacing:0.12em;
+    background:rgba(184,255,0,0.05);
+    border:1px solid rgba(184,255,0,0.25);
+    color:var(--acid);
+    padding:12px 4px; border-radius:3px;
+    min-height:50px; text-align:center; line-height:1.35;
+    cursor:pointer; transition:background 0.2s;
+    display:flex; align-items:center; justify-content:center;
+    text-decoration:none;
+  }
+  .hud-btn:active{background:rgba(184,255,0,0.18);}
+  .hud-btn.wide{grid-column:span 3;}
+  .hud-btn.glitch-style{
+    background:rgba(255,45,85,0.05);
+    border-color:rgba(255,45,85,0.25);
+    color:var(--glitch);
+  }
+  .hud-btn[hidden]{display:none !important;}
+  .nav-mobile-only.auth-hidden{display:none !important;}
+
+  /* Esconder el viejo botón "ctrl-toggle" / "reset" / "fs-btn"
+     que vivían adentro del drop-zone — ahora el HUD los reemplaza */
+  #drop-zone #fs-btn,
+  #drop-zone #reset-btn{display:none !important;}
+}
+
+/* En desktop el FAB y el HUD no existen */
+#mobile-fab{display:none;}
+#mobile-hud{display:none;}
+</style>
+</head>
+<body>
+
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+<canvas id="shader-canvas"></canvas>
+
+<!-- SALIR MODO VISUAL -->
+<button id="exit-visual">✕ SALIR VISUAL</button>
+
+<!-- REPOSITORIO GLOBAL -->
+<button id="repo-toggle"><span class="rled"></span>REPO GLOBAL</button>
+<div id="global-repo">
+  <div id="repo-header">
+    <span id="repo-title">SHADER REPO GLOBAL</span>
+    <span id="repo-live"></span>
+    <span id="repo-count">—</span>
+    <button id="repo-close">✕</button>
+  </div>
+  <div id="repo-upload">
+    <label id="repo-upload-label" for="repo-file">⬆ SUBIR MI .FS A LA COMUNIDAD</label>
+    <input type="file" id="repo-file" accept=".fs,.glsl,.frag">
+    <div id="repo-status"></div>
+  </div>
+  <div id="repo-list">
+    <div id="repo-empty">Cargando repositorio...</div>
+  </div>
+</div>
+
+<!-- AUTH MODAL -->
+<div id="auth-overlay">
+  <div id="auth-modal">
+    <button id="auth-close">✕</button>
+    <div id="auth-tabs">
+      <button class="auth-tab active" data-mode="register">REGISTRO</button>
+      <button class="auth-tab" data-mode="login">INGRESAR</button>
+    </div>
+    <div id="auth-title">CREÁ TU CUENTA HG</div>
+    <form id="auth-form">
+      <input type="text" id="auth-name" placeholder="NOMBRE" autocomplete="name" style="display:none;">
+      <input type="email" id="auth-email" placeholder="EMAIL" autocomplete="email" required>
+      <input type="password" id="auth-pass" placeholder="CONTRASEÑA" autocomplete="current-password" required minlength="6">
+      <button type="submit" id="auth-submit">CREAR CUENTA</button>
+      <div id="auth-status"></div>
+    </form>
+    <div id="auth-userbox" style="display:none;">
+      <div id="auth-greeting"></div>
+      <button id="auth-open-profile">IR A MI PERFIL →</button>
+      <button id="auth-logout">CERRAR SESIÓN</button>
+    </div>
+  </div>
+</div>
+
+<!-- PERFIL TOGGLE (visible solo con sesión activa) -->
+<button id="profile-toggle" style="display:none;"><span class="rled"></span>MI PERFIL</button>
+
+<!-- PANEL DE PERFIL -->
+<div id="profile-overlay">
+  <div id="profile-panel">
+    <div id="profile-header">
+      <span id="profile-htitle">PERFIL HG</span>
+      <button id="profile-close">✕</button>
+    </div>
+    <div id="profile-body">
+
+      <div id="profile-id">
+        <div id="profile-avatar">⌘</div>
+        <div id="profile-id-text">
+          <div id="profile-dname">—</div>
+          <div id="profile-demail">—</div>
+        </div>
+      </div>
+
+      <div class="profile-block">
+        <div class="profile-block-title">⌘ MI INFORMACIÓN — visible para la comunidad</div>
+        <form id="profile-form">
+          <input type="text" id="prof-name" placeholder="NOMBRE / ALIAS" maxlength="40">
+          <input type="text" id="prof-role" placeholder="DISCIPLINA — VJ / DISEÑO / CÓDIGO / SONIDO…" maxlength="60">
+          <textarea id="prof-bio" placeholder="BIO CORTA PARA LA COMUNIDAD (máx. 240)" maxlength="240" rows="3"></textarea>
+          <input type="text" id="prof-link" placeholder="LINK — PORTFOLIO / INSTAGRAM / GITHUB" maxlength="140">
+          <button type="submit" id="prof-save">GUARDAR PERFIL</button>
+          <div id="profile-status"></div>
+        </form>
+      </div>
+
+      <div class="profile-block">
+        <div class="profile-block-title">✦ MATERIAL EXCLUSIVO — solo para la comunidad HG</div>
+        <div id="exclusive-list">
+          <div id="exclusive-empty">Cargando material exclusivo…</div>
+        </div>
+      </div>
+
+      <div class="profile-block">
+        <div class="profile-block-title">⚡ SALAS ACTIVAS — tus lobbies en curso</div>
+        <div id="lobby-list">
+          <div id="lobby-empty">Cargando salas…</div>
+        </div>
+        <a href="lobbies.html" id="lobby-see-all">→ VER TODAS LAS SALAS</a>
+      </div>
+
+      <div class="profile-block">
+        <div class="profile-block-title">☉ BLOG & DOCUMENTACIÓN</div>
+        <div id="profile-doc-links">
+          <a href="perfil.html" id="profile-perfil-link">⌬ MI PERFIL — PARCHES Y REDES</a>
+          <a href="academia.html" id="profile-academy-link">✦ ACADEMIA HG — TEMARIOS Y CLASES</a>
+          <a href="diario.html">📰 EL DIARIO HG — TECNOLOGÍA COTIDIANA</a>
+          <a href="admin.html" id="profile-admin-link">⛒ PANEL ADMIN — SUSCRIPCIONES Y COMUNIDAD</a>
+          <a href="/es/blog/" target="_blank">→ BLOG COMPLETO</a>
+          <a href="https://github.com/human-zeta/Aether-ISF-generator" target="_blank">→ AETHER ISF — DOCS & CÓDIGO</a>
+          <a href="https://github.com/human-zeta" target="_blank">→ GITHUB / REPOS TÉCNICOS</a>
+          <a href="https://discord.gg/CgmxdSecHY" target="_blank">→ DISCORD — COMUNIDAD HG</a>
+        </div>
+      </div>
+
+      <button id="profile-logout">CERRAR SESIÓN</button>
+    </div>
+  </div>
+</div>
+
+<!-- GALERÍA TOGGLE -->
+<button id="gallery-toggle">⬡ SHADERS <span id="gtoggle-count"></span></button>
+
+<!-- GALERÍA PANEL -->
+<div id="shader-gallery">
+  <div id="gallery-header">
+    <span id="gallery-title">SHADER LIBRARY</span>
+    <span id="gallery-count">0</span>
+    <button id="gallery-close">✕</button>
+  </div>
+  <div id="gallery-list">
+    <div id="gallery-empty">Todavía no guardaste shaders.<br>Droppeá un .fs y se guarda solo.</div>
+  </div>
+</div>
+
+<!-- ISF INPUTS PANEL -->
+<div id="isf-panel"></div>
+
+<!-- TOGGLE CONTROLES -->
+<button id="ctrl-toggle">— OCULTAR</button>
+
+<!-- DROP ZONE -->
+<div id="drop-zone">
+  <div id="drop-inner">
+    <div class="drop-icon">⬡</div>
+    <div class="drop-label">
+      <strong><span id="status-led"></span><span id="status-txt">AETHER ISF DROP</span></strong>
+      Arrastrá un <code style="color:var(--acid);font-size:9px">.fs</code> de tu app acá
+    </div>
+    <input type="file" id="drop-file" accept=".fs,.glsl,.frag">
+    <div id="pal-row">
+      <div class="psw" id="sw0"></div><div class="psw" id="sw1"></div>
+      <div class="psw" id="sw2"></div><div class="psw" id="sw3"></div>
+      <div class="psw" id="sw4"></div>
+    </div>
+    <div id="shader-name"></div>
+    <div id="audio-map" style="font-family:var(--mono);font-size:7px;letter-spacing:0.1em;color:rgba(184,255,0,0.4);margin-top:5px;line-height:1.8;opacity:0;transition:opacity 0.4s;word-break:break-all;"></div>
+    <div id="audio-row" style="display:none;margin-top:8px;gap:4px;flex-direction:column;">
+      <div style="display:flex;gap:4px;">
+        <button id="audio-sys-btn" style="flex:1;font-family:var(--mono);font-size:8px;letter-spacing:0.12em;background:rgba(255,255,255,0.03);border:1px solid rgba(240,237,230,0.1);color:rgba(240,237,230,0.3);padding:5px 0;border-radius:2px;cursor:none;transition:all 0.25s;text-align:center;">◎ SISTEMA</button>
+        <button id="audio-mic-btn" style="flex:1;font-family:var(--mono);font-size:8px;letter-spacing:0.12em;background:rgba(255,255,255,0.03);border:1px solid rgba(240,237,230,0.1);color:rgba(240,237,230,0.3);padding:5px 0;border-radius:2px;cursor:none;transition:all 0.25s;text-align:center;">◎ MICRO</button>
+      </div>
+      <div id="audio-source-label" style="font-family:var(--mono);font-size:7px;letter-spacing:0.12em;color:rgba(240,237,230,0.15);text-align:center;min-height:10px;"></div>
+    </div>
+    <button id="fs-btn">⛶ MODO VISUAL</button>
+    <button id="reset-btn">✕ RESET</button>
+  </div>
+</div>
+<div id="err-toast"></div>
+
+<nav id="nav">
+  <span class="nav-logo">HG — VL / 2026</span>
+  <div class="nav-links">
+    <a href="#manifiesto">SISTEMA</a>
+    <a href="test/">TEST</a>
+    <a href="glitch-night/">NIGHT</a>
+    <a href="aether-2/">AETHER</a>
+    <a href="#blog">BLOG</a>
+    <a href="#catalogo">SERVICIOS</a>
+    <a href="galeria/">GALERÍA</a>
+    <a href="#comunidad">COMUNIDAD</a>
+    <a href="contacto.html">CONTACTO</a>
+    <a href="#" id="nav-repo-mobile" class="nav-auth-btn nav-mobile-only" data-hud-tog="repo-toggle">⛒ REPO</a>
+    <a href="#" id="nav-profile-mobile" class="nav-auth-btn nav-mobile-only auth-hidden" data-hud-tog="profile-toggle" data-needs-auth="1">⌬ PERFIL</a>
+    <a href="#" id="nav-auth-btn" class="nav-auth-btn">INGRESAR / REGISTRO</a>
+    <a href="#" id="nav-area-btn" class="nav-area-btn" style="display:none;">⌘ ÁREA PERSONAL</a>
+  </div>
+</nav>
+
+<div id="scroll-container">
+
+  <section id="hero" style="padding:0 8vw 10vh;">
+    <span class="hero-tag">VISUAL LAB × HUMAN GLITCHE</span>
+    <div class="hero-label">Buenos Aires — AR / EST. 2022</div>
+    <div class="hero-glass" aria-hidden="true"></div>
+    <h1 class="hero-title glitch" data-text="VISUAL-LAB">VISUAL<br><span class="ac">--LAB-</span></h1>
+    <p class="hero-sub">La realidad es una interfaz — diseñada por alguien, en algún momento, con alguna intención. Human Glitche es el laboratorio de quienes la ven, la cuestionan y construyen la versión siguiente. Arte · Código · Comunidad · Visuales en tiempo real.</p>
+    <div class="hero-socials">
+      <a href="https://www.youtube.com/@Human.Glitche" target="_blank">YT</a>
+      <a href="https://x.com/HGlitche" target="_blank">X</a>
+      <a href="https://kick.com/visuallab" target="_blank">KICK</a>
+      <a href="https://discord.gg/CgmxdSecHY" target="_blank">DISCORD</a>
+      <a href="https://github.com/human-zeta" target="_blank">GH</a>
+    </div>
+    <div class="hero-scroll">SCROLL</div>
+  </section>
+
+  <section id="manifiesto">
+    <div>
+      <div class="mline"><span>EL GLITCH</span></div>
+      <div class="mline"><span>ES EL MOMENTO</span></div>
+      <div class="mline"><span>EN QUE LA INTERFAZ</span></div>
+      <div class="mline"><span>SE VUELVE VISIBLE.</span></div>
+      <div class="mline"><span style="color:rgba(240,237,230,0.9);font-size:clamp(1.4rem,2.8vw,3rem);">— Y QUIEN LA VE, INEVITABLEMENTE LA REDISEÑA.</span></div>
+      <p class="mfine rev">El dinero, el éxito, el trabajo de 8 horas, el título como medida de valor: todo eso fue diseñado — por alguien, en algún momento, con una intención. No es la realidad. Es <em>una</em> versión de la realidad.<br><br>Ver eso no se puede desactivar. Ver, crear y compartir dejan de ser mandatos morales — son el síntoma de que el glitch ya ocurrió. Tres pilares sostienen el ciclo: <strong>Conciencia ☉</strong> para observar, <strong>Creación ✦</strong> para construir, <strong>Compartir ⌘</strong> para multiplicar. Human Glitche es el ecosistema de quienes ya no pueden dejar de rediseñar la interfaz.</p>
+    </div>
+  </section>
+
+  <span class="sep">— — — — — — — — —</span>
+
+  <!-- AETHER SECTION -->
+  <section id="aether-sec">
+    <div>
+      <div class="aether-badge rev">AETHER 2.0 — THE GLITCH FORGE</div>
+      <h2 class="aether-title rev rd1">SHADERS<br>EN VIVO</h2>
+      <p class="aether-desc rev rd2">Describí un efecto, el motor lo compila y lo ves <strong>renderizando ahí mismo</strong> — con controles auto-generados. Si el shader falla, el bucle cerrado <em>genera→compila→corrige</em> lo arregla antes de mostrártelo. Después lo bajás como <code style="color:#fff;font-size:10px">.fs</code> para VDMX6 / Resolume / cualquier host ISF.</p>
+      <div class="aether-links rev rd3">
+        <a href="aether-2/" class="aether-app-btn">⚡ ENTRAR AL FORGE</a>
+        <a href="aether.html" class="aether-link">VERSIÓN 1.0 →</a>
+        <a href="https://github.com/human-zeta/Aether-ISF-generator" class="aether-link" target="_blank">GITHUB →</a>
+      </div>
+      <div class="viz-stat rev rd3">
+        <div><div class="stat-num">ISF</div><div class="stat-label">2.0 SPEC</div></div>
+        <div><div class="stat-num">LIVE</div><div class="stat-label">PREVIEW</div></div>
+        <div><div class="stat-num">∞</div><div class="stat-label">VARIACIONES</div></div>
+      </div>
+    </div>
+  </section>
+
+  <span class="sep">— — — — — — — — —</span>
+
+  <section id="blog">
+    <div class="sec-hdr rev">
+      <h2 class="sec-title">BLOG</h2>
+      <a href="/es/blog/" class="sec-link">VER TODO →</a>
+    </div>
+    <div class="blog-grid">
+      <div class="bcard" data-url="/es/blog/aether-isf-infinito/"><div class="cnum">001</div><div class="ctitle">AETHER ISF INFINITO</div><div class="cmeta">6 min read</div><div class="ctag">SHADERS</div></div>
+      <div class="bcard" data-url="/es/blog/manual-de-cocina-para-vj/"><div class="cnum">002</div><div class="ctitle">MANUAL DE COCINA PARA VJ</div><div class="cmeta">7 min read</div><div class="ctag">VJ / WORKFLOW</div></div>
+      <div class="bcard" data-url="/es/blog/manual-de-cocina-para-artistas-2026/"><div class="cnum">003</div><div class="ctitle">MANUAL ARTISTAS 2026</div><div class="cmeta">8 min read</div><div class="ctag">CREACIÓN</div></div>
+      <div class="bcard" data-url="/es/blog/elegi-tu-mac/"><div class="cnum">004</div><div class="ctitle">ELEGÍ TU MAC</div><div class="cmeta">4 min read</div><div class="ctag">HARDWARE</div></div>
+      <div class="bcard" data-url="/es/blog/elegi-tu-software/"><div class="cnum">005</div><div class="ctitle">ELEGÍ TU SOFTWARE</div><div class="cmeta">5 min read</div><div class="ctag">SOFTWARE</div></div>
+      <div class="bcard" data-url="/es/blog/que-es-human-glitche/"><div class="cnum">006</div><div class="ctitle">QUÉ ES HUMAN GLITCHE</div><div class="cmeta">9 min read</div><div class="ctag">MANIFIESTO</div></div>
+      <div class="bcard" data-url="/es/blog/muchas-apps/"><div class="cnum">007</div><div class="ctitle">MUCHAS APPS</div><div class="cmeta">5 min read</div><div class="ctag">TOOLS</div></div>
+      <div class="bcard" data-url="/es/blog/primer-dia-de-resolume/"><div class="cnum">008</div><div class="ctitle">PRIMER DÍA RESOLUME</div><div class="cmeta">5 min read</div><div class="ctag">TUTORIAL</div></div>
+      <div class="bcard" data-url="/es/blog/luck-ra-ags-2022-visuales-en-tiempo-real/"><div class="cnum">009</div><div class="ctitle">LUCK RA – AGS 2022</div><div class="cmeta">5 min read</div><div class="ctag">SHOW REAL</div></div>
+    </div>
+  </section>
+
+  <span class="sep">— — — — — — — — —</span>
+
+  <section id="catalogo">
+    <div class="sec-hdr rev" style="width:100%;">
+      <h2 class="sec-title">SERVICIOS</h2>
+      <a href="servicios.html" class="sec-link">VER SERVICIOS →</a>
+    </div>
+    <p class="catalogo-intro rev">Identidad con alma, producción con IA — para dos mundos: <b>managers y artistas</b> (shows, giras, visuales en vivo) y <b>marcas</b> (branding, motion, dirección visual). Desde una asesoría puntual hasta la dirección completa, con precios claros en USD y pago local en pesos. <a href="servicios.html">Conocé el detalle y los precios →</a></p>
+
+    <div class="stack-intro rev">→ El stack detrás de cada servicio</div>
+    <div class="stack-grid">
+      <div class="stack-item rev"><h4>VISUALES EN VIVO</h4><p>Resolume / VDMX / TouchDesigner. VJing, mapping y composición en tiempo real para shows, giras y eventos.</p></div>
+      <div class="stack-item rev rd1"><h4>SHADERS & CÓDIGO VISUAL</h4><p>ISF / GLSL. Shaders a medida, generadores procedurales y herramientas propias — como el motor de este sitio.</p></div>
+      <div class="stack-item rev rd2"><h4>IA GENERATIVA APLICADA</h4><p>Gemini y modelos generativos. Pipelines que aceleran la creación de visuales, código y contenido sin perder la mirada humana.</p></div>
+      <div class="stack-item rev"><h4>DISEÑO 3D & RENDER</h4><p>Cinema 4D + Octane + Insydium + Greyscale Gorilla. Motion graphics, branding tridimensional y renders fotorrealistas.</p></div>
+      <div class="stack-item rev rd1"><h4>POST & EDICIÓN</h4><p>Suite Adobe completa — Premiere, After Effects, Photoshop, Illustrator. Edición, color, compositing y diseño de punta a punta.</p></div>
+      <div class="stack-item rev rd2"><h4>CONTENIDO PARA REDES</h4><p>Piezas, calendarios y estrategia visual para que tu marca o proyecto se sienta vivo en cada plataforma.</p></div>
+      <div class="stack-item rev"><h4>WEB PARA ARTISTAS Y COMERCIOS</h4><p>Sitios a medida — como este — para artistas que necesitan mostrar su trabajo y comercios que necesitan vender mejor.</p></div>
+    </div>
+  </section>
+
+  <span class="sep">— — — — — — — — —</span>
+
+  <section id="comunidad">
+    <div class="sec-hdr rev" style="width:100%;">
+      <h2 class="sec-title">COMUNIDAD</h2>
+      <span style="font-family:var(--mono);font-size:10px;color:#fff;">SI NO TE SOBRA, NO TE GASTES</span>
+    </div>
+
+    <div class="start-intro rev">⌘ EMPEZÁ POR ACÁ — entendé el proyecto antes de sumarte</div>
+    <div class="start-here rev">
+      <a class="start-card" href="es/blog/que-es-human-glitche/">
+        <span class="sc-num">01 / QUÉ ES</span>
+        <span class="sc-title">QUÉ ES HUMAN GLITCHE</span>
+        <span class="sc-desc">La realidad es una interfaz diseñada por alguien. El glitch es el momento en que se vuelve visible.</span>
+        <span class="sc-arrow">LEER →</span>
+      </a>
+      <a class="start-card" href="es/blog/los-tres-pilares/">
+        <span class="sc-num">02 / FILOSOFÍA</span>
+        <span class="sc-title">LOS TRES PILARES</span>
+        <span class="sc-desc">Conciencia, Creación, Compartir — los 3 ejes que sostienen todo lo que hacemos, con ejemplos reales.</span>
+        <span class="sc-arrow">LEER →</span>
+      </a>
+      <a class="start-card" href="es/blog/mapa-del-ecosistema/">
+        <span class="sc-num">03 / ECOSISTEMA</span>
+        <span class="sc-title">EL MAPA DEL ECOSISTEMA</span>
+        <span class="sc-desc">HG no es un proyecto, es un ecosistema en capas. Qué existe hoy, qué viene y en qué orden.</span>
+        <span class="sc-arrow">LEER →</span>
+      </a>
+      <a class="start-card" href="es/blog/por-que-compartimos-todo/">
+        <span class="sc-num">04 / MÉTODO</span>
+        <span class="sc-title">POR QUÉ COMPARTIMOS TODO</span>
+        <span class="sc-desc">Publicamos shaders, manuales y procesos no por buena onda — es la jugada más inteligente.</span>
+        <span class="sc-arrow">LEER →</span>
+      </a>
+    </div>
+
+    <div class="plans">
+      <div class="plan rev">
+        <div class="ptier">TIER 01 — CONCIENCIA ⌘</div><div class="pprice">$0</div><div class="pper">/ mensual</div>
+        <div class="pname">EL PRIMER PASO</div>
+        <ul class="pfeat"><li>Recursos gráficos semanales</li><li>Acceso al Discord</li><li>Charlas y clases</li><li>Descuentos en productos</li><li>Nuestro agradecimiento</li></ul>
+        <a href="#" class="pcta" id="auth-trigger" data-mode="register">REGISTRATE</a>
+      </div>
+      <div class="plan feat rev rd1">
+        <div class="ptier">TIER 02 — CREACIÓN ✦ / POPULAR</div><div class="pprice">$10.000</div><div class="pper">/ mensual</div>
+        <div class="pname">EL QUE CONSTRUYE</div>
+        <ul class="pfeat"><li>Todo el contenido multimedia</li><li>Discord completo</li><li>Todas las clases y charlas</li><li>Descuentos picantes</li><li>Comunidad activa</li></ul>
+        <a href="https://www.mercadopago.com.ar/subscriptions/checkout?preapproval_plan_id=0123da920c4e46b2afcb334868e722ed" class="pcta" target="_blank">SUSCRIBIRTE</a>
+      </div>
+      <div class="plan rev rd2">
+        <div class="ptier">TIER 03 — COMPARTIR ☉</div><div class="pprice">$30.000</div><div class="pper">/ mensual</div>
+        <div class="pname">EL QUE MULTIPLICA</div>
+        <ul class="pfeat"><li>Acceso total a comunidades</li><li>Contacto directo con el equipo</li><li>Te salvamos las papas</li><li>Pack personal branding</li><li>Agradecimiento permanente</li></ul>
+        <a href="https://www.mercadopago.com.ar/subscriptions/checkout?preapproval_plan_id=d0c05031038f487b9978cb16af3e8135" class="pcta" target="_blank">SUSCRIBIRTE</a>
+      </div>
+    </div>
+  </section>
+
+  <span class="sep">— — — — — — — — —</span>
+
+  <section id="live">
+    <div style="text-align:center;">
+      <div class="live-badge">● EN VIVO / KICK</div>
+      <h2 class="live-t glitch" data-text="VISUAL LAB">VISUAL LAB</h2>
+      <p class="live-sub">STREAMING DE VISUALES EN TIEMPO REAL</p>
+      <a href="https://kick.com/visuallab" class="live-a" target="_blank">KICK.COM/VISUALLAB →</a><br>
+      <a href="https://www.youtube.com/@Human.Glitche" class="live-a" style="margin-top:0.8rem;" target="_blank">YOUTUBE →</a>
+    </div>
+  </section>
+
+  <section id="footer">
+    <div class="ftop">
+      <div class="flogo">HG<br>VL</div>
+      <div class="flinks">
+        <a href="https://www.youtube.com/@Human.Glitche" target="_blank">YOUTUBE</a>
+        <a href="https://x.com/HGlitche" target="_blank">X / TWITTER</a>
+        <a href="https://kick.com/visuallab" target="_blank">KICK</a>
+        <a href="https://discord.gg/CgmxdSecHY" target="_blank">DISCORD</a>
+        <a href="https://github.com/human-zeta" target="_blank">GITHUB</a>
+        <a href="https://linkedin.com" target="_blank">LINKEDIN</a>
+      </div>
+    </div>
+    <div class="fbot">
+      <span class="fcopy">© 2026 HUMAN GLITCHE — VISUAL LAB — BUENOS AIRES</span>
+      <span class="facid">QUIEN VE LA INTERFAZ, YA NO PUEDE DEJAR DE REDISEÑARLA.</span>
+    </div>
+  </section>
+
+</div>
+
+<script>
+// ─────────────────────────────────────────────
+// CURSOR
+// ─────────────────────────────────────────────
+const cur = document.getElementById('cursor');
+const ring = document.getElementById('cursor-ring');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{
+  mx=e.clientX; my=e.clientY;
+  cur.style.left=mx-4+'px'; cur.style.top=my-4+'px';
+});
+
+// ─────────────────────────────────────────────
+// PROFUNDIDAD "VIDRIO ENTRE TIPOGRAFÍA Y FONDO" — entre la letra y el
+// shader hay un panel de vidrio (.hero-glass) compuesto por zonas con
+// distinto desenfoque/saturación ("distintos aumentos", como lentes de
+// diferente grosor). Al mover el cursor esas zonas se desplazan y
+// cambian levemente de intensidad — como si el vidrio refractara el
+// fondo de manera distinta según el ángulo de mirada — y la tipografía
+// flota apenas por encima, separada del vidrio por una sombra suave.
+// ─────────────────────────────────────────────
+(function glassDepth(){
+  const title    = document.querySelector('.hero-title');
+  const sub      = document.querySelector('.hero-sub');
+  const label    = document.querySelector('.hero-label');
+  const socials  = document.querySelector('.hero-socials');
+  const glass    = document.querySelector('.hero-glass');
+  if(!title || !glass) return;
+
+  let tx=0, ty=0, cx=0, cy=0;
+  document.addEventListener('mousemove', e=>{
+    tx = (e.clientX/window.innerWidth  - 0.5) * 2; // -1..1
+    ty = (e.clientY/window.innerHeight - 0.5) * 2;
+  });
+
+  function apply(){
+    cx += (tx-cx)*0.05;
+    cy += (ty-cy)*0.05;
+
+    // El vidrio se desplaza distinto que la tipografía → sensación de capas
+    // separadas en profundidad, cada una reaccionando al ángulo de vista.
+    glass.style.transform = `translate3d(${cx*10}px, ${cy*7}px, 40px) scale(${(1+Math.abs(cx)*0.01+Math.abs(cy)*0.01).toFixed(3)})`;
+
+    // Sombra leve que separa la letra del vidrio, del lado opuesto al "aumento" dominante.
+    const shx = (cx*3 + 1.5).toFixed(2);
+    const shy = (cy*3 + 2.5).toFixed(2);
+    title.style.textShadow = `
+      ${shx}px ${shy}px 6px rgba(0,0,0,0.35),
+      0 0 40px rgba(184,255,0,0.05)`;
+
+    // Planos sutilmente separados — la tipografía "flota" apenas sobre el vidrio y el shader.
+    title.style.transform   = `translate3d(${cx*-14}px, ${cy*-9}px, 90px)`;
+    sub.style.transform     = `translate3d(${cx*-7}px, ${cy*-5}px, 50px)`;
+    label.style.transform   = `translate3d(${cx*-4}px, ${cy*-3}px, 30px)`;
+    socials.style.transform = `translate3d(${cx*-3}px, ${cy*-2}px, 16px)`;
+    requestAnimationFrame(apply);
+  }
+  apply();
+})();
+
+// ─────────────────────────────────────────────
+// GLITCH DE TIPOGRAFÍAS — cada tanto, los títulos cambian de familia
+// tipográfica varias veces en una fracción de segundo (como una falla
+// de renderizado) y vuelven a su fuente original. Cada elemento corre
+// con su propio temporizador aleatorio para que no glitcheen todos
+// juntos — más orgánico, menos sincronizado.
+// ─────────────────────────────────────────────
+(function fontGlitch(){
+  const FONTS = [
+    "'Archivo Black',sans-serif",
+    "'IBM Plex Mono',monospace",
+    "'Playfair Display',serif",
+    "'Syne',sans-serif",
+    "'Courier Prime',monospace",
+    "'DM Sans',sans-serif"
+  ];
+  /* Solo títulos standalone de ancho completo — sacar .ctitle, .sname, .mline
+     evita que el cambio de familia reflow las columnas de texto adyacente */
+  const targets = document.querySelectorAll('.hero-title, .aether-title, .live-t');
+  if(!targets.length) return;
+
+  targets.forEach(el=>{
+    function burst(){
+      let i = 0;
+      const swaps = 4 + Math.floor(Math.random()*4); // 4–7 cambios
+      const iv = setInterval(()=>{
+        el.style.fontFamily = FONTS[Math.floor(Math.random()*FONTS.length)];
+        i++;
+        if(i >= swaps){
+          clearInterval(iv);
+          el.style.fontFamily = ''; // vuelve a la tipografía definida en CSS (--display)
+        }
+      }, 55 + Math.random()*35);
+    }
+    function loop(){
+      burst();
+      setTimeout(loop, 5000 + Math.random()*9000); // próximo glitch entre 5 y 14s
+    }
+    setTimeout(loop, 800 + Math.random()*4000); // arranque desfasado por elemento
+  });
+})();
+
+(function tick(){rx+=(mx-rx)*0.12;ry+=(my-ry)*0.12;ring.style.left=rx-16+'px';ring.style.top=ry-16+'px';requestAnimationFrame(tick);})();
+document.querySelectorAll('a,button,.bcard,.srow,.plan').forEach(el=>{
+  el.addEventListener('mouseenter',()=>{cur.style.transform='scale(3)';ring.style.opacity='0';});
+  el.addEventListener('mouseleave',()=>{cur.style.transform='scale(1)';ring.style.opacity='0.5';});
+});
+
+// ─────────────────────────────────────────────
+// WEBGL SETUP
+// ─────────────────────────────────────────────
+const canvas = document.getElementById('shader-canvas');
+const gl = canvas.getContext('webgl',{premultipliedAlpha:false,alpha:true,preserveDrawingBuffer:true});
+
+let prog = null, animId = null, t0 = 0;
+let isfInputs = {}; // name → {type, value, min, max}
+let uLocs = {};
+let mouseX=0.5, mouseY=0.5;
+
+// AUDIO
+let audioCtx=null, analyser=null, audioData=null, audioStream=null;
+let audioActive=false;
+let audioVol=0, audioBass=0, audioMid=0, audioHigh=0;
+let audioSmooth={vol:0,bass:0,mid:0,high:0,beat:0};
+let beatCooldown=0;
+// Mapping automático: qué input controla cada banda
+let audioMapping={vol:null,bass:null,mid:null,high:null};
+// Valores originales antes de que el audio los tome
+let audioOrigValues={};
+
+const VS = `attribute vec2 pos;void main(){gl_Position=vec4(pos,0.,1.);}`;
+
+// Quad
+const qb = gl.createBuffer();
+gl.bindBuffer(gl.ARRAY_BUFFER,qb);
+gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,1,1]),gl.STATIC_DRAW);
+
+function resize(){
+  canvas.width=window.innerWidth;
+  canvas.height=window.innerHeight;
+  gl.viewport(0,0,canvas.width,canvas.height);
+}
+resize();
+window.addEventListener('resize',resize);
+document.addEventListener('mousemove',e=>{mouseX=e.clientX/window.innerWidth;mouseY=1-e.clientY/window.innerHeight;});
+
+function makeShader(src,type){
+  const s=gl.createShader(type);
+  gl.shaderSource(s,src);gl.compileShader(s);
+  if(!gl.getShaderParameter(s,gl.COMPILE_STATUS)){const e=gl.getShaderInfoLog(s);gl.deleteShader(s);throw e;}
+  return s;
+}
+function makeProgram(fsSrc){
+  const p=gl.createProgram();
+  gl.attachShader(p,makeShader(VS,gl.VERTEX_SHADER));
+  gl.attachShader(p,makeShader(fsSrc,gl.FRAGMENT_SHADER));
+  gl.linkProgram(p);
+  if(!gl.getProgramParameter(p,gl.LINK_STATUS))throw gl.getProgramInfoLog(p);
+  return p;
+}
+
+// ─────────────────────────────────────────────
+// AETHER ISF PARSER — matches parseISF() from utils/isf
+// Handles: isf_FragNormCoord, TIME, RENDERSIZE, PI,
+//          all ISFInputType: float, long, bool, point2D, color, image(stub)
+// ─────────────────────────────────────────────
+function parseAetherISF(raw){
+  // 1. Extract JSON metadata block /*{...}*/
+  const m = raw.match(/\/\*\s*(\{[\s\S]*?\})\s*\*\//);
+  let meta = {INPUTS:[]};
+  if(m){
+    try{ meta = JSON.parse(m[1]); meta.INPUTS = meta.INPUTS||[]; }
+    catch(e){ console.warn('ISF JSON parse error',e); }
+  }
+
+  // 2. Strip header comment
+  let glsl = raw.replace(/\/\*[\s\S]*?\*\//,'').trim();
+
+  // 3. ISF built-in variable remapping (matches Aether's parseISF utility)
+  glsl = glsl
+    .replace(/\bisf_FragNormCoord\b/g,'(gl_FragCoord.xy/RENDERSIZE)')
+    .replace(/\bgl_FragNormCoord\b/g,'(gl_FragCoord.xy/RENDERSIZE)')
+    // ISF texture functions — stub for web preview
+    .replace(/IMG_THIS_PIXEL\s*\([^)]*\)/g,'vec4(0.0)')
+    .replace(/IMG_PIXEL\s*\([^,)]*,\s*[^)]*\)/g,'vec4(0.0)')
+    .replace(/IMG_NORM_PIXEL\s*\([^,)]*,\s*[^)]*\)/g,'vec4(0.0)')
+    .replace(/IMG_SIZE\s*\([^)]*\)/g,'RENDERSIZE')
+    .replace(/\bTIME_DELTA\b/g,'(1.0/60.0)')
+    .replace(/\bFRAME_INDEX\b/g,'int(TIME*60.0)')
+    .replace(/\bPASSINDEX\b/g,'0');
+
+  // 4. Remove any existing precision + duplicate uniforms
+  glsl = glsl
+    .replace(/precision\s+\w+\s+float\s*;/g,'')
+    .replace(/uniform\s+float\s+TIME\s*;/g,'')
+    .replace(/uniform\s+vec2\s+RENDERSIZE\s*;/g,'')
+    .replace(/uniform\s+float\s+PI\s*;/g,'')
+    .replace(/uniform\s+vec2\s+MOUSE\s*;/g,'');
+
+  // 5. Parse INPUTS → build isfInputs map + GLSL uniform declarations
+  isfInputs = {};
+  const unifDecls = [
+    'precision mediump float;',
+    '#define PI 3.14159265358979323846',
+    'uniform float TIME;',
+    'uniform vec2  RENDERSIZE;',
+    'uniform vec2  MOUSE;',
+    // Audio uniforms — siempre disponibles
+    'uniform float AUDIO_VOL;',
+    'uniform float AUDIO_BASS;',
+    'uniform float AUDIO_MID;',
+    'uniform float AUDIO_HIGH;',
+    'uniform float AUDIO_BEAT;',
+  ];
+
+  (meta.INPUTS||[]).forEach(inp=>{
+    const n = inp.NAME; if(!n) return;
+    const t = (inp.TYPE||'').toLowerCase();
+
+    let glslType='', defVal;
+    if(t==='float'){
+      glslType='float';
+      defVal = (inp.DEFAULT !== undefined) ? parseFloat(inp.DEFAULT) : 0.5;
+      isfInputs[n]={type:'float',value:defVal,min:parseFloat(inp.MIN??0),max:parseFloat(inp.MAX??1),label:inp.LABEL||n,def:defVal};
+    } else if(t==='long'){
+      glslType='float'; // treat as float in WebGL (no integer uniforms in WebGL1)
+      const vals = inp.VALUES||[];
+      defVal = (inp.DEFAULT !== undefined) ? parseFloat(inp.DEFAULT) : (vals[0]||0);
+      isfInputs[n]={type:'long',value:defVal,min:0,max:Math.max(vals.length-1,1),labels:inp.LABELS||[],values:vals,label:inp.LABEL||n,def:defVal};
+    } else if(t==='bool'){
+      glslType='bool';
+      defVal = inp.DEFAULT===true||inp.DEFAULT===1||inp.DEFAULT==='true';
+      isfInputs[n]={type:'bool',value:defVal,label:inp.LABEL||n,def:defVal};
+    } else if(t==='color'){
+      glslType='vec4';
+      const d = inp.DEFAULT||[1,1,1,1];
+      defVal=[d[0]??1,d[1]??1,d[2]??1,d[3]??1];
+      isfInputs[n]={type:'color',value:[...defVal],label:inp.LABEL||n,def:defVal};
+    } else if(t==='point2d'){
+      glslType='vec2';
+      const d = inp.DEFAULT||[0.5,0.5];
+      defVal=[d[0]??0.5,d[1]??0.5];
+      isfInputs[n]={type:'point2D',value:[...defVal],label:inp.LABEL||n,def:defVal};
+    } else if(t==='image'){
+      // Stub — image inputs need texture uploads; just declare sampler2D
+      unifDecls.push(`uniform sampler2D ${n};`);
+      return;
+    } else return;
+
+    if(glslType) unifDecls.push(`uniform ${glslType} ${n};`);
+  });
+
+  const finalSrc = unifDecls.join('\n') + '\n\n' + glsl;
+  return {finalSrc, meta};
+}
+
+// ─────────────────────────────────────────────
+// RUN PROGRAM
+// ─────────────────────────────────────────────
+function runProgram(p){
+  if(animId) cancelAnimationFrame(animId);
+  prog = p;
+  gl.useProgram(p);
+  const posLoc = gl.getAttribLocation(p,'pos');
+  gl.bindBuffer(gl.ARRAY_BUFFER,qb);
+  gl.enableVertexAttribArray(posLoc);
+  gl.vertexAttribPointer(posLoc,2,gl.FLOAT,false,0,0);
+
+  uLocs={};
+  ['TIME','RENDERSIZE','MOUSE','AUDIO_VOL','AUDIO_BASS','AUDIO_MID','AUDIO_HIGH','AUDIO_BEAT'].forEach(n=>uLocs[n]=gl.getUniformLocation(p,n));
+  Object.keys(isfInputs).forEach(n=>uLocs[n]=gl.getUniformLocation(p,n));
+
+  t0 = Date.now();
+  function frame(){
+    animId=requestAnimationFrame(frame);
+    if(!prog) return;
+    gl.useProgram(prog);
+    const t=(Date.now()-t0)/1000;
+    if(uLocs.TIME) gl.uniform1f(uLocs.TIME,t);
+    if(uLocs.RENDERSIZE) gl.uniform2f(uLocs.RENDERSIZE,canvas.width,canvas.height);
+    if(uLocs.MOUSE) gl.uniform2f(uLocs.MOUSE,mouseX,mouseY);
+
+    // Audio analysis cada frame
+    if(audioActive && analyser){
+      analyser.getByteFrequencyData(audioData);
+      const len=audioData.length;
+      // Bandas: bass 0-10%, mid 10-50%, high 50-100%
+      const bassEnd=Math.floor(len*0.10), midEnd=Math.floor(len*0.50);
+      let bSum=0,mSum=0,hSum=0,vSum=0;
+      for(let i=0;i<len;i++){
+        vSum+=audioData[i];
+        if(i<bassEnd) bSum+=audioData[i];
+        else if(i<midEnd) mSum+=audioData[i];
+        else hSum+=audioData[i];
+      }
+      const norm=v=>Math.min(v/255,1);
+      audioVol=norm(vSum/len);
+      audioBass=norm(bSum/bassEnd);
+      audioMid=norm(mSum/(midEnd-bassEnd));
+      audioHigh=norm(hSum/(len-midEnd));
+
+      // Smoothing exponencial
+      const k=0.25;
+      audioSmooth.vol+=(audioVol-audioSmooth.vol)*k;
+      audioSmooth.bass+=(audioBass-audioSmooth.bass)*k;
+      audioSmooth.mid+=(audioMid-audioSmooth.mid)*k;
+      audioSmooth.high+=(audioHigh-audioSmooth.high)*k;
+
+      // Beat detection (sub-bass threshold)
+      if(beatCooldown>0) beatCooldown--;
+      if(audioBass>0.6 && beatCooldown===0){
+        audioSmooth.beat=1.0;
+        beatCooldown=12;
+      } else {
+        audioSmooth.beat*=0.88;
+      }
+
+      // Auto-mapping: modular sobre inputs float disponibles
+      applyAudioMapping();
+    }
+    if(uLocs.AUDIO_VOL)  gl.uniform1f(uLocs.AUDIO_VOL,  audioSmooth.vol);
+    if(uLocs.AUDIO_BASS) gl.uniform1f(uLocs.AUDIO_BASS, audioSmooth.bass);
+    if(uLocs.AUDIO_MID)  gl.uniform1f(uLocs.AUDIO_MID,  audioSmooth.mid);
+    if(uLocs.AUDIO_HIGH) gl.uniform1f(uLocs.AUDIO_HIGH, audioSmooth.high);
+    if(uLocs.AUDIO_BEAT) gl.uniform1f(uLocs.AUDIO_BEAT, audioSmooth.beat);
+
+    Object.entries(isfInputs).forEach(([n,inp])=>{
+      const loc=uLocs[n]; if(!loc) return;
+      if(inp.type==='float'||inp.type==='long') gl.uniform1f(loc,parseFloat(inp.value));
+      else if(inp.type==='bool') gl.uniform1i(loc,inp.value?1:0);
+      else if(inp.type==='color') gl.uniform4f(loc,...inp.value);
+      else if(inp.type==='point2D') gl.uniform2f(loc,...inp.value);
+    });
+    gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
+  }
+  frame();
+}
+
+// ─────────────────────────────────────────────
+// PALETTE EXTRACTION (k-means k=5)
+// ─────────────────────────────────────────────
+function extractPalette(){
+  const w=canvas.width,h=canvas.height;
+  const px=new Uint8Array(w*h*4);
+  gl.readPixels(0,0,w,h,gl.RGBA,gl.UNSIGNED_BYTE,px);
+  const samples=[];
+  for(let i=0;i<400;i++){
+    const idx=Math.floor(Math.random()*w*h)*4;
+    if(px[idx+3]<20) continue;
+    samples.push([px[idx],px[idx+1],px[idx+2]]);
+  }
+  if(samples.length<6) return null;
+  let centers=samples.slice(0,5).map(c=>[...c]);
+  for(let iter=0;iter<15;iter++){
+    const buckets=Array.from({length:5},()=>[]);
+    samples.forEach(s=>{
+      let b=0,bd=Infinity;
+      centers.forEach((c,i)=>{const d=(s[0]-c[0])**2+(s[1]-c[1])**2+(s[2]-c[2])**2;if(d<bd){bd=d;b=i;}});
+      buckets[b].push(s);
+    });
+    centers=buckets.map((b,i)=>{
+      if(!b.length) return centers[i];
+      return [
+        Math.round(b.reduce((a,v)=>a+v[0],0)/b.length),
+        Math.round(b.reduce((a,v)=>a+v[1],0)/b.length),
+        Math.round(b.reduce((a,v)=>a+v[2],0)/b.length),
+      ];
+    });
+  }
+  return centers;
+}
+
+function toHex([r,g,b]){return '#'+[r,g,b].map(v=>v.toString(16).padStart(2,'0')).join('');}
+function lum([r,g,b]){return 0.299*r+0.587*g+0.114*b;}
+function sat([r,g,b]){return Math.max(r,g,b)-Math.min(r,g,b);}
+
+function applyPalette(colors){
+  if(!colors||colors.length<3) return;
+  const sorted=[...colors].sort((a,b)=>lum(a)-lum(b));
+  const brightest=sorted[sorted.length-1];
+  const vivid=colors.reduce((best,c)=>sat(c)>sat(best)?c:best,colors[0]);
+
+  const root=document.documentElement;
+  root.style.setProperty('--acid',toHex(brightest));
+  root.style.setProperty('--glitch',toHex(vivid));
+
+  colors.forEach((c,i)=>{const sw=document.getElementById('sw'+i);if(sw)sw.style.background=toHex(c);});
+  document.getElementById('pal-row').classList.add('show');
+
+  // Propagate to cursor
+  cur.style.background=toHex(brightest);
+  ring.style.borderColor=toHex(brightest);
+}
+
+// ─────────────────────────────────────────────
+// ISF INPUTS PANEL
+// ─────────────────────────────────────────────
+function buildPanel(){
+  const panel=document.getElementById('isf-panel');
+  panel.innerHTML='';
+  const keys=Object.keys(isfInputs);
+  if(!keys.length){panel.classList.remove('show');return;}
+  const title=document.createElement('div');
+  title.className='ipanel-title';title.textContent='ISF INPUTS';panel.appendChild(title);
+  keys.forEach(n=>{
+    const inp=isfInputs[n];
+    const row=document.createElement('div');row.className='irow';
+    const lbl=document.createElement('label');lbl.className='ilabel';lbl.textContent=(inp.label||n).toUpperCase();
+    const valSpan=document.createElement('span');valSpan.className='ival';
+    row.appendChild(lbl);
+
+    if(inp.type==='float'||inp.type==='long'){
+      const sl=document.createElement('input');sl.type='range';
+      sl.min=inp.min??0;sl.max=inp.max??1;sl.step=(inp.max-inp.min)/200||0.01;
+      sl.value=inp.value;
+      sl.dataset.inputName=n;
+      valSpan.textContent=parseFloat(inp.value).toFixed(2);
+      sl.addEventListener('input',()=>{
+        // Si el audio está mapeado a este input, el usuario lo overridea temporalmente
+        isfInputs[n].value=parseFloat(sl.value);
+        valSpan.textContent=parseFloat(sl.value).toFixed(2);
+      });
+      lbl.appendChild(valSpan);row.appendChild(sl);
+    } else if(inp.type==='bool'){
+      const cb=document.createElement('input');cb.type='checkbox';cb.checked=inp.value;
+      cb.addEventListener('change',()=>{isfInputs[n].value=cb.checked;});
+      lbl.style.display='flex';lbl.style.gap='8px';lbl.style.alignItems='center';
+      lbl.appendChild(cb);
+    } else if(inp.type==='color'){
+      const cp=document.createElement('input');cp.type='color';
+      const v=inp.value;cp.value=toHex([Math.round(v[0]*255),Math.round(v[1]*255),Math.round(v[2]*255)]);
+      cp.addEventListener('input',()=>{
+        const h=cp.value;
+        isfInputs[n].value=[parseInt(h.slice(1,3),16)/255,parseInt(h.slice(3,5),16)/255,parseInt(h.slice(5,7),16)/255,1];
+      });
+      row.appendChild(cp);
+    } else if(inp.type==='point2D'){
+      ['X','Y'].forEach((axis,ai)=>{
+        const sl=document.createElement('input');sl.type='range';sl.min=0;sl.max=1;sl.step=0.01;
+        sl.value=inp.value[ai];
+        const axlbl=document.createElement('label');axlbl.className='ilabel';axlbl.textContent=axis;
+        sl.addEventListener('input',()=>{isfInputs[n].value[ai]=parseFloat(sl.value);});
+        row.appendChild(axlbl);row.appendChild(sl);
+      });
+    }
+    panel.appendChild(row);
+  });
+  // Position panel above drop zone
+  const dz=document.getElementById('drop-zone');
+  const dzH=dz.getBoundingClientRect().height;
+  panel.style.bottom=(2+dzH/16+0.6)+'rem'; // rough
+  panel.classList.add('show');
+}
+
+// ─────────────────────────────────────────────
+// LOAD .fs FILE
+// ─────────────────────────────────────────────
+function showErr(msg){
+  const el=document.getElementById('err-toast');
+  el.textContent='⚠ '+String(msg).slice(0,180);
+  el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'),7000);
+}
+
+function loadShaderFromCode(src, name){
+  document.getElementById('status-txt').textContent='COMPILANDO...';
+  try{
+    const {finalSrc,meta}=parseAetherISF(src);
+    const p=makeProgram(finalSrc);
+
+    canvas.classList.add('active');
+    setHasShader(true);
+    document.getElementById('status-led').classList.add('on');
+    document.getElementById('drop-zone').classList.add('loaded');
+
+    const label=(name||meta.LABEL||meta.DESCRIPTION||'SHADER').toUpperCase().replace(/\.FS$/i,'');
+    const nameEl=document.getElementById('shader-name');
+    nameEl.textContent=label;nameEl.classList.add('show');
+    document.getElementById('status-txt').textContent='SHADER ACTIVO';
+    document.getElementById('reset-btn').classList.add('show');
+    document.getElementById('fs-btn').classList.add('show');
+    const ctrlTog=document.getElementById('ctrl-toggle');
+    ctrlTog.style.display='block';
+    document.body.classList.remove('ctrl-collapsed');
+    ctrlTog.textContent='— OCULTAR';
+    const audioRow=document.getElementById('audio-row');
+    audioRow.style.display='flex';
+    if(audioActive) buildAudioMapping();
+
+    runProgram(p);
+
+    // Extraer paleta y luego guardar en galería (con thumbnail real)
+    let fc=0;
+    (function wait(){
+      if(fc++<4){requestAnimationFrame(wait);return;}
+      const pal=extractPalette();if(pal)applyPalette(pal);
+      // Guardar en galería con thumbnail capturado post-render
+      saveCurrentShader(label, src);
+    })();
+
+    buildPanel();
+
+  } catch(err){
+    document.getElementById('status-txt').textContent='ERROR — ver consola';
+    showErr(err);
+    console.error('ISF compile error:',err);
+  }
+}
+
+function loadShader(file){
+  const reader=new FileReader();
+  reader.onload=e=>loadShaderFromCode(e.target.result, file.name);
+  reader.readAsText(file);
+}
+
+// ─────────────────────────────────────────────
+// RESET
+// ─────────────────────────────────────────────
+document.getElementById('reset-btn').addEventListener('click',()=>{
+  if(animId){cancelAnimationFrame(animId);animId=null;}
+  prog=null;
+  exitVisualMode();
+  setHasShader(false);
+  canvas.classList.remove('active');
+  document.getElementById('status-led').classList.remove('on');
+  document.getElementById('drop-zone').classList.remove('loaded');
+  document.getElementById('shader-name').classList.remove('show');
+  document.getElementById('reset-btn').classList.remove('show');
+  document.getElementById('fs-btn').classList.remove('show');
+  document.getElementById('audio-btn') && (document.getElementById('audio-btn').style.display='none');
+  document.getElementById('audio-row').style.display='none';
+  document.getElementById('audio-map').style.opacity='0';
+  if(audioActive) stopAudio();
+  if(document.fullscreenElement) document.exitFullscreen();
+  document.getElementById('pal-row').classList.remove('show');
+  document.getElementById('isf-panel').classList.remove('show');
+  document.getElementById('ctrl-toggle').style.display='none';
+  document.body.classList.remove('ctrl-collapsed');
+  document.getElementById('status-txt').textContent='AETHER ISF DROP';
+  isfInputs={};
+  // Restore defaults
+  const r=document.documentElement;
+  r.style.setProperty('--acid','#b8ff00');
+  r.style.setProperty('--glitch','#ff2d55');
+  cur.style.background='#b8ff00';
+  ring.style.borderColor='#b8ff00';
+});
+
+// ─────────────────────────────────────────────
+// MODO VISUAL (oculta web, solo canvas + controles)
+// ─────────────────────────────────────────────
+const fsBtn = document.getElementById('fs-btn');
+const exitBtn = document.getElementById('exit-visual');
+
+// TOGGLE controles shader
+document.getElementById('ctrl-toggle').addEventListener('click',()=>{
+  const collapsed = document.body.classList.toggle('ctrl-collapsed');
+  document.getElementById('ctrl-toggle').textContent = collapsed ? '+ CONTROLES' : '— OCULTAR';
+});
+
+function enterVisualMode(){
+  document.body.classList.add('visual-mode');
+  document.documentElement.requestFullscreen().catch(()=>{});
+  fsBtn.textContent='⛶ MODO VISUAL ON';
+}
+function exitVisualMode(){
+  document.body.classList.remove('visual-mode');
+  if(document.fullscreenElement) document.exitFullscreen().catch(()=>{});
+  fsBtn.textContent='⛶ MODO VISUAL';
+}
+fsBtn.addEventListener('click', enterVisualMode);
+exitBtn.addEventListener('click', exitVisualMode);
+
+// Botones audio sistema / micro
+document.getElementById('audio-sys-btn').addEventListener('click',(e)=>{
+  e.stopPropagation();
+  if(audioSource==='system'){ stopAudio(); return; }
+  startSystemAudio();
+});
+document.getElementById('audio-mic-btn').addEventListener('click',(e)=>{
+  e.stopPropagation();
+  if(audioSource==='mic'){ stopAudio(); return; }
+  startMicAudio();
+});
+document.addEventListener('fullscreenchange',()=>{
+  if(!document.fullscreenElement && document.body.classList.contains('visual-mode'))
+    exitVisualMode();
+});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape' && document.body.classList.contains('visual-mode')) exitVisualMode();
+});
+
+// ─────────────────────────────────────────────
+// AUTO-MAPPING AUDIO → ISF INPUTS
+// ─────────────────────────────────────────────
+function buildAudioMapping(){
+  // Busca floats disponibles y los mapea a bandas en orden
+  const floats = Object.keys(isfInputs).filter(n=>isfInputs[n].type==='float'||isfInputs[n].type==='long');
+  const bands = ['bass','mid','high','vol'];
+  audioMapping={vol:null,bass:null,mid:null,high:null};
+  audioOrigValues={};
+  bands.forEach((band,i)=>{
+    if(floats[i]){
+      audioMapping[band]=floats[i];
+      audioOrigValues[floats[i]]=isfInputs[floats[i]].value;
+    }
+  });
+  // Si hay solo un float, mapearlo a bass (más impactante)
+  if(floats.length===1){
+    audioMapping.bass=floats[0];
+    audioOrigValues[floats[0]]=isfInputs[floats[0]].value;
+  }
+}
+
+function applyAudioMapping(){
+  // Escala el valor de audio al rango min-max del input
+  function mapBand(name, val){
+    if(!name||!isfInputs[name]) return;
+    const inp=isfInputs[name];
+    const min=inp.min??0, max=inp.max??1;
+    isfInputs[name].value = min + val*(max-min);
+    // Actualizar slider si existe
+    const panel=document.getElementById('isf-panel');
+    const sliders=panel.querySelectorAll('input[type=range]');
+    sliders.forEach(sl=>{
+      if(sl.dataset.inputName===name){
+        sl.value=isfInputs[name].value;
+        const valEl=sl.parentElement.querySelector('.ival');
+        if(valEl) valEl.textContent=parseFloat(isfInputs[name].value).toFixed(2);
+      }
+    });
+  }
+  mapBand(audioMapping.bass, audioSmooth.bass);
+  mapBand(audioMapping.mid,  audioSmooth.mid);
+  mapBand(audioMapping.high, audioSmooth.high);
+  mapBand(audioMapping.vol,  audioSmooth.vol);
+}
+
+function restoreAudioMapping(){
+  Object.entries(audioOrigValues).forEach(([n,v])=>{
+    if(isfInputs[n]) isfInputs[n].value=v;
+  });
+}
+
+// ─────────────────────────────────────────────
+// AUDIO ENGINE — loopback (sistema) + micro (ambiente)
+// ─────────────────────────────────────────────
+let audioSource = null; // 'system' | 'mic' | null
+
+async function connectAudioStream(stream){
+  // Si había algo antes, limpiarlo sin resetear mappings
+  if(audioStream) audioStream.getTracks().forEach(t=>t.stop());
+  if(audioCtx) await audioCtx.close();
+
+  audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+  audioStream = stream;
+  const src = audioCtx.createMediaStreamSource(stream);
+  analyser = audioCtx.createAnalyser();
+  analyser.fftSize = 512;               // más resolución de frecuencia
+  analyser.smoothingTimeConstant = 0.8;
+  src.connect(analyser);
+  audioData = new Uint8Array(analyser.frequencyBinCount);
+  audioActive = true;
+  buildAudioMapping();
+  showAudioMapping();
+}
+
+async function startSystemAudio(){
+  try{
+    // getDisplayMedia captura audio del sistema sin video
+    const stream = await navigator.mediaDevices.getDisplayMedia({
+      video:{width:1,height:1,frameRate:1}, // mínimo obligatorio en algunos browsers
+      audio:{
+        echoCancellation:false,
+        noiseSuppression:false,
+        sampleRate:48000,
+        channelCount:2
+      }
+    });
+    // Quitar la pista de video si existe (no la necesitamos)
+    stream.getVideoTracks().forEach(t=>t.stop());
+    // Crear stream solo audio desde las pistas de audio
+    const audioOnly = new MediaStream(stream.getAudioTracks());
+    await connectAudioStream(audioOnly);
+    audioSource = 'system';
+    setAudioBtnState('system');
+    setAudioSourceLabel('SISTEMA — loopback activo');
+  } catch(e){
+    if(e.name==='NotAllowedError'){
+      showErr('Permiso denegado. Compartí audio del sistema en el diálogo del browser.');
+    } else if(e.name==='NotSupportedError'){
+      showErr('Tu browser no soporta captura de audio del sistema. Probá con Chrome o Edge.');
+    } else {
+      showErr('Error al capturar audio del sistema: '+e.message);
+    }
+    console.error('loopback error:',e);
+  }
+}
+
+async function startMicAudio(){
+  try{
+    const stream = await navigator.mediaDevices.getUserMedia({
+      audio:{
+        echoCancellation:false,
+        noiseSuppression:false,
+        autoGainControl:false,
+        sampleRate:48000
+      },
+      video:false
+    });
+    await connectAudioStream(stream);
+    audioSource = 'mic';
+    setAudioBtnState('mic');
+    setAudioSourceLabel('MICRO — ambiente activo');
+  } catch(e){
+    if(e.name==='NotAllowedError'){
+      showErr('Permiso de micrófono denegado.');
+    } else {
+      showErr('Error al acceder al micrófono: '+e.message);
+    }
+    console.error('mic error:',e);
+  }
+}
+
+function stopAudio(){
+  audioActive = false;
+  audioSource = null;
+  if(audioStream) audioStream.getTracks().forEach(t=>t.stop());
+  if(audioCtx) audioCtx.close();
+  audioCtx=null; analyser=null; audioStream=null; audioData=null;
+  audioSmooth={vol:0,bass:0,mid:0,high:0,beat:0};
+  restoreAudioMapping();
+  audioMapping={vol:null,bass:null,mid:null,high:null};
+  setAudioBtnState(null);
+  hideAudioMapping();
+  setAudioSourceLabel('');
+}
+
+function setAudioBtnState(active){
+  // active: 'system' | 'mic' | null
+  const sys = document.getElementById('audio-sys-btn');
+  const mic = document.getElementById('audio-mic-btn');
+  if(!sys||!mic) return;
+
+  const baseStyle = 'background:rgba(255,255,255,0.03);border:1px solid rgba(240,237,230,0.1);color:rgba(240,237,230,0.3);';
+  const onStyle   = 'background:rgba(184,255,0,0.08);border:1px solid rgba(184,255,0,0.5);color:rgba(184,255,0,0.9);';
+
+  sys.style.cssText += active==='system' ? onStyle : baseStyle;
+  mic.style.cssText += active==='mic'    ? onStyle : baseStyle;
+
+  sys.textContent = active==='system' ? '◉ SISTEMA' : '◎ SISTEMA';
+  mic.textContent = active==='mic'    ? '◉ MICRO'   : '◎ MICRO';
+}
+
+function setAudioSourceLabel(txt){
+  const el = document.getElementById('audio-source-label');
+  if(el) el.textContent = txt;
+}
+
+function updateAudioBtn(active){ /* compat — no-op, manejado por setAudioBtnState */ }
+
+function showAudioMapping(){
+  const el=document.getElementById('audio-map');
+  if(!el) return;
+  const lines=Object.entries(audioMapping)
+    .filter(([,v])=>v)
+    .map(([band,name])=>`${band.toUpperCase()} → ${name}`);
+  el.textContent = lines.length ? lines.join('  ·  ') : 'sin inputs mapeables';
+  el.classList.add('show');
+}
+function hideAudioMapping(){
+  const el=document.getElementById('audio-map');
+  if(el) el.classList.remove('show');
+}
+
+// ─────────────────────────────────────────────
+// SHADERS BUILTIN — 5 piezas curadas, listas para usar
+// si la galería local y el repo global todavía están vacíos
+// ─────────────────────────────────────────────
+const BUILTIN_SHADERS = [
+  {name:'RIPPLE GRID', code:`/*{
+  "DESCRIPTION":"Ripple grid — brutalist grid warped by traveling waves",
+  "CREDIT":"Human Glitche / Visual Lab",
+  "ISFVSN":"2.0",
+  "CATEGORIES":["Generative"],
+  "INPUTS":[
+    {"NAME":"density","TYPE":"float","LABEL":"Density","DEFAULT":18.0,"MIN":4.0,"MAX":60.0},
+    {"NAME":"speed","TYPE":"float","LABEL":"Speed","DEFAULT":1.0,"MIN":0.0,"MAX":4.0},
+    {"NAME":"warp","TYPE":"float","LABEL":"Warp","DEFAULT":0.4,"MIN":0.0,"MAX":1.5}
+  ]
+}*/
+void main(){
+  vec2 uv=isf_FragNormCoord;
+  float t=TIME*speed;
+  vec2 c=uv-0.5;
+  float d=length(c);
+  float wave=sin(d*20.0-t*3.0)*warp*0.05;
+  vec2 p=(uv+c*wave)*density;
+  vec2 g=abs(fract(p)-0.5);
+  float line=smoothstep(0.48,0.5,max(g.x,g.y));
+  vec3 bg=mix(vec3(0.02,0.02,0.02),vec3(0.05,0.05,0.08),uv.y);
+  vec3 acid=vec3(0.72,1.0,0.0);
+  vec3 col=mix(bg,acid,line*(0.6+0.4*sin(d*12.0-t*2.0)));
+  gl_FragColor=vec4(col,1.0);
+}`},
+  {name:'KALEIDOSCOPE BLOOM', code:`/*{
+  "DESCRIPTION":"Kaleidoscope bloom — mirrored radial symmetry with drifting acid/glitch hues",
+  "CREDIT":"Human Glitche / Visual Lab",
+  "ISFVSN":"2.0",
+  "CATEGORIES":["Generative"],
+  "INPUTS":[
+    {"NAME":"segments","TYPE":"float","LABEL":"Segments","DEFAULT":6.0,"MIN":2.0,"MAX":16.0},
+    {"NAME":"speed","TYPE":"float","LABEL":"Speed","DEFAULT":0.6,"MIN":0.0,"MAX":3.0},
+    {"NAME":"hueShift","TYPE":"float","LABEL":"Hue Shift","DEFAULT":0.0,"MIN":0.0,"MAX":1.0}
+  ]
+}*/
+vec3 hue(float h){
+  vec3 c=clamp(abs(mod(h*6.0+vec3(0.0,4.0,2.0),6.0)-3.0)-1.0,0.0,1.0);
+  return c*c*(3.0-2.0*c);
+}
+void main(){
+  vec2 uv=isf_FragNormCoord*2.0-1.0;
+  float ang=atan(uv.y,uv.x);
+  float rad=length(uv);
+  float seg=(PI*2.0)/max(segments,2.0);
+  ang=abs(mod(ang,seg)-seg*0.5);
+  vec2 p=vec2(cos(ang),sin(ang))*rad;
+  float t=TIME*speed;
+  float pattern=(sin(p.x*8.0+t)+sin(p.y*8.0-t*1.3)+sin(rad*10.0-t*2.0))/3.0;
+  vec3 col=hue(pattern*0.5+0.5+hueShift);
+  col*=smoothstep(1.4,0.0,rad);
+  gl_FragColor=vec4(col,1.0);
+}`},
+  {name:'NEON TUNNEL', code:`/*{
+  "DESCRIPTION":"Neon tunnel — perspective rings rushing toward the viewer, acid/glitch palette",
+  "CREDIT":"Human Glitche / Visual Lab",
+  "ISFVSN":"2.0",
+  "CATEGORIES":["Generative"],
+  "INPUTS":[
+    {"NAME":"speed","TYPE":"float","LABEL":"Speed","DEFAULT":1.0,"MIN":0.0,"MAX":4.0},
+    {"NAME":"rings","TYPE":"float","LABEL":"Rings","DEFAULT":10.0,"MIN":2.0,"MAX":40.0},
+    {"NAME":"twist","TYPE":"float","LABEL":"Twist","DEFAULT":0.3,"MIN":0.0,"MAX":2.0}
+  ]
+}*/
+void main(){
+  vec2 uv=isf_FragNormCoord*2.0-1.0;
+  float r=length(uv);
+  float a=atan(uv.y,uv.x);
+  float t=TIME*speed;
+  float depth=1.0/(r+0.15);
+  float tunnel=sin(depth*rings-t*4.0+a*twist*6.0);
+  float glow=pow(tunnel*0.5+0.5,1.4);
+  vec3 base=mix(vec3(1.0,0.18,0.33),vec3(0.72,1.0,0.0),glow);
+  vec3 col=base*(0.25+glow*1.1)*clamp(depth*0.22,0.0,1.4);
+  gl_FragColor=vec4(col,1.0);
+}`},
+  {name:'AURORA DRIFT', code:`/*{
+  "DESCRIPTION":"Aurora drift — layered color bands flowing like northern lights",
+  "CREDIT":"Human Glitche / Visual Lab",
+  "ISFVSN":"2.0",
+  "CATEGORIES":["Generative"],
+  "INPUTS":[
+    {"NAME":"speed","TYPE":"float","LABEL":"Speed","DEFAULT":0.4,"MIN":0.0,"MAX":2.0},
+    {"NAME":"layers","TYPE":"float","LABEL":"Layers","DEFAULT":4.0,"MIN":1.0,"MAX":5.0},
+    {"NAME":"contrast","TYPE":"float","LABEL":"Contrast","DEFAULT":1.0,"MIN":0.2,"MAX":3.0}
+  ]
+}*/
+void main(){
+  vec2 uv=isf_FragNormCoord;
+  float t=TIME*speed;
+  vec3 col=vec3(0.0);
+  for(int i=0;i<5;i++){
+    float fi=float(i);
+    float band=sin(uv.x*3.0+fi*1.7+t*(0.5+fi*0.13))*0.5+0.5;
+    float y=uv.y+band*0.25+fi*0.04;
+    float glow=smoothstep(0.18,0.0,abs(y-0.5-fi*0.05))*step(fi,layers-0.5);
+    vec3 c=mix(vec3(0.0,1.0,0.55),vec3(0.55,0.0,1.0),fi/4.0);
+    col+=c*glow;
+  }
+  col=pow(col*contrast,vec3(0.9));
+  gl_FragColor=vec4(col,1.0);
+}`},
+  {name:'FRACTAL BLOOM', code:`/*{
+  "DESCRIPTION":"Fractal bloom — recursive zoom into a glitch-colored Julia field",
+  "CREDIT":"Human Glitche / Visual Lab",
+  "ISFVSN":"2.0",
+  "CATEGORIES":["Generative"],
+  "INPUTS":[
+    {"NAME":"zoom","TYPE":"float","LABEL":"Zoom","DEFAULT":1.0,"MIN":0.2,"MAX":4.0},
+    {"NAME":"speed","TYPE":"float","LABEL":"Drift Speed","DEFAULT":0.2,"MIN":0.0,"MAX":1.5},
+    {"NAME":"detail","TYPE":"float","LABEL":"Detail","DEFAULT":6.0,"MIN":2.0,"MAX":12.0}
+  ]
+}*/
+void main(){
+  vec2 uv=(isf_FragNormCoord*2.0-1.0)/max(zoom,0.001);
+  float t=TIME*speed;
+  vec2 c=vec2(0.355+0.05*sin(t),0.355+0.05*cos(t*0.8));
+  vec2 z=uv;
+  float m=0.0;
+  for(int i=0;i<10;i++){
+    z=vec2(z.x*z.x-z.y*z.y,2.0*z.x*z.y)+c;
+    m+=exp(-length(z)*detail*0.15);
+  }
+  float v=clamp(m*0.12,0.0,1.0);
+  vec3 col=mix(vec3(0.04,0.0,0.06),vec3(1.0,0.18,0.33),v);
+  col=mix(col,vec3(0.72,1.0,0.0),pow(v,3.0));
+  gl_FragColor=vec4(col,1.0);
+}`},
+];
+
+function loadRandomShader(){
+  // Prioridad: 1) repo global 2) galería local 3) builtins
+  const gallery = loadGallery();
+  const repoPool = repoItems.length ? repoItems : [];
+  const all = [...repoPool, ...gallery];
+  if(all.length>0){
+    const chosen = all[Math.floor(Math.random()*all.length)];
+    loadShaderFromCode(chosen.code, chosen.name);
+  } else {
+    const chosen = BUILTIN_SHADERS[Math.floor(Math.random()*BUILTIN_SHADERS.length)];
+    loadShaderFromCode(chosen.code, chosen.name);
+  }
+}
+
+// Cargar shader por defecto al iniciar — RIPPLE GRID es la pieza curada de entrada
+setTimeout(()=>{
+  const def = BUILTIN_SHADERS.find(s=>s.name==='RIPPLE GRID') || BUILTIN_SHADERS[0];
+  loadShaderFromCode(def.code, def.name);
+}, 600);
+
+// ─────────────────────────────────────────────
+// REPOSITORIO GLOBAL — Firebase Realtime DB
+// ─────────────────────────────────────────────
+const FB_URL = 'https://hg-vl-shaders-default-rtdb.firebaseio.com';
+let repoItems = [];
+let repoOpen  = false;
+let repoUnsub = null;
+
+async function fbGet(path){
+  try{
+    const r = await fetch(`${FB_URL}${path}.json`);
+    return r.ok ? r.json() : null;
+  }catch(e){ return null; }
+}
+async function fbPush(path, data){
+  try{
+    const r = await fetch(`${FB_URL}${path}.json`,{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(data)
+    });
+    return r.ok ? r.json() : null;
+  }catch(e){ return null; }
+}
+
+function repoStatusMsg(msg, color='rgba(240,237,230,0.25)'){
+  const el=document.getElementById('repo-status');
+  if(el){el.textContent=msg;el.style.color=color;}
+}
+
+function renderRepoList(){
+  const list = document.getElementById('repo-list');
+  const empty = document.getElementById('repo-empty');
+  const countEl = document.getElementById('repo-count');
+  if(!list) return;
+  const items = repoItems.slice().reverse();
+  countEl.textContent = items.length || '—';
+  list.querySelectorAll('.ritem').forEach(el=>el.remove());
+  if(!items.length){
+    empty.textContent='Sé el primero en subir un shader.';
+    empty.style.display='block'; return;
+  }
+  empty.style.display='none';
+  items.forEach(item=>{
+    const row=document.createElement('div');row.className='ritem';
+    const thumb=document.createElement('div');thumb.className='r-thumb';
+    if(item.thumb){const img=document.createElement('img');img.src=item.thumb;img.alt='';thumb.appendChild(img);}
+    const info=document.createElement('div');info.className='r-info';
+    const isNew=(Date.now()-item.ts)<86400000;
+    info.innerHTML=`<div class="r-name">${item.name}</div>
+      <div class="r-author">${item.author||'anon'} · ${item.date||''}</div>
+      ${isNew?'<div class="r-new">● NUEVO</div>':''}`;
+    const load=document.createElement('button');
+    load.className='r-load';load.textContent='CARGAR';
+    load.addEventListener('click',e=>{
+      e.stopPropagation();
+      loadShaderFromCode(item.code, item.name);
+    });
+    row.appendChild(thumb);row.appendChild(info);row.appendChild(load);
+    list.appendChild(row);
+  });
+}
+
+async function fetchRepo(){
+  const data = await fbGet('/shaders');
+  if(!data){ repoItems=[]; renderRepoList(); return; }
+  repoItems = Object.values(data).filter(Boolean);
+  renderRepoList();
+}
+
+function startRepoPolling(){
+  fetchRepo();
+  repoUnsub = setInterval(fetchRepo, 8000);
+}
+function stopRepoPolling(){
+  if(repoUnsub){ clearInterval(repoUnsub); repoUnsub=null; }
+}
+
+async function uploadToRepo(file){
+  const lbl = document.getElementById('repo-upload-label');
+  lbl.classList.add('uploading');
+  lbl.textContent='COMPILANDO...';
+  repoStatusMsg('Verificando shader...');
+  const src = await file.text();
+  try{
+    const {finalSrc, meta} = parseAetherISF(src);
+    makeProgram(finalSrc);
+    const label=(meta.LABEL||meta.DESCRIPTION||file.name).toUpperCase().replace(/\.FS$/i,'');
+    repoStatusMsg('Subiendo...');lbl.textContent='SUBIENDO...';
+    let thumb=null;
+    try{
+      const tc=document.createElement('canvas');tc.width=96;tc.height=60;
+      const ctx=tc.getContext('2d');
+      ctx.drawImage(canvas,0,0,canvas.width,canvas.height,0,0,96,60);
+      thumb=tc.toDataURL('image/jpeg',0.65);
+    }catch(e){}
+    const entry={
+      name:label,code:src,thumb,
+      author:'human-zeta',
+      date:new Date().toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit',year:'2-digit'}),
+      ts:Date.now()
+    };
+    const res = await fbPush('/shaders', entry);
+    if(res){
+      repoStatusMsg('✓ Subido a la comunidad','rgba(184,255,0,0.7)');
+      fetchRepo();
+      loadShaderFromCode(src, label);
+    } else {
+      repoStatusMsg('Error al subir — revisá conexión','rgba(255,45,85,0.7)');
+    }
+  } catch(err){
+    repoStatusMsg('Shader inválido: no compila','rgba(255,45,85,0.7)');
+    console.error(err);
+  }
+  lbl.classList.remove('uploading');
+  lbl.textContent='⬆ SUBIR MI .FS A LA COMUNIDAD';
+  setTimeout(()=>repoStatusMsg(''),5000);
+}
+
+document.getElementById('repo-toggle').addEventListener('click',()=>{
+  repoOpen=true;
+  document.getElementById('global-repo').classList.add('show');
+  document.getElementById('repo-toggle').style.display='none';
+  if(!repoUnsub) startRepoPolling();
+});
+document.getElementById('repo-close').addEventListener('click',()=>{
+  repoOpen=false;
+  document.getElementById('global-repo').classList.remove('show');
+  document.getElementById('repo-toggle').style.display='flex';
+});
+document.getElementById('repo-file').addEventListener('change',e=>{
+  if(e.target.files[0]) uploadToRepo(e.target.files[0]);
+  e.target.value='';
+});
+document.getElementById('repo-upload-label').addEventListener('click',e=>{
+  e.preventDefault();
+  document.getElementById('repo-file').click();
+});
+
+// Fetch silencioso al cargar para tener datos para loadRandom
+fetchRepo();
+
+function setHasShader(v){ document.body.classList.toggle('has-shader',v); }
+
+// ─────────────────────────────────────────────
+const GALLERY_KEY = 'hgvl_shader_gallery';
+let galleryOpen = false;
+
+function loadGallery(){
+  try{ return JSON.parse(localStorage.getItem(GALLERY_KEY)||'[]'); }
+  catch(e){ return []; }
+}
+function saveGallery(items){
+  localStorage.setItem(GALLERY_KEY, JSON.stringify(items));
+}
+
+function captureThumbnail(){
+  try{
+    const thumb = document.createElement('canvas');
+    thumb.width=96; thumb.height=60;
+    const ctx = thumb.getContext('2d');
+    ctx.drawImage(canvas,0,0,canvas.width,canvas.height,0,0,96,60);
+    return thumb.toDataURL('image/jpeg',0.7);
+  } catch(e){ return null; }
+}
+
+function saveCurrentShader(name, code){
+  const items = loadGallery();
+  // Evitar duplicados por nombre
+  const existing = items.findIndex(i=>i.name===name);
+  const entry = {
+    id: Date.now().toString(),
+    name,
+    code,
+    thumb: captureThumbnail(),
+    date: new Date().toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit',year:'2-digit'})
+  };
+  if(existing>=0) items[existing]=entry;
+  else items.unshift(entry);
+  saveGallery(items);
+  renderGallery();
+}
+
+function renderGallery(){
+  const items = loadGallery();
+  const list = document.getElementById('gallery-list');
+  const count = document.getElementById('gallery-count');
+  const gcountEl = document.getElementById('gtoggle-count');
+  const toggle = document.getElementById('gallery-toggle');
+  const empty = document.getElementById('gallery-empty');
+
+  count.textContent = items.length;
+  gcountEl.textContent = items.length ? `(${items.length})` : '';
+  toggle.classList.toggle('has-items', items.length>0);
+
+  // Limpiar todo excepto #gallery-empty
+  list.querySelectorAll('.gitem').forEach(el=>el.remove());
+
+  if(!items.length){
+    empty.style.display='block';
+    return;
+  }
+  empty.style.display='none';
+
+  items.forEach(item=>{
+    const row = document.createElement('div');
+    row.className='gitem';
+
+    const thumb = document.createElement('div');
+    thumb.className='g-thumb';
+    if(item.thumb){
+      const img=document.createElement('img');
+      img.src=item.thumb;img.alt='';
+      thumb.appendChild(img);
+    }
+
+    const info = document.createElement('div');
+    info.className='g-info';
+    info.innerHTML=`<div class="g-name">${item.name}</div><div class="g-date">${item.date}</div>`;
+
+    const actions = document.createElement('div');
+    actions.className='g-actions';
+
+    const loadBtn = document.createElement('button');
+    loadBtn.className='g-load';loadBtn.textContent='CARGAR';
+    loadBtn.addEventListener('click',e=>{
+      e.stopPropagation();
+      loadShaderFromCode(item.code, item.name);
+    });
+
+    const delBtn = document.createElement('button');
+    delBtn.className='g-del';delBtn.textContent='DEL';
+    delBtn.addEventListener('click',e=>{
+      e.stopPropagation();
+      const updated = loadGallery().filter(i=>i.id!==item.id);
+      saveGallery(updated);
+      renderGallery();
+    });
+
+    actions.appendChild(loadBtn);
+    actions.appendChild(delBtn);
+    row.appendChild(thumb);row.appendChild(info);row.appendChild(actions);
+    list.appendChild(row);
+  });
+}
+
+// Toggle galería
+document.getElementById('gallery-toggle').addEventListener('click',()=>{
+  galleryOpen=true;
+  document.getElementById('shader-gallery').classList.add('show');
+  document.getElementById('gallery-toggle').style.display='none';
+});
+document.getElementById('gallery-close').addEventListener('click',()=>{
+  galleryOpen=false;
+  document.getElementById('shader-gallery').classList.remove('show');
+  document.getElementById('gallery-toggle').style.display='flex';
+});
+
+// Init galería al cargar
+renderGallery();
+
+// ─────────────────────────────────────────────
+// DRAG & DROP
+// ─────────────────────────────────────────────
+const dz=document.getElementById('drop-zone');
+const df=document.getElementById('drop-file');
+
+['dragenter','dragover'].forEach(ev=>document.addEventListener(ev,e=>{
+  e.preventDefault();
+  if([...e.dataTransfer.items].some(i=>i.kind==='file')) dz.classList.add('drag-over');
+}));
+document.addEventListener('dragleave',e=>{
+  if(!e.relatedTarget||!document.getElementById('drop-zone').contains(e.relatedTarget))
+    dz.classList.remove('drag-over');
+});
+document.addEventListener('drop',e=>{
+  e.preventDefault();dz.classList.remove('drag-over');
+  const file=[...e.dataTransfer.files].find(f=>/\.(fs|glsl|frag)$/i.test(f.name));
+  if(file) loadShader(file);
+  else showErr('Necesito un .fs — arrastrá un shader de Aether ISF');
+});
+dz.addEventListener('click',(e)=>{
+  // Solo abrir file picker si el click fue en el área de drop (ícono/label),
+  // NO en los botones de audio, fs-btn ni reset-btn
+  if(e.target.closest('button')||e.target.closest('#audio-row')) return;
+  df.click();
+});
+df.addEventListener('change',e=>{if(e.target.files[0])loadShader(e.target.files[0]);e.target.value='';});
+
+// ─────────────────────────────────────────────
+// SCROLL REVEAL
+// ─────────────────────────────────────────────
+const obs=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('vis');});
+},{threshold:0.12});
+document.querySelectorAll('.rev,.mline').forEach(el=>obs.observe(el));
+
+// Blog cards
+document.querySelectorAll('.bcard').forEach(c=>{
+  c.addEventListener('click',()=>{const u=c.dataset.url;if(!u)return; u.startsWith('http')?window.open(u,'_blank'):location.href=u;});
+});
+
+// ─────────────────────────────────────────────
+// AUTH — Firebase Auth (REST) + perfil en Realtime DB
+// ─────────────────────────────────────────────
+(function(){
+  const FB_API_KEY = 'AIzaSyAeMKHe7dj4bnaUzkF7iDANrC_cBtg4LAA';
+  const IDT_URL = 'https://identitytoolkit.googleapis.com/v1/accounts';
+  const LS_KEY = 'hg_auth_session';
+
+  const overlay   = document.getElementById('auth-overlay');
+  const modal     = document.getElementById('auth-modal');
+  const closeBtn  = document.getElementById('auth-close');
+  const tabs      = document.querySelectorAll('.auth-tab');
+  const title     = document.getElementById('auth-title');
+  const form      = document.getElementById('auth-form');
+  const nameInp   = document.getElementById('auth-name');
+  const emailInp  = document.getElementById('auth-email');
+  const passInp   = document.getElementById('auth-pass');
+  const submitBtn = document.getElementById('auth-submit');
+  const statusEl  = document.getElementById('auth-status');
+  const userBox   = document.getElementById('auth-userbox');
+  const greeting  = document.getElementById('auth-greeting');
+  const logoutBtn = document.getElementById('auth-logout');
+  const trigger   = document.getElementById('auth-trigger');
+
+  if(!overlay || !form) return;
+
+  let mode = 'register'; // 'register' | 'login'
+
+  function setStatus(msg, type){
+    statusEl.textContent = msg || '';
+    statusEl.classList.remove('err','ok');
+    if(type) statusEl.classList.add(type);
+  }
+
+  function setMode(m){
+    mode = m;
+    tabs.forEach(t=>t.classList.toggle('active', t.dataset.mode===m));
+    nameInp.style.display = (m==='register') ? 'block' : 'none';
+    title.textContent = (m==='register') ? 'CREÁ TU CUENTA HG' : 'INGRESÁ A TU CUENTA';
+    submitBtn.textContent = (m==='register') ? 'CREAR CUENTA' : 'INGRESAR';
+    setStatus('');
+  }
+
+  function getSession(){
+    try{ return JSON.parse(localStorage.getItem(LS_KEY)||'null'); }catch(e){ return null; }
+  }
+  function saveSession(s){ localStorage.setItem(LS_KEY, JSON.stringify(s)); }
+  function clearSession(){ localStorage.removeItem(LS_KEY); }
+
+  function showLoggedIn(session){
+    form.style.display = 'none';
+    document.getElementById('auth-tabs').style.display = 'none';
+    title.style.display = 'none';
+    userBox.style.display = 'block';
+    greeting.innerHTML = `Sesión activa como<br><b>${session.name || session.email}</b>`;
+    if(trigger) trigger.textContent = 'MI CUENTA';
+  }
+  function showForm(){
+    form.style.display = 'flex';
+    document.getElementById('auth-tabs').style.display = 'flex';
+    title.style.display = 'block';
+    userBox.style.display = 'none';
+    if(trigger) trigger.textContent = 'REGISTRATE';
+  }
+
+  function openModal(){
+    const session = getSession();
+    if(session){ showLoggedIn(session); }
+    else{ showForm(); setMode(trigger && trigger.dataset.mode === 'login' ? 'login' : 'register'); }
+    overlay.classList.add('show');
+  }
+  function closeModal(){ overlay.classList.remove('show'); setStatus(''); }
+
+  trigger && trigger.addEventListener('click', e=>{ e.preventDefault(); openModal(); });
+  const navAuthBtn = document.getElementById('nav-auth-btn');
+  navAuthBtn && navAuthBtn.addEventListener('click', e=>{ e.preventDefault(); openModal(); });
+  closeBtn.addEventListener('click', closeModal);
+  overlay.addEventListener('click', e=>{ if(e.target === overlay) closeModal(); });
+  tabs.forEach(t=> t.addEventListener('click', ()=> setMode(t.dataset.mode)));
+
+  async function idtRequest(endpoint, body){
+    const r = await fetch(`${IDT_URL}:${endpoint}?key=${FB_API_KEY}`, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(body)
+    });
+    const data = await r.json();
+    if(!r.ok){
+      const msg = (data && data.error && data.error.message) || 'ERROR';
+      throw new Error(msg);
+    }
+    return data;
+  }
+
+  function friendlyError(code){
+    const map = {
+      'EMAIL_EXISTS': 'Ese correo ya tiene una cuenta — probá ingresar.',
+      'EMAIL_NOT_FOUND': 'No existe una cuenta con ese correo.',
+      'INVALID_PASSWORD': 'Contraseña incorrecta.',
+      'INVALID_LOGIN_CREDENTIALS': 'Correo o contraseña incorrectos.',
+      'WEAK_PASSWORD : Password should be at least 6 characters': 'La contraseña debe tener al menos 6 caracteres.',
+      'TOO_MANY_ATTEMPTS_TRY_LATER': 'Demasiados intentos — esperá un momento.',
+      'INVALID_EMAIL': 'Correo inválido.'
+    };
+    if(map[code]) return map[code];
+    if(code && code.startsWith('WEAK_PASSWORD')) return 'La contraseña debe tener al menos 6 caracteres.';
+    return 'Algo salió mal. Intentá de nuevo.';
+  }
+
+  async function saveProfile(uid, idToken, profile){
+    try{
+      await fetch(`${FB_URL}/users/${uid}.json?auth=${idToken}`, {
+        method:'PATCH',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify(profile)
+      });
+    }catch(e){ /* perfil es best-effort — no bloquear el login */ }
+  }
+
+  form.addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    const email = emailInp.value.trim();
+    const pass  = passInp.value;
+    const name  = nameInp.value.trim();
+    if(!email || !pass) return;
+
+    submitBtn.disabled = true;
+    setStatus(mode==='register' ? 'Creando cuenta…' : 'Ingresando…');
+
+    try{
+      let data;
+      if(mode === 'register'){
+        data = await idtRequest('signUp', { email, password: pass, returnSecureToken: true });
+        const session = { uid: data.localId, email: data.email, idToken: data.idToken, refreshToken: data.refreshToken, name: name || email.split('@')[0] };
+        saveSession(session);
+        await saveProfile(session.uid, session.idToken, { name: session.name, email: session.email, joined: Date.now() });
+        setStatus('¡Cuenta creada! Bienvenido.', 'ok');
+        setTimeout(()=> { showLoggedIn(session); document.dispatchEvent(new CustomEvent('hg-auth-changed')); }, 500);
+      } else {
+        data = await idtRequest('signInWithPassword', { email, password: pass, returnSecureToken: true });
+        const session = { uid: data.localId, email: data.email, idToken: data.idToken, refreshToken: data.refreshToken, name: data.displayName || email.split('@')[0] };
+        saveSession(session);
+        setStatus('¡Bienvenido de nuevo!', 'ok');
+        setTimeout(()=> { showLoggedIn(session); document.dispatchEvent(new CustomEvent('hg-auth-changed')); }, 400);
+      }
+    }catch(err){
+      setStatus(friendlyError(err.message), 'err');
+    }finally{
+      submitBtn.disabled = false;
+    }
+  });
+
+  logoutBtn.addEventListener('click', ()=>{
+    clearSession();
+    form.reset();
+    showForm();
+    setMode('register');
+    closeModal();
+    document.dispatchEvent(new CustomEvent('hg-auth-changed'));
+  });
+})();
+
+// ─────────────────────────────────────────────
+// PERFIL — info de comunidad, material exclusivo, blog & docs
+// ─────────────────────────────────────────────
+(function(){
+  const FB_API_KEY = 'AIzaSyAeMKHe7dj4bnaUzkF7iDANrC_cBtg4LAA';
+  const REFRESH_URL = 'https://securetoken.googleapis.com/v1/token';
+  const LS_KEY = 'hg_auth_session';
+
+  const toggle    = document.getElementById('profile-toggle');
+  const overlay   = document.getElementById('profile-overlay');
+  const closeBtn  = document.getElementById('profile-close');
+  const openBtn   = document.getElementById('auth-open-profile');
+  const dname     = document.getElementById('profile-dname');
+  const demail    = document.getElementById('profile-demail');
+  const form      = document.getElementById('profile-form');
+  const nameInp   = document.getElementById('prof-name');
+  const roleInp   = document.getElementById('prof-role');
+  const bioInp    = document.getElementById('prof-bio');
+  const linkInp   = document.getElementById('prof-link');
+  const saveBtn   = document.getElementById('prof-save');
+  const statusEl  = document.getElementById('profile-status');
+  const exList    = document.getElementById('exclusive-list');
+  const exEmpty   = document.getElementById('exclusive-empty');
+  const logoutBtn2= document.getElementById('profile-logout');
+
+  if(!overlay || !form || !toggle) return;
+
+  function getSession(){ try{ return JSON.parse(localStorage.getItem(LS_KEY)||'null'); }catch(e){ return null; } }
+  function saveSession(s){ localStorage.setItem(LS_KEY, JSON.stringify(s)); }
+  function clearSession(){ localStorage.removeItem(LS_KEY); }
+
+  function setStatus(msg, type){
+    statusEl.textContent = msg || '';
+    statusEl.classList.remove('err','ok');
+    if(type) statusEl.classList.add(type);
+  }
+
+  // Los idToken de Firebase expiran a la hora — los renovamos con el refreshToken
+  async function freshToken(session){
+    if(!session.refreshToken) return session.idToken;
+    try{
+      const r = await fetch(`${REFRESH_URL}?key=${FB_API_KEY}`, {
+        method:'POST',
+        headers:{'Content-Type':'application/x-www-form-urlencoded'},
+        body:`grant_type=refresh_token&refresh_token=${encodeURIComponent(session.refreshToken)}`
+      });
+      if(!r.ok) return session.idToken;
+      const data = await r.json();
+      session.idToken = data.id_token;
+      session.refreshToken = data.refresh_token;
+      saveSession(session);
+      return session.idToken;
+    }catch(e){ return session.idToken; }
+  }
+
+  function renderIdentity(session){
+    dname.textContent = session.name || session.email;
+    demail.textContent = session.email;
+  }
+
+  async function loadProfile(session){
+    try{
+      const token = await freshToken(session);
+      const r = await fetch(`${FB_URL}/users/${session.uid}.json?auth=${token}`);
+      if(!r.ok) return;
+      const data = await r.json();
+      if(!data) return;
+      nameInp.value = data.name || '';
+      roleInp.value = data.role || '';
+      bioInp.value  = data.bio  || '';
+      linkInp.value = data.link || '';
+      if(data.name){ dname.textContent = data.name; }
+    }catch(e){ /* silencioso — el perfil es de cortesía */ }
+  }
+
+  async function loadExclusive(session){
+    exList.querySelectorAll('.ex-item').forEach(el=>el.remove());
+    exEmpty.style.display = 'block';
+    exEmpty.textContent = 'Cargando material exclusivo…';
+    try{
+      const token = await freshToken(session);
+      const r = await fetch(`${FB_URL}/exclusive.json?auth=${token}`);
+      const data = r.ok ? await r.json() : null;
+      const items = data ? Object.values(data).filter(Boolean) : [];
+      if(!items.length){
+        exEmpty.textContent = 'Todavía no hay material publicado — pronto vas a encontrar acá recursos, presets y guías exclusivas para la comunidad.';
+        return;
+      }
+      exEmpty.style.display = 'none';
+      items.forEach(item=>{
+        const a = document.createElement('a');
+        a.className = 'ex-item';
+        a.href = item.url || '#';
+        a.target = '_blank';
+        a.rel = 'noopener';
+        a.innerHTML = `<div class="ex-name">${item.title || 'Sin título'}</div>${item.desc ? `<div class="ex-desc">${item.desc}</div>` : ''}`;
+        exList.appendChild(a);
+      });
+    }catch(e){
+      exEmpty.textContent = 'No se pudo cargar el material — probá de nuevo más tarde.';
+    }
+  }
+
+  const TYPE_COLORS_PANEL = {
+    'PROYECTO':'#b8ff00','COLLAB':'#00d4ff','JAM':'#ff6b00','BRAINSTORM':'#9b59ff','PRODUCCIÓN':'#ff2d8a'
+  };
+
+  async function loadLobbies(session){
+    const lobbyList  = document.getElementById('lobby-list');
+    const lobbyEmpty = document.getElementById('lobby-empty');
+    if(!lobbyList || !lobbyEmpty) return;
+    lobbyList.querySelectorAll('.lobby-item').forEach(el=>el.remove());
+    lobbyEmpty.style.display = 'block';
+    lobbyEmpty.textContent = 'Cargando salas…';
+    try{
+      const r = await fetch(`${FB_URL}/lobbies.json`);
+      const data = r.ok ? await r.json() : null;
+      if(!data){ lobbyEmpty.textContent = 'No estás en ninguna sala — ¿arrancamos?'; return; }
+      const mine = Object.entries(data)
+        .map(([id,l])=>({id,...l}))
+        .filter(l => l && l.members && l.members[session.uid]);
+      if(!mine.length){ lobbyEmpty.textContent = 'No estás en ninguna sala — ¿arrancamos?'; return; }
+      lobbyEmpty.style.display = 'none';
+      mine.forEach(l=>{
+        const color = TYPE_COLORS_PANEL[l.type] || 'var(--acid)';
+        const count = Object.keys(l.members||{}).length;
+        const launched = l.status === 'launched';
+        const div = document.createElement('a');
+        div.className = 'lobby-item' + (launched ? ' launched' : '');
+        div.href = 'lobbies.html';
+        div.innerHTML = `
+          <div class="li-top">
+            <span class="li-type" style="color:${color};border-color:${color}30;background:${color}11;">${l.type||''}</span>
+            <span class="li-title">${l.title||'Sin título'}</span>
+          </div>
+          <div class="li-status${launched?' lanzada':''}">${launched?'● LANZADA':`${count} / ${l.capacity||4} — ESPERANDO`}</div>
+        `;
+        lobbyList.appendChild(div);
+      });
+    }catch(e){
+      lobbyEmpty.textContent = 'No se pudieron cargar las salas.';
+    }
+  }
+
+  async function checkAdmin(session){
+    const adminLink = document.getElementById('profile-admin-link');
+    if(!adminLink) return;
+    try{
+      const token = await freshToken(session);
+      const [adminR, modR] = await Promise.all([
+        fetch(`${FB_URL}/admins/${session.uid}.json?auth=${token}`),
+        fetch(`${FB_URL}/moderators/${session.uid}.json?auth=${token}`)
+      ]);
+      const isAdmin = adminR.ok ? (await adminR.json()) === true : false;
+      const isMod   = modR.ok   ? (await modR.json())   === true : false;
+      if(isAdmin){
+        adminLink.textContent = '⛒ PANEL ADMIN — SUSCRIPCIONES Y COMUNIDAD';
+        adminLink.style.display = 'block';
+      }else if(isMod){
+        adminLink.textContent = '✦ PANEL DE MODERACIÓN — COMUNIDAD';
+        adminLink.style.display = 'block';
+      }else{
+        adminLink.style.display = 'none';
+      }
+    }catch(e){ adminLink.style.display = 'none'; }
+  }
+
+  function openPanel(){
+    const session = getSession();
+    if(!session) return;
+    const authOverlay = document.getElementById('auth-overlay');
+    if(authOverlay) authOverlay.classList.remove('show');
+    overlay.classList.add('show');
+    renderIdentity(session);
+    loadProfile(session);
+    loadExclusive(session);
+    loadLobbies(session);
+    checkAdmin(session);
+  }
+  function closePanel(){ overlay.classList.remove('show'); setStatus(''); }
+
+  toggle.addEventListener('click', openPanel);
+  openBtn && openBtn.addEventListener('click', openPanel);
+  closeBtn.addEventListener('click', closePanel);
+  overlay.addEventListener('click', e=>{ if(e.target === overlay) closePanel(); });
+
+  form.addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    const session = getSession();
+    if(!session) return;
+    saveBtn.disabled = true;
+    setStatus('Guardando…');
+    try{
+      const token = await freshToken(session);
+      const profile = {
+        name: nameInp.value.trim(),
+        role: roleInp.value.trim(),
+        bio:  bioInp.value.trim(),
+        link: linkInp.value.trim(),
+        email: session.email,
+        updated: Date.now()
+      };
+      const r = await fetch(`${FB_URL}/users/${session.uid}.json?auth=${token}`, {
+        method:'PATCH',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify(profile)
+      });
+      if(!r.ok) throw new Error('write failed');
+      if(profile.name){
+        session.name = profile.name;
+        saveSession(session);
+        renderIdentity(session);
+      }
+      setStatus('¡Perfil guardado!', 'ok');
+    }catch(err){
+      setStatus('No se pudo guardar — intentá de nuevo.', 'err');
+    }finally{
+      saveBtn.disabled = false;
+    }
+  });
+
+  logoutBtn2.addEventListener('click', ()=>{
+    clearSession();
+    closePanel();
+    refreshAuthUI();
+  });
+
+  function refreshAuthUI(){
+    const session = getSession();
+    const trigger    = document.getElementById('auth-trigger');
+    const navAuth    = document.getElementById('nav-auth-btn');
+    const navArea    = document.getElementById('nav-area-btn');
+    if(session){
+      toggle.style.display = 'flex';
+      if(trigger) trigger.textContent = 'MI CUENTA';
+      if(navAuth) navAuth.style.display = 'none';
+      if(navArea) navArea.style.display = 'inline-block';
+    } else {
+      toggle.style.display = 'none';
+      if(trigger) trigger.textContent = 'REGISTRATE';
+      if(navAuth) navAuth.style.display = 'inline-block';
+      if(navArea) navArea.style.display = 'none';
+      closePanel();
+    }
+  }
+
+  const navAreaBtn = document.getElementById('nav-area-btn');
+  navAreaBtn && navAreaBtn.addEventListener('click', e=>{ e.preventDefault(); openPanel(); });
+
+  refreshAuthUI();
+  window.addEventListener('storage', e=>{ if(e.key === LS_KEY) refreshAuthUI(); });
+  document.addEventListener('hg-auth-changed', refreshAuthUI);
+})();
+</script>
+<!-- ─── MOBILE HUD (FAB + bottom-sheet) ──────────────────────────── -->
+<button id="mobile-fab" aria-label="Abrir HUD de shaders" type="button">⌘</button>
+<div id="mobile-hud" role="dialog" aria-label="HUD de shaders">
+  <button type="button" class="hud-btn" data-hud-tog="drop-zone-mobile">⬇ DROP .FS</button>
+  <button type="button" class="hud-btn" data-hud-tog="isf-panel-mobile">⛯ ISF</button>
+  <button type="button" class="hud-btn" data-hud-tog="gallery-toggle">⬡ SHADERS</button>
+  <button type="button" class="hud-btn" data-hud-tog="repo-toggle">⛒ REPO</button>
+  <button type="button" class="hud-btn" id="hud-profile-btn" data-hud-tog="profile-toggle" hidden>⌬ PERFIL</button>
+  <button type="button" class="hud-btn" data-hud-tog="fs-btn">⛶ MODO VISUAL</button>
+  <button type="button" class="hud-btn glitch-style wide" data-hud-tog="reset-btn">✕ RESET SHADER</button>
+</div>
+<script>
+/* HUD móvil: el FAB abre un bottom-sheet con accesos a los toggles
+   originales. No duplica lógica — cada botón dispara click() sobre
+   el toggle existente. drop-zone e isf-panel se reposicionan como
+   overlay full-width vía la clase .show-mobile. */
+(function(){
+  const fab = document.getElementById('mobile-fab');
+  const hud = document.getElementById('mobile-hud');
+  if(!fab || !hud) return;
+
+  const dropZone = document.getElementById('drop-zone');
+  const isfPanel = document.getElementById('isf-panel');
+
+  function closeHud(){
+    document.body.classList.remove('hud-open');
+    dropZone && dropZone.classList.remove('show-mobile');
+    isfPanel && isfPanel.classList.remove('show-mobile');
+  }
+  function openHud(){
+    document.body.classList.add('hud-open');
+  }
+
+  fab.addEventListener('click', () => {
+    if(document.body.classList.contains('hud-open')) closeHud();
+    else openHud();
+  });
+
+  function hudBtnClick(e){
+    const btn = e.currentTarget;
+    const tgt = btn.dataset.hudTog;
+    if(!tgt) return;
+    e.preventDefault();
+
+    if(tgt === 'drop-zone-mobile'){
+      isfPanel && isfPanel.classList.remove('show-mobile');
+      dropZone && dropZone.classList.toggle('show-mobile');
+      return;
+    }
+    if(tgt === 'isf-panel-mobile'){
+      dropZone && dropZone.classList.remove('show-mobile');
+      if(isfPanel){
+        isfPanel.classList.add('show');
+        isfPanel.classList.toggle('show-mobile');
+      }
+      return;
+    }
+    const orig = document.getElementById(tgt);
+    if(orig){
+      orig.click();
+      closeHud();
+    }
+  }
+
+  document.querySelectorAll('#mobile-hud .hud-btn').forEach(b => {
+    b.addEventListener('click', hudBtnClick);
+  });
+  document.querySelectorAll('.nav-mobile-only[data-hud-tog]').forEach(a => {
+    a.addEventListener('click', (e) => {
+      e.preventDefault();
+      const orig = document.getElementById(a.dataset.hudTog);
+      if(orig) orig.click();
+    });
+  });
+
+  // Sincronizar visibilidad de PERFIL con el estado del profile-toggle original
+  const profOrig = document.getElementById('profile-toggle');
+  const profHud  = document.getElementById('hud-profile-btn');
+  const profNav  = document.getElementById('nav-profile-mobile');
+  function syncProfile(){
+    if(!profOrig) return;
+    const inline = profOrig.getAttribute('style') || '';
+    const isHidden = inline.indexOf('display:none') !== -1 || inline.indexOf('display: none') !== -1;
+    if(profHud) profHud.hidden = isHidden;
+    if(profNav) profNav.classList.toggle('auth-hidden', isHidden);
+  }
+  syncProfile();
+  if(profOrig){
+    new MutationObserver(syncProfile).observe(profOrig, {attributes:true, attributeFilter:['style']});
+  }
+})();
+</script>
+
+<script defer src="chat-widget.js"></script>
+  <script src="/glass/glass.js" defer data-target="#nav, #manifiesto, #aether-sec, #blog, #catalogo, #comunidad, #live, #footer"></script>
+</body>
+</html>
