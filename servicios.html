@@ -5,11 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SERVICIOS — HUMAN STUDIO × HUMAN GLITCHE</title>
 <!--
-  ARTEFACTO DE STAGING — regenerado por el agente `publicador` a partir de
+  PÁGINA DE SERVICIOS (root) — generada por el `publicador` desde
   `produccion/oferta.md` (oferta en DOS SECCIONES DE CLIENTE, APROBADA en
-  `progress/review_8.md`). NO ESTÁ VIVO. El contenido se lleva a
-  ~/Desktop/repos/hg-vl (sección/página de Servicios de index.html) por acción
-  humana (git push). Ver docs/web.md.
+  `progress/review_8.md`; rediseño UX de acordeón + CTAs al contacto en review_14).
+  Los CTA llevan al formulario contacto.html (root, mismo nivel que este archivo).
 
   DOS SECCIONES DE CLIENTE (oferta.md L26-403):
     🎤 SECCIÓN A — Managers & Artistas: música, eventos, espectáculo. El
@@ -31,11 +30,23 @@
 
   Reusa el sistema de diseño de hg-vl/index.html: variables CSS, paleta,
   tipografías (Bebas Neue / Space Mono / DM Sans), header/footer y clases
-  (.sec-hdr, .sec-title, .srow, .sname, .ssub, .pkg-cta, .lanes/.lane).
+  (.sec-hdr, .sec-title, .srow, .sname, .ssub, .lanes/.lane).
 
-  CTA = placeholder data-checkout="oferta-studio-<segmento>-<paquete>-<carril>"
-  (segmento = managers|marcas). NO hay link real de MercadoPago: el checkout se
-  describe en checkout.config.json y se activa por acción humana (GATES.md).
+  UX SIMPLIFICADA (work_list.json item 15, servicios_simplificar_ux):
+    · Entrada más liviana: hero/intro acortados, sin tocar la tesis aprobada.
+    · Paquetes en ACORDEÓN: cada .srow colapsado por defecto muestra solo la
+      cabecera-<button> (nº + nombre + rol + pista de precio compacta + chevron);
+      al hacer clic (o Enter/Espacio) se despliega el panel con la descripción
+      completa, los carriles con sus precios (transparencia = regla de oro) y el
+      cross-ref. Accesible: aria-expanded / aria-controls; varios abiertos a la vez.
+    · CTA ÚNICO por paquete → SIEMPRE al formulario de contacto, con prefill:
+      contacto.html?m=<mundo>&p=<id>  (mundo = managers para A1–A4,
+      marcas para B1–B5; id = A1..A4 / B1..B5). En el sitio vivo contacto.html
+      está en root, junto a este archivo, así que el path root-relativo resuelve.
+    · Se eliminaron los checkouts MercadoPago por carril (data-checkout) y el
+      <script> del alert(): la oferta no cobra desde acá, agenda/cotiza desde el
+      form. El cobro real sigue siendo acción humana (GATES.md). Precios y claims
+      INTACTOS (review_8): esto es presentación + ruteo, no cambio de oferta.
 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
@@ -76,8 +87,15 @@ section{position:relative;padding:0 8vw;}
 .hero-tag{font-family:var(--mono);font-size:9px;letter-spacing:0.3em;color:var(--acid);display:inline-block;margin-bottom:1.5rem;}
 .hero-title{font-family:var(--display);font-size:clamp(3.5rem,9vw,9rem);line-height:0.88;max-width:14ch;}
 .hero-sub{font-family:var(--mono);font-size:12px;color:rgba(240,237,230,0.5);letter-spacing:0.08em;line-height:1.9;margin-top:2rem;max-width:62ch;}
-.hero-thesis{font-family:var(--body);font-size:1.05rem;color:rgba(240,237,230,0.75);line-height:1.7;margin-top:2rem;max-width:64ch;border-left:1px solid rgba(184,255,0,0.3);padding-left:1.4rem;}
+.hero-llano{font-family:var(--body);font-size:clamp(1.1rem,1.7vw,1.35rem);color:rgba(240,237,230,0.92);line-height:1.55;margin-top:1.8rem;max-width:52ch;}
+.hero-llano b{color:var(--acid);font-weight:500;}
+.hero-thesis{font-family:var(--body);font-size:1.02rem;color:rgba(240,237,230,0.62);line-height:1.7;margin-top:1.6rem;max-width:64ch;border-left:1px solid rgba(184,255,0,0.3);padding-left:1.4rem;}
 .hero-thesis b{color:var(--acid);font-weight:500;}
+
+/* CTA general al formulario (cabeceras de paquetes) */
+.cta-contacto{display:inline-block;font-family:var(--mono);font-size:11px;letter-spacing:0.22em;color:var(--acid);text-decoration:none;border:1px solid var(--acid);padding:0.7rem 1.3rem;transition:all 0.3s;}
+.cta-contacto:hover{background:var(--acid);color:var(--black);}
+.cta-contacto:focus-visible{outline:2px solid var(--acid);outline-offset:3px;}
 
 /* DOS MUNDOS — selector de segmento */
 #mundos{padding:8vh 8vw;flex-direction:column;}
@@ -107,16 +125,43 @@ section{position:relative;padding:0 8vw;}
 .seg-meta b{color:rgba(240,237,230,0.75);font-weight:400;}
 .seg-meta .lbl{color:var(--acid);}
 
-/* PAQUETES — lista (espejo .srow) */
+/* PAQUETES — lista en ACORDEÓN (espejo .srow, ahora colapsable) */
 .svc-list{width:100%;margin-top:2rem;}
-.srow{display:grid;grid-template-columns:70px 1fr;align-items:start;gap:2.5rem;padding:2.6rem 0;border-top:1px solid rgba(240,237,230,0.07);transition:border-color 0.3s;}
+.srow{border-top:1px solid rgba(240,237,230,0.07);transition:border-color 0.3s;}
 .srow:hover{border-top-color:var(--acid);}
 .srow:last-child{border-bottom:1px solid rgba(240,237,230,0.07);}
-.snum{font-family:var(--mono);font-size:9px;color:rgba(240,237,230,0.18);padding-top:0.8rem;}
-.pkg-head{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:0.6rem;}
-.sname{font-family:var(--display);font-size:clamp(2rem,3.5vw,3.4rem);line-height:1;}
-.srole{font-family:var(--mono);font-size:9px;letter-spacing:0.22em;color:rgba(240,237,230,0.3);text-transform:uppercase;margin-top:0.7rem;}
-.ssub{font-family:var(--mono);font-size:11px;color:rgba(240,237,230,0.45);margin-top:0.9rem;line-height:1.9;max-width:72ch;}
+
+/* cabecera-botón clicable (toda la fila abre/cierra) */
+.pkg-toggle{
+  width:100%;background:none;border:none;cursor:pointer;color:inherit;text-align:left;
+  display:grid;grid-template-columns:70px 1fr auto;align-items:center;gap:2.5rem;
+  padding:2.4rem 0;font:inherit;transition:opacity 0.2s;
+}
+.pkg-toggle:hover{opacity:0.92;}
+.pkg-toggle:focus-visible{outline:2px solid var(--acid);outline-offset:4px;}
+.snum{font-family:var(--mono);font-size:9px;color:rgba(240,237,230,0.18);align-self:start;padding-top:0.6rem;}
+.pkg-id-line{min-width:0;}
+.sname{font-family:var(--display);font-size:clamp(1.7rem,3.2vw,3rem);line-height:1;display:block;}
+.srole{font-family:var(--mono);font-size:9px;letter-spacing:0.22em;color:rgba(240,237,230,0.3);text-transform:uppercase;margin-top:0.6rem;display:block;}
+/* pista de precio compacta + chevron, a la derecha */
+.pkg-aside{display:flex;align-items:center;gap:1.2rem;flex-shrink:0;}
+.price-hint{font-family:var(--mono);font-size:11px;letter-spacing:0.04em;color:var(--acid);text-align:right;line-height:1.4;white-space:nowrap;}
+.price-hint .ph-sub{display:block;color:rgba(240,237,230,0.3);font-size:8.5px;letter-spacing:0.16em;text-transform:uppercase;margin-top:0.3rem;}
+.chev{flex-shrink:0;width:1.6rem;height:1.6rem;position:relative;color:var(--acid);}
+.chev::before,.chev::after{content:'';position:absolute;top:50%;left:50%;width:0.8rem;height:1.5px;background:currentColor;transition:transform 0.3s;}
+.chev::before{transform:translate(-50%,-50%) rotate(0deg);}
+.chev::after{transform:translate(-50%,-50%) rotate(90deg);}
+.pkg-toggle[aria-expanded="true"] .chev::after{transform:translate(-50%,-50%) rotate(0deg);}
+.pkg-toggle[aria-expanded="true"] .price-hint{color:rgba(240,237,230,0.4);}
+
+/* panel desplegable — animado por grid-rows (suave, accesible) */
+.pkg-panel{display:grid;grid-template-rows:0fr;transition:grid-template-rows 0.35s ease;}
+.pkg-panel>.pkg-panel-inner{overflow:hidden;min-height:0;}
+.pkg-toggle[aria-expanded="true"]+.pkg-panel{grid-template-rows:1fr;}
+.pkg-panel-inner{padding-left:calc(70px + 2.5rem);padding-bottom:2.6rem;}
+@media (max-width:760px){.pkg-panel-inner{padding-left:0;}}
+
+.ssub{font-family:var(--mono);font-size:11px;color:rgba(240,237,230,0.45);margin-top:0;line-height:1.9;max-width:72ch;}
 .ssub b{color:rgba(240,237,230,0.7);font-weight:400;}
 
 /* DOBLE CARRIL — exportación (ancla) + local */
@@ -134,11 +179,12 @@ section{position:relative;padding:0 8vw;}
 .lane-pay{font-family:var(--mono);font-size:9.5px;color:rgba(240,237,230,0.4);line-height:1.7;margin-top:0.5rem;}
 .lane-pay em{color:rgba(184,255,0,0.55);font-style:normal;}
 .lane-note{font-family:var(--mono);font-size:9px;color:rgba(240,237,230,0.32);line-height:1.7;margin-top:0.7rem;}
-.lane .pkg-cta{margin-top:auto;align-self:flex-start;}
 @media (max-width:760px){.lanes{grid-template-columns:1fr;}}
-.pkg-cta{display:inline-block;margin-top:1.4rem;font-family:var(--mono);font-size:10px;letter-spacing:0.2em;text-decoration:none;padding:0.8rem 1.4rem;border:1px solid rgba(240,237,230,0.15);color:var(--white);transition:all 0.3s;cursor:pointer;background:none;}
-.pkg-cta:hover{background:var(--acid);color:var(--black);border-color:var(--acid);}
-.pkg-cta .ph{color:rgba(240,237,230,0.3);}
+
+/* CTA ÚNICO por paquete (dentro del panel) → al formulario de contacto */
+.pkg-cta{display:inline-block;margin-top:1.8rem;font-family:var(--mono);font-size:11px;letter-spacing:0.22em;text-decoration:none;padding:0.95rem 1.8rem;border:1px solid var(--acid);color:var(--acid);transition:all 0.3s;cursor:pointer;background:none;}
+.pkg-cta:hover{background:var(--acid);color:var(--black);}
+.pkg-cta:focus-visible{outline:2px solid var(--acid);outline-offset:3px;}
 
 /* CROSS-REF — mismo servicio, otro framing */
 .xref{font-family:var(--mono);font-size:9px;letter-spacing:0.1em;color:rgba(240,237,230,0.3);line-height:1.7;margin-top:1rem;text-transform:uppercase;}
@@ -182,11 +228,11 @@ section{position:relative;padding:0 8vw;}
   section{padding-left:5vw;padding-right:5vw;}
   #oferta-hero{padding:12vh 5vw 5vh;}
   .seg-hero{padding:9vh 5vw 4vh;}
-  .srow{grid-template-columns:36px 1fr;gap:1rem;}
+  .pkg-toggle{grid-template-columns:36px 1fr auto;gap:1rem;padding:1.8rem 0;}
+  .pkg-aside{flex-direction:column;align-items:flex-end;gap:0.6rem;}
   .ftop{flex-direction:column;gap:2rem;}
   .fbot{flex-direction:column;gap:0.5rem;}
 }
-a.pkg-cta{text-decoration:none;display:inline-block;cursor:pointer;}
 </style>
 </head>
 <body>
@@ -200,6 +246,7 @@ a.pkg-cta{text-decoration:none;display:inline-block;cursor:pointer;}
     <a href="#seccion-marcas" class="seg">🏢 MARCAS</a>
     <a href="#proceso">PROCESO</a>
     <a href="index.html#comunidad">COMUNIDAD</a>
+    <a href="contacto.html">CONTACTO</a>
   </div>
 </nav>
 
@@ -209,8 +256,9 @@ a.pkg-cta{text-decoration:none;display:inline-block;cursor:pointer;}
   <section id="oferta-hero">
     <span class="hero-tag">HUMAN STUDIO × HUMAN GLITCHE</span>
     <h1 class="hero-title">IDENTIDAD CON ALMA, PRODUCCIÓN CON IA.</h1>
-    <p class="hero-sub">MADE BY HUMANS · UNIDAD DE CUENTA: USD · DOS SECCIONES DE CLIENTE: 🎤 MANAGERS &amp; ARTISTAS — 🏢 MARCAS &amp; MERCADO LOCAL · DOBLE CARRIL (EXPORTACIÓN + LOCAL) DENTRO DE CADA UNA</p>
-    <p class="hero-thesis">La IA democratizó el acceso al diseño; lo que escasea es alguien que <b>vea la interfaz visual de una realidad y la rediseñe con criterio</b> — sea una marca o el show que un público va a vivir. Human Studio no vende diseño barato y rápido ni compite en la franja media: vende <b>entrada rápida</b> (sprint con IA para captar y calificar) o <b>estrategia/dirección premium</b> (diagnóstico, identidad con alma, dirección visual en vivo). Nunca el medio. El conocimiento es público y gratis; lo que se cobra es la transformación.</p>
+    <p class="hero-llano">Diseñamos la <b>identidad visual de marcas</b> y el <b>show en vivo de artistas</b> — con criterio humano, acelerado con IA.</p>
+    <p class="hero-thesis">La IA abarató el diseño; lo escaso es alguien que <b>vea la interfaz visual de una realidad y la rediseñe con criterio</b>. No competimos en la franja media: <b>entrada rápida</b> con IA, o <b>estrategia y dirección premium</b>. El conocimiento es gratis; lo que se cobra es la transformación.</p>
+    <p class="hero-sub">DOS MUNDOS: 🎤 ARTISTAS — 🏢 MARCAS · UNIDAD DE CUENTA USD · CARRIL EXPORTACIÓN + LOCAL EN CADA UNO</p>
   </section>
 
   <span class="sep">— — — — — — — — —</span>
@@ -220,24 +268,24 @@ a.pkg-cta{text-decoration:none;display:inline-block;cursor:pointer;}
     <div class="sec-hdr">
       <h2 class="sec-title">DOS MUNDOS<br>DE CLIENTE</h2>
     </div>
-    <p class="world-intro">El diferenciador real de Human Studio —el stack de <b>tiempo real</b> (VDMX6 + TouchDesigner + contenido 3D propio en Cinema 4D + Octane + Insydium)— no se le vende igual a un manager de gira que a una PyME. Son dos mundos distintos, con dos lenguajes y dos circuitos de venta. <b>Un mismo servicio puede aparecer en los dos con otro framing:</b> Reality Reel es videoclip / contenido de gira para el artista y motion de marca para la PyME. Eso no canibaliza nada — atiende clientes y necesidades distintas.</p>
+    <p class="world-intro">El stack de <b>tiempo real</b> no se le vende igual a un manager de gira que a una PyME. Dos mundos, dos lenguajes. Elegí el tuyo.</p>
     <div class="world-cards">
       <a href="#seccion-managers" class="world-card">
         <div class="wc-emoji">🎤</div>
         <h3>MANAGERS &amp; ARTISTAS</h3>
         <div class="wc-for">Música · eventos · espectáculo</div>
-        <p>Managers, artistas, productoras y festivales. Acá vive el diferenciador más fuerte: <b>los visuales en vivo, el mapping, el contenido de gira</b>. El lenguaje es de artista, no de oficina. Carril export = tours y festivales internacionales en USD pleno; carril local = circuito argentino, <b>se cotiza por evento</b>.</p>
+        <p>Armás una gira, lanzás un álbum, montás un show. Acá vive el diferenciador: <b>visuales en vivo, mapping, contenido de gira, identidad escénica</b>.</p>
         <div class="wc-go">VER PAQUETES A1–A4 →</div>
       </a>
       <a href="#seccion-marcas" class="world-card">
         <div class="wc-emoji">🏢</div>
         <h3>MARCAS &amp; MERCADO LOCAL</h3>
         <div class="wc-for">PyME · startups · marcas</div>
-        <p>PyME, startups y marcas — argentinas y globales. Acá vive la <b>puerta de entrada accesible</b> que financia el resto. Carril export = marca global en USD pleno; carril local = <b>USD anclado, se abona en pesos al valor del día</b>.</p>
+        <p>Sentís que "lo que mostramos ya no es lo que somos". Acá vive la <b>puerta accesible</b>: identidad, dirección visual, motion de marca, entrada rápida con IA.</p>
         <div class="wc-go">VER PAQUETES B1–B5 →</div>
       </a>
     </div>
-    <p class="lane-note-band"><b>El doble carril vive DENTRO de cada mundo.</b> El precio sigue al cliente, no a la ubicación de quien hace el trabajo. El talento argentino es a la vez <b>barato</b> para el cliente global (carril export, USD pleno) y <b>accesible</b> para el cliente local (carril local). Los carriles conviven sin canibalizarse: un sello de Berlín no contrata el carril local, y una PyME de Córdoba no paga el carril export. Unidad de cuenta siempre USD; el carril local se <b>abona en pesos al valor del día</b> y nunca se publica en ARS fijo (la inflación lo envejece en semanas).</p>
+    <p class="lane-note-band"><b>El doble carril vive dentro de cada mundo.</b> El precio sigue al cliente, no a la ubicación: <b>export</b> en USD pleno para el cliente global; <b>local</b> accesible, que se abona en pesos al valor del día. Nunca un ARS fijo.</p>
   </section>
 
   <span class="sep">— — — — — — — — —</span>
@@ -247,22 +295,30 @@ a.pkg-cta{text-decoration:none;display:inline-block;cursor:pointer;}
     <div class="seg-kicker">🎤 SECCIÓN A</div>
     <h2 class="seg-title">MANAGERS<br>&amp; ARTISTAS</h2>
     <p class="seg-anchor">No decoramos shows con visuales. Diseñamos la interfaz visual de la experiencia que el público va a vivir — y la hacemos reaccionar en tiempo real, frente a sus ojos.</p>
-    <p class="seg-meta"><b class="lbl">PARA QUIÉN:</b> managers, artistas, productoras y festivales. El que arma una gira, lanza un álbum, monta un show o cura un line-up. Acá no se habla de marca corporativa: se habla de <b>identidad escénica, gira, show, lanzamiento</b>.<br><br><b class="lbl">CÓMO SE PAGA ACÁ:</b> carril export = <b>tours y festivales internacionales en USD pleno</b>. Carril local = <b>circuito argentino, se cotiza por evento</b> — un festival masivo o un evento de marca puede pagar tarifa cercana a la internacional, así que el local <b>no se descuenta como catálogo</b>. Donde no hay comparable público (Live Reality, Identidad de Artista premium) → <b>a cotizar por valor</b>.</p>
+    <p class="seg-meta"><b class="lbl">PARA QUIÉN:</b> managers, artistas, productoras y festivales — identidad escénica, gira, show, lanzamiento.<br><b class="lbl">CÓMO SE PAGA:</b> export = tours y festivales internacionales en USD pleno · local = circuito argentino, se cotiza por evento (sin descuento de catálogo). El detalle de cada carril vive dentro del paquete.</p>
   </section>
 
   <section id="paquetes-managers">
     <div class="sec-hdr">
       <h2 class="sec-title">LOS PAQUETES — A</h2>
-      <a href="https://meetings.hubspot.com/juan-cruz-martinez-astorga" class="sec-link" target="_blank" rel="noopener">RESERVÁ TU LLAMADA →</a>
+      <a href="contacto.html?m=managers" class="cta-contacto">CONTANOS TU PROYECTO →</a>
     </div>
     <div class="svc-list">
 
       <!-- A1 -->
       <div class="srow">
-        <span class="snum">A1</span>
-        <div>
-          <div class="pkg-head"><span class="sname">LIVE REALITY</span></div>
-          <div class="srole">Visuales en vivo &amp; mapping — el diferenciador, techo del catálogo</div>
+        <button class="pkg-toggle" type="button" id="hdr-A1" aria-expanded="false" aria-controls="pnl-A1">
+          <span class="snum">A1</span>
+          <span class="pkg-id-line">
+            <span class="sname">LIVE REALITY</span>
+            <span class="srole">Visuales en vivo &amp; mapping — el diferenciador, techo del catálogo</span>
+          </span>
+          <span class="pkg-aside">
+            <span class="price-hint">A cotizar<span class="ph-sub">por proyecto</span></span>
+            <span class="chev" aria-hidden="true"></span>
+          </span>
+        </button>
+        <div class="pkg-panel" id="pnl-A1" role="region" aria-labelledby="hdr-A1"><div class="pkg-panel-inner">
           <p class="ssub">Dirección visual en vivo para tu show, tu set, tu stage. No loops genéricos: <b>contenido 3D propio (C4D + Octane + Insydium) que reacciona al audio y a la energía del momento</b> en tiempo real (VDMX6 + TouchDesigner), y mapping 2D/3D sobre el escenario. Tres alturas: set en vivo (una noche), diseño visual de show (gira/lanzamiento, el corazón) y, en el techo, instalación interactiva que el público no observa sino que <b>habita y modifica con su presencia</b>.</p>
           <div class="lanes">
             <div class="lane lane-export">
@@ -271,7 +327,6 @@ a.pkg-cta{text-decoration:none;display:inline-block;cursor:pointer;}
               <div class="lane-price">A valor por proyecto</div>
               <div class="lane-pay">en USD · el techo del catálogo · <em>se cotiza por proyecto, no por horas</em></div>
               <div class="lane-note">No se ancla en horas sino en impacto, alcance y exclusividad. El informe de exportación no fija un comparable público cerrado para dirección visual en vivo / instalación: se cotiza por proyecto, nunca mid-range.</div>
-              <a class="pkg-cta" href="https://meetings.hubspot.com/juan-cruz-martinez-astorga" target="_blank" rel="noopener" data-checkout="oferta-studio-managers-live-reality-export" data-pending="1">COTIZAR PROYECTO →</a>
             </div>
             <div class="lane lane-local">
               <div class="lane-tag">🚪 Local · sin descuento de catálogo</div>
@@ -279,18 +334,26 @@ a.pkg-cta{text-decoration:none;display:inline-block;cursor:pointer;}
               <div class="lane-price">A cotizar por evento</div>
               <div class="lane-pay">acá el local <em>no se descuenta como el resto</em>: hay mercado argentino real y pagador</div>
               <div class="lane-note">Festivales masivos, electrónica con headliners internacionales (Creamfields), Vendimia, eventos corporativos/culturales pueden pagar tarifa cercana a la internacional. Sin comparable de precio público local: se cotiza por evento, cifra reconocida como dato faltante (no se inventa).</div>
-              <a class="pkg-cta" href="https://meetings.hubspot.com/juan-cruz-martinez-astorga" target="_blank" rel="noopener" data-checkout="oferta-studio-managers-live-reality-local" data-pending="1">COTIZAR EVENTO →</a>
             </div>
           </div>
-        </div>
+          <a class="pkg-cta" href="contacto.html?m=managers&amp;p=A1">CONTANOS TU PROYECTO →</a>
+        </div></div>
       </div>
 
       <!-- A2 -->
       <div class="srow">
-        <span class="snum">A2</span>
-        <div>
-          <div class="pkg-head"><span class="sname">REALITY REEL</span></div>
-          <div class="srole">Videoclip / contenido de gira</div>
+        <button class="pkg-toggle" type="button" id="hdr-A2" aria-expanded="false" aria-controls="pnl-A2">
+          <span class="snum">A2</span>
+          <span class="pkg-id-line">
+            <span class="sname">REALITY REEL</span>
+            <span class="srole">Videoclip / contenido de gira</span>
+          </span>
+          <span class="pkg-aside">
+            <span class="price-hint">USD 800 – 8.500<span class="ph-sub">por pieza 60s</span></span>
+            <span class="chev" aria-hidden="true"></span>
+          </span>
+        </button>
+        <div class="pkg-panel" id="pnl-A2" role="region" aria-labelledby="hdr-A2"><div class="pkg-panel-inner">
           <p class="ssub">Piezas en movimiento para el artista — <b>trailer de álbum, teaser de single, visuales de campaña de gira, intro/outro de contenido, loops para las pantallas del show</b>. Cinema 4D + Octane + Insydium permite simulaciones de partículas y fluidos que pocos pueden ejecutar dentro del mismo servicio. Es la misma capacidad que el motion de marca de la Sección B, aplicada al mundo musical.</p>
           <div class="lanes">
             <div class="lane lane-export">
@@ -298,7 +361,6 @@ a.pkg-cta{text-decoration:none;display:inline-block;cursor:pointer;}
               <div class="lane-who">Artistas · sellos internacionales</div>
               <div class="lane-price">USD 3.000 – 8.500</div>
               <div class="lane-pay">por pieza de 60s · <em>USD pleno</em> · mediana profesional del sector</div>
-              <a class="pkg-cta" href="https://meetings.hubspot.com/juan-cruz-martinez-astorga" target="_blank" rel="noopener" data-checkout="oferta-studio-managers-reality-reel-export" data-pending="1">CONTRATAR →</a>
             </div>
             <div class="lane lane-local">
               <div class="lane-tag">🚪 Local</div>
@@ -306,19 +368,27 @@ a.pkg-cta{text-decoration:none;display:inline-block;cursor:pointer;}
               <div class="lane-price">USD 800 – 2.500</div>
               <div class="lane-pay">por pieza de 60s · <em>se cotiza por proyecto</em>; ticket alto cobrable en USD/USDT cuando se pueda</div>
               <div class="lane-note">Un artista/sello local grande puede acercarse al piso del carril export. Pieza para gira con presupuesto de productora → se cotiza por evento junto con el show.</div>
-              <a class="pkg-cta" href="https://meetings.hubspot.com/juan-cruz-martinez-astorga" target="_blank" rel="noopener" data-checkout="oferta-studio-managers-reality-reel-local" data-pending="1">CONTRATAR →</a>
             </div>
           </div>
           <p class="xref">↔ MISMA CAPACIDAD, OTRO FRAMING: <a href="#seccion-marcas">B3 · Reality Reel — motion de marca</a></p>
-        </div>
+          <a class="pkg-cta" href="contacto.html?m=managers&amp;p=A2">CONTANOS TU PROYECTO →</a>
+        </div></div>
       </div>
 
       <!-- A3 -->
       <div class="srow">
-        <span class="snum">A3</span>
-        <div>
-          <div class="pkg-head"><span class="sname">IDENTIDAD DE ARTISTA</span></div>
-          <div class="srole">Identidad escénica &amp; de proyecto musical</div>
+        <button class="pkg-toggle" type="button" id="hdr-A3" aria-expanded="false" aria-controls="pnl-A3">
+          <span class="snum">A3</span>
+          <span class="pkg-id-line">
+            <span class="sname">IDENTIDAD DE ARTISTA</span>
+            <span class="srole">Identidad escénica &amp; de proyecto musical</span>
+          </span>
+          <span class="pkg-aside">
+            <span class="price-hint">USD 600 – 25.000<span class="ph-sub">por proyecto</span></span>
+            <span class="chev" aria-hidden="true"></span>
+          </span>
+        </button>
+        <div class="pkg-panel" id="pnl-A3" role="region" aria-labelledby="hdr-A3"><div class="pkg-panel-inner">
           <p class="ssub">El sistema visual completo de un artista o proyecto musical — no un logo suelto, sino la <b>identidad escénica</b>: símbolo, paleta, tipografía, dirección de imagen, portadas, piezas en movimiento y guía de uso para que el equipo de gira pueda operar el sistema. Es Interface Identity aplicada al mundo del espectáculo: la cara con la que el proyecto se presenta al público, coherente del flyer al stage.</p>
           <div class="lanes">
             <div class="lane lane-export">
@@ -327,7 +397,6 @@ a.pkg-cta{text-decoration:none;display:inline-block;cursor:pointer;}
               <div class="lane-price">USD 5.000 – 25.000</div>
               <div class="lane-pay">por proyecto · <em>USD pleno</em></div>
               <div class="lane-note">El extremo bajo es la identidad esencial; el alto se justifica por la capa estratégica y de dirección, no por más horas. Proyecto internacional con dirección escénica premium → a cotizar donde no hay comparable.</div>
-              <a class="pkg-cta" href="https://meetings.hubspot.com/juan-cruz-martinez-astorga" target="_blank" rel="noopener" data-checkout="oferta-studio-managers-identidad-artista-export" data-pending="1">CONTRATAR →</a>
             </div>
             <div class="lane lane-local">
               <div class="lane-tag">🚪 Local · emergente → sello</div>
@@ -335,19 +404,27 @@ a.pkg-cta{text-decoration:none;display:inline-block;cursor:pointer;}
               <div class="lane-price">USD 600 – 7.000</div>
               <div class="lane-pay"><em>se abona en pesos al valor del día</em>; ticket alto en USD/USDT cuando el cliente lo acepte</div>
               <div class="lane-note">Piso: identidad de un artista emergente. Techo: proyecto grande o sello. El extremo alto de export (USD 25.000) no existe en el mercado local salvo gran proyecto: proyectos locales grandes a cotizar por valor, no por tarifa de catálogo.</div>
-              <a class="pkg-cta" href="https://meetings.hubspot.com/juan-cruz-martinez-astorga" target="_blank" rel="noopener" data-checkout="oferta-studio-managers-identidad-artista-local" data-pending="1">CONTRATAR →</a>
             </div>
           </div>
           <p class="xref">↔ MISMO SISTEMA, OTRO FRAMING: <a href="#seccion-marcas">B2 · Interface Identity — identidad de marca</a></p>
-        </div>
+          <a class="pkg-cta" href="contacto.html?m=managers&amp;p=A3">CONTANOS TU PROYECTO →</a>
+        </div></div>
       </div>
 
       <!-- A4 -->
       <div class="srow">
-        <span class="snum">A4</span>
-        <div>
-          <div class="pkg-head"><span class="sname">AI VISUAL SPRINT</span></div>
-          <div class="srole">La entrada para artistas emergentes — capta y filtra</div>
+        <button class="pkg-toggle" type="button" id="hdr-A4" aria-expanded="false" aria-controls="pnl-A4">
+          <span class="snum">A4</span>
+          <span class="pkg-id-line">
+            <span class="sname">AI VISUAL SPRINT</span>
+            <span class="srole">La entrada para artistas emergentes — capta y filtra</span>
+          </span>
+          <span class="pkg-aside">
+            <span class="price-hint">USD 250 – 2.500<span class="ph-sub">por entrega · 72 h</span></span>
+            <span class="chev" aria-hidden="true"></span>
+          </span>
+        </button>
+        <div class="pkg-panel" id="pnl-A4" role="region" aria-labelledby="hdr-A4"><div class="pkg-panel-inner">
           <p class="ssub">Identidad visual rápida con IA generativa + criterio real. En 72 h: <b>paleta, tipografía, ~10 piezas clave (portada, flyer, story, avatar) y guía de uso</b>. Es la puerta para el artista emergente que necesita imagen ahora, antes de un lanzamiento, sin esperar semanas. El artista que paga esto a gusto suele ser el correcto para subir a Identidad de Artista (A3).</p>
           <div class="lanes">
             <div class="lane lane-export">
@@ -355,7 +432,6 @@ a.pkg-cta{text-decoration:none;display:inline-block;cursor:pointer;}
               <div class="lane-who">Artista US / EU / global</div>
               <div class="lane-price">USD 800 – 2.500</div>
               <div class="lane-pay">por entrega · <em>USD pleno</em></div>
-              <a class="pkg-cta" href="https://meetings.hubspot.com/juan-cruz-martinez-astorga" target="_blank" rel="noopener" data-checkout="oferta-studio-managers-ai-visual-sprint-export" data-pending="1">CONTRATAR →</a>
             </div>
             <div class="lane lane-local">
               <div class="lane-tag">🚪 Local · imán de captación</div>
@@ -363,11 +439,11 @@ a.pkg-cta{text-decoration:none;display:inline-block;cursor:pointer;}
               <div class="lane-price">USD 250 – 700</div>
               <div class="lane-pay">por entrega · <em>se abona en pesos al valor del día</em> (MercadoPago)</div>
               <div class="lane-note">Cae justo arriba del logo de gama media local (USD 500–1.000) pero entrega más —paleta + tipografía + ~10 piezas + guía en 72 h— sin caer en commodity de banco de imágenes. Capta y califica.</div>
-              <a class="pkg-cta" href="https://meetings.hubspot.com/juan-cruz-martinez-astorga" target="_blank" rel="noopener" data-checkout="oferta-studio-managers-ai-visual-sprint-local" data-pending="1">CONTRATAR →</a>
             </div>
           </div>
           <p class="xref">↔ MISMO SERVICIO, OTRO PÚBLICO: <a href="#seccion-marcas">B1 · AI Visual Sprint — puerta accesible PyME</a></p>
-        </div>
+          <a class="pkg-cta" href="contacto.html?m=managers&amp;p=A4">CONTANOS TU PROYECTO →</a>
+        </div></div>
       </div>
 
     </div>
@@ -380,22 +456,30 @@ a.pkg-cta{text-decoration:none;display:inline-block;cursor:pointer;}
     <div class="seg-kicker">🏢 SECCIÓN B</div>
     <h2 class="seg-title">MARCAS<br>&amp; MERCADO LOCAL</h2>
     <p class="seg-anchor">No diseñamos logos. Construimos la interfaz visual completa a través de la cual tu proyecto presenta su realidad al mundo — y te dejamos sabiendo cómo seguir construyendo con ese sistema.</p>
-    <p class="seg-meta"><b class="lbl">PARA QUIÉN:</b> PyME, startups y marcas — argentinas (carril local) y globales (carril export). El fundador en transición que siente que <b>"lo que mostramos ya no es lo que somos"</b>; la empresa que necesita coherencia en cada punto de contacto; el equipo creativo interno que quiere operar a velocidad IA sin perder criterio. Lenguaje de marca, negocio y mercado.<br><br><b class="lbl">CÓMO SE PAGA ACÁ:</b> carril export = <b>marca global en USD pleno</b>. Carril local = <b>USD anclado, cobrado en ARS al cambio del día</b> — "se abona en pesos al valor del día". Ticket alto (Interface Identity, Reality Reel, Audit) en USD/USDT cuando el cliente lo acepte; entrada y retainer chico por MercadoPago en pesos. <b>Nunca ARS fijo.</b><br><br><b class="lbl">CUÁNDO NO:</b> si buscás un logo suelto al precio de un freelancer de banco de imágenes, este no es el lugar. La entrada rápida existe (AI Visual Sprint), pero la apuesta es estrategia, no commodity.</p>
+    <p class="seg-meta"><b class="lbl">PARA QUIÉN:</b> PyME, startups y marcas — argentinas y globales. El fundador que siente que <b>"lo que mostramos ya no es lo que somos"</b>.<br><b class="lbl">CÓMO SE PAGA:</b> export = marca global en USD pleno · local = USD anclado, se abona en pesos al valor del día. Nunca ARS fijo. El detalle de cada carril vive dentro del paquete.<br><b class="lbl">CUÁNDO NO:</b> si buscás un logo suelto de banco de imágenes, este no es el lugar. Apostamos a estrategia, no a commodity.</p>
   </section>
 
   <section id="paquetes-marcas">
     <div class="sec-hdr">
       <h2 class="sec-title">LOS PAQUETES — B</h2>
-      <a href="https://meetings.hubspot.com/juan-cruz-martinez-astorga" class="sec-link" target="_blank" rel="noopener">RESERVÁ TU LLAMADA →</a>
+      <a href="contacto.html?m=marcas" class="cta-contacto">CONTANOS TU PROYECTO →</a>
     </div>
     <div class="svc-list">
 
       <!-- B1 -->
       <div class="srow">
-        <span class="snum">B1</span>
-        <div>
-          <div class="pkg-head"><span class="sname">AI VISUAL SPRINT</span></div>
-          <div class="srole">La puerta accesible — capta y filtra</div>
+        <button class="pkg-toggle" type="button" id="hdr-B1" aria-expanded="false" aria-controls="pnl-B1">
+          <span class="snum">B1</span>
+          <span class="pkg-id-line">
+            <span class="sname">AI VISUAL SPRINT</span>
+            <span class="srole">La puerta accesible — capta y filtra</span>
+          </span>
+          <span class="pkg-aside">
+            <span class="price-hint">USD 250 – 2.500<span class="ph-sub">por entrega · 72 h</span></span>
+            <span class="chev" aria-hidden="true"></span>
+          </span>
+        </button>
+        <div class="pkg-panel" id="pnl-B1" role="region" aria-labelledby="hdr-B1"><div class="pkg-panel-inner">
           <p class="ssub">Identidad visual rápida con IA generativa + criterio de diseño real. En 72 h: <b>paleta, tipografía, ~10 piezas clave y guía de uso</b>. Capta y filtra: la PyME que paga esto a gusto suele ser la correcta para subir a Interface Identity.</p>
           <div class="lanes">
             <div class="lane lane-export">
@@ -403,7 +487,6 @@ a.pkg-cta{text-decoration:none;display:inline-block;cursor:pointer;}
               <div class="lane-who">Cliente US / EU / global</div>
               <div class="lane-price">USD 800 – 2.500</div>
               <div class="lane-pay">por entrega · <em>USD pleno</em></div>
-              <a class="pkg-cta" href="https://meetings.hubspot.com/juan-cruz-martinez-astorga" target="_blank" rel="noopener" data-checkout="oferta-studio-marcas-ai-visual-sprint-export" data-pending="1">CONTRATAR →</a>
             </div>
             <div class="lane lane-local">
               <div class="lane-tag">🚪 Local · puerta de entrada</div>
@@ -411,19 +494,27 @@ a.pkg-cta{text-decoration:none;display:inline-block;cursor:pointer;}
               <div class="lane-price">USD 250 – 700</div>
               <div class="lane-pay">por entrega · <em>se abona en pesos al valor del día</em> (MercadoPago)</div>
               <div class="lane-note">Imán de captación local: cae justo arriba del logo de gama media (USD 500–1.000) pero entrega más sin caer en commodity. Capta y califica.</div>
-              <a class="pkg-cta" href="https://meetings.hubspot.com/juan-cruz-martinez-astorga" target="_blank" rel="noopener" data-checkout="oferta-studio-marcas-ai-visual-sprint-local" data-pending="1">CONTRATAR →</a>
             </div>
           </div>
           <p class="xref">↔ MISMO SERVICIO, OTRO PÚBLICO: <a href="#seccion-managers">A4 · AI Visual Sprint — entrada para artistas</a></p>
-        </div>
+          <a class="pkg-cta" href="contacto.html?m=marcas&amp;p=B1">CONTANOS TU PROYECTO →</a>
+        </div></div>
       </div>
 
       <!-- B2 -->
       <div class="srow">
-        <span class="snum">B2</span>
-        <div>
-          <div class="pkg-head"><span class="sname">INTERFACE IDENTITY</span></div>
-          <div class="srole">El corazón del negocio de marca</div>
+        <button class="pkg-toggle" type="button" id="hdr-B2" aria-expanded="false" aria-controls="pnl-B2">
+          <span class="snum">B2</span>
+          <span class="pkg-id-line">
+            <span class="sname">INTERFACE IDENTITY</span>
+            <span class="srole">El corazón del negocio de marca</span>
+          </span>
+          <span class="pkg-aside">
+            <span class="price-hint">USD 600 – 25.000<span class="ph-sub">por proyecto</span></span>
+            <span class="chev" aria-hidden="true"></span>
+          </span>
+        </button>
+        <div class="pkg-panel" id="pnl-B2" role="region" aria-labelledby="hdr-B2"><div class="pkg-panel-inner">
           <p class="ssub">El sistema visual completo a través del cual una marca presenta su realidad al mundo. No un logo: <b>identidad central, sistema cromático y tipográfico, dirección de imagen, piezas en movimiento, guía de uso y sesión de traspaso</b>. Tres niveles (Esencial / Completa / Partnership). El extremo alto se justifica por la capa estratégica, no por más horas.</p>
           <div class="lanes">
             <div class="lane lane-export">
@@ -431,7 +522,6 @@ a.pkg-cta{text-decoration:none;display:inline-block;cursor:pointer;}
               <div class="lane-who">Cliente US / EU / global</div>
               <div class="lane-price">USD 5.000 – 25.000</div>
               <div class="lane-pay">por proyecto · <em>USD pleno</em></div>
-              <a class="pkg-cta" href="https://meetings.hubspot.com/juan-cruz-martinez-astorga" target="_blank" rel="noopener" data-checkout="oferta-studio-marcas-interface-identity-export" data-pending="1">CONTRATAR →</a>
             </div>
             <div class="lane lane-local">
               <div class="lane-tag">🚪 Local · PyME → empresa</div>
@@ -439,19 +529,27 @@ a.pkg-cta{text-decoration:none;display:inline-block;cursor:pointer;}
               <div class="lane-price">USD 600 – 7.000</div>
               <div class="lane-pay"><em>se abona en pesos al valor del día</em>; ticket alto en USD/USDT cuando el cliente lo acepte</div>
               <div class="lane-note">Piso: branding completo de PyME/startup. Techo (USD 7.000): proyecto grande o corporativo. El extremo alto de export (USD 25.000) no existe en el mercado local salvo gran corporativo. Proyectos locales grandes: a cotizar por valor, no por tarifa de catálogo.</div>
-              <a class="pkg-cta" href="https://meetings.hubspot.com/juan-cruz-martinez-astorga" target="_blank" rel="noopener" data-checkout="oferta-studio-marcas-interface-identity-local" data-pending="1">CONTRATAR →</a>
             </div>
           </div>
           <p class="xref">↔ MISMO SISTEMA, OTRO FRAMING: <a href="#seccion-managers">A3 · Identidad de Artista — identidad escénica</a></p>
-        </div>
+          <a class="pkg-cta" href="contacto.html?m=marcas&amp;p=B2">CONTANOS TU PROYECTO →</a>
+        </div></div>
       </div>
 
       <!-- B3 -->
       <div class="srow">
-        <span class="snum">B3</span>
-        <div>
-          <div class="pkg-head"><span class="sname">REALITY REEL</span></div>
-          <div class="srole">Motion de marca</div>
+        <button class="pkg-toggle" type="button" id="hdr-B3" aria-expanded="false" aria-controls="pnl-B3">
+          <span class="snum">B3</span>
+          <span class="pkg-id-line">
+            <span class="sname">REALITY REEL</span>
+            <span class="srole">Motion de marca</span>
+          </span>
+          <span class="pkg-aside">
+            <span class="price-hint">USD 800 – 8.500<span class="ph-sub">por pieza 60s</span></span>
+            <span class="chev" aria-hidden="true"></span>
+          </span>
+        </button>
+        <div class="pkg-panel" id="pnl-B3" role="region" aria-labelledby="hdr-B3"><div class="pkg-panel-inner">
           <p class="ssub">Piezas en movimiento (60s de referencia) para marcas y lanzamientos — <b>teaser de producto, visuales de campaña, intro/outro de contenido</b>. Cinema 4D + Octane + Insydium permite simulaciones que pocos estudios pueden ejecutar dentro del mismo servicio. Misma capacidad que el videoclip de la Sección A, aplicada al mundo de marca.</p>
           <div class="lanes">
             <div class="lane lane-export">
@@ -459,7 +557,6 @@ a.pkg-cta{text-decoration:none;display:inline-block;cursor:pointer;}
               <div class="lane-who">Cliente US / EU / global</div>
               <div class="lane-price">USD 3.000 – 8.500</div>
               <div class="lane-pay">por pieza de 60s · <em>USD pleno</em> · mediana profesional del sector</div>
-              <a class="pkg-cta" href="https://meetings.hubspot.com/juan-cruz-martinez-astorga" target="_blank" rel="noopener" data-checkout="oferta-studio-marcas-reality-reel-export" data-pending="1">CONTRATAR →</a>
             </div>
             <div class="lane lane-local">
               <div class="lane-tag">🚪 Local · PyME</div>
@@ -467,19 +564,27 @@ a.pkg-cta{text-decoration:none;display:inline-block;cursor:pointer;}
               <div class="lane-price">USD 800 – 2.500</div>
               <div class="lane-pay">por pieza de 60s · <em>se abona en pesos al valor del día</em>; ticket alto en USD/USDT cuando se pueda</div>
               <div class="lane-note">El cliente local grande (empresa +20 empleados) puede acercarse al piso del carril export.</div>
-              <a class="pkg-cta" href="https://meetings.hubspot.com/juan-cruz-martinez-astorga" target="_blank" rel="noopener" data-checkout="oferta-studio-marcas-reality-reel-local" data-pending="1">CONTRATAR →</a>
             </div>
           </div>
           <p class="xref">↔ MISMA CAPACIDAD, OTRO FRAMING: <a href="#seccion-managers">A2 · Reality Reel — videoclip / gira</a></p>
-        </div>
+          <a class="pkg-cta" href="contacto.html?m=marcas&amp;p=B3">CONTANOS TU PROYECTO →</a>
+        </div></div>
       </div>
 
       <!-- B4 -->
       <div class="srow">
-        <span class="snum">B4</span>
-        <div>
-          <div class="pkg-head"><span class="sname">BRAND PARTNERSHIP</span></div>
-          <div class="srole">Retainer de producción continua — ingreso recurrente</div>
+        <button class="pkg-toggle" type="button" id="hdr-B4" aria-expanded="false" aria-controls="pnl-B4">
+          <span class="snum">B4</span>
+          <span class="pkg-id-line">
+            <span class="sname">BRAND PARTNERSHIP</span>
+            <span class="srole">Retainer de producción continua — ingreso recurrente</span>
+          </span>
+          <span class="pkg-aside">
+            <span class="price-hint">USD 400 – 8.500<span class="ph-sub">por mes</span></span>
+            <span class="chev" aria-hidden="true"></span>
+          </span>
+        </button>
+        <div class="pkg-panel" id="pnl-B4" role="region" aria-labelledby="hdr-B4"><div class="pkg-panel-inner">
           <p class="ssub">Acompañamiento mensual para marcas que ya pasaron por la Identidad y siguen creciendo: <b>nuevas piezas, expansión del sistema, producción visual sostenida</b>. Es el ingreso recurrente y de menor esfuerzo de venta.</p>
           <div class="lanes">
             <div class="lane lane-export">
@@ -487,7 +592,6 @@ a.pkg-cta{text-decoration:none;display:inline-block;cursor:pointer;}
               <div class="lane-who">Cliente US / EU / global</div>
               <div class="lane-price">USD 3.000 – 8.500 / mes</div>
               <div class="lane-pay">según profundidad · <em>USD pleno</em></div>
-              <a class="pkg-cta" href="https://meetings.hubspot.com/juan-cruz-martinez-astorga" target="_blank" rel="noopener" data-checkout="oferta-studio-marcas-brand-partnership-export" data-pending="1">CONTRATAR →</a>
             </div>
             <div class="lane lane-local">
               <div class="lane-tag">🚪 Local · PyME → media empresa</div>
@@ -495,18 +599,26 @@ a.pkg-cta{text-decoration:none;display:inline-block;cursor:pointer;}
               <div class="lane-price">USD 400 – 1.500 / mes</div>
               <div class="lane-pay">retainer chico <em>se abona en pesos al valor del día</em> (MercadoPago)</div>
               <div class="lane-note">Ingreso recurrente accesible para el cliente local que ya pasó por la Identidad.</div>
-              <a class="pkg-cta" href="https://meetings.hubspot.com/juan-cruz-martinez-astorga" target="_blank" rel="noopener" data-checkout="oferta-studio-marcas-brand-partnership-local" data-pending="1">CONTRATAR →</a>
             </div>
           </div>
-        </div>
+          <a class="pkg-cta" href="contacto.html?m=marcas&amp;p=B4">CONTANOS TU PROYECTO →</a>
+        </div></div>
       </div>
 
       <!-- B5 ★ -->
       <div class="srow">
-        <span class="snum">★ B5</span>
-        <div>
-          <div class="pkg-head"><span class="sname">BRAND PHILOSOPHY AUDIT</span></div>
-          <div class="srole">Estrategia / punta de lanza — ticket premium ancla, único sin doble precio</div>
+        <button class="pkg-toggle" type="button" id="hdr-B5" aria-expanded="false" aria-controls="pnl-B5">
+          <span class="snum">★ B5</span>
+          <span class="pkg-id-line">
+            <span class="sname">BRAND PHILOSOPHY AUDIT</span>
+            <span class="srole">Estrategia / punta de lanza — ticket premium ancla, único sin doble precio</span>
+          </span>
+          <span class="pkg-aside">
+            <span class="price-hint">A valor<span class="ph-sub">ticket premium ancla</span></span>
+            <span class="chev" aria-hidden="true"></span>
+          </span>
+        </button>
+        <div class="pkg-panel" id="pnl-B5" role="region" aria-labelledby="hdr-B5"><div class="pkg-panel-inner">
           <p class="ssub">Diagnóstico estratégico de la interfaz de una marca. Mapea cómo se presenta hoy, identifica la <b>brecha</b> entre eso y la realidad que quiere construir, y traza la dirección de la siguiente versión. No es auditoría de diseño: es auditoría de <b>interfaz</b>. Es la punta de lanza del posicionamiento premium y la mejor herramienta de venta de Interface Identity. Se cotiza por la claridad que entrega, no por horas. <b>Único servicio sin doble precio:</b> se cotiza por valor caso a caso, en USD, cobrable en USD/USDT — mismo carril en export y local.</p>
           <div class="lanes">
             <div class="lane lane-export" style="grid-column:1 / -1;">
@@ -514,10 +626,10 @@ a.pkg-cta{text-decoration:none;display:inline-block;cursor:pointer;}
               <div class="lane-who">Ambos carriles — sin comparable público en export ni local</div>
               <div class="lane-price">A valor — ticket más alto del catálogo de estrategia</div>
               <div class="lane-pay">en USD, cobrable en USD/USDT · <em>se cotiza por valor caso a caso</em></div>
-              <a class="pkg-cta" href="https://meetings.hubspot.com/juan-cruz-martinez-astorga" target="_blank" rel="noopener" data-checkout="oferta-studio-marcas-brand-philosophy-audit" data-pending="1">COTIZAR AUDIT →</a>
             </div>
           </div>
-        </div>
+          <a class="pkg-cta" href="contacto.html?m=marcas&amp;p=B5">CONTANOS TU PROYECTO →</a>
+        </div></div>
       </div>
 
     </div>
@@ -535,7 +647,7 @@ a.pkg-cta{text-decoration:none;display:inline-block;cursor:pointer;}
       <div class="proc-step">
         <div class="proc-n">PASO 01</div>
         <h4>CONTACTO Y DIAGNÓSTICO</h4>
-        <p>Llamada de diagnóstico (30 min, gratis). Escuchamos el problema, no vendemos. Ver dónde está la brecha —o qué necesita el show— es gratis: es información, y la información se comparte. Salimos con claridad sobre qué paquete encaja y en qué sección.</p>
+        <p>Contanos tu proyecto desde la <a href="contacto.html" style="color:var(--acid);text-decoration:none;border-bottom:1px solid var(--acid);">línea directa</a> y, si tiene sentido, agendamos la llamada de diagnóstico (30 min, gratis). Escuchamos el problema, no vendemos. Ver dónde está la brecha —o qué necesita el show— es gratis: es información, y la información se comparte. Salimos con claridad sobre qué paquete encaja y en qué sección.</p>
       </div>
       <div class="proc-step">
         <div class="proc-n">PASO 02</div>
@@ -568,12 +680,13 @@ a.pkg-cta{text-decoration:none;display:inline-block;cursor:pointer;}
     <p class="proc-gold"><b>Regla de moneda (vale para ambas secciones):</b> unidad de cuenta siempre USD. <b>Ticket alto</b> (Identidad, Reality Reel, Live Reality, Audit): se cobra en <b>USD/USDT</b> cuando el cliente lo acepte. <b>Entrada y retainer chico</b> (AI Visual Sprint, Brand Partnership chico): <b>pesos por MercadoPago al cambio del día</b>. Nunca se publica un ARS fijo: el carril local muestra <b>"USD X · se abona en pesos al valor del día"</b>, y el carril export USD pleno.</p>
 
     <div class="gate-note">
-      NOTA DE PUBLICACIÓN (GATES) — Este es un artefacto de staging. Los CTA de contratar son
-      placeholders (data-checkout="oferta-studio-&lt;segmento&gt;-&lt;paquete&gt;-&lt;carril&gt;");
-      ningún link cobra todavía. Activar el cobro real (link de pago MercadoPago para el carril
-      local, depósito 50%) y publicar esta página son acciones humanas en cola en
-      progress/cola_aprobacion.md. El carril local cobra en pesos al valor del día — nunca un ARS
-      fijo. Hasta el APROBADO, nada se publica ni cobra.
+      NOTA DE PUBLICACIÓN (GATES) — Este es un artefacto de staging. Ningún CTA cobra: todos
+      llevan al formulario de contacto (contacto.html con el mundo y el paquete
+      preseleccionados). El path vivo final en hg-vl (relativo vs absoluto a /contacto/) es decisión
+      de publicación. Activar el cobro real (depósito 50%, MercadoPago para el carril local) y
+      publicar esta página son acciones humanas en cola en progress/cola_aprobacion.md. El carril
+      local cobra en pesos al valor del día — nunca un ARS fijo. Hasta el APROBADO, nada se publica
+      ni cobra.
     </div>
   </section>
 
@@ -600,16 +713,21 @@ a.pkg-cta{text-decoration:none;display:inline-block;cursor:pointer;}
 </div>
 
 <script>
-// Placeholder de checkout — NO hay link real de MercadoPago en staging.
-// La activación del checkout (un item por segmento×paquete×carril; ver
-// checkout.config.json) es una acción humana (GATES.md). Aquí solo se avisa.
-document.querySelectorAll('[data-checkout]').forEach(function(btn){
-  btn.addEventListener('click', function(){
-    var id = btn.getAttribute('data-checkout');
-    console.log('[oferta-studio] checkout placeholder activado: ' + id + ' — link real pendiente de aprobación humana (GATES).');
-    alert('Esta es una vista previa. El cobro todavía no está activo.\nReservá tu llamada de diagnóstico (gratis) para avanzar.');
+/* ACORDEÓN de paquetes — cada cabecera es un <button> que alterna su panel.
+   Accesible: aria-expanded refleja el estado, aria-controls apunta al panel,
+   Enter/Espacio funcionan de fábrica (es un <button>). La animación de altura
+   la hace el CSS (grid-template-rows 0fr→1fr). Se permiten varios abiertos a la
+   vez para comparar paquetes. Sin checkout: los CTA son <a> normales al form. */
+(function(){
+  'use strict';
+  var toggles = document.querySelectorAll('.pkg-toggle');
+  toggles.forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var open = btn.getAttribute('aria-expanded') === 'true';
+      btn.setAttribute('aria-expanded', open ? 'false' : 'true');
+    });
   });
-});
+})();
 </script>
 
 </body>

@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CONTACTO — HUMAN STUDIO × HUMAN GLITCHE</title>
+<!--
+  PAGINA DE CONTACTO / INTAKE (root) — PASO 01 del proceso de servicios
+  ("Contacto y Diagnostico · escuchamos el problema, no vendemos"). Es la PUERTA
+  BLANDA: la linea directa para quien quiere EXPLICARSE antes de agendar la llamada.
+  Generada por el `publicador` desde web/contacto/index.html (cerebro operativo).
+
+  ESTADO BACKEND EN ESTA VERSION:
+    · FB_URL CABLEADO al databaseURL real del sitio (hg-vl-shaders-default-rtdb).
+    · Storage en MODO FALLBACK (no habilitado): los adjuntos NO se suben; se piden
+      por mail (hola@hg-vl.com) o via link Drive/WeTransfer. El bucket queda
+      pendiente de activacion (placeholder __FIREBASE_STORAGE_BUCKET__, neutralizado).
+    · Para que los POST a /contacto persistan hace falta la regla de seguridad en
+      la consola Firebase (ver web/contacto/contacto.config.json en el cerebro).
+
+  ESPEJA el sistema de diseno de servicios.html: variables CSS,
+  paleta acid/glitch, tipografias (Bebas Neue / Space Mono / DM Sans),
+  body::before de ruido fractal, #nav (mismos links, marca "HG — VL / 2026") y
+  #footer completo (mismos socials + copy). Header/footer = hermanos de
+  servicios.html.
+
+  BACKEND (GATED, in-house Firebase):
+    · Texto del intake → POST REST anonimo a `${FB_URL}/contacto.json` (mismo
+      patron fbPush() de index.html y de la captura de newsletter).
+    · Adjuntos → Firebase Storage del MISMO proyecto via REST (sin SDK pesado); el
+      downloadURL queda en el registro (campo adjuntos[]).
+    · FB_URL y STORAGE_BUCKET son PLACEHOLDERS marcados — sin credenciales reales
+      en el repo. Storage NO esta habilitado todavia: el envio real esta GATED y
+      el form DEGRADA CON GRACIA (si el backend no responde, muestra mensaje y
+      ofrece el canal directo). NUNCA rompe.
+  Descriptor del nodo/bucket/campos/reglas: web/contacto/contacto.config.json.
+  Activacion (Storage + reglas + confirmar nodo + publicar): progress/cola_aprobacion.md.
+
+  PREFILL POR URL (work_list.json item 15): los CTA de cada paquete de
+  servicios.html llegan con ?m=managers|marcas y ?p=<A1..A4|B1..B5>. Al cargar se
+  preselecciona la tarjeta de mundo y se antepone "Me interesa el paquete <p> — "
+  al textarea. Robusto: params ausentes o invalidos → la pagina funciona igual.
+
+  REGLA DE ORO: el contacto es GRATIS (informa). Sin muro. El conocimiento se
+  comparte; lo que se cobra es la transformacion.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --black:#050505;
+  --white:#f0ede6;
+  --acid:#b8ff00;
+  --glitch:#ff2d55;
+  --mono:'Space Mono',monospace;
+  --display:'Bebas Neue',sans-serif;
+  --body:'DM Sans',sans-serif;
+}
+html{scroll-behavior:smooth;}
+body{background:var(--black);color:var(--white);font-family:var(--body);overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");z-index:1;pointer-events:none;opacity:0.4;}
+#scroll-container{position:relative;z-index:2;}
+
+/* NAV (espejo de servicios.html / index.html) */
+#nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:2rem 8vw;display:flex;justify-content:space-between;align-items:center;background:rgba(5,5,5,0.6);backdrop-filter:blur(10px);}
+.nav-logo{font-family:var(--mono);font-size:11px;letter-spacing:0.2em;color:rgba(240,237,230,0.4);text-decoration:none;}
+.nav-links{display:flex;gap:2.2rem;flex-wrap:wrap;}
+.nav-links a{font-family:var(--mono);font-size:10px;letter-spacing:0.25em;color:rgba(240,237,230,0.25);text-decoration:none;transition:color 0.2s;}
+.nav-links a:hover{color:var(--acid);}
+.nav-links a.seg{color:rgba(184,255,0,0.5);}
+.nav-links a.seg:hover{color:var(--acid);}
+
+/* SECTIONS */
+section{position:relative;padding:0 8vw;}
+.sec-hdr{display:flex;justify-content:space-between;align-items:flex-end;width:100%;margin-bottom:2.5rem;flex-wrap:wrap;gap:1rem;}
+.sec-title{font-family:var(--display);font-size:clamp(3rem,6vw,6rem);line-height:0.9;}
+
+/* HERO */
+#contacto-hero{padding:14vh 8vw 5vh;}
+.hero-tag{font-family:var(--mono);font-size:9px;letter-spacing:0.3em;color:var(--acid);display:inline-block;margin-bottom:1.5rem;}
+.hero-title{font-family:var(--display);font-size:clamp(3.5rem,9vw,9rem);line-height:0.88;max-width:15ch;}
+.hero-sub{font-family:var(--mono);font-size:12px;color:rgba(240,237,230,0.5);letter-spacing:0.08em;line-height:1.9;margin-top:2rem;max-width:62ch;}
+.hero-thesis{font-family:var(--body);font-size:1.05rem;color:rgba(240,237,230,0.75);line-height:1.7;margin-top:2rem;max-width:64ch;border-left:1px solid rgba(184,255,0,0.3);padding-left:1.4rem;}
+.hero-thesis b{color:var(--acid);font-weight:500;}
+
+/* FORM */
+#intake{padding:6vh 8vw 4vh;flex-direction:column;border-top:1px solid rgba(240,237,230,0.07);}
+.form-step{font-family:var(--mono);font-size:10px;letter-spacing:0.3em;color:var(--acid);text-transform:uppercase;margin-bottom:1rem;}
+.intake-form{width:100%;max-width:860px;margin-top:1rem;}
+.field{margin-bottom:2.8rem;}
+.field-label{font-family:var(--mono);font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:rgba(240,237,230,0.55);display:block;margin-bottom:1rem;}
+.field-label .req{color:var(--acid);}
+.field-hint{font-family:var(--mono);font-size:9.5px;color:rgba(240,237,230,0.32);line-height:1.7;margin-top:0.6rem;}
+
+/* segmento — selector visual (espejo de .world-card) */
+.world-cards{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:rgba(240,237,230,0.07);width:100%;border:1px solid rgba(240,237,230,0.07);}
+.world-card{background:var(--black);padding:1.9rem 1.5rem;display:flex;flex-direction:column;cursor:pointer;transition:background-color 0.25s;border:none;text-align:left;color:inherit;font:inherit;position:relative;}
+.world-card:hover{background:rgba(184,255,0,0.04);}
+.world-card:focus-visible{outline:2px solid var(--acid);outline-offset:-2px;}
+.world-card[aria-pressed="true"]{background:rgba(184,255,0,0.08);}
+.world-card[aria-pressed="true"]::after{content:'✓ ELEGIDO';position:absolute;top:0.9rem;right:1rem;font-family:var(--mono);font-size:8px;letter-spacing:0.2em;color:var(--acid);}
+.world-card .wc-emoji{font-size:1.5rem;margin-bottom:0.7rem;}
+.world-card h3{font-family:var(--display);font-size:1.7rem;line-height:1;color:var(--acid);margin-bottom:0.4rem;}
+.world-card .wc-for{font-family:var(--mono);font-size:9px;letter-spacing:0.16em;text-transform:uppercase;color:rgba(240,237,230,0.35);margin-bottom:0.9rem;}
+.world-card p{font-family:var(--mono);font-size:10px;color:rgba(240,237,230,0.45);line-height:1.85;}
+@media (max-width:760px){.world-cards{grid-template-columns:1fr;}}
+
+/* inputs de texto */
+.text-input,.text-area{
+  width:100%;background:var(--black);color:var(--white);
+  font-family:var(--mono);font-size:13px;letter-spacing:0.03em;line-height:1.7;
+  border:1px solid rgba(240,237,230,0.12);padding:1.1rem 1.2rem;outline:none;
+  transition:border-color 0.25s;
+}
+.text-input:focus,.text-area:focus{border-color:var(--acid);}
+.text-input::placeholder,.text-area::placeholder{color:rgba(240,237,230,0.28);}
+.text-area{resize:vertical;min-height:200px;}
+.field-error{font-family:var(--mono);font-size:9.5px;letter-spacing:0.08em;color:var(--glitch);min-height:1.2em;margin-top:0.5rem;display:block;}
+
+/* drag & drop adjuntos */
+.dropzone{
+  border:1px dashed rgba(240,237,230,0.22);background:rgba(240,237,230,0.012);
+  padding:2.4rem 1.5rem;text-align:center;cursor:pointer;transition:all 0.22s;
+}
+.dropzone:hover{border-color:rgba(184,255,0,0.4);background:rgba(184,255,0,0.02);}
+.dropzone.is-drag{border-color:var(--acid);background:rgba(184,255,0,0.06);}
+.dropzone:focus-visible{outline:2px solid var(--acid);outline-offset:3px;}
+.dz-icon{font-size:1.6rem;margin-bottom:0.7rem;display:block;}
+.dz-main{font-family:var(--mono);font-size:11px;letter-spacing:0.1em;color:rgba(240,237,230,0.7);}
+.dz-main b{color:var(--acid);font-weight:400;}
+.dz-sub{font-family:var(--mono);font-size:9px;letter-spacing:0.08em;color:rgba(240,237,230,0.3);line-height:1.8;margin-top:0.6rem;}
+.file-list{margin-top:1.2rem;display:flex;flex-direction:column;gap:1px;}
+.file-row{display:flex;align-items:center;gap:1rem;background:rgba(240,237,230,0.025);padding:0.85rem 1.1rem;}
+.file-meta{flex:1 1 auto;min-width:0;}
+.file-name{font-family:var(--mono);font-size:11px;color:var(--white);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.file-size{font-family:var(--mono);font-size:9px;color:rgba(240,237,230,0.35);margin-top:0.2rem;}
+.file-remove{flex:0 0 auto;background:none;border:1px solid rgba(255,45,85,0.3);color:var(--glitch);font-family:var(--mono);font-size:9px;letter-spacing:0.12em;padding:0.4rem 0.7rem;cursor:pointer;transition:all 0.2s;}
+.file-remove:hover{background:var(--glitch);color:var(--black);border-color:var(--glitch);}
+.file-warn{font-family:var(--mono);font-size:9.5px;letter-spacing:0.06em;color:var(--glitch);line-height:1.7;margin-top:0.8rem;min-height:1em;}
+
+/* submit */
+.submit-row{margin-top:1rem;display:flex;align-items:center;gap:1.6rem;flex-wrap:wrap;}
+.btn-send{
+  background:var(--acid);color:var(--black);border:none;cursor:pointer;
+  font-family:var(--mono);font-size:12px;letter-spacing:0.2em;font-weight:700;
+  padding:1.1rem 2.4rem;transition:opacity 0.25s;
+}
+.btn-send:hover{opacity:0.8;}
+.btn-send:disabled{opacity:0.4;cursor:default;}
+.send-status{font-family:var(--mono);font-size:11px;letter-spacing:0.05em;line-height:1.7;color:rgba(240,237,230,0.5);min-height:1.2em;}
+.send-status.ok{color:var(--acid);}
+.send-status.err{color:var(--glitch);}
+.free-line{font-family:var(--mono);font-size:9px;letter-spacing:0.18em;color:var(--acid);margin-top:2.6rem;}
+
+/* PROMESA / que pasa despues */
+#despues{padding:7vh 8vw;flex-direction:column;border-top:1px solid rgba(240,237,230,0.07);}
+.after-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:rgba(240,237,230,0.06);width:100%;margin-top:2.5rem;}
+.after-step{background:var(--black);padding:2rem 1.8rem;transition:background-color 0.25s;}
+.after-step:hover{background:rgba(184,255,0,0.04);}
+.after-n{font-family:var(--mono);font-size:9px;letter-spacing:0.2em;color:rgba(240,237,230,0.25);margin-bottom:1rem;}
+.after-step h4{font-family:var(--display);font-size:1.5rem;line-height:1;color:var(--acid);margin-bottom:0.7rem;}
+.after-step p{font-family:var(--mono);font-size:10px;color:rgba(240,237,230,0.4);line-height:1.9;}
+.after-gold{font-family:var(--body);font-size:0.98rem;color:rgba(240,237,230,0.7);line-height:1.7;margin-top:2.5rem;max-width:72ch;border-left:1px solid rgba(184,255,0,0.3);padding-left:1.4rem;}
+.after-gold b{color:var(--acid);font-weight:500;}
+.alt-line{font-family:var(--mono);font-size:11px;color:rgba(240,237,230,0.45);line-height:1.9;margin-top:2.2rem;}
+.alt-line a{color:var(--acid);text-decoration:none;border-bottom:1px solid var(--acid);padding-bottom:1px;}
+.alt-line a:hover{color:var(--white);border-color:var(--white);}
+@media (max-width:760px){.after-grid{grid-template-columns:1fr;}}
+
+/* NOTA GATES */
+.gate-note{font-family:var(--mono);font-size:10px;color:rgba(255,45,85,0.7);letter-spacing:0.06em;line-height:1.9;margin-top:3rem;border:1px solid rgba(255,45,85,0.25);padding:1.3rem 1.5rem;background:rgba(255,45,85,0.04);max-width:82ch;}
+
+/* SEP */
+.sep{font-family:var(--mono);font-size:9px;letter-spacing:0.3em;color:rgba(240,237,230,0.08);text-align:center;padding:1.5rem;display:block;}
+
+/* FOOTER (espejo de servicios.html / index.html) */
+#footer{padding:5rem 8vw 3.5rem;display:flex;flex-direction:column;border-top:1px solid rgba(240,237,230,0.07);}
+.ftop{display:flex;justify-content:space-between;align-items:flex-start;width:100%;margin-bottom:4rem;}
+.flogo{font-family:var(--display);font-size:5rem;line-height:0.88;color:rgba(240,237,230,0.06);}
+.flinks{display:flex;gap:2.5rem;flex-wrap:wrap;}
+.flinks a{font-family:var(--mono);font-size:9px;letter-spacing:0.2em;color:rgba(240,237,230,0.25);text-decoration:none;transition:color 0.2s;}
+.flinks a:hover{color:var(--acid);}
+.fbot{display:flex;justify-content:space-between;width:100%;flex-wrap:wrap;gap:1rem;}
+.fcopy{font-family:var(--mono);font-size:9px;color:rgba(240,237,230,0.12);letter-spacing:0.12em;}
+.facid{font-family:var(--mono);font-size:9px;color:var(--acid);letter-spacing:0.12em;opacity:0.4;}
+
+@media (max-width:760px){
+  #nav{padding:1.2rem 5vw;}
+  .nav-links{gap:0.9rem;}
+  .nav-links a{font-size:9px;letter-spacing:0.13em;}
+  section{padding-left:5vw;padding-right:5vw;}
+  #contacto-hero{padding:12vh 5vw 4vh;}
+  .ftop{flex-direction:column;gap:2rem;}
+  .fbot{flex-direction:column;gap:0.5rem;}
+}
+</style>
+</head>
+<body>
+
+<nav id="nav">
+  <a href="index.html" class="nav-logo">HG — VL / 2026</a>
+  <div class="nav-links">
+    <a href="servicios.html#seccion-managers" class="seg">🎤 ARTISTAS</a>
+    <a href="servicios.html#seccion-marcas" class="seg">🏢 MARCAS</a>
+    <a href="servicios.html#proceso">PROCESO</a>
+    <a href="#intake">CONTACTO</a>
+  </div>
+</nav>
+
+<div id="scroll-container">
+
+  <!-- HERO -->
+  <section id="contacto-hero">
+    <span class="hero-tag">PASO 01 · CONTACTO Y DIAGNÓSTICO</span>
+    <h1 class="hero-title">CONTANOS EL PROBLEMA. NO TE VENDEMOS.</h1>
+    <p class="hero-sub">MADE BY HUMANS · ESTA ES LA LÍNEA DIRECTA · ESCUCHAMOS PRIMERO · AGENDAR LA LLAMADA VIENE DESPUÉS</p>
+    <p class="hero-thesis">Antes de agendar nada, contate. Decinos qué estás construyendo —el show, la marca, el lanzamiento— y <b>dónde sentís la brecha entre lo que mostrás y lo que sos</b>. Ver dónde está esa brecha es información, y la información es gratis: la compartimos. Lo que se cobra es <b>transformarla</b>. Soltá acá lo que tengas (un reel, un set, un brief, una imagen) y te leemos como personas, no como un formulario.</p>
+  </section>
+
+  <span class="sep">— — — — — — — — —</span>
+
+  <!-- FORM -->
+  <section id="intake">
+    <div class="form-step">EXPLICATE — TARDA 2 MINUTOS</div>
+    <div class="sec-hdr">
+      <h2 class="sec-title">LA LÍNEA<br>DIRECTA</h2>
+    </div>
+
+    <form class="intake-form" id="intake-form" novalidate>
+
+      <!-- 1 · SEGMENTO -->
+      <div class="field">
+        <span class="field-label">01 · ¿En qué mundo estás? <span class="req">*</span></span>
+        <div class="world-cards" role="group" aria-label="Elegí tu mundo">
+          <button type="button" class="world-card" data-segmento="managers" aria-pressed="false">
+            <span class="wc-emoji">🎤</span>
+            <h3>MANAGERS &amp; ARTISTAS</h3>
+            <span class="wc-for">Música · eventos · espectáculo</span>
+            <p>Armás una gira, lanzás un álbum, montás un show, curás un line-up. Buscás visuales en vivo, mapping, contenido de gira, identidad escénica.</p>
+          </button>
+          <button type="button" class="world-card" data-segmento="marcas" aria-pressed="false">
+            <span class="wc-emoji">🏢</span>
+            <h3>MARCAS &amp; MERCADO LOCAL</h3>
+            <span class="wc-for">PyME · startups · marcas</span>
+            <p>Sentís que "lo que mostramos ya no es lo que somos". Buscás identidad, dirección visual, motion de marca o una entrada rápida con IA.</p>
+          </button>
+          <button type="button" class="world-card" data-segmento="otra" aria-pressed="false">
+            <span class="wc-emoji">✦</span>
+            <h3>TODAVÍA NO SÉ</h3>
+            <span class="wc-for">Otra cosa · sin etiqueta aún</span>
+            <p>No te encaja ninguna de las dos, o es algo distinto. Bien: contanos igual. Ya vamos a ver juntos dónde encaja.</p>
+          </button>
+        </div>
+        <span class="field-error" id="err-segmento" role="alert"></span>
+      </div>
+
+      <!-- 2 · NOMBRE -->
+      <div class="field">
+        <label class="field-label" for="f-nombre">02 · ¿Cómo te llamás? <span class="req">*</span></label>
+        <input type="text" class="text-input" id="f-nombre" name="nombre" autocomplete="name" placeholder="Tu nombre / el del proyecto" required>
+        <span class="field-error" id="err-nombre" role="alert"></span>
+      </div>
+
+      <!-- 3 · EMAIL -->
+      <div class="field">
+        <label class="field-label" for="f-email">03 · ¿A dónde te escribimos? <span class="req">*</span></label>
+        <input type="email" class="text-input" id="f-email" name="email" autocomplete="email" placeholder="tu@email.com" required>
+        <span class="field-error" id="err-email" role="alert"></span>
+      </div>
+
+      <!-- 4 · MENSAJE -->
+      <div class="field">
+        <label class="field-label" for="f-mensaje">04 · Contate / explicate <span class="req">*</span></label>
+        <textarea class="text-area" id="f-mensaje" name="mensaje" placeholder="¿Qué estás construyendo? ¿Dónde sentís la brecha entre lo que mostrás y lo que sos? Contanos el show, la marca, el lanzamiento, el problema — lo que sea. Cuanto más concreto, mejor te leemos." required></textarea>
+        <span class="field-hint">No hay respuesta correcta. Escribí como hablás.</span>
+        <span class="field-error" id="err-mensaje" role="alert"></span>
+      </div>
+
+      <!-- 5 · ADJUNTOS -->
+      <div class="field">
+        <span class="field-label">05 · Soltá lo que tengas <span style="color:rgba(240,237,230,0.3)">(opcional)</span></span>
+        <div class="dropzone" id="dropzone" tabindex="0" role="button" aria-label="Soltá archivos o hacé clic para elegir. Imágenes, video, audio o PDF, hasta 25 MB por archivo.">
+          <span class="dz-icon" aria-hidden="true">⇪</span>
+          <div class="dz-main">Arrastrá tus archivos acá — o <b>hacé clic para elegir</b></div>
+          <div class="dz-sub">Reels, sets, brief, imágenes · imagen / video / audio / PDF · máx. 25&nbsp;MB por archivo · 150&nbsp;MB en total<br>El drop de archivos todavía no está activo: por ahora los adjuntos van por mail (hola@hg-vl.com) o pegando un link de Drive/WeTransfer en tu mensaje.</div>
+        </div>
+        <input type="file" id="file-input" multiple accept="image/*,video/*,audio/*,application/pdf" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;" aria-hidden="true" tabindex="-1">
+        <div class="file-list" id="file-list" aria-live="polite"></div>
+        <div class="file-warn" id="file-warn" role="alert"></div>
+      </div>
+
+      <!-- 6 · ENVIAR -->
+      <div class="submit-row">
+        <button type="submit" class="btn-send" id="btn-send">ENVIAR</button>
+        <span class="send-status" id="send-status" role="status" aria-live="polite"></span>
+      </div>
+
+      <p class="free-line">EL CONTACTO ES GRATIS · SIN MURO · ESCUCHAMOS, NO VENDEMOS</p>
+    </form>
+  </section>
+
+  <span class="sep">— — — — — — — — —</span>
+
+  <!-- QUE PASA DESPUES -->
+  <section id="despues">
+    <div class="sec-hdr">
+      <h2 class="sec-title">QUÉ PASA<br>DESPUÉS</h2>
+    </div>
+    <div class="after-grid">
+      <div class="after-step">
+        <div class="after-n">01</div>
+        <h4>TE LEEMOS</h4>
+        <p>De verdad. Tu mensaje y tus archivos los mira una persona, no un bot. Sin respuesta automática de oficina.</p>
+      </div>
+      <div class="after-step">
+        <div class="after-n">02</div>
+        <h4>TE ESCRIBIMOS</h4>
+        <p>Te respondemos al email con una primera lectura del problema y, si tiene sentido, te proponemos la llamada de diagnóstico (30 min, gratis).</p>
+      </div>
+      <div class="after-step">
+        <div class="after-n">03</div>
+        <h4>SALÍS CON CLARIDAD</h4>
+        <p>En la llamada vemos dónde está la brecha y qué paquete encaja —o si todavía no hace falta contratar nada. Ver es gratis; transformar se cobra.</p>
+      </div>
+    </div>
+    <p class="after-gold"><b>Regla de oro:</b> esta puerta y la llamada de diagnóstico son gratis — son información, y la información se comparte. Se cobra recién cuando empezamos a <b>transformar</b> la interfaz, de la marca o del show, y se cobra sin culpa, con depósito por adelantado.</p>
+    <p class="alt-line">¿Preferís ver primero qué hacemos? Mirá los <a href="servicios.html">paquetes y el proceso completo</a>.</p>
+
+    <div class="gate-note">
+      NOTA TÉCNICA — El intake escribe el texto + email a un nodo Firebase /contacto vía POST
+      anónimo (mismo patrón fbPush que el resto del sitio). El drop de adjuntos está en MODO
+      FALLBACK: Firebase Storage todavía no está habilitado, así que los archivos NO se suben (se
+      pide mandarlos a hola@hg-vl.com o pegar un link de Drive/WeTransfer). El formulario degrada
+      con gracia y nunca rompe. Para que los POST a /contacto persistan hace falta una regla de
+      seguridad en la consola Firebase (/contacto con .write append y .read:false); sin ella el
+      form cae al fallback de email. Encender el drop real (Storage + bucket + reglas) queda
+      pendiente como acción humana.
+    </div>
+  </section>
+
+  <span class="sep">— — — — — — — — —</span>
+
+  <!-- FOOTER -->
+  <section id="footer">
+    <div class="ftop">
+      <div class="flogo">HG<br>VL</div>
+      <div class="flinks">
+        <a href="https://www.youtube.com/@Human.Glitche" target="_blank" rel="noopener">YOUTUBE</a>
+        <a href="https://x.com/HGlitche" target="_blank" rel="noopener">X / TWITTER</a>
+        <a href="https://kick.com/visuallab" target="_blank" rel="noopener">KICK</a>
+        <a href="https://discord.gg/mkHhBdUw" target="_blank" rel="noopener">DISCORD</a>
+        <a href="https://github.com/human-zeta" target="_blank" rel="noopener">GITHUB</a>
+      </div>
+    </div>
+    <div class="fbot">
+      <span class="fcopy">© 2026 HUMAN GLITCHE — HUMAN STUDIO — BUENOS AIRES</span>
+      <span class="facid">QUIEN VE LA INTERFAZ, YA NO PUEDE DEJAR DE REDISEÑARLA.</span>
+    </div>
+  </section>
+
+</div>
+
+<script>
+/* ─────────────────────────────────────────────────────────────────────────
+   INTAKE — PASO 01. Backend in-house GATED (Firebase), sin SDK pesado.
+
+   · Texto → POST REST anónimo a `${FB_URL}/contacto.json` (mismo patrón fbPush()
+     de index.html y de la captura de newsletter de web/motor-media/).
+   · Adjuntos → Firebase Storage del MISMO proyecto vía REST; el downloadURL queda
+     en el registro (campo adjuntos[]).
+   · FB_URL y STORAGE_BUCKET son PLACEHOLDERS — sin credenciales reales en el repo;
+     se confirman por acción humana (GATES). Storage NO está habilitado todavía:
+     el envío real está GATED. El form DEGRADA CON GRACIA: si el backend no
+     responde, guarda el texto si puede y, si no, ofrece el canal directo. NUNCA
+     rompe el flujo del usuario.
+   Descriptor: web/contacto/contacto.config.json.
+───────────────────────────────────────────────────────────────────────────── */
+(function(){
+  'use strict';
+
+  /* ── CONSTANTES DE BACKEND ──
+     FB_URL: el mismo databaseURL público de cliente que usa index.html
+       (hg-vl-shaders-default-rtdb). Es un databaseURL público de cliente, no un
+       secreto. CABLEADO al valor real del sitio vivo. Si la página que embebe
+       esto ya define FB_URL, se reutiliza.
+     STORAGE_BUCKET: el bucket por defecto del MISMO proyecto Firebase. Storage
+       AÚN NO está habilitado en el proyecto → MODO FALLBACK: la subida de
+       adjuntos está NEUTRALIZADA (ver STORAGE_HABILITADO abajo). El bucket queda
+       como placeholder PENDIENTE DE ACTIVACIÓN; no se inventa un valor real. */
+  var FB_URL = (typeof window !== 'undefined' && typeof window.FB_URL !== 'undefined')
+    ? window.FB_URL
+    : 'https://hg-vl-shaders-default-rtdb.firebaseio.com';   // REAL · databaseURL público de cliente (idéntico a index.html)
+  var STORAGE_BUCKET = (typeof window !== 'undefined' && typeof window.FB_STORAGE_BUCKET !== 'undefined')
+    ? window.FB_STORAGE_BUCKET
+    : '__FIREBASE_STORAGE_BUCKET__';   // PENDIENTE DE ACTIVACIÓN · Storage no habilitado · no inventar bucket
+
+  /* MODO FALLBACK DE ADJUNTOS — Storage NO habilitado todavía. Mientras esta
+     bandera sea false, NUNCA se intenta un upload al bucket (evita un error de
+     consola contra un bucket inexistente). El texto + email se guardan igual en
+     /contacto; los archivos soltados se reconocen y se le pide al usuario que los
+     mande por el canal directo (o que pegue un link Drive/WeTransfer en el
+     mensaje). Para encender el drop real: habilitar Storage + confirmar
+     STORAGE_BUCKET y poner esta bandera en true (acción humana, GATES). */
+  var STORAGE_HABILITADO = (typeof window !== 'undefined' && window.FB_STORAGE_HABILITADO === true);
+
+  var NODE = '/contacto';
+  var MAX_PER_FILE = 25 * 1024 * 1024;     // 25 MB por archivo
+  var MAX_TOTAL    = 150 * 1024 * 1024;    // 150 MB en total
+  var ALLOWED_RE   = /^(image\/|video\/|audio\/|application\/pdf$)/;
+  var CANAL_DIRECTO = 'hola@hg-vl.com';    // fallback humano si el backend no responde
+
+  // ── refs ──
+  var form     = document.getElementById('intake-form');
+  var cards    = Array.prototype.slice.call(document.querySelectorAll('.world-card'));
+  var nombreI  = document.getElementById('f-nombre');
+  var emailI   = document.getElementById('f-email');
+  var msgI     = document.getElementById('f-mensaje');
+  var dropzone = document.getElementById('dropzone');
+  var fileIn   = document.getElementById('file-input');
+  var fileList = document.getElementById('file-list');
+  var fileWarn = document.getElementById('file-warn');
+  var btn      = document.getElementById('btn-send');
+  var statusEl = document.getElementById('send-status');
+  if(!form) return;
+
+  var segmento = null;
+  var files = [];   // [{ id, file }]
+
+  // ── PREFILL por URL (?m=managers|marcas & p=<id>) ──────────────────────────
+  // Llega desde web/oferta-studio/servicios.html: el CTA de cada paquete enlaza
+  // a ../contacto/index.html?m=<mundo>&p=<id>. Robusto: params ausentes o
+  // inválidos → la página funciona igual que sin ellos. No toca el gating.
+  function applyPrefill(){
+    var params;
+    try{ params = new URLSearchParams(window.location.search); }
+    catch(e){ return; }   // navegador sin URLSearchParams → degradar a sin prefill
+
+    // 1) mundo → preseleccionar la tarjeta de segmento (mismo efecto que un clic)
+    var m = (params.get('m') || '').trim().toLowerCase();
+    if(m === 'managers' || m === 'marcas'){
+      var target = cards.filter(function(c){ return c.getAttribute('data-segmento') === m; })[0];
+      if(target){
+        segmento = m;
+        cards.forEach(function(c){ c.setAttribute('aria-pressed', c === target ? 'true' : 'false'); });
+      }
+    }
+
+    // 2) paquete → anteponer una mención al textarea (solo IDs válidos A1..A4 / B1..B5)
+    var p = (params.get('p') || '').trim().toUpperCase();
+    if(/^[AB][1-9]$/.test(p) && msgI && !msgI.value){
+      msgI.value = 'Me interesa el paquete ' + p + ' — ';
+    }
+  }
+  applyPrefill();
+
+  // ── helpers ──
+  function validEmail(v){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); }
+  function setErr(id, msg){ var el = document.getElementById(id); if(el) el.textContent = msg || ''; }
+  function say(msg, cls){
+    statusEl.textContent = msg || '';
+    statusEl.className = 'send-status' + (cls ? ' ' + cls : '');
+  }
+  function fmtSize(b){
+    if(b < 1024) return b + ' B';
+    if(b < 1024*1024) return (b/1024).toFixed(1) + ' KB';
+    return (b/(1024*1024)).toFixed(1) + ' MB';
+  }
+
+  // ── segmento (tarjetas) ──
+  cards.forEach(function(card){
+    card.addEventListener('click', function(){
+      segmento = card.getAttribute('data-segmento');
+      cards.forEach(function(c){ c.setAttribute('aria-pressed', c === card ? 'true' : 'false'); });
+      setErr('err-segmento', '');
+    });
+  });
+
+  // ── adjuntos ──
+  function totalBytes(){ return files.reduce(function(s, f){ return s + f.file.size; }, 0); }
+
+  function renderFiles(){
+    fileList.innerHTML = '';
+    files.forEach(function(entry){
+      var row = document.createElement('div');
+      row.className = 'file-row';
+
+      var meta = document.createElement('div');
+      meta.className = 'file-meta';
+      var name = document.createElement('div');
+      name.className = 'file-name';
+      name.textContent = entry.file.name;
+      var size = document.createElement('div');
+      size.className = 'file-size';
+      size.textContent = fmtSize(entry.file.size);
+      meta.appendChild(name);
+      meta.appendChild(size);
+
+      var rm = document.createElement('button');
+      rm.type = 'button';
+      rm.className = 'file-remove';
+      rm.textContent = 'QUITAR';
+      rm.setAttribute('aria-label', 'Quitar ' + entry.file.name);
+      rm.addEventListener('click', function(){
+        files = files.filter(function(f){ return f.id !== entry.id; });
+        renderFiles();
+      });
+
+      row.appendChild(meta);
+      row.appendChild(rm);
+      fileList.appendChild(row);
+    });
+  }
+
+  function addFiles(fileListLike){
+    var incoming = Array.prototype.slice.call(fileListLike || []);
+    var rejected = [];
+    incoming.forEach(function(file){
+      var type = file.type || '';
+      // PDF a veces llega sin type fiable; aceptar por extensión .pdf
+      var isPdf = type === 'application/pdf' || /\.pdf$/i.test(file.name);
+      if(!(ALLOWED_RE.test(type) || isPdf)){
+        rejected.push(file.name + ' (tipo no permitido)');
+        return;
+      }
+      if(file.size > MAX_PER_FILE){
+        rejected.push(file.name + ' (' + fmtSize(file.size) + ' > 25 MB)');
+        return;
+      }
+      if(totalBytes() + file.size > MAX_TOTAL){
+        rejected.push(file.name + ' (supera el total de 150 MB)');
+        return;
+      }
+      // evitar duplicados exactos (nombre+tamaño)
+      var dup = files.some(function(f){ return f.file.name === file.name && f.file.size === file.size; });
+      if(dup) return;
+      files.push({ id: 'f' + Date.now() + '-' + Math.random().toString(36).slice(2,7), file: file });
+    });
+    fileWarn.textContent = rejected.length
+      ? 'No se sumaron: ' + rejected.join(' · ')
+      : '';
+    renderFiles();
+  }
+
+  // dropzone — click abre el selector
+  dropzone.addEventListener('click', function(){ fileIn.click(); });
+  dropzone.addEventListener('keydown', function(e){
+    if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); fileIn.click(); }
+  });
+  fileIn.addEventListener('change', function(){ addFiles(fileIn.files); fileIn.value = ''; });
+
+  ['dragenter','dragover'].forEach(function(ev){
+    dropzone.addEventListener(ev, function(e){ e.preventDefault(); e.stopPropagation(); dropzone.classList.add('is-drag'); });
+  });
+  ['dragleave','drop'].forEach(function(ev){
+    dropzone.addEventListener(ev, function(e){ e.preventDefault(); e.stopPropagation(); dropzone.classList.remove('is-drag'); });
+  });
+  dropzone.addEventListener('drop', function(e){
+    var dt = e.dataTransfer;
+    if(dt && dt.files && dt.files.length) addFiles(dt.files);
+  });
+
+  // ── subida a Firebase Storage vía REST (sin SDK) ──
+  // Devuelve { url, name, size, type } o lanza si falla. GATED: si el bucket es
+  // placeholder o Storage no está habilitado, el fetch falla y se captura arriba.
+  async function uploadToStorage(file){
+    var path = 'contacto/' + Date.now() + '-' + Math.random().toString(36).slice(2,8) + '/' + encodeURIComponent(file.name);
+    var endpoint = 'https://firebasestorage.googleapis.com/v0/b/' + encodeURIComponent(STORAGE_BUCKET) +
+                   '/o?uploadType=media&name=' + encodeURIComponent(path);
+    var res = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': file.type || 'application/octet-stream' },
+      body: file
+    });
+    if(!res.ok) throw new Error('storage ' + res.status);
+    var meta = await res.json();
+    var token = (meta.downloadTokens || '').split(',')[0];
+    var url = 'https://firebasestorage.googleapis.com/v0/b/' + encodeURIComponent(STORAGE_BUCKET) +
+              '/o/' + encodeURIComponent(meta.name || path) + '?alt=media' + (token ? '&token=' + token : '');
+    return { url: url, name: file.name, size: file.size, type: file.type || '' };
+  }
+
+  // ── escritura del registro a /contacto (mismo patrón fbPush) ──
+  async function pushContacto(data){
+    var r = await fetch(FB_URL + NODE + '.json', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    if(!r.ok) throw new Error('db ' + r.status);
+    return r.json();
+  }
+
+  // ── validación ──
+  function validate(){
+    var ok = true;
+    if(!segmento){ setErr('err-segmento', 'Elegí tu mundo (o "todavía no sé").'); ok = false; }
+    else setErr('err-segmento', '');
+
+    if(!nombreI.value.trim()){ setErr('err-nombre', 'Decinos cómo te llamás.'); ok = false; }
+    else setErr('err-nombre', '');
+
+    var email = (emailI.value || '').trim().toLowerCase();
+    if(!validEmail(email)){ setErr('err-email', 'Revisá el email.'); ok = false; }
+    else setErr('err-email', '');
+
+    if(!msgI.value.trim()){ setErr('err-mensaje', 'Contanos algo, aunque sea una línea.'); ok = false; }
+    else setErr('err-mensaje', '');
+
+    return ok;
+  }
+
+  // ── submit ──
+  form.addEventListener('submit', async function(e){
+    e.preventDefault();
+    if(!validate()){ say('Revisá los campos marcados.', 'err'); return; }
+
+    btn.disabled = true;
+    say('Enviando…');
+
+    // 1) adjuntos. MODO FALLBACK: Storage no habilitado → NO intentamos upload
+    //    (evita un error de consola contra un bucket inexistente). Si el usuario
+    //    soltó archivos, los anotamos como pendientes para pedirle el canal
+    //    directo / un link al final. Cuando Storage se encienda
+    //    (STORAGE_HABILITADO=true) se sube por REST igual que antes.
+    var adjuntos = [];
+    var adjuntosPendientes = 0;   // archivos soltados que aún no se pueden subir
+    if(files.length){
+      if(STORAGE_HABILITADO){
+        say('Subiendo archivos…');
+        for(var i = 0; i < files.length; i++){
+          try{
+            var up = await uploadToStorage(files[i].file);
+            adjuntos.push(up);
+          }catch(err){
+            adjuntosPendientes++;   // Storage respondió mal → seguimos sin romper
+          }
+        }
+      }else{
+        // Storage no habilitado: registramos solo los metadatos (sin subir bytes).
+        adjuntosPendientes = files.length;
+        files.forEach(function(f){
+          adjuntos.push({ name: f.file.name, size: f.file.size, type: f.file.type || '', pendiente: true });
+        });
+      }
+    }
+
+    // 2) escribir el registro de texto
+    var record = {
+      nombre: nombreI.value.trim(),
+      email: (emailI.value || '').trim().toLowerCase(),
+      segmento: segmento,                 // 'managers' | 'marcas' | 'otra'
+      mensaje: msgI.value.trim(),
+      adjuntos: adjuntos,                 // [{url,name,size,type}] (vacío si Storage gated)
+      ts: Date.now(),
+      date: new Date().toISOString().slice(0,10),
+      source: 'contacto',
+      page: (typeof location !== 'undefined' && location.pathname) ? location.pathname : '',
+      status: 'new'
+    };
+
+    try{
+      await pushContacto(record);
+      form.reset();
+      cards.forEach(function(c){ c.setAttribute('aria-pressed','false'); });
+      segmento = null; files = []; renderFiles(); fileWarn.textContent = '';
+      if(adjuntosPendientes){
+        say('Te leímos. Te escribimos pronto. (Los adjuntos todavía no se suben acá — mandalos a ' + CANAL_DIRECTO + ' o pegá un link de Drive/WeTransfer en tu mensaje y los miramos igual.)', 'ok');
+      }else{
+        say('Te leímos. Te escribimos pronto.', 'ok');
+      }
+    }catch(err){
+      // Backend gated / sin respuesta → degradar con gracia, nunca romper.
+      btn.disabled = false;
+      say('No pudimos registrarlo ahora. Escribinos directo a ' + CANAL_DIRECTO + ' y te leemos igual.', 'err');
+    }
+  });
+})();
+</script>
+
+</body>
+</html>
