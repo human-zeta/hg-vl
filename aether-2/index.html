@@ -217,6 +217,8 @@
       <option value="claude">Anthropic Claude</option>
       <option value="grok">xAI Grok</option>
     </select>
+    <label>Modelo <span class="small" style="opacity:.5">· si te frena (429), probá un lite</span></label>
+    <select id="model"></select>
     <label>API key de <span id="keyprov">Gemini</span> (se guarda local en tu browser)</label>
     <input id="apikey" type="password" placeholder="pegá tu key…">
     <div class="small" style="margin:4px 0 8px"><a id="keylink" href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">→ conseguir una key de Gemini</a></div>
@@ -489,7 +491,12 @@ void main(){
   gl_FragColor = vec4(c, 1.0);
 }`;
 
-const MODELS={ gemini:'gemini-2.0-flash', claude:'claude-sonnet-4-6', grok:'grok-4' };
+const MODEL_OPTIONS={
+  gemini:['gemini-2.5-flash-lite','gemini-2.0-flash','gemini-2.5-flash','gemini-2.0-flash-lite'],
+  claude:['claude-sonnet-4-6','claude-opus-4-8','claude-haiku-4-5-20251001'],
+  grok:['grok-4','grok-3'] };
+const getModel=p=>{ p=p||provSel(); return localStorage.getItem('aether2_model_'+p) || MODEL_OPTIONS[p][0]; };
+const setModel=m=>localStorage.setItem('aether2_model_'+provSel(), m);
 const PROVNAME={ gemini:'Gemini', claude:'Claude', grok:'Grok' };
 const KEYURL={ gemini:'https://aistudio.google.com/apikey', claude:'https://console.anthropic.com/settings/keys', grok:'https://console.x.ai/' };
 const provSel=()=>{ const e=document.getElementById('provider'); return e?e.value:'gemini'; };
@@ -529,7 +536,7 @@ async function callGemini(history){
   const body={ systemInstruction:{parts:[{text:SYSTEM}]},
     contents:history.map(m=>({role:m.role==='model'?'model':'user',parts:[{text:m.text}]})),
     generationConfig:{temperature:0.9} };
-  const res=await fetchRetry('https://generativelanguage.googleapis.com/v1beta/models/'+MODELS.gemini+':generateContent?key='+encodeURIComponent(getKey()),
+  const res=await fetchRetry('https://generativelanguage.googleapis.com/v1beta/models/'+getModel()+':generateContent?key='+encodeURIComponent(getKey()),
     {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)},'Gemini');
   const j=await res.json(); const cand=j.candidates&&j.candidates[0]; const parts=cand&&cand.content&&cand.content.parts;
   if(!parts||!parts.length) throw new Error('Gemini devolvió una respuesta vacía ('+((cand&&cand.finishReason)||'sin contenido')+'). Reformulá el prompt.');
@@ -539,7 +546,7 @@ async function callClaude(history){
   const msgs=history.map(m=>({role:m.role==='model'?'assistant':'user', content:m.text}));
   const res=await fetchRetry('https://api.anthropic.com/v1/messages',
     {method:'POST',headers:{'content-type':'application/json','x-api-key':getKey(),'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-     body:JSON.stringify({model:MODELS.claude,max_tokens:4096,temperature:0.9,system:SYSTEM,messages:msgs})},'Claude');
+     body:JSON.stringify({model:getModel(),max_tokens:4096,temperature:0.9,system:SYSTEM,messages:msgs})},'Claude');
   const j=await res.json(); const blk=(j.content||[]).find(b=>b&&b.type==='text');
   if(!blk) throw new Error('Claude devolvió una respuesta vacía ('+(j.stop_reason||'sin texto')+').');
   return blk.text||'';
@@ -548,7 +555,7 @@ async function callGrok(history){
   const msgs=[{role:'system',content:SYSTEM}].concat(history.map(m=>({role:m.role==='model'?'assistant':'user', content:m.text})));
   const res=await fetchRetry('https://api.x.ai/v1/chat/completions',
     {method:'POST',headers:{'content-type':'application/json','authorization':'Bearer '+getKey()},
-     body:JSON.stringify({model:MODELS.grok,messages:msgs,temperature:0.9})},'Grok');
+     body:JSON.stringify({model:getModel(),messages:msgs,temperature:0.9})},'Grok');
   const j=await res.json(); const c=j.choices&&j.choices[0]&&j.choices[0].message;
   if(!c||c.content==null) throw new Error('Grok devolvió una respuesta vacía.');
   return c.content||'';
@@ -589,8 +596,11 @@ document.getElementById('keyDemo').addEventListener('click',()=>{ setKey(''); do
 function syncKeyUI(){ const p=provSel(), nm=PROVNAME[p]||p;
   const kp=document.getElementById('keyprov'); if(kp) kp.textContent=nm;
   const ai=document.getElementById('apikey'); if(ai){ ai.value=getKey(); ai.placeholder='pegá tu key de '+nm+'…'; }
-  const kl=document.getElementById('keylink'); if(kl){ kl.href=KEYURL[p]||'#'; kl.textContent='→ conseguir una key de '+nm; } }
+  const kl=document.getElementById('keylink'); if(kl){ kl.href=KEYURL[p]||'#'; kl.textContent='→ conseguir una key de '+nm; }
+  const ms=document.getElementById('model'); if(ms){ const cur=getModel(p);
+    ms.innerHTML=(MODEL_OPTIONS[p]||[]).map(m=>`<option value="${m}" ${m===cur?'selected':''}>${m}</option>`).join(''); } }
 document.getElementById('provider').addEventListener('change', syncKeyUI);
+document.getElementById('model').addEventListener('change', e=>setModel(e.target.value));
 syncKeyUI();
 
 /* ===================== FASE 2 · variaciones, evolve, export ===================== */
