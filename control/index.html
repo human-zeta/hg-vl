@@ -1,0 +1,170 @@
+<!doctype html><html lang="es"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CONTROL — Human Glitche · control surface MIDI/OSC</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{ --acid:#b8ff00; --glitch:#ff2d55; --cyan:#3ad0ff; --ink:#f0ede6; --line:rgba(240,237,230,.12); --bg:#050505; --panel:#0c0c0c; }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-user-select:none;user-select:none;}
+  html,body{min-height:100%;background:var(--bg);color:var(--ink);font-family:'Space Mono',monospace;}
+  .top{display:flex;justify-content:space-between;align-items:center;padding:14px 20px;border-bottom:1px solid var(--line);flex-wrap:wrap;gap:10px;}
+  .brand{font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:.03em;line-height:.8;} .brand b{color:var(--acid);font-weight:400;}
+  .brand small{display:block;font-family:'Space Mono';font-size:9px;letter-spacing:.18em;color:rgba(240,237,230,.4);margin-top:4px;}
+  .bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:11px;}
+  .bar a{font-size:10px;letter-spacing:.2em;color:rgba(240,237,230,.4);text-decoration:none;} .bar a:hover{color:var(--acid);}
+  .bar select,.bar input{background:var(--panel);color:var(--ink);border:1px solid var(--line);font:inherit;font-size:11px;padding:6px 8px;border-radius:4px;}
+  .btn{background:transparent;border:1px solid var(--line);color:var(--ink);font:inherit;font-size:11px;letter-spacing:.08em;padding:7px 11px;cursor:pointer;border-radius:4px;}
+  .btn:hover{border-color:var(--acid);color:var(--acid);} .btn.on{border-color:var(--acid);color:var(--acid);background:rgba(184,255,0,.1);}
+  .dot{width:9px;height:9px;border-radius:50%;background:#555;display:inline-block;margin-right:5px;} .dot.live{background:var(--acid);box-shadow:0 0 8px var(--acid);}
+  #addbar{display:none;gap:7px;padding:10px 20px;border-bottom:1px solid var(--line);flex-wrap:wrap;align-items:center;} #addbar.on{display:flex;}
+  #addbar span{font-size:10px;letter-spacing:.15em;color:rgba(240,237,230,.4);text-transform:uppercase;}
+  #grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:12px;padding:18px 20px;align-content:start;}
+  .ctl{background:var(--panel);border:1px solid var(--line);border-radius:7px;padding:10px;position:relative;display:flex;flex-direction:column;align-items:center;min-height:120px;}
+  .ctl .lbl{font-size:9px;letter-spacing:.06em;color:rgba(240,237,230,.6);margin-bottom:7px;text-align:center;min-height:11px;}
+  .ctl .map{position:absolute;top:5px;left:7px;font-size:7.5px;letter-spacing:.05em;color:rgba(240,237,230,.3);}
+  .ctl .val{font-size:9px;color:var(--acid);margin-top:6px;min-height:11px;}
+  .ctl .gear{position:absolute;top:4px;right:5px;font-size:11px;color:rgba(240,237,230,.35);cursor:pointer;display:none;} .editing .ctl .gear{display:block;} .ctl .gear:hover{color:var(--acid);}
+  /* fader */
+  .fader{width:24px;flex:1;background:#1a1a1a;border-radius:4px;position:relative;cursor:ns-resize;overflow:hidden;min-height:64px;}
+  .fader .fill{position:absolute;left:0;right:0;bottom:0;background:linear-gradient(var(--acid),#6a9400);}
+  /* knob */
+  .knob{width:62px;height:62px;border-radius:50%;background:#1a1a1a;border:2px solid #2a2a2a;position:relative;cursor:ns-resize;flex:0 0 auto;margin:auto 0;}
+  .knob .ind{position:absolute;left:50%;top:6px;width:3px;height:22px;background:var(--acid);transform-origin:50% 25px;transform:translateX(-50%) rotate(0deg);border-radius:2px;}
+  /* pad */
+  .pad{flex:1;width:100%;background:#1a1a1a;border-radius:5px;cursor:pointer;display:flex;align-items:center;justify-content:center;min-height:64px;font-size:18px;color:rgba(240,237,230,.3);transition:background .05s;}
+  .pad.hit{background:var(--acid);color:#050505;}
+  /* xy */
+  .xy{flex:1;width:100%;background:#1a1a1a;border-radius:5px;position:relative;cursor:crosshair;min-height:80px;overflow:hidden;}
+  .xy .cur{position:absolute;width:14px;height:14px;border-radius:50%;background:var(--acid);transform:translate(-50%,-50%);box-shadow:0 0 8px var(--acid);}
+  .editbox{position:absolute;inset:0;background:rgba(5,5,5,.96);border:1px solid var(--acid);border-radius:7px;padding:9px;z-index:5;display:flex;flex-direction:column;gap:5px;font-size:10px;}
+  .editbox input,.editbox select{background:#1a1a1a;color:var(--ink);border:1px solid var(--line);font:inherit;font-size:10px;padding:4px;border-radius:3px;width:100%;}
+  .editbox .x{position:absolute;top:4px;right:6px;cursor:pointer;color:var(--glitch);}
+  .editbox .del{color:var(--glitch);border-color:rgba(255,45,85,.4);}
+  #help{padding:14px 20px;font-size:10px;color:rgba(240,237,230,.45);line-height:1.7;border-top:1px solid var(--line);}
+  #help b{color:var(--acid);font-weight:400;} #help code{color:var(--cyan);}
+  #osc{display:none;gap:7px;align-items:center;} #osc.on{display:flex;}
+</style></head><body>
+<div class="top">
+  <div class="brand"><b>CONTROL</b> ◉<small>Human Glitche · control surface → MIDI / OSC</small></div>
+  <div class="bar">
+    <span><span class="dot" id="mdot"></span><span id="mtxt">MIDI off</span></span>
+    <select id="port" title="puerto de salida MIDI"><option value="">— sin puerto —</option></select>
+    <button class="btn" id="enable">habilitar MIDI</button>
+    <button class="btn" id="editBtn">editar</button>
+    <button class="btn" id="oscBtn" title="OSC por WebSocket (avanzado)">OSC</button>
+    <span id="osc"><input id="oscurl" placeholder="ws://localhost:8080" style="width:160px"><button class="btn" id="oscConn">conectar</button></span>
+    <button class="btn" id="save">guardar</button><button class="btn" id="load">cargar</button>
+    <button class="btn" id="exp">⤓</button><button class="btn" id="imp">⤒</button><input type="file" id="impf" accept="application/json" style="display:none">
+    <a href="/labs/">← LABS</a>
+  </div>
+</div>
+<div id="addbar"><span>agregar:</span>
+  <button class="btn" data-add="fader">+ fader</button><button class="btn" data-add="knob">+ knob</button>
+  <button class="btn" data-add="pad">+ pad</button><button class="btn" data-add="xy">+ XY</button>
+  <span style="margin-left:auto;color:rgba(240,237,230,.35)">tocá el ⚙ de cada control para mapearlo</span>
+</div>
+<div id="grid"></div>
+<div id="help">
+  <b>Sin controladora física:</b> creá un <b>puerto MIDI virtual</b> y la web le dispara — en Mac: <code>Audio MIDI Setup → IAC Driver → activar</code>; en Windows: <code>loopMIDI</code>. Después en VDMX/Resolume/Ableton elegís ese puerto como entrada y mapeás (MIDI learn). · Acá: <b>habilitar MIDI</b> → elegí el puerto → modo <b>play</b> y movés los controles. · <b>Faders/knobs/XY</b> mandan CC, los <b>pads</b> mandan Note. · Web MIDI anda en <b>Chrome/Edge</b> (en HTTPS). · <b>OSC</b>: como el browser no manda UDP, va por WebSocket a un puente local (avanzado).
+</div>
+<script>
+const $=id=>document.getElementById(id);
+let editing=false, midiAccess=null, midiOut=null, ws=null;
+let ctrls = load() || [
+  {t:'fader',l:'Fader 1',ch:1,cc:1}, {t:'fader',l:'Fader 2',ch:1,cc:2}, {t:'fader',l:'Fader 3',ch:1,cc:3}, {t:'fader',l:'Fader 4',ch:1,cc:4},
+  {t:'knob',l:'Knob 1',ch:1,cc:5}, {t:'knob',l:'Knob 2',ch:1,cc:6}, {t:'knob',l:'Knob 3',ch:1,cc:7}, {t:'knob',l:'Knob 4',ch:1,cc:8},
+  {t:'xy',l:'XY',ch:1,cc:9,cc2:10},
+  {t:'pad',l:'Pad 1',ch:1,note:36}, {t:'pad',l:'Pad 2',ch:1,note:37}, {t:'pad',l:'Pad 3',ch:1,note:38}, {t:'pad',l:'Pad 4',ch:1,note:39},
+  {t:'pad',l:'Pad 5',ch:1,note:40}, {t:'pad',l:'Pad 6',ch:1,note:41}, {t:'pad',l:'Pad 7',ch:1,note:42}, {t:'pad',l:'Pad 8',ch:1,note:43}
+];
+ctrls.forEach(c=>{ if(c.v==null) c.v = c.t==='xy'?[64,64]:0; });
+
+// ---- MIDI ----
+function ccBytes(ch,cc,v){ return [0xB0|((ch-1)&15), cc&127, v&127]; }
+function noteBytes(ch,note,on){ return [(on?0x90:0x80)|((ch-1)&15), note&127, on?127:0]; }
+function sendCC(ch,cc,v){ if(midiOut) midiOut.send(ccBytes(ch,cc,v)); oscSend('/'+ch+'/cc/'+cc, v/127); }
+function sendNote(ch,note,on){ if(midiOut) midiOut.send(noteBytes(ch,note,on)); oscSend('/'+ch+'/note/'+note, on?1:0); }
+async function enableMIDI(){
+  if(!navigator.requestMIDIAccess){ $('mtxt').textContent='Web MIDI no soportado (usá Chrome)'; return; }
+  try{ midiAccess=await navigator.requestMIDIAccess({sysex:false}); midiAccess.onstatechange=ports; ports();
+    $('mdot').classList.add('live'); $('mtxt').textContent='MIDI listo'; }
+  catch(e){ $('mtxt').textContent='MIDI denegado'; }
+}
+function ports(){ const sel=$('port'); const cur=sel.value; sel.innerHTML='<option value="">— sin puerto —</option>';
+  if(midiAccess) for(const o of midiAccess.outputs.values()) sel.innerHTML+=`<option value="${o.id}">${o.name}</option>`;
+  sel.value=cur; pickPort(); }
+function pickPort(){ midiOut = (midiAccess && $('port').value) ? midiAccess.outputs.get($('port').value) : null;
+  $('mtxt').textContent = midiOut ? '▶ '+midiOut.name : (midiAccess?'elegí un puerto':'MIDI off'); }
+$('enable').addEventListener('click',enableMIDI); $('port').addEventListener('change',pickPort);
+
+// ---- OSC (WebSocket → puente) ----
+function oscEnc(addr,val){ const pad=u=>{ const p=(4-(u.length%4))%4; const o=new Uint8Array(u.length+p); o.set(u); return o; };
+  const a=pad(new TextEncoder().encode(addr+'\0')), t=pad(new TextEncoder().encode(',f\0')); const f=new Uint8Array(4); new DataView(f.buffer).setFloat32(0,val,false);
+  const out=new Uint8Array(a.length+t.length+4); out.set(a,0); out.set(t,a.length); out.set(f,a.length+t.length); return out.buffer; }
+function oscSend(addr,val){ if(ws&&ws.readyState===1) ws.send(oscEnc(addr,val)); }
+$('oscBtn').addEventListener('click',()=>{ $('osc').classList.toggle('on'); $('oscBtn').classList.toggle('on'); });
+$('oscConn').addEventListener('click',()=>{ try{ if(ws)ws.close(); ws=new WebSocket($('oscurl').value); ws.binaryType='arraybuffer';
+  ws.onopen=()=>$('oscBtn').textContent='OSC ✓'; ws.onclose=()=>$('oscBtn').textContent='OSC'; ws.onerror=()=>$('oscBtn').textContent='OSC ✕'; }catch(e){ $('oscBtn').textContent='OSC ✕'; } });
+
+// ---- render ----
+function render(){
+  document.body.classList.toggle('editing',editing);
+  const g=$('grid'); g.innerHTML='';
+  ctrls.forEach((c,i)=>{ const el=document.createElement('div'); el.className='ctl'; el.dataset.i=i;
+    const map = c.t==='pad'?('n'+c.note):c.t==='xy'?('cc'+c.cc+'/'+c.cc2):('cc'+c.cc);
+    el.innerHTML=`<span class="map">${c.ch}·${map}</span><span class="gear" data-gear="${i}">⚙</span><span class="lbl">${c.l}</span>`;
+    if(c.t==='fader'){ el.innerHTML+=`<div class="fader"><div class="fill" style="height:${c.v/127*100}%"></div></div><span class="val">${c.v}</span>`; }
+    else if(c.t==='knob'){ el.innerHTML+=`<div class="knob"><div class="ind" style="transform:translateX(-50%) rotate(${(c.v/127*270-135)}deg)"></div></div><span class="val">${c.v}</span>`; }
+    else if(c.t==='pad'){ el.innerHTML+=`<div class="pad">▢</div><span class="val"></span>`; }
+    else if(c.t==='xy'){ el.innerHTML+=`<div class="xy"><div class="cur" style="left:${c.v[0]/127*100}%;top:${(1-c.v[1]/127)*100}%"></div></div><span class="val">${c.v[0]},${c.v[1]}</span>`; }
+    g.appendChild(el); bind(el,c,i); });
+}
+function setVal(el,c,v,axis){ if(c.t==='xy'){ c.v[axis]=v; el.querySelector('.cur').style[axis?'top':'left']=(axis?(1-v/127):(v/127))*100+'%'; el.querySelector('.val').textContent=c.v[0]+','+c.v[1]; sendCC(c.ch, axis?c.cc2:c.cc, v); }
+  else { c.v=v; el.querySelector('.val').textContent=v; if(c.t==='fader') el.querySelector('.fill').style.height=v/127*100+'%'; if(c.t==='knob') el.querySelector('.ind').style.transform='translateX(-50%) rotate('+(v/127*270-135)+'deg)'; sendCC(c.ch,c.cc,v); } }
+function bind(el,c,i){
+  if(editing) return;
+  if(c.t==='fader'||c.t==='knob'){ const tgt=el.querySelector(c.t==='fader'?'.fader':'.knob');
+    tgt.addEventListener('pointerdown',e=>{ try{tgt.setPointerCapture(e.pointerId);}catch(_){}; let sy=e.clientY, sv=c.v;
+      const mv=ev=>{ const v=Math.max(0,Math.min(127, sv+(sy-ev.clientY)*1.2)); setVal(el,c,Math.round(v)); };
+      const up=()=>{ tgt.removeEventListener('pointermove',mv); tgt.removeEventListener('pointerup',up); };
+      tgt.addEventListener('pointermove',mv); tgt.addEventListener('pointerup',up); }); }
+  else if(c.t==='pad'){ const p=el.querySelector('.pad');
+    p.addEventListener('pointerdown',e=>{ try{p.setPointerCapture(e.pointerId);}catch(_){}; p.classList.add('hit'); sendNote(c.ch,c.note,true); });
+    p.addEventListener('pointerup',()=>{ p.classList.remove('hit'); sendNote(c.ch,c.note,false); });
+    p.addEventListener('pointerleave',()=>{ if(p.classList.contains('hit')){ p.classList.remove('hit'); sendNote(c.ch,c.note,false); } }); }
+  else if(c.t==='xy'){ const x=el.querySelector('.xy');
+    const upd=ev=>{ const r=x.getBoundingClientRect(); const vx=Math.max(0,Math.min(127,(ev.clientX-r.left)/r.width*127)); const vy=Math.max(0,Math.min(127,(1-(ev.clientY-r.top)/r.height)*127)); setVal(el,c,Math.round(vx),0); setVal(el,c,Math.round(vy),1); };
+    x.addEventListener('pointerdown',e=>{ try{x.setPointerCapture(e.pointerId);}catch(_){}; upd(e); const mv=ev=>upd(ev); const up=()=>{ x.removeEventListener('pointermove',mv); x.removeEventListener('pointerup',up); }; x.addEventListener('pointermove',mv); x.addEventListener('pointerup',up); }); }
+}
+// edit
+$('grid').addEventListener('click',e=>{ const g=e.target.closest('[data-gear]'); if(!g) return; openEdit(+g.dataset.gear); });
+function openEdit(i){ const c=ctrls[i]; const el=$('grid').children[i]; if(el.querySelector('.editbox')) return;
+  const isPad=c.t==='pad', isXY=c.t==='xy';
+  const box=document.createElement('div'); box.className='editbox';
+  box.innerHTML=`<span class="x" data-x>✕</span><input data-f="l" value="${c.l}" placeholder="nombre">
+    <input data-f="ch" type="number" min="1" max="16" value="${c.ch}" placeholder="canal 1-16">
+    ${isPad?`<input data-f="note" type="number" min="0" max="127" value="${c.note}" placeholder="note">`:`<input data-f="cc" type="number" min="0" max="127" value="${c.cc}" placeholder="CC">`}
+    ${isXY?`<input data-f="cc2" type="number" min="0" max="127" value="${c.cc2}" placeholder="CC Y">`:''}
+    <button class="btn del" data-del>borrar</button>`;
+  el.appendChild(box);
+  box.querySelector('[data-x]').onclick=()=>{ apply(box,c); render(); };
+  box.querySelector('[data-del]').onclick=()=>{ ctrls.splice(i,1); render(); };
+  box.querySelectorAll('input').forEach(inp=>inp.addEventListener('change',()=>apply(box,c)));
+}
+function apply(box,c){ box.querySelectorAll('input[data-f]').forEach(inp=>{ const k=inp.dataset.f; c[k]= k==='l'?inp.value:(parseInt(inp.value)||0); }); }
+$('editBtn').addEventListener('click',()=>{ editing=!editing; $('editBtn').classList.toggle('on',editing); $('addbar').classList.toggle('on',editing); render(); });
+$('addbar').addEventListener('click',e=>{ const b=e.target.closest('[data-add]'); if(!b)return; const t=b.dataset.add;
+  const def={fader:{t:'fader',l:'Fader',ch:1,cc:1,v:0},knob:{t:'knob',l:'Knob',ch:1,cc:1,v:0},pad:{t:'pad',l:'Pad',ch:1,note:36,v:0},xy:{t:'xy',l:'XY',ch:1,cc:1,cc2:2,v:[64,64]}}[t];
+  ctrls.push(JSON.parse(JSON.stringify(def))); render(); });
+// persist
+function save(){ localStorage.setItem('hg_control', JSON.stringify(ctrls)); flash($('save')); }
+function load(){ try{ return JSON.parse(localStorage.getItem('hg_control')||'null'); }catch(e){ return null; } }
+function flash(b){ const o=b.textContent; b.textContent='✓'; setTimeout(()=>b.textContent=o,800); }
+$('save').addEventListener('click',save);
+$('load').addEventListener('click',()=>{ const l=load(); if(l){ ctrls=l; ctrls.forEach(c=>{ if(c.v==null)c.v=c.t==='xy'?[64,64]:0; }); render(); flash($('load')); } });
+$('exp').addEventListener('click',()=>{ const b=new Blob([JSON.stringify(ctrls,null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download='control-surface.json'; a.click(); });
+$('imp').addEventListener('click',()=>$('impf').click());
+$('impf').addEventListener('change',e=>{ const f=e.target.files[0]; if(!f)return; f.text().then(t=>{ try{ ctrls=JSON.parse(t); ctrls.forEach(c=>{ if(c.v==null)c.v=c.t==='xy'?[64,64]:0; }); render(); }catch(err){} }); });
+
+render();
+</script></body></html>
