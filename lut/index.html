@@ -1,0 +1,346 @@
+<!doctype html><html lang="es"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LUT MAKER — Human Glitche · diseñá o capturá un look y exportalo en .cube</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{ --acid:#b8ff00; --glitch:#ff2d55; --cyan:#3ad0ff; --ink:#f0ede6; --line:rgba(240,237,230,.12); --bg:#050505; }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{min-height:100%;background:var(--bg);color:var(--ink);font-family:'Space Mono',monospace;}
+  body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");z-index:0;pointer-events:none;opacity:.4;}
+  .wrap{position:relative;z-index:1;max-width:980px;margin:0 auto;padding:28px 22px 80px;}
+  header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:22px;}
+  .brand{font-family:'Bebas Neue',sans-serif;font-size:42px;letter-spacing:.03em;line-height:.82;}
+  .brand b{color:var(--acid);font-weight:400;}
+  .brand .sub{display:block;font-size:10px;letter-spacing:.2em;color:rgba(240,237,230,.45);margin-top:7px;}
+  header a{font-size:10px;letter-spacing:.2em;color:rgba(240,237,230,.4);text-decoration:none;} header a:hover{color:var(--acid);}
+  #drop{border:1.5px dashed var(--line);border-radius:7px;padding:16px 18px;text-align:center;cursor:pointer;transition:.2s;background:rgba(184,255,0,.02);font-size:11px;margin-bottom:20px;display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;}
+  #drop:hover,#drop.over{border-color:var(--acid);background:rgba(184,255,0,.06);}
+  #drop .sm{color:rgba(240,237,230,.45);font-size:9.5px;}
+  #refname{font-size:9.5px;color:rgba(240,237,230,.4);}
+  .tabs{display:flex;gap:8px;margin-bottom:16px;}
+  .tab{flex:1;background:transparent;border:1px solid var(--line);color:var(--ink);font:inherit;font-size:11px;letter-spacing:.12em;padding:11px 8px;cursor:pointer;border-radius:6px;}
+  .tab:hover{border-color:var(--acid);color:var(--acid);}
+  .tab.on{border-color:var(--cyan);color:var(--cyan);background:rgba(58,208,255,.08);}
+  .tabpanel{display:none;} .tabpanel.on{display:block;}
+  .editor{display:grid;grid-template-columns:minmax(260px,1fr) minmax(230px,300px);gap:20px;}
+  .canvaswrap{border:1px solid var(--line);border-radius:8px;overflow:hidden;background:#000;align-self:start;}
+  .canvaswrap canvas{display:block;width:100%;height:auto;}
+  .controls{display:flex;flex-direction:column;}
+  .presets{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:16px;}
+  .presets button{background:rgba(184,255,0,.04);border:1px solid var(--line);color:var(--ink);font:inherit;font-size:9.5px;letter-spacing:.05em;padding:9px 4px;cursor:pointer;border-radius:4px;}
+  .presets button:hover{border-color:var(--acid);color:var(--acid);}
+  .sl{margin-bottom:11px;}
+  .sl label{display:flex;justify-content:space-between;font-size:9px;letter-spacing:.14em;color:rgba(240,237,230,.45);text-transform:uppercase;margin-bottom:5px;}
+  .sl label span{color:var(--acid);font-family:'Space Mono';}
+  .sl input[type=range]{width:100%;accent-color:var(--acid);}
+  .splitrow{display:flex;align-items:center;gap:8px;margin-bottom:11px;font-size:9.5px;color:rgba(240,237,230,.5);letter-spacing:.05em;}
+  .splitrow span{flex:0 0 70px;}
+  .splitrow input[type=color]{width:30px;height:24px;border:1px solid var(--line);background:none;cursor:pointer;border-radius:3px;flex-shrink:0;}
+  .splitrow input[type=range]{flex:1;accent-color:var(--acid);}
+  .actions{display:flex;gap:8px;margin-top:8px;}
+  .actions button{flex:1;font:inherit;font-size:10.5px;letter-spacing:.08em;padding:11px 8px;cursor:pointer;border-radius:5px;}
+  #resetBtn{background:transparent;border:1px solid var(--line);color:var(--ink);}
+  #resetBtn:hover{border-color:var(--glitch);color:var(--glitch);}
+  #exportAdjBtn,#exportHaldBtn{background:var(--acid);color:#050505;border:none;font-weight:700;}
+  #exportHaldBtn:disabled{opacity:.35;cursor:default;}
+  .haldgrid{display:grid;grid-template-columns:minmax(260px,1fr) minmax(230px,300px);gap:20px;}
+  .steps{display:flex;flex-direction:column;gap:16px;}
+  .step{border:1px solid var(--line);border-radius:7px;padding:16px 16px;}
+  .step h2{font-size:9px;letter-spacing:.2em;color:rgba(240,237,230,.45);text-transform:uppercase;margin-bottom:10px;}
+  .step p{font-size:10.5px;color:rgba(240,237,230,.55);line-height:1.7;margin-bottom:12px;}
+  .step button{width:100%;font:inherit;font-size:11px;letter-spacing:.08em;padding:11px;cursor:pointer;border-radius:5px;}
+  #downloadHaldBtn{background:transparent;border:1px solid var(--acid);color:var(--acid);}
+  #downloadHaldBtn:hover{background:rgba(184,255,0,.08);}
+  #dropHald{border:1.5px dashed var(--line);border-radius:6px;padding:22px 12px;text-align:center;cursor:pointer;font-size:10.5px;background:rgba(184,255,0,.02);}
+  #dropHald:hover,#dropHald.over{border-color:var(--acid);background:rgba(184,255,0,.06);}
+  #haldStatus{font-size:9.5px;color:rgba(240,237,230,.45);margin-top:8px;line-height:1.6;}
+  #haldStatus.err{color:var(--glitch);}
+  #haldStatus b{color:var(--acid);}
+  .note{font-size:10px;color:rgba(240,237,230,.4);line-height:1.7;margin-top:24px;border-left:1px solid rgba(184,255,0,.3);padding-left:12px;}
+  .note b{color:var(--acid);font-weight:400;}
+  #toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);z-index:20;background:rgba(5,5,5,.94);border:1px solid var(--acid);color:var(--acid);font-size:11px;padding:9px 16px;border-radius:5px;opacity:0;transition:opacity .2s;pointer-events:none;}
+  #toast.show{opacity:1;}
+  @media(max-width:680px){ .editor,.haldgrid{grid-template-columns:1fr;} }
+</style></head><body>
+<div class="wrap">
+  <header><div class="brand"><b>LUT MAKER</b><span class="sub">Human Glitche · diseñá o capturá un look · exportá .cube</span></div><a href="/labs/">← LABS</a></header>
+
+  <div id="drop"><div>⤓ soltá tu propia imagen de referencia (opcional)</div><div class="sm">si no subís nada usamos una imagen de muestra · no se sube a ningún lado</div>
+    <input type="file" id="file" accept="image/*" style="display:none"></div>
+  <div id="refname" style="margin:-12px 0 18px;"></div>
+
+  <div class="tabs">
+    <button class="tab on" data-tab="adj">1 · AJUSTES</button>
+    <button class="tab" data-tab="hald">2 · HALD CLUT</button>
+  </div>
+
+  <div class="tabpanel on" id="panel-adj">
+    <div class="editor">
+      <div class="canvaswrap"><canvas id="cvAdj"></canvas></div>
+      <div class="controls">
+        <div class="presets" id="presets"></div>
+        <div class="sl"><label>Temperatura <span id="vTemp">0</span></label><input type="range" id="temp" min="-100" max="100" value="0"></div>
+        <div class="sl"><label>Tinte <span id="vTint">0</span></label><input type="range" id="tint" min="-100" max="100" value="0"></div>
+        <div class="sl"><label>Exposición <span id="vExp">0</span></label><input type="range" id="exp" min="-100" max="100" value="0"></div>
+        <div class="sl"><label>Contraste <span id="vCon">0</span></label><input type="range" id="con" min="-100" max="100" value="0"></div>
+        <div class="sl"><label>Saturación <span id="vSat">0</span></label><input type="range" id="sat" min="-100" max="100" value="0"></div>
+        <div class="sl"><label>Sombras <span id="vSh">0</span></label><input type="range" id="sh" min="-100" max="100" value="0"></div>
+        <div class="sl"><label>Altas luces <span id="vHi">0</span></label><input type="range" id="hi" min="-100" max="100" value="0"></div>
+        <div class="splitrow"><span>Tono sombras</span><input type="color" id="stCol" value="#3355aa"><input type="range" id="stAmt" min="0" max="100" value="0"></div>
+        <div class="splitrow"><span>Tono luces</span><input type="color" id="hlCol" value="#ffaa33"><input type="range" id="hlAmt" min="0" max="100" value="0"></div>
+        <div class="actions">
+          <button id="resetBtn">↺ RESET</button>
+          <button id="exportAdjBtn">⤓ .CUBE 33³</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tabpanel" id="panel-hald">
+    <div class="haldgrid">
+      <div class="canvaswrap"><canvas id="cvHald"></canvas></div>
+      <div class="steps">
+        <div class="step">
+          <h2>1 · descargar identidad</h2>
+          <p>Una imagen PNG 512×512 que codifica un LUT identidad. No la edites de tamaño ni la guardes como JPG — solo aplicale un filtro de color.</p>
+          <button id="downloadHaldBtn">⤓ HALD-CLUT-IDENTITY.PNG</button>
+        </div>
+        <div class="step">
+          <h2>2 · aplicá tu filtro y subila</h2>
+          <p>Abrí la identidad en Instagram, Lightroom, Photoshop, una app de filtros o lo que uses — aplicale el look que quieras capturar, exportala como PNG (mismo tamaño, 512×512) y subila acá.</p>
+          <div id="dropHald"><div>⤓ soltá la identidad editada</div><div class="sm" style="color:rgba(240,237,230,.4);margin-top:5px;">PNG · 512×512</div>
+            <input type="file" id="fileHald" accept="image/png,image/*" style="display:none"></div>
+          <div id="haldStatus">esperando imagen…</div>
+        </div>
+        <div class="step">
+          <h2>3 · exportar</h2>
+          <button id="exportHaldBtn" disabled>⤓ .CUBE 64³</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <p class="note">Formato <b>.cube</b> (Adobe/Resolve), compatible con DaVinci Resolve, Premiere, OBS, VDMX, Resolume y la mayoría de software de video. <b>AJUSTES</b> diseña un look desde cero con sliders y lo hornea a una grilla 33×33×33. <b>HALD CLUT</b> captura cualquier filtro externo: descargás una identidad, le aplicás el filtro afuera, la subís, y extraemos el LUT exacto en una grilla 64×64×64. Todo corre 100% en tu navegador.</p>
+</div>
+<div id="toast"></div>
+<script type="module">
+const $=id=>document.getElementById(id);
+const clamp01=x=>Math.max(0,Math.min(1,x));
+function smoothstep(a,b,x){ const t=clamp01((x-a)/(b-a)); return t*t*(3-2*t); }
+function hexToRgb01(hex){ return [parseInt(hex.slice(1,3),16)/255, parseInt(hex.slice(3,5),16)/255, parseInt(hex.slice(5,7),16)/255]; }
+function downloadText(text,filename){ const blob=new Blob([text],{type:'text/plain'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=filename; a.click(); URL.revokeObjectURL(a.href); }
+async function toast(t){ const el=$('toast'); el.textContent=t; el.classList.add('show'); clearTimeout(el._h); el._h=setTimeout(()=>el.classList.remove('show'),1800); }
+
+/* ---------- grading (ajustes) ---------- */
+function getParams(){
+  return {
+    exposure:+$('exp').value, temp:+$('temp').value, tint:+$('tint').value, contrast:+$('con').value,
+    saturation:+$('sat').value, shadows:+$('sh').value, highlights:+$('hi').value,
+    stCol:hexToRgb01($('stCol').value), stAmt:+$('stAmt').value,
+    hlCol:hexToRgb01($('hlCol').value), hlAmt:+$('hlAmt').value,
+  };
+}
+function grade(r,g,b,p){
+  const mul=Math.pow(2,p.exposure/100*1.5); r*=mul; g*=mul; b*=mul;
+  const t=p.temp/100*0.3; r+=t; b-=t;
+  const tt=p.tint/100*0.3; g-=tt; r+=tt*0.5; b+=tt*0.5;
+  const c=1+p.contrast/100; r=(r-0.5)*c+0.5; g=(g-0.5)*c+0.5; b=(b-0.5)*c+0.5;
+  let lum=0.299*r+0.587*g+0.114*b; const s=1+p.saturation/100;
+  r=lum+(r-lum)*s; g=lum+(g-lum)*s; b=lum+(b-lum)*s;
+  lum=0.299*r+0.587*g+0.114*b;
+  const shadowMask=1-smoothstep(0,0.5,lum), hiMask=smoothstep(0.5,1,lum);
+  const sh=p.shadows/100*0.4, hi=p.highlights/100*0.4;
+  r+=sh*shadowMask+hi*hiMask; g+=sh*shadowMask+hi*hiMask; b+=sh*shadowMask+hi*hiMask;
+  if(p.stAmt>0){ const w=shadowMask*(p.stAmt/100)*0.6; r=r*(1-w)+p.stCol[0]*w; g=g*(1-w)+p.stCol[1]*w; b=b*(1-w)+p.stCol[2]*w; }
+  if(p.hlAmt>0){ const w=hiMask*(p.hlAmt/100)*0.6; r=r*(1-w)+p.hlCol[0]*w; g=g*(1-w)+p.hlCol[1]*w; b=b*(1-w)+p.hlCol[2]*w; }
+  return [clamp01(r),clamp01(g),clamp01(b)];
+}
+
+const PRESETS=[
+  {name:'TEAL & ORANGE', v:{temp:18,tint:-4,exp:4,con:14,sat:10,sh:-6,hi:8,stCol:'#1b6e7a',stAmt:35,hlCol:'#ff9a3c',hlAmt:30}},
+  {name:'VHS CÁLIDO', v:{temp:30,tint:8,exp:-4,con:-8,sat:-12,sh:10,hi:-6,stCol:'#5a3d1f',stAmt:25,hlCol:'#ffce8a',hlAmt:20}},
+  {name:'NOCHE FRÍA', v:{temp:-28,tint:-6,exp:-6,con:10,sat:-6,sh:-4,hi:0,stCol:'#1a2a4a',stAmt:40,hlCol:'#7fd0ff',hlAmt:15}},
+  {name:'PUNCHY', v:{temp:4,tint:0,exp:6,con:28,sat:24,sh:-10,hi:10,stCol:'#101010',stAmt:0,hlCol:'#ffffff',hlAmt:0}},
+];
+const SLIDER_IDS={temp:'temp',tint:'tint',exp:'exp',con:'con',sat:'sat',sh:'sh',hi:'hi',stAmt:'stAmt',hlAmt:'hlAmt'};
+const LABEL_IDS={temp:'vTemp',tint:'vTint',exp:'vExp',con:'vCon',sat:'vSat',sh:'vSh',hi:'vHi'};
+function updateLabels(){ for(const k in LABEL_IDS){ const v=+$(SLIDER_IDS[k]).value; $(LABEL_IDS[k]).textContent=(v>0?'+':'')+v; } }
+function applyPreset(v){
+  for(const k in SLIDER_IDS) if(v[k]!==undefined) $(SLIDER_IDS[k]).value=v[k];
+  $('stCol').value=v.stCol; $('hlCol').value=v.hlCol;
+  updateLabels(); renderAdj();
+}
+$('presets').innerHTML=PRESETS.map((p,i)=>`<button data-i="${i}">${p.name}</button>`).join('');
+$('presets').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; applyPreset(PRESETS[+b.dataset.i].v); });
+$('resetBtn').addEventListener('click',()=>applyPreset({temp:0,tint:0,exp:0,con:0,sat:0,sh:0,hi:0,stCol:'#3355aa',stAmt:0,hlCol:'#ffaa33',hlAmt:0}));
+['temp','tint','exp','con','sat','sh','hi','stAmt','hlAmt'].forEach(id=>$(id).addEventListener('input',()=>{ updateLabels(); renderAdj(); }));
+$('stCol').addEventListener('input',renderAdj); $('hlCol').addEventListener('input',renderAdj);
+
+/* ---------- imagen de referencia compartida ---------- */
+let srcImgData=null;
+function makeDefaultRefImage(){
+  const c=document.createElement('canvas'); c.width=480; c.height=300; const cx=c.getContext('2d');
+  const g=cx.createLinearGradient(0,0,0,200); g.addColorStop(0,'#1c2b4a'); g.addColorStop(1,'#e8b766');
+  cx.fillStyle=g; cx.fillRect(0,0,480,200);
+  cx.fillStyle='#2a2014'; cx.fillRect(0,200,480,100);
+  const bars=['#e6e6e6','#e6c34d','#4dc9e6','#4de67a','#e64d6b','#9b4de6','#2b2b2b'];
+  bars.forEach((col,i)=>{ cx.fillStyle=col; cx.fillRect(Math.round(i*480/bars.length),260,Math.ceil(480/bars.length),40); });
+  cx.fillStyle='#d9a679'; cx.beginPath(); cx.arc(390,90,46,0,Math.PI*2); cx.fill();
+  return c;
+}
+function setReferenceImage(imgLike){
+  const maxW=480; const iw=imgLike.naturalWidth||imgLike.width, ih=imgLike.naturalHeight||imgLike.height;
+  const scale=Math.min(1,maxW/iw);
+  const w=Math.max(1,Math.round(iw*scale)), h=Math.max(1,Math.round(ih*scale));
+  const tmp=document.createElement('canvas'); tmp.width=w; tmp.height=h;
+  const tcx=tmp.getContext('2d',{willReadFrequently:true}); tcx.drawImage(imgLike,0,0,w,h);
+  srcImgData=tcx.getImageData(0,0,w,h);
+  renderAdj(); renderHaldPreview();
+}
+
+const drop=$('drop'), fileInput=$('file');
+drop.addEventListener('click',()=>fileInput.click());
+fileInput.addEventListener('change',e=>{ if(e.target.files[0]) loadRef(e.target.files[0]); });
+drop.addEventListener('dragover',e=>{e.preventDefault();drop.classList.add('over');});
+drop.addEventListener('dragleave',()=>drop.classList.remove('over'));
+drop.addEventListener('drop',e=>{e.preventDefault();drop.classList.remove('over');const f=[...e.dataTransfer.files].find(f=>f.type.startsWith('image/'));if(f)loadRef(f);});
+function loadRef(file){
+  const url=URL.createObjectURL(file); const img=new Image();
+  img.onload=()=>{ setReferenceImage(img); $('refname').textContent='referencia: '+file.name; URL.revokeObjectURL(url); };
+  img.src=url;
+}
+
+/* ---------- render ajustes ---------- */
+const cvAdj=$('cvAdj'), cxAdj=cvAdj.getContext('2d');
+function renderAdj(){
+  if(!srcImgData) return;
+  cvAdj.width=srcImgData.width; cvAdj.height=srcImgData.height;
+  const out=cxAdj.createImageData(srcImgData.width,srcImgData.height);
+  const p=getParams(); const d=srcImgData.data, o=out.data;
+  for(let i=0;i<d.length;i+=4){
+    const [r2,g2,b2]=grade(d[i]/255,d[i+1]/255,d[i+2]/255,p);
+    o[i]=r2*255; o[i+1]=g2*255; o[i+2]=b2*255; o[i+3]=d[i+3];
+  }
+  cxAdj.putImageData(out,0,0);
+}
+updateLabels();
+
+function buildCubeText(sizeN,fn,header){
+  const lines=[header,`LUT_3D_SIZE ${sizeN}`,'DOMAIN_MIN 0.0 0.0 0.0','DOMAIN_MAX 1.0 1.0 1.0'];
+  for(let bi=0;bi<sizeN;bi++) for(let gi=0;gi<sizeN;gi++) for(let ri=0;ri<sizeN;ri++){
+    const r=ri/(sizeN-1), g=gi/(sizeN-1), b=bi/(sizeN-1);
+    const [r2,g2,b2]=fn(r,g,b);
+    lines.push(r2.toFixed(6)+' '+g2.toFixed(6)+' '+b2.toFixed(6));
+  }
+  return lines.join('\n')+'\n';
+}
+$('exportAdjBtn').addEventListener('click',()=>{
+  const p=getParams();
+  const text=buildCubeText(33,(r,g,b)=>grade(r,g,b,p),'# Human Glitche · LUT MAKER (ajustes)');
+  downloadText(text,'human-glitche-lut.cube');
+  toast('LUT exportado · 33³');
+});
+
+/* ---------- tabs ---------- */
+document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('on',x===b));
+  document.querySelectorAll('.tabpanel').forEach(x=>x.classList.toggle('on',x.id==='panel-'+b.dataset.tab));
+}));
+
+/* ---------- hald clut ---------- */
+const HALD_K=8, HALD_M=HALD_K*HALD_K, HALD_W=HALD_K*HALD_K*HALD_K;
+function buildHaldIdentityCanvas(){
+  const c=document.createElement('canvas'); c.width=HALD_W; c.height=HALD_W;
+  const cx=c.getContext('2d'); const img=cx.createImageData(HALD_W,HALD_W); const d=img.data;
+  for(let idx=0; idx<HALD_W*HALD_W; idx++){
+    const r=idx%HALD_M, g=Math.floor(idx/HALD_M)%HALD_M, b=Math.floor(idx/(HALD_M*HALD_M));
+    const o=idx*4;
+    d[o]=Math.round(r/(HALD_M-1)*255); d[o+1]=Math.round(g/(HALD_M-1)*255); d[o+2]=Math.round(b/(HALD_M-1)*255); d[o+3]=255;
+  }
+  cx.putImageData(img,0,0);
+  return c;
+}
+$('downloadHaldBtn').addEventListener('click',()=>{
+  buildHaldIdentityCanvas().toBlob(blob=>{
+    const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='hald-clut-identity-512.png'; a.click(); URL.revokeObjectURL(a.href);
+  },'image/png');
+  toast('identidad descargada');
+});
+
+let haldLut=null;
+function haldStatus(msg,isErr){ const el=$('haldStatus'); el.classList.toggle('err',!!isErr); el.innerHTML=msg; }
+function decodeHaldImage(img){
+  const iw=img.naturalWidth||img.width, ih=img.naturalHeight||img.height;
+  if(iw!==HALD_W || ih!==HALD_W){ haldStatus('la imagen debe ser exactamente 512×512px (subiste '+iw+'×'+ih+'). No la redimensiones ni la pases por JPG.',true); return false; }
+  const c=document.createElement('canvas'); c.width=HALD_W; c.height=HALD_W;
+  const cx=c.getContext('2d',{willReadFrequently:true}); cx.drawImage(img,0,0);
+  const d=cx.getImageData(0,0,HALD_W,HALD_W).data;
+  haldLut=new Float32Array(HALD_M*HALD_M*HALD_M*3);
+  for(let idx=0; idx<HALD_W*HALD_W; idx++){
+    const o=idx*4;
+    haldLut[idx*3]=d[o]/255; haldLut[idx*3+1]=d[o+1]/255; haldLut[idx*3+2]=d[o+2]/255;
+  }
+  return true;
+}
+function haldSample(ri,gi,bi){ const idx=(ri+gi*HALD_M+bi*HALD_M*HALD_M)*3; return [haldLut[idx],haldLut[idx+1],haldLut[idx+2]]; }
+function lerp3(a,b,t){ return [a[0]+(b[0]-a[0])*t, a[1]+(b[1]-a[1])*t, a[2]+(b[2]-a[2])*t]; }
+function haldLookup(r,g,b){
+  const N=HALD_M-1;
+  const fr=clamp01(r)*N, fg=clamp01(g)*N, fb=clamp01(b)*N;
+  const r0=Math.floor(fr), g0=Math.floor(fg), b0=Math.floor(fb);
+  const r1=Math.min(N,r0+1), g1=Math.min(N,g0+1), b1=Math.min(N,b0+1);
+  const tr=fr-r0, tg=fg-g0, tb=fb-b0;
+  const c00=lerp3(haldSample(r0,g0,b0),haldSample(r1,g0,b0),tr);
+  const c10=lerp3(haldSample(r0,g1,b0),haldSample(r1,g1,b0),tr);
+  const c01=lerp3(haldSample(r0,g0,b1),haldSample(r1,g0,b1),tr);
+  const c11=lerp3(haldSample(r0,g1,b1),haldSample(r1,g1,b1),tr);
+  const c0=lerp3(c00,c10,tg), c1=lerp3(c01,c11,tg);
+  return lerp3(c0,c1,tb);
+}
+const cvHald=$('cvHald'), cxHald=cvHald.getContext('2d');
+function renderHaldPreview(){
+  if(!srcImgData) return;
+  cvHald.width=srcImgData.width; cvHald.height=srcImgData.height;
+  if(!haldLut){ cxHald.fillStyle='#0a0a0a'; cxHald.fillRect(0,0,cvHald.width,cvHald.height); cxHald.putImageData(srcImgData,0,0); return; }
+  const out=cxHald.createImageData(srcImgData.width,srcImgData.height);
+  const d=srcImgData.data, o=out.data;
+  for(let i=0;i<d.length;i+=4){
+    const [r2,g2,b2]=haldLookup(d[i]/255,d[i+1]/255,d[i+2]/255);
+    o[i]=r2*255; o[i+1]=g2*255; o[i+2]=b2*255; o[i+3]=d[i+3];
+  }
+  cxHald.putImageData(out,0,0);
+}
+function renderHald(){ renderHaldPreview(); }
+
+const dropHald=$('dropHald'), fileHald=$('fileHald');
+dropHald.addEventListener('click',()=>fileHald.click());
+fileHald.addEventListener('change',e=>{ if(e.target.files[0]) loadHald(e.target.files[0]); });
+dropHald.addEventListener('dragover',e=>{e.preventDefault();dropHald.classList.add('over');});
+dropHald.addEventListener('dragleave',()=>dropHald.classList.remove('over'));
+dropHald.addEventListener('drop',e=>{e.preventDefault();dropHald.classList.remove('over');const f=[...e.dataTransfer.files].find(f=>f.type.startsWith('image/'));if(f)loadHald(f);});
+function loadHald(file){
+  const url=URL.createObjectURL(file); const img=new Image();
+  img.onload=()=>{
+    const ok=decodeHaldImage(img);
+    if(ok){ haldStatus('<b>OK</b> · LUT extraído de '+file.name+' · '+HALD_M+'³'); $('exportHaldBtn').disabled=false; renderHaldPreview(); }
+    else{ $('exportHaldBtn').disabled=true; }
+    URL.revokeObjectURL(url);
+  };
+  img.onerror=()=>haldStatus('no se pudo leer la imagen',true);
+  img.src=url;
+}
+$('exportHaldBtn').addEventListener('click',()=>{
+  if(!haldLut) return;
+  const lines=['# Human Glitche · LUT MAKER (Hald CLUT)',`LUT_3D_SIZE ${HALD_M}`,'DOMAIN_MIN 0.0 0.0 0.0','DOMAIN_MAX 1.0 1.0 1.0'];
+  for(let bi=0;bi<HALD_M;bi++) for(let gi=0;gi<HALD_M;gi++) for(let ri=0;ri<HALD_M;ri++){
+    const idx=(ri+gi*HALD_M+bi*HALD_M*HALD_M)*3;
+    lines.push(haldLut[idx].toFixed(6)+' '+haldLut[idx+1].toFixed(6)+' '+haldLut[idx+2].toFixed(6));
+  }
+  downloadText(lines.join('\n')+'\n','human-glitche-lut-hald.cube');
+  toast('LUT exportado · 64³');
+});
+
+setReferenceImage(makeDefaultRefImage());
+</script>
+</body></html>
