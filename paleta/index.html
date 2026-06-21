@@ -1,0 +1,78 @@
+<!doctype html><html lang="es"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PALETA — Human Glitche · color de imágenes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{ --acid:#b8ff00; --glitch:#ff2d55; --ink:#f0ede6; --line:rgba(240,237,230,.12); --bg:#050505; }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{min-height:100%;background:var(--bg);color:var(--ink);font-family:'Space Mono',monospace;}
+  body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");z-index:0;pointer-events:none;opacity:.4;}
+  .wrap{position:relative;z-index:1;max-width:920px;margin:0 auto;padding:28px 22px 80px;}
+  header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:26px;}
+  .brand{font-family:'Bebas Neue',sans-serif;font-size:42px;letter-spacing:.03em;line-height:.82;}
+  .brand b{color:var(--acid);font-weight:400;}
+  .brand .sub{display:block;font-size:10px;letter-spacing:.2em;color:rgba(240,237,230,.45);margin-top:7px;}
+  header a{font-size:10px;letter-spacing:.2em;color:rgba(240,237,230,.4);text-decoration:none;} header a:hover{color:var(--acid);}
+  #drop{border:1.5px dashed var(--line);border-radius:8px;padding:46px 20px;text-align:center;cursor:pointer;transition:.2s;background:rgba(184,255,0,.02);}
+  #drop:hover,#drop.over{border-color:var(--acid);background:rgba(184,255,0,.06);}
+  #drop .big{font-family:'Bebas Neue',sans-serif;font-size:26px;color:var(--acid);}
+  #drop .sm{font-size:11px;color:rgba(240,237,230,.5);margin-top:8px;}
+  .stage{display:none;margin-top:24px;} .stage.on{display:block;}
+  #preview{max-width:100%;max-height:340px;border:1px solid var(--line);border-radius:6px;display:block;margin-bottom:18px;}
+  .ctrl{display:flex;align-items:center;gap:12px;margin-bottom:18px;font-size:12px;color:rgba(240,237,230,.7);}
+  .ctrl input[type=range]{flex:1;max-width:220px;accent-color:var(--acid);} .ctrl b{color:var(--acid);font-weight:400;}
+  .swatches{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;}
+  .sw{border:1px solid var(--line);border-radius:6px;overflow:hidden;cursor:pointer;transition:transform .12s;}
+  .sw:hover{transform:translateY(-2px);border-color:var(--acid);}
+  .sw .chip{height:78px;} .sw .hex{font-size:12px;letter-spacing:.05em;padding:8px 10px;text-align:center;background:rgba(0,0,0,.25);}
+  .actions{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap;}
+  .actions button{background:transparent;border:1px solid var(--line);color:var(--ink);font:inherit;font-size:11px;letter-spacing:.1em;padding:11px 16px;cursor:pointer;border-radius:5px;}
+  .actions button:hover{border-color:var(--acid);color:var(--acid);}
+  #toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);z-index:20;background:rgba(5,5,5,.94);border:1px solid var(--acid);color:var(--acid);font-size:11px;padding:9px 16px;border-radius:5px;opacity:0;transition:opacity .2s;pointer-events:none;}
+  #toast.show{opacity:1;}
+  .note{font-size:10px;color:rgba(240,237,230,.4);line-height:1.7;margin-top:22px;border-left:1px solid rgba(184,255,0,.3);padding-left:12px;}
+</style></head><body>
+<div class="wrap">
+  <header><div class="brand"><b>PALETA</b><span class="sub">Human Glitche · extraé los colores de una imagen · 100% local</span></div><a href="/home.html">← HOME</a></header>
+  <div id="drop"><div class="big">⤓ Soltá una imagen acá</div><div class="sm">o clic para elegir · PNG · JPG · WEBP · no se sube a ningún lado</div>
+    <input type="file" id="file" accept="image/*" style="display:none"></div>
+  <div class="stage" id="stage">
+    <img id="preview" alt="">
+    <div class="ctrl">colores <b id="kv">6</b><input type="range" id="k" min="3" max="12" step="1" value="6"></div>
+    <div class="swatches" id="swatches"></div>
+    <div class="actions">
+      <button id="copyCss">⧉ copiar como CSS</button>
+      <button id="copyArr">⧉ copiar array hex</button>
+    </div>
+  </div>
+  <p class="note">Hacé clic en un color para copiar su hex. La paleta se calcula con cuantización de color sobre la imagen — ideal para sacar la identidad cromática de una referencia.</p>
+</div>
+<div id="toast"></div>
+<script type="module">
+import { quantize } from 'https://cdn.jsdelivr.net/npm/gifenc@1.0.3/dist/gifenc.esm.js';
+const $=id=>document.getElementById(id);
+const drop=$('drop'), fileInput=$('file'), stage=$('stage'); let imgData=null, palette=[];
+drop.addEventListener('click',()=>fileInput.click());
+fileInput.addEventListener('change',e=>{ if(e.target.files[0]) load(e.target.files[0]); });
+drop.addEventListener('dragover',e=>{e.preventDefault();drop.classList.add('over');});
+drop.addEventListener('dragleave',()=>drop.classList.remove('over'));
+drop.addEventListener('drop',e=>{e.preventDefault();drop.classList.remove('over');const f=[...e.dataTransfer.files].find(f=>f.type.startsWith('image/'));if(f)load(f);});
+function load(file){ const url=URL.createObjectURL(file); const img=new Image();
+  img.onload=()=>{ $('preview').src=url;
+    const s=Math.min(1, 200/Math.max(img.width,img.height)); const w=Math.max(1,Math.round(img.width*s)), h=Math.max(1,Math.round(img.height*s));
+    const cv=document.createElement('canvas'); cv.width=w; cv.height=h; const cx=cv.getContext('2d',{willReadFrequently:true});
+    cx.drawImage(img,0,0,w,h); imgData=cx.getImageData(0,0,w,h).data; stage.classList.add('on'); render();
+    drop.querySelector('.big').textContent='⤓ '+file.name; };
+  img.src=url; }
+function toHex(c){ return '#'+c.slice(0,3).map(x=>('0'+x.toString(16)).slice(-2)).join(''); }
+function render(){ if(!imgData) return; const k=+$('k').value; $('kv').textContent=k;
+  palette=quantize(imgData,k).map(toHex);
+  $('swatches').innerHTML=palette.map(h=>`<div class="sw" data-h="${h}"><div class="chip" style="background:${h}"></div><div class="hex">${h.toUpperCase()}</div></div>`).join(''); }
+$('k').addEventListener('input',render);
+$('swatches').addEventListener('click',e=>{ const sw=e.target.closest('.sw'); if(!sw) return; copy(sw.dataset.h, sw.dataset.h.toUpperCase()+' copiado'); });
+$('copyCss').addEventListener('click',()=>copy(palette.map((h,i)=>'  --c'+(i+1)+': '+h+';').join('\n'), 'CSS copiado'));
+$('copyArr').addEventListener('click',()=>copy(JSON.stringify(palette), 'array copiado'));
+async function copy(t,msg){ try{ await navigator.clipboard.writeText(t); toast(msg); }catch(e){ toast('no se pudo copiar'); } }
+function toast(t){ const el=$('toast'); el.textContent=t; el.classList.add('show'); clearTimeout(el._h); el._h=setTimeout(()=>el.classList.remove('show'),1800); }
+</script></body></html>

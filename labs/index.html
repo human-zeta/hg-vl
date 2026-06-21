@@ -1,0 +1,42 @@
+<!doctype html><html lang="es"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LABS — Human Glitche · herramientas Visual Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{ --acid:#b8ff00; --glitch:#ff2d55; --cyan:#3ad0ff; --ink:#f0ede6; --line:rgba(240,237,230,.12); --bg:#050505; }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{min-height:100%;background:var(--bg);color:var(--ink);font-family:'Space Mono',monospace;}
+  body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");z-index:0;pointer-events:none;opacity:.4;}
+  .wrap{position:relative;z-index:1;max-width:1000px;margin:0 auto;padding:30px 22px 80px;}
+  header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;}
+  .brand{font-family:'Bebas Neue',sans-serif;font-size:54px;letter-spacing:.03em;line-height:.82;}
+  .brand b{color:var(--acid);font-weight:400;}
+  header a{font-size:10px;letter-spacing:.2em;color:rgba(240,237,230,.4);text-decoration:none;} header a:hover{color:var(--acid);}
+  .intro{font-size:12px;color:rgba(240,237,230,.55);line-height:1.8;max-width:62ch;margin-bottom:34px;}
+  .intro b{color:var(--acid);font-weight:400;}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px;}
+  .card{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:8px;padding:22px 20px;text-decoration:none;color:var(--ink);background:rgba(184,255,0,.015);transition:.2s;min-height:158px;}
+  .card:hover{border-color:var(--acid);background:rgba(184,255,0,.06);transform:translateY(-3px);}
+  .card .ico{font-size:22px;margin-bottom:12px;}
+  .card h3{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:.03em;color:var(--acid);line-height:.9;}
+  .card .tag{font-size:8.5px;letter-spacing:.16em;text-transform:uppercase;color:rgba(240,237,230,.4);margin:5px 0 11px;}
+  .card p{font-size:11px;color:rgba(240,237,230,.6);line-height:1.7;}
+  .card .go{margin-top:auto;padding-top:12px;font-size:10px;letter-spacing:.2em;color:var(--acid);}
+  .foot{font-size:10px;color:rgba(240,237,230,.35);letter-spacing:.1em;margin-top:38px;text-align:center;}
+</style></head><body>
+<div class="wrap">
+  <header><div class="brand"><b>LABS</b></div><a href="/home.html">← HOME</a></header>
+  <p class="intro">El taller de <b>Human Glitche</b>. Herramientas que creamos para crear — generadores de shaders y utilidades de video/imagen. Todo corre <b>en tu navegador</b>: gratis, privado, sin subir nada a ningún lado.</p>
+  <div class="grid">
+    <a class="card" href="/forge/"><div class="ico">⚡</div><h3>THE FORGE</h3><div class="tag">shaders · procedural</div><p>Generador de shaders con 18 familias (kaleido, fractal, raymarch, voronoi…). GENERAR re-rollea infinitas variantes. Export .fs para VDMX.</p><div class="go">ABRIR →</div></a>
+    <a class="card" href="/aether-2/"><div class="ico">✦</div><h3>AETHER 2.0</h3><div class="tag">shaders · IA</div><p>El forge con IA: describís un shader y un modelo (Gemini/Claude/Grok) lo genera, compila y se autocorrige hasta renderear. Más laboratorio de controles.</p><div class="go">ABRIR →</div></a>
+    <a class="card" href="/gif/"><div class="ico">🎞️</div><h3>VIDEO → GIF</h3><div class="tag">video · conversión</div><p>Convertí clips a GIF para web. Recortás, elegís fps y ancho, y descargás. 100% local.</p><div class="go">ABRIR →</div></a>
+    <a class="card" href="/loop/"><div class="ico">∞</div><h3>LOOP</h3><div class="tag">video · seamless</div><p>Loops sin salto de clips cortos: boomerang (ida y vuelta) o crossfade. Output GIF o WebM.</p><div class="go">ABRIR →</div></a>
+    <a class="card" href="/resize/"><div class="ico">⤢</div><h3>RESIZE</h3><div class="tag">imagen · recorte</div><p>Recortá a relación (1:1, 9:16, 16:9…) y redimensioná imágenes. Export PNG/JPG/WebP.</p><div class="go">ABRIR →</div></a>
+    <a class="card" href="/frames/"><div class="ico">▦</div><h3>FRAMES</h3><div class="tag">video · fotogramas</div><p>Extraé N fotogramas de un video. Descargá cada uno o un contact sheet con todos.</p><div class="go">ABRIR →</div></a>
+    <a class="card" href="/paleta/"><div class="ico">◐</div><h3>PALETA</h3><div class="tag">imagen · color</div><p>Sacá la paleta de color dominante de una imagen. Swatches con hex, copiás CSS o array.</p><div class="go">ABRIR →</div></a>
+  </div>
+  <div class="foot">HUMAN GLITCHE · VISUAL LAB · todas las herramientas corren client-side</div>
+</div>
+</body></html>

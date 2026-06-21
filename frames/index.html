@@ -1,0 +1,92 @@
+<!doctype html><html lang="es"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FRAMES — Human Glitche · extraer fotogramas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{ --acid:#b8ff00; --glitch:#ff2d55; --ink:#f0ede6; --line:rgba(240,237,230,.12); --bg:#050505; }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{min-height:100%;background:var(--bg);color:var(--ink);font-family:'Space Mono',monospace;}
+  body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");z-index:0;pointer-events:none;opacity:.4;}
+  .wrap{position:relative;z-index:1;max-width:980px;margin:0 auto;padding:28px 22px 80px;}
+  header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:26px;}
+  .brand{font-family:'Bebas Neue',sans-serif;font-size:42px;letter-spacing:.03em;line-height:.82;}
+  .brand b{color:var(--acid);font-weight:400;} .brand .sub{display:block;font-size:10px;letter-spacing:.2em;color:rgba(240,237,230,.45);margin-top:7px;}
+  header a{font-size:10px;letter-spacing:.2em;color:rgba(240,237,230,.4);text-decoration:none;} header a:hover{color:var(--acid);}
+  #drop{border:1.5px dashed var(--line);border-radius:8px;padding:46px 20px;text-align:center;cursor:pointer;transition:.2s;background:rgba(184,255,0,.02);}
+  #drop:hover,#drop.over{border-color:var(--acid);background:rgba(184,255,0,.06);}
+  #drop .big{font-family:'Bebas Neue',sans-serif;font-size:26px;color:var(--acid);} #drop .sm{font-size:11px;color:rgba(240,237,230,.5);margin-top:8px;}
+  .stage{display:none;margin-top:24px;} .stage.on{display:block;}
+  .bar2{display:flex;gap:16px;align-items:flex-end;flex-wrap:wrap;margin-bottom:18px;}
+  .ctrl{flex:1;min-width:150px;} .ctrl label{display:flex;justify-content:space-between;font-size:11px;color:rgba(240,237,230,.7);margin-bottom:5px;} .ctrl label b{color:var(--acid);font-weight:400;}
+  .ctrl input[type=range]{width:100%;accent-color:var(--acid);}
+  #go{background:var(--acid);color:#050505;border:none;font-family:'Bebas Neue',sans-serif;font-size:21px;letter-spacing:.05em;padding:11px 22px;cursor:pointer;border-radius:5px;}
+  #go:disabled{opacity:.5;cursor:wait;}
+  video{display:none;}
+  #status{font-size:11px;color:rgba(240,237,230,.55);margin:4px 0 16px;min-height:15px;} #status b{color:var(--acid);font-weight:400;}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;}
+  .fr{border:1px solid var(--line);border-radius:5px;overflow:hidden;position:relative;}
+  .fr img{width:100%;display:block;}
+  .fr a{position:absolute;inset:0;display:flex;align-items:flex-end;justify-content:center;padding:7px;background:linear-gradient(transparent,rgba(0,0,0,.7));color:var(--acid);font-size:10px;letter-spacing:.1em;text-decoration:none;opacity:0;transition:.15s;}
+  .fr:hover a{opacity:1;}
+  .sheetbtn{margin-top:18px;background:transparent;border:1px solid var(--line);color:var(--ink);font:inherit;font-size:11px;letter-spacing:.1em;padding:11px 16px;cursor:pointer;border-radius:5px;}
+  .sheetbtn:hover{border-color:var(--acid);color:var(--acid);}
+  .note{font-size:10px;color:rgba(240,237,230,.4);line-height:1.7;margin-top:22px;border-left:1px solid rgba(184,255,0,.3);padding-left:12px;}
+</style></head><body>
+<div class="wrap">
+  <header><div class="brand"><b>FRAMES</b><span class="sub">Human Glitche · extraé fotogramas de un video · 100% local</span></div><a href="/home.html">← HOME</a></header>
+  <div id="drop"><div class="big">⤓ Soltá un video acá</div><div class="sm">o clic para elegir · MP4 · MOV · WEBM · no se sube</div>
+    <input type="file" id="file" accept="video/*" style="display:none"></div>
+  <div class="stage" id="stage">
+    <div class="bar2">
+      <div class="ctrl"><label>cantidad de frames <b data-v="n">12</b></label><input type="range" id="n" min="2" max="48" step="1" value="12"></div>
+      <div class="ctrl"><label>ancho <b data-v="width">480px</b></label><input type="range" id="width" min="160" max="1280" step="20" value="480"></div>
+      <button id="go">⚡ EXTRAER</button>
+    </div>
+    <div id="status"></div>
+    <div class="grid" id="grid"></div>
+    <button class="sheetbtn" id="sheet" style="display:none">⤓ descargar contact sheet (todo en una imagen)</button>
+  </div>
+  <video id="video" muted playsinline></video>
+  <p class="note">Saca <b>N</b> frames repartidos a lo largo del video. Pasá el mouse por cada uno para descargarlo (PNG), o bajá el <b>contact sheet</b> con todos juntos. Todo local.</p>
+</div>
+<script>
+const $=id=>document.getElementById(id);
+const drop=$('drop'), fileInput=$('file'), stage=$('stage'), video=$('video');
+let videoURL=null, sheetURL=null, last=[];
+drop.addEventListener('click',()=>fileInput.click());
+fileInput.addEventListener('change',e=>{ if(e.target.files[0]) load(e.target.files[0]); });
+drop.addEventListener('dragover',e=>{e.preventDefault();drop.classList.add('over');});
+drop.addEventListener('dragleave',()=>drop.classList.remove('over'));
+drop.addEventListener('drop',e=>{e.preventDefault();drop.classList.remove('over');const f=[...e.dataTransfer.files].find(f=>f.type.startsWith('video/'));if(f)load(f);});
+['n','width'].forEach(id=>$(id).addEventListener('input',()=>{ document.querySelector('[data-v="'+id+'"]').textContent= id==='width'?($(id).value+'px'):$(id).value; }));
+function load(file){ if(videoURL)URL.revokeObjectURL(videoURL); videoURL=URL.createObjectURL(file); video.src=videoURL;
+  video.addEventListener('loadedmetadata',()=>{ stage.classList.add('on'); drop.querySelector('.big').textContent='⤓ '+file.name; },{once:true}); }
+function seek(t){ return new Promise(res=>{ const h=()=>{video.removeEventListener('seeked',h);res();}; video.addEventListener('seeked',h); video.currentTime=t; }); }
+$('go').addEventListener('click',extract);
+async function extract(){
+  const n=+$('n').value, width=(+$('width').value)|0, height=Math.round(width*video.videoHeight/video.videoWidth/2)*2||width;
+  const D=video.duration||1; const cv=document.createElement('canvas'); cv.width=width; cv.height=height; const ctx=cv.getContext('2d');
+  $('go').disabled=true; $('grid').innerHTML=''; $('sheet').style.display='none'; last=[];
+  try{
+    for(let i=0;i<n;i++){ const t=(n===1)?0:(i/(n-1))*Math.max(0,D-0.05); await seek(t); ctx.drawImage(video,0,0,width,height);
+      const dataURL=cv.toDataURL('image/png'); last.push({dataURL,t});
+      const div=document.createElement('div'); div.className='fr';
+      div.innerHTML=`<img src="${dataURL}" alt=""><a href="${dataURL}" download="frame-${String(i+1).padStart(3,'0')}.png">⤓ frame ${i+1} · ${t.toFixed(2)}s</a>`;
+      $('grid').appendChild(div); $('status').innerHTML='extrayendo <b>'+(i+1)+'/'+n+'</b>'; await new Promise(r=>setTimeout(r)); }
+    $('status').innerHTML='<b>'+n+' frames listos</b> · pasá el mouse para descargar cada uno';
+    $('sheet').style.display='';
+  }catch(err){ $('status').textContent='Error: '+err.message; } finally{ $('go').disabled=false; }
+}
+$('sheet').addEventListener('click',async()=>{
+  if(!last.length) return; const cols=Math.ceil(Math.sqrt(last.length)); const rows=Math.ceil(last.length/cols);
+  const first=await loadImg(last[0].dataURL); const fw=first.width, fh=first.height; const gap=6;
+  const cv=document.createElement('canvas'); cv.width=cols*fw+(cols+1)*gap; cv.height=rows*fh+(rows+1)*gap; const ctx=cv.getContext('2d');
+  ctx.fillStyle='#050505'; ctx.fillRect(0,0,cv.width,cv.height);
+  for(let i=0;i<last.length;i++){ const im=await loadImg(last[i].dataURL); const c=i%cols, r=(i/cols)|0;
+    ctx.drawImage(im, gap+c*(fw+gap), gap+r*(fh+gap)); }
+  cv.toBlob(b=>{ if(sheetURL)URL.revokeObjectURL(sheetURL); sheetURL=URL.createObjectURL(b);
+    const a=document.createElement('a'); a.href=sheetURL; a.download='contact-sheet.png'; a.click(); }, 'image/png');
+});
+function loadImg(src){ return new Promise(res=>{ const i=new Image(); i.onload=()=>res(i); i.src=src; }); }
+</script></body></html>
