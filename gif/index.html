@@ -1,0 +1,169 @@
+<!doctype html><html lang="es"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>VIDEO → GIF — Human Glitche</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{ --acid:#b8ff00; --glitch:#ff2d55; --cyan:#3ad0ff; --ink:#f0ede6; --line:rgba(240,237,230,.12); --bg:#050505; }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{min-height:100%;background:var(--bg);color:var(--ink);font-family:'Space Mono',monospace;}
+  body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");z-index:0;pointer-events:none;opacity:.4;}
+  .wrap{position:relative;z-index:1;max-width:920px;margin:0 auto;padding:28px 22px 80px;}
+  header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:28px;}
+  .brand{font-family:'Bebas Neue',sans-serif;font-size:42px;letter-spacing:.03em;line-height:.82;}
+  .brand b{color:var(--acid);font-weight:400;}
+  .brand .sub{display:block;font-family:'Space Mono';font-size:10px;letter-spacing:.22em;color:rgba(240,237,230,.45);margin-top:7px;}
+  header a{font-size:10px;letter-spacing:.2em;color:rgba(240,237,230,.4);text-decoration:none;}
+  header a:hover{color:var(--acid);}
+  #drop{border:1.5px dashed var(--line);border-radius:8px;padding:46px 20px;text-align:center;cursor:pointer;transition:.2s;background:rgba(184,255,0,.02);}
+  #drop:hover,#drop.over{border-color:var(--acid);background:rgba(184,255,0,.06);}
+  #drop .big{font-family:'Bebas Neue',sans-serif;font-size:26px;color:var(--acid);letter-spacing:.03em;}
+  #drop .sm{font-size:11px;color:rgba(240,237,230,.5);margin-top:8px;line-height:1.7;}
+  .stage{display:none;grid-template-columns:1fr 300px;gap:22px;margin-top:24px;}
+  .stage.on{display:grid;}
+  @media(max-width:760px){ .stage.on{grid-template-columns:1fr;} }
+  video,#result img{width:100%;border:1px solid var(--line);border-radius:6px;background:#000;display:block;}
+  .vlabel{font-size:9px;letter-spacing:.18em;color:rgba(240,237,230,.4);text-transform:uppercase;margin:0 0 7px;}
+  .ctrl{margin-bottom:14px;}
+  .ctrl label{display:flex;justify-content:space-between;font-size:11px;color:rgba(240,237,230,.7);margin-bottom:5px;}
+  .ctrl label b{color:var(--acid);font-weight:400;}
+  .ctrl input[type=range]{width:100%;accent-color:var(--acid);}
+  #go{width:100%;background:var(--acid);color:#050505;border:none;font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:.05em;padding:13px;cursor:pointer;border-radius:5px;transition:filter .15s;}
+  #go:hover{filter:brightness(1.1);} #go:disabled{opacity:.5;cursor:wait;filter:none;}
+  #bar{height:5px;background:rgba(240,237,230,.1);border-radius:3px;margin-top:12px;overflow:hidden;display:none;}
+  #bar.on{display:block;} #bar i{display:block;height:100%;width:0;background:var(--acid);transition:width .12s;}
+  #status{font-size:11px;color:rgba(240,237,230,.55);margin-top:9px;text-align:center;min-height:16px;}
+  #status b{color:var(--acid);font-weight:400;}
+  #result{margin-top:24px;display:none;}
+  #result.on{display:block;}
+  .rrow{display:flex;gap:10px;align-items:center;margin-top:12px;flex-wrap:wrap;}
+  .rrow a{background:var(--acid);color:#050505;font-family:'Space Mono';font-weight:700;font-size:12px;letter-spacing:.1em;text-decoration:none;padding:11px 18px;border-radius:5px;}
+  .rrow .meta{font-size:11px;color:rgba(240,237,230,.5);}
+  .rrow button{background:transparent;border:1px solid var(--line);color:var(--ink);font:inherit;font-size:11px;letter-spacing:.1em;padding:10px 14px;cursor:pointer;border-radius:5px;}
+  .rrow button:hover{border-color:var(--acid);color:var(--acid);}
+  .note{font-size:10px;color:rgba(240,237,230,.4);line-height:1.7;margin-top:22px;border-left:1px solid rgba(184,255,0,.3);padding-left:12px;}
+  .note b{color:var(--acid);font-weight:400;}
+</style></head><body>
+<div class="wrap">
+  <header>
+    <div class="brand"><b>VIDEO</b> → GIF<span class="sub">Human Glitche · convertí clips a GIF · 100% en tu navegador</span></div>
+    <a href="/home.html">← HOME</a>
+  </header>
+
+  <div id="drop">
+    <div class="big">⤓ Soltá un video acá</div>
+    <div class="sm">o hacé clic para elegir · MP4 · MOV · WEBM · todo se procesa local, no se sube a ningún lado</div>
+    <input type="file" id="file" accept="video/*" style="display:none">
+  </div>
+
+  <div class="stage" id="stage">
+    <div>
+      <div class="vlabel">Video fuente</div>
+      <video id="video" muted playsinline controls></video>
+    </div>
+    <div>
+      <div class="vlabel">Ajustes del GIF</div>
+      <div class="ctrl"><label>inicio <b data-v="start">0.0s</b></label><input type="range" id="start" min="0" max="10" step="0.1" value="0"></div>
+      <div class="ctrl"><label>duración <b data-v="dur">3.0s</b></label><input type="range" id="dur" min="0.5" max="15" step="0.1" value="3"></div>
+      <div class="ctrl"><label>fps <b data-v="fps">12</b></label><input type="range" id="fps" min="5" max="24" step="1" value="12"></div>
+      <div class="ctrl"><label>ancho <b data-v="width">480px</b></label><input type="range" id="width" min="160" max="720" step="20" value="480"></div>
+      <button id="go">⚡ CONVERTIR A GIF</button>
+      <div id="bar"><i></i></div>
+      <div id="status"></div>
+    </div>
+  </div>
+
+  <div id="result">
+    <div class="vlabel">Resultado</div>
+    <div id="resimg"></div>
+    <div class="rrow">
+      <a id="dl" download="human-glitche.gif">⤓ DESCARGAR GIF</a>
+      <button id="again">↻ otro ajuste</button>
+      <span class="meta" id="size"></span>
+    </div>
+  </div>
+
+  <p class="note"><b>Privado:</b> el video nunca sale de tu compu — la conversión corre entera en el navegador. Para GIFs livianos para web: bajá el ancho y los fps. GIFs largos o muy anchos pesan rápido.</p>
+</div>
+
+<script type="module">
+import { GIFEncoder, quantize, applyPalette } from 'https://cdn.jsdelivr.net/npm/gifenc@1.0.3/dist/gifenc.esm.js';
+
+const $ = id => document.getElementById(id);
+const drop=$('drop'), fileInput=$('file'), stage=$('stage'), video=$('video');
+let videoURL=null;
+
+function pick(){ fileInput.click(); }
+drop.addEventListener('click', pick);
+fileInput.addEventListener('change', e=>{ if(e.target.files[0]) loadVideo(e.target.files[0]); });
+drop.addEventListener('dragover', e=>{ e.preventDefault(); drop.classList.add('over'); });
+drop.addEventListener('dragleave', ()=>drop.classList.remove('over'));
+drop.addEventListener('drop', e=>{ e.preventDefault(); drop.classList.remove('over');
+  const f=[...e.dataTransfer.files].find(f=>f.type.startsWith('video/')); if(f) loadVideo(f); });
+
+function loadVideo(file){
+  if(videoURL) URL.revokeObjectURL(videoURL);
+  videoURL = URL.createObjectURL(file);
+  video.src = videoURL;
+  video.addEventListener('loadedmetadata', ()=>{
+    const D = video.duration || 10;
+    $('start').max = Math.max(0.1, D-0.2);
+    $('dur').max = Math.min(15, D);
+    $('dur').value = Math.min(3, D);
+    syncLabels();
+    stage.classList.add('on');
+    drop.querySelector('.big').textContent = '⤓ ' + file.name;
+  }, { once:true });
+}
+
+const labels={ start:v=>v.toFixed(1)+'s', dur:v=>v.toFixed(1)+'s', fps:v=>String(v|0), width:v=>(v|0)+'px' };
+function syncLabels(){ ['start','dur','fps','width'].forEach(id=>{ const el=document.querySelector('[data-v="'+id+'"]'); if(el) el.textContent=labels[id](+$(id).value); }); }
+['start','dur','fps','width'].forEach(id=>$(id).addEventListener('input', syncLabels));
+
+function seek(t){ return new Promise(res=>{ const h=()=>{ video.removeEventListener('seeked',h); res(); }; video.addEventListener('seeked',h); video.currentTime=t; }); }
+
+$('go').addEventListener('click', convert);
+async function convert(){
+  const start=+$('start').value, dur=+$('dur').value, fps=+$('fps').value, width=(+$('width').value)|0;
+  const height = Math.round(width * video.videoHeight / video.videoWidth / 2) * 2 || width;
+  const total = Math.max(1, Math.round(dur*fps));
+  const delay = Math.round(1000/fps);
+  const canvas = document.createElement('canvas'); canvas.width=width; canvas.height=height;
+  const ctx = canvas.getContext('2d', { willReadFrequently:true });
+
+  $('go').disabled=true; $('bar').classList.add('on'); $('result').classList.remove('on');
+  const gif = GIFEncoder();
+  try{
+    for(let i=0;i<total;i++){
+      const t = Math.min(start + i/fps, (video.duration||start+dur));
+      await seek(t);
+      ctx.drawImage(video, 0,0, width, height);
+      const { data } = ctx.getImageData(0,0,width,height);
+      const palette = quantize(data, 256);
+      const index = applyPalette(data, palette);
+      gif.writeFrame(index, width, height, { palette, delay });
+      const p = Math.round((i+1)/total*100);
+      $('bar').querySelector('i').style.width = p+'%';
+      $('status').innerHTML = 'fotograma <b>'+(i+1)+'/'+total+'</b> · '+width+'×'+height;
+      if(i % 3 === 0) await new Promise(r=>setTimeout(r)); // ceder al hilo (UI viva)
+    }
+    gif.finish();
+    const bytes = gif.bytes();
+    const blob = new Blob([bytes], { type:'image/gif' });
+    const url = URL.createObjectURL(blob);
+    $('resimg').innerHTML=''; const img=new Image(); img.src=url; $('resimg').appendChild(img);
+    $('dl').href=url;
+    $('size').textContent = (bytes.length/1024/1024).toFixed(2)+' MB · '+width+'×'+height+' · '+total+' frames';
+    $('result').classList.add('on');
+    $('status').innerHTML='<b>listo ✓</b>';
+    $('result').scrollIntoView({ behavior:'smooth', block:'start' });
+  }catch(err){
+    $('status').textContent='Error: '+err.message;
+  }finally{
+    $('go').disabled=false; setTimeout(()=>$('bar').classList.remove('on'), 600);
+  }
+}
+$('again').addEventListener('click', ()=>{ $('result').classList.remove('on'); stage.scrollIntoView({behavior:'smooth'}); });
+
+syncLabels();
+</script></body></html>
