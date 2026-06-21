@@ -1,0 +1,496 @@
+<!doctype html><html lang="es"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MAPEO — Human Glitche · video mapping / projection mapping para Resolume, VDMX, OBS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{ --acid:#b8ff00; --glitch:#ff2d55; --cyan:#3ad0ff; --ink:#f0ede6; --line:rgba(240,237,230,.12); --bg:#050505; }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{min-height:100%;background:var(--bg);color:var(--ink);font-family:'Space Mono',monospace;}
+  body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");z-index:0;pointer-events:none;opacity:.4;}
+  .wrap{position:relative;z-index:1;max-width:1220px;margin:0 auto;padding:28px 22px 80px;}
+  header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px;}
+  .brand{font-family:'Bebas Neue',sans-serif;font-size:42px;letter-spacing:.03em;line-height:.82;}
+  .brand b{color:var(--acid);font-weight:400;}
+  .brand .sub{display:block;font-size:10px;letter-spacing:.2em;color:rgba(240,237,230,.45);margin-top:7px;}
+  header a{font-size:10px;letter-spacing:.2em;color:rgba(240,237,230,.4);text-decoration:none;} header a:hover{color:var(--acid);}
+  .toolbar{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;align-items:center;}
+  .toolbar button,.toolbar select,.toolbar input[type=number]{font:inherit;font-size:10px;letter-spacing:.08em;padding:9px 12px;cursor:pointer;border-radius:5px;border:1px solid var(--line);background:rgba(184,255,0,.03);color:var(--ink);}
+  .toolbar button:hover{border-color:var(--acid);color:var(--acid);}
+  .toolbar button.acc{background:var(--acid);color:#050505;border:none;font-weight:700;}
+  .toolbar button.acc:hover{color:#050505;opacity:.85;}
+  .toolbar select{cursor:pointer;} .toolbar input[type=number]{width:64px;cursor:text;}
+  .toolbar .sep{width:1px;height:22px;background:var(--line);margin:0 4px;}
+  .toolbar .srcname{font-size:9.5px;color:rgba(240,237,230,.45);}
+  .main{display:grid;grid-template-columns:1fr 270px;gap:18px;align-items:start;}
+  .stagebox{border:1px solid var(--line);border-radius:8px;background:#000;overflow:hidden;}
+  .stagewrap{position:relative;width:100%;aspect-ratio:var(--ar,16/9);background:#000;}
+  .stagewrap canvas{position:absolute;inset:0;width:100%;height:100%;display:block;}
+  #overlay{cursor:crosshair;}
+  .stagewrap:fullscreen{aspect-ratio:auto;}
+  .stagewrap:fullscreen canvas{width:100vw;height:100vh;object-fit:contain;background:#000;}
+  .stagewrap.editing-off #overlay{display:none;}
+  .panel{display:flex;flex-direction:column;gap:14px;}
+  .box{border:1px solid var(--line);border-radius:7px;padding:14px;}
+  .box h2{font-size:9px;letter-spacing:.2em;color:rgba(240,237,230,.45);text-transform:uppercase;margin-bottom:10px;}
+  .sliceitem{display:flex;align-items:center;gap:6px;padding:7px 8px;border:1px solid var(--line);border-radius:5px;margin-bottom:6px;font-size:10.5px;cursor:pointer;}
+  .sliceitem.sel{border-color:var(--cyan);color:var(--cyan);background:rgba(58,208,255,.07);}
+  .sliceitem span.nm{flex:1;}
+  .sliceitem button{background:none;border:none;color:rgba(240,237,230,.4);cursor:pointer;font-size:11px;padding:2px 4px;}
+  .sliceitem button:hover{color:var(--glitch);}
+  .addbtn{width:100%;background:transparent;border:1px dashed var(--line);color:rgba(240,237,230,.6);font:inherit;font-size:10.5px;letter-spacing:.08em;padding:9px;cursor:pointer;border-radius:5px;margin-top:2px;}
+  .addbtn:hover{border-color:var(--acid);color:var(--acid);}
+  .row{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:10px;color:rgba(240,237,230,.6);margin-bottom:9px;}
+  .row label{letter-spacing:.05em;text-transform:uppercase;font-size:9px;color:rgba(240,237,230,.45);}
+  .typebtns{display:flex;gap:6px;}
+  .typebtns button{flex:1;font:inherit;font-size:9.5px;letter-spacing:.06em;padding:7px;border:1px solid var(--line);background:transparent;color:var(--ink);cursor:pointer;border-radius:4px;}
+  .typebtns button.on{border-color:var(--acid);color:var(--acid);background:rgba(184,255,0,.07);}
+  .stepper{display:flex;align-items:center;gap:6px;}
+  .stepper button{width:22px;height:22px;border:1px solid var(--line);background:transparent;color:var(--ink);cursor:pointer;border-radius:4px;font-size:11px;}
+  .stepper button:hover{border-color:var(--acid);color:var(--acid);}
+  .stepper span{width:18px;text-align:center;font-size:11px;color:var(--acid);}
+  .ghostbtn{width:100%;font:inherit;font-size:10px;letter-spacing:.06em;padding:8px;border:1px solid var(--line);background:transparent;color:var(--ink);cursor:pointer;border-radius:5px;}
+  .ghostbtn:hover{border-color:var(--glitch);color:var(--glitch);}
+  .checkrow{display:flex;align-items:center;gap:8px;font-size:10.5px;color:rgba(240,237,230,.6);cursor:pointer;}
+  .checkrow input{accent-color:var(--acid);}
+  .note{font-size:10px;color:rgba(240,237,230,.4);line-height:1.7;margin-top:22px;border-left:1px solid rgba(184,255,0,.3);padding-left:12px;}
+  .note b{color:var(--acid);font-weight:400;}
+  #toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);z-index:30;background:rgba(5,5,5,.94);border:1px solid var(--acid);color:var(--acid);font-size:11px;padding:9px 16px;border-radius:5px;opacity:0;transition:opacity .2s;pointer-events:none;}
+  #toast.show{opacity:1;}
+  @media(max-width:860px){ .main{grid-template-columns:1fr;} }
+</style></head><body>
+<div class="wrap">
+  <header><div class="brand"><b>MAPEO</b><span class="sub">Human Glitche · video mapping / projection mapping</span></div><a href="/labs/">← LABS</a></header>
+
+  <div class="toolbar">
+    <button id="btnVideo">⤓ VIDEO</button>
+    <button id="btnImage">⤓ IMAGEN</button>
+    <button id="btnPattern">⊞ PATRÓN DE PRUEBA</button>
+    <span class="srcname" id="srcname">fuente: patrón de prueba</span>
+    <input type="file" id="fileVideo" accept="video/*" style="display:none">
+    <input type="file" id="fileImage" accept="image/*" style="display:none">
+    <div class="sep"></div>
+    <select id="resSel">
+      <option value="1920x1080">1920×1080</option>
+      <option value="1280x720" selected>1280×720</option>
+      <option value="1080x1920">1080×1920 (vertical)</option>
+      <option value="custom">personalizado…</option>
+    </select>
+    <input type="number" id="resW" value="1280" min="64" max="7680" style="display:none">
+    <input type="number" id="resH" value="720" min="64" max="7680" style="display:none">
+    <div class="sep"></div>
+    <button id="btnFull" class="acc">⛶ PANTALLA COMPLETA</button>
+    <div class="sep"></div>
+    <button id="btnSave">⤓ GUARDAR PROYECTO</button>
+    <button id="btnLoad">⤒ CARGAR PROYECTO</button>
+    <input type="file" id="fileProject" accept="application/json" style="display:none">
+  </div>
+
+  <div class="main">
+    <div class="stagebox">
+      <div class="stagewrap" id="stageWrap">
+        <canvas id="gl"></canvas>
+        <canvas id="overlay"></canvas>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="box">
+        <h2>slices</h2>
+        <div id="sliceList"></div>
+        <button class="addbtn" id="addSlice">+ AGREGAR SLICE</button>
+      </div>
+      <div class="box" id="sliceEdit" style="display:none;">
+        <h2>slice seleccionado</h2>
+        <div class="row"><label>tipo</label></div>
+        <div class="typebtns" style="margin-bottom:11px;">
+          <button data-type="quad" id="typeQuad">QUAD</button>
+          <button data-type="mesh" id="typeMesh">MESH</button>
+        </div>
+        <div id="meshDensity">
+          <div class="row"><label>filas</label><div class="stepper" id="rowsCtl"><button data-d="-1">−</button><span id="rowsVal">3</span><button data-d="1">+</button></div></div>
+          <div class="row"><label>columnas</label><div class="stepper" id="colsCtl"><button data-d="-1">−</button><span id="colsVal">3</span><button data-d="1">+</button></div></div>
+        </div>
+        <button class="ghostbtn" id="resetSlice">↺ RESETEAR GEOMETRÍA</button>
+      </div>
+      <div class="box">
+        <h2>calibración</h2>
+        <label class="checkrow"><input type="checkbox" id="showGrid"> grilla + miras de alineación</label>
+      </div>
+      <div class="box">
+        <button class="ghostbtn" id="resetAll">⟲ RESET TOTAL</button>
+      </div>
+    </div>
+  </div>
+
+  <p class="note">Diseñá el mapping acá: cada <b>slice</b> toma tu fuente entera y la deforma sobre la zona que arrastrás. <b>QUAD</b> usa una transformación de perspectiva real (4 esquinas, ideal para superficies planas vistas en ángulo). <b>MESH</b> usa una grilla deformable (para superficies curvas o irregulares). Cuando termines, dale a <b>PANTALLA COMPLETA</b> — eso es tu output final, ya warpeado. Para meterlo en <b>Resolume</b> agregalo como fuente vía <i>Capture Device</i> (la ventana/pantalla de este navegador); en <b>VDMX</b> usá un plugin de Screen/Window Capture; en <b>OBS</b>, Window Capture o Browser Source. No hay integración directa con Resolume — Resolume no documenta su formato de Advanced Output, así que en vez de prometer un import que puede fallar en pleno show, esta herramienta te da la imagen ya mapeada para que cualquier software la tome como una fuente de video más. Todo corre 100% en tu navegador.</p>
+</div>
+<div id="toast"></div>
+<script type="module">
+const $=id=>document.getElementById(id);
+async function toast(t){ const el=$('toast'); el.textContent=t; el.classList.add('show'); clearTimeout(el._h); el._h=setTimeout(()=>el.classList.remove('show'),1800); }
+
+/* ---------- homography (DLT) ---------- */
+function solveLinear(A,b){
+  const n=b.length; const M=A.map((row,i)=>row.concat([b[i]]));
+  for(let col=0;col<n;col++){
+    let piv=col;
+    for(let r=col+1;r<n;r++) if(Math.abs(M[r][col])>Math.abs(M[piv][col])) piv=r;
+    if(Math.abs(M[piv][col])<1e-9) return null;
+    [M[col],M[piv]]=[M[piv],M[col]];
+    const pv=M[col][col];
+    for(let c=col;c<=n;c++) M[col][c]/=pv;
+    for(let r=0;r<n;r++){ if(r===col) continue; const f=M[r][col]; if(!f) continue; for(let c=col;c<=n;c++) M[r][c]-=f*M[col][c]; }
+  }
+  return M.map(row=>row[n]);
+}
+const UNIT_UV=[[0,0],[1,0],[0,1],[1,1]];
+function computeHomography(dstPts){
+  const A=[],b=[];
+  for(let i=0;i<4;i++){
+    const [u,v]=UNIT_UV[i], [X,Y]=dstPts[i];
+    A.push([u,v,1,0,0,0,-X*u,-X*v]); b.push(X);
+    A.push([0,0,0,u,v,1,-Y*u,-Y*v]); b.push(Y);
+  }
+  const h=solveLinear(A,b);
+  if(!h) return [1,0,0, 0,1,0, 0,0,1];
+  return [h[0],h[1],h[2], h[3],h[4],h[5], h[6],h[7],1];
+}
+function toColMajor3(H){ return new Float32Array([H[0],H[3],H[6], H[1],H[4],H[7], H[2],H[5],H[8]]); }
+
+/* ---------- gl setup ---------- */
+const canvas=$('gl'), overlay=$('overlay'), stageWrap=$('stageWrap');
+const gl=canvas.getContext('webgl2');
+gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,false);
+function compile(src,type){ const s=gl.createShader(type); gl.shaderSource(s,src); gl.compileShader(s); if(!gl.getShaderParameter(s,gl.COMPILE_STATUS)) console.error(gl.getShaderInfoLog(s)); return s; }
+function link(vsSrc,fsSrc){ const p=gl.createProgram(); gl.attachShader(p,compile(vsSrc,gl.VERTEX_SHADER)); gl.attachShader(p,compile(fsSrc,gl.FRAGMENT_SHADER)); gl.linkProgram(p); if(!gl.getProgramParameter(p,gl.LINK_STATUS)) console.error(gl.getProgramInfoLog(p)); return p; }
+
+const FS_TEX=`#version 300 es
+precision highp float; in vec2 vUV; uniform sampler2D uTex; out vec4 o;
+void main(){ o=texture(uTex,vUV); }`;
+
+const progQuad=link(`#version 300 es
+in vec2 aUV; uniform mat3 uH; uniform vec2 uRes; out vec2 vUV;
+void main(){
+  vec3 hp=uH*vec3(aUV,1.0);
+  float cx=(hp.x/uRes.x*2.0-hp.z);
+  float cy=(hp.z-hp.y/uRes.y*2.0);
+  gl_Position=vec4(cx,cy,0.0,hp.z);
+  vUV=aUV;
+}`, FS_TEX);
+
+const progMesh=link(`#version 300 es
+in vec2 aPos; in vec2 aUV; uniform vec2 uRes; out vec2 vUV;
+void main(){
+  vec2 c=vec2(aPos.x/uRes.x*2.0-1.0, 1.0-aPos.y/uRes.y*2.0);
+  gl_Position=vec4(c,0.0,1.0); vUV=aUV;
+}`, FS_TEX);
+
+const progLine=link(`#version 300 es
+in vec2 aPos; uniform vec2 uRes;
+void main(){
+  vec2 c=vec2(aPos.x/uRes.x*2.0-1.0, 1.0-aPos.y/uRes.y*2.0);
+  gl_Position=vec4(c,0.0,1.0); gl_PointSize=1.0;
+}`, `#version 300 es
+precision highp float; uniform vec4 uColor; out vec4 o; void main(){ o=uColor; }`);
+
+const uHLoc=gl.getUniformLocation(progQuad,'uH'), uResQuad=gl.getUniformLocation(progQuad,'uRes');
+const uResMesh=gl.getUniformLocation(progMesh,'uRes');
+const uResLine=gl.getUniformLocation(progLine,'uRes'), uColorLine=gl.getUniformLocation(progLine,'uColor');
+
+const quadUVBuf=gl.createBuffer();
+gl.bindBuffer(gl.ARRAY_BUFFER,quadUVBuf);
+gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([0,0, 1,0, 0,1,  1,0, 1,1, 0,1]),gl.STATIC_DRAW);
+const meshPosBuf=gl.createBuffer(), meshUVBuf=gl.createBuffer(), lineBuf=gl.createBuffer();
+
+const tex=gl.createTexture();
+gl.bindTexture(gl.TEXTURE_2D,tex);
+gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);
+gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
+gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);
+gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
+gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,1,1,0,gl.RGBA,gl.UNSIGNED_BYTE,new Uint8Array([0,0,0,255]));
+
+/* ---------- source ---------- */
+let sourceKind='pattern', videoEl=null, patternCanvas=null, imgEl=null, textureDirty=true;
+function makePattern(w,h){
+  const c=document.createElement('canvas'); c.width=w; c.height=h; const cx=c.getContext('2d');
+  cx.fillStyle='#0a0a0a'; cx.fillRect(0,0,w,h);
+  const step=Math.max(20,Math.round(Math.min(w,h)/16));
+  cx.fillStyle='#1c1c1c';
+  for(let y=0;y<h;y+=step) for(let x=0;x<w;x+=step) if(((x/step+y/step)|0)%2===0) cx.fillRect(x,y,step,step);
+  cx.strokeStyle='rgba(184,255,0,.55)'; cx.lineWidth=1;
+  for(let x=0;x<=w;x+=step){ cx.beginPath(); cx.moveTo(x,0); cx.lineTo(x,h); cx.stroke(); }
+  for(let y=0;y<=h;y+=step){ cx.beginPath(); cx.moveTo(0,y); cx.lineTo(w,y); cx.stroke(); }
+  cx.strokeStyle='rgba(255,45,85,.85)'; cx.lineWidth=2;
+  cx.beginPath(); cx.moveTo(w/2-30,h/2); cx.lineTo(w/2+30,h/2); cx.moveTo(w/2,h/2-30); cx.lineTo(w/2,h/2+30); cx.stroke();
+  cx.beginPath(); cx.arc(w/2,h/2,40,0,Math.PI*2); cx.stroke();
+  cx.strokeStyle='rgba(58,208,255,.9)'; cx.lineWidth=3;
+  cx.strokeRect(4,4,w-8,h-8);
+  cx.fillStyle='#3ad0ff'; cx.font='bold '+Math.round(h*0.05)+'px monospace';
+  cx.fillText('HUMAN GLITCHE · MAPEO',24,h*0.08);
+  cx.font=Math.round(h*0.04)+'px monospace'; cx.fillStyle='#b8ff00';
+  [['TL',24,h*0.16],['TR',w-90,h*0.16],['BL',24,h-24],['BR',w-90,h-24]].forEach(([t,x,y])=>cx.fillText(t,x,y));
+  return c;
+}
+function setSource(kind,el){
+  sourceKind=kind;
+  if(kind==='video'){ videoEl=el; }
+  else if(kind==='image'){ imgEl=el; textureDirty=true; }
+  else if(kind==='pattern'){ patternCanvas=el; textureDirty=true; }
+}
+setSource('pattern',makePattern(1280,720));
+function updateTexture(){
+  if(sourceKind==='video'){
+    if(videoEl && videoEl.readyState>=2){ gl.bindTexture(gl.TEXTURE_2D,tex); gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,videoEl); }
+  } else if(textureDirty){
+    const src=sourceKind==='image'?imgEl:patternCanvas;
+    if(src){ gl.bindTexture(gl.TEXTURE_2D,tex); gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,src); textureDirty=false; }
+  }
+}
+
+const fileVideo=$('fileVideo'), fileImage=$('fileImage');
+$('btnVideo').addEventListener('click',()=>fileVideo.click());
+$('btnImage').addEventListener('click',()=>fileImage.click());
+$('btnPattern').addEventListener('click',()=>{ setSource('pattern',makePattern(outputW,outputH)); $('srcname').textContent='fuente: patrón de prueba'; toast('patrón de prueba'); });
+fileVideo.addEventListener('change',e=>{
+  const f=e.target.files[0]; if(!f) return;
+  const v=document.createElement('video'); v.muted=true; v.loop=true; v.playsInline=true; v.autoplay=true;
+  v.src=URL.createObjectURL(f); v.play().catch(()=>{});
+  setSource('video',v); $('srcname').textContent='fuente: '+f.name;
+});
+fileImage.addEventListener('change',e=>{
+  const f=e.target.files[0]; if(!f) return;
+  const img=new Image(); img.onload=()=>{ setSource('image',img); $('srcname').textContent='fuente: '+f.name; };
+  img.src=URL.createObjectURL(f);
+});
+
+/* ---------- output resolution ---------- */
+let outputW=1280, outputH=720;
+function applyRes(w,h,rescale){
+  const sx=w/outputW, sy=h/outputH;
+  if(rescale && slices.length){ slices.forEach(s=>{ s.points=s.points.map(p=>[p[0]*sx,p[1]*sy]); }); }
+  outputW=w; outputH=h;
+  canvas.width=w; canvas.height=h; overlay.width=w; overlay.height=h;
+  stageWrap.style.setProperty('--ar',w+'/'+h);
+}
+applyRes(1280,720,false);
+const resSel=$('resSel'), resW=$('resW'), resH=$('resH');
+function resFromSel(){
+  const v=resSel.value;
+  if(v==='custom'){ resW.style.display='inline-block'; resH.style.display='inline-block'; return [+resW.value||outputW, +resH.value||outputH]; }
+  resW.style.display='none'; resH.style.display='none';
+  const [w,h]=v.split('x').map(Number); return [w,h];
+}
+resSel.addEventListener('change',()=>{ if(resSel.value==='custom'){ resW.value=outputW; resH.value=outputH; } const [w,h]=resFromSel(); applyRes(w,h,true); });
+[resW,resH].forEach(inp=>inp.addEventListener('change',()=>{ if(resSel.value==='custom') applyRes(+resW.value,+resH.value,true); }));
+
+/* ---------- slices ---------- */
+let slices=[], selId=null, nextId=1;
+function defaultQuad(){
+  const mx=outputW*0.12, my=outputH*0.12;
+  return [[mx,my],[outputW-mx,my],[mx,outputH-my],[outputW-mx,outputH-my]];
+}
+function meshCorners(s){
+  if(s.type==='quad') return s.points;
+  const {rows,cols,points}=s;
+  return [points[0], points[cols-1], points[(rows-1)*cols], points[rows*cols-1]];
+}
+function bilinearGrid(corners,rows,cols){
+  const [TL,TR,BL,BR]=corners; const pts=[];
+  for(let r=0;r<rows;r++){ const ty=r/(rows-1);
+    for(let c=0;c<cols;c++){ const tx=c/(cols-1);
+      const top=[TL[0]+(TR[0]-TL[0])*tx, TL[1]+(TR[1]-TL[1])*tx];
+      const bot=[BL[0]+(BR[0]-BL[0])*tx, BL[1]+(BR[1]-BL[1])*tx];
+      pts.push([top[0]+(bot[0]-top[0])*ty, top[1]+(bot[1]-top[1])*ty]);
+    }
+  }
+  return pts;
+}
+function addSlice(){
+  const n=slices.length, off=n*26;
+  const base=defaultQuad().map(p=>[p[0]+off,p[1]+off*0.6]);
+  const s={id:nextId++, type:'quad', rows:2, cols:2, points:base, name:'SLICE '+(n+1)};
+  slices.push(s); selId=s.id; renderSliceList(); renderEditPanel();
+}
+function deleteSlice(id){ slices=slices.filter(s=>s.id!==id); if(selId===id) selId=slices.length?slices[0].id:null; renderSliceList(); renderEditPanel(); }
+function selSlice(id){ selId=id; renderSliceList(); renderEditPanel(); }
+function getSel(){ return slices.find(s=>s.id===selId); }
+
+function renderSliceList(){
+  const el=$('sliceList'); el.innerHTML='';
+  slices.forEach(s=>{
+    const div=document.createElement('div'); div.className='sliceitem'+(s.id===selId?' sel':'');
+    div.innerHTML=`<span class="nm">${s.name} · ${s.type==='quad'?'quad':s.rows+'×'+s.cols}</span><button data-del="${s.id}">✕</button>`;
+    div.addEventListener('click',e=>{ if(e.target.closest('button')) return; selSlice(s.id); });
+    div.querySelector('button').addEventListener('click',()=>deleteSlice(s.id));
+    el.appendChild(div);
+  });
+}
+function renderEditPanel(){
+  const s=getSel(); const box=$('sliceEdit');
+  if(!s){ box.style.display='none'; return; }
+  box.style.display='block';
+  $('typeQuad').classList.toggle('on',s.type==='quad');
+  $('typeMesh').classList.toggle('on',s.type==='mesh');
+  $('meshDensity').style.display=s.type==='mesh'?'block':'none';
+  $('rowsVal').textContent=s.rows; $('colsVal').textContent=s.cols;
+}
+$('addSlice').addEventListener('click',addSlice);
+$('typeQuad').addEventListener('click',()=>{ const s=getSel(); if(!s||s.type==='quad') return; const c=meshCorners(s); s.type='quad'; s.rows=2; s.cols=2; s.points=c; renderSliceList(); renderEditPanel(); });
+$('typeMesh').addEventListener('click',()=>{ const s=getSel(); if(!s) return; if(s.type==='mesh') return; const c=meshCorners(s); s.type='mesh'; s.rows=3; s.cols=3; s.points=bilinearGrid(c,3,3); renderSliceList(); renderEditPanel(); });
+function changeDensity(which,d){
+  const s=getSel(); if(!s||s.type!=='mesh') return;
+  const c=meshCorners(s);
+  if(which==='rows') s.rows=Math.max(2,Math.min(8,s.rows+d)); else s.cols=Math.max(2,Math.min(8,s.cols+d));
+  s.points=bilinearGrid(c,s.rows,s.cols);
+  renderSliceList(); renderEditPanel();
+}
+$('rowsCtl').addEventListener('click',e=>{ const b=e.target.closest('button'); if(b) changeDensity('rows',+b.dataset.d); });
+$('colsCtl').addEventListener('click',e=>{ const b=e.target.closest('button'); if(b) changeDensity('cols',+b.dataset.d); });
+$('resetSlice').addEventListener('click',()=>{ const s=getSel(); if(!s) return; const base=defaultQuad(); s.points=s.type==='quad'?base:bilinearGrid(base,s.rows,s.cols); });
+$('resetAll').addEventListener('click',()=>{ slices=[]; selId=null; renderSliceList(); renderEditPanel(); toast('reset'); });
+
+addSlice();
+
+/* ---------- drag handles ---------- */
+let dragging=null;
+function canvasPos(evt){
+  const r=overlay.getBoundingClientRect();
+  return [ (evt.clientX-r.left)/r.width*outputW, (evt.clientY-r.top)/r.height*outputH ];
+}
+function handleRadius(){ const r=overlay.getBoundingClientRect(); return 9*(outputW/r.width); }
+overlay.addEventListener('pointerdown',e=>{
+  const [mx,my]=canvasPos(e); const hr=handleRadius();
+  for(let i=slices.length-1;i>=0;i--){
+    const s=slices[i];
+    for(let p=0;p<s.points.length;p++){
+      const [x,y]=s.points[p];
+      if(Math.hypot(x-mx,y-my)<=hr){ dragging={sliceId:s.id,idx:p}; selId=s.id; renderSliceList(); renderEditPanel(); overlay.setPointerCapture(e.pointerId); return; }
+    }
+  }
+});
+overlay.addEventListener('pointermove',e=>{
+  if(!dragging) return;
+  const s=slices.find(s=>s.id===dragging.sliceId); if(!s) return;
+  s.points[dragging.idx]=canvasPos(e);
+});
+overlay.addEventListener('pointerup',()=>{ dragging=null; });
+overlay.addEventListener('pointercancel',()=>{ dragging=null; });
+
+/* ---------- render ---------- */
+const octx=overlay.getContext('2d');
+function drawQuadSlice(s){
+  const H=computeHomography(s.points);
+  gl.useProgram(progQuad);
+  gl.uniformMatrix3fv(uHLoc,false,toColMajor3(H));
+  gl.uniform2f(uResQuad,outputW,outputH);
+  gl.bindBuffer(gl.ARRAY_BUFFER,quadUVBuf);
+  const loc=gl.getAttribLocation(progQuad,'aUV'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc,2,gl.FLOAT,false,0,0);
+  gl.bindTexture(gl.TEXTURE_2D,tex);
+  gl.drawArrays(gl.TRIANGLES,0,6);
+}
+function drawMeshSlice(s){
+  const {rows,cols,points}=s; const pos=[],uv=[];
+  for(let r=0;r<rows-1;r++) for(let c=0;c<cols-1;c++){
+    const i00=r*cols+c,i10=r*cols+c+1,i01=(r+1)*cols+c,i11=(r+1)*cols+c+1;
+    [[i00,i10,i01],[i10,i11,i01]].forEach(tri=>tri.forEach(idx=>{
+      pos.push(points[idx][0],points[idx][1]);
+      uv.push((idx%cols)/(cols-1), Math.floor(idx/cols)/(rows-1));
+    }));
+  }
+  gl.useProgram(progMesh);
+  gl.uniform2f(uResMesh,outputW,outputH);
+  gl.bindBuffer(gl.ARRAY_BUFFER,meshPosBuf); gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(pos),gl.DYNAMIC_DRAW);
+  const locP=gl.getAttribLocation(progMesh,'aPos'); gl.enableVertexAttribArray(locP); gl.vertexAttribPointer(locP,2,gl.FLOAT,false,0,0);
+  gl.bindBuffer(gl.ARRAY_BUFFER,meshUVBuf); gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(uv),gl.DYNAMIC_DRAW);
+  const locU=gl.getAttribLocation(progMesh,'aUV'); gl.enableVertexAttribArray(locU); gl.vertexAttribPointer(locU,2,gl.FLOAT,false,0,0);
+  gl.bindTexture(gl.TEXTURE_2D,tex);
+  gl.drawArrays(gl.TRIANGLES,0,pos.length/2);
+}
+function drawCalibGridGL(){
+  if(!$('showGrid').checked) return;
+  const lines=[]; const step=Math.max(40,Math.round(Math.min(outputW,outputH)/12));
+  for(let x=0;x<=outputW;x+=step){ lines.push(x,0,x,outputH); }
+  for(let y=0;y<=outputH;y+=step){ lines.push(0,y,outputW,y); }
+  gl.useProgram(progLine);
+  gl.uniform2f(uResLine,outputW,outputH);
+  gl.uniform4f(uColorLine,0.5,0.5,0.5,0.35);
+  gl.bindBuffer(gl.ARRAY_BUFFER,lineBuf); gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(lines),gl.DYNAMIC_DRAW);
+  const loc=gl.getAttribLocation(progLine,'aPos'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc,2,gl.FLOAT,false,0,0);
+  gl.drawArrays(gl.LINES,0,lines.length/2);
+}
+function drawOverlay2D(){
+  octx.clearRect(0,0,outputW,outputH);
+  slices.forEach(s=>{
+    const sel=s.id===selId;
+    octx.strokeStyle=sel?'rgba(58,208,255,.9)':'rgba(240,237,230,.35)';
+    octx.lineWidth=Math.max(1,outputW/600);
+    if(s.type==='quad'){
+      const [TL,TR,BL,BR]=s.points;
+      octx.beginPath(); octx.moveTo(...TL); octx.lineTo(...TR); octx.lineTo(...BR); octx.lineTo(...BL); octx.closePath(); octx.stroke();
+    } else {
+      const {rows,cols,points}=s;
+      for(let r=0;r<rows;r++){ octx.beginPath(); for(let c=0;c<cols;c++){ const [x,y]=points[r*cols+c]; c===0?octx.moveTo(x,y):octx.lineTo(x,y); } octx.stroke(); }
+      for(let c=0;c<cols;c++){ octx.beginPath(); for(let r=0;r<rows;r++){ const [x,y]=points[r*cols+c]; r===0?octx.moveTo(x,y):octx.lineTo(x,y); } octx.stroke(); }
+    }
+    const hr=handleRadius();
+    s.points.forEach(([x,y])=>{
+      octx.beginPath(); octx.arc(x,y,hr,0,Math.PI*2);
+      octx.fillStyle=sel?'#3ad0ff':'rgba(240,237,230,.5)'; octx.fill();
+      octx.strokeStyle='#050505'; octx.lineWidth=1.5; octx.stroke();
+    });
+  });
+}
+function frame(){
+  updateTexture();
+  gl.viewport(0,0,outputW,outputH);
+  gl.clearColor(0,0,0,1); gl.clear(gl.COLOR_BUFFER_BIT);
+  slices.forEach(s=> s.type==='quad'?drawQuadSlice(s):drawMeshSlice(s));
+  drawCalibGridGL();
+  drawOverlay2D();
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+
+/* ---------- fullscreen ---------- */
+$('btnFull').addEventListener('click',()=>{
+  if(stageWrap.requestFullscreen) stageWrap.requestFullscreen();
+  else if(stageWrap.webkitRequestFullscreen) stageWrap.webkitRequestFullscreen();
+});
+document.addEventListener('fullscreenchange',()=>{
+  stageWrap.classList.toggle('editing-off', document.fullscreenElement===stageWrap);
+});
+
+/* ---------- save / load project ---------- */
+$('btnSave').addEventListener('click',()=>{
+  const data={outputW,outputH,showGrid:$('showGrid').checked,slices:slices.map(s=>({type:s.type,rows:s.rows,cols:s.cols,points:s.points}))};
+  const blob=new Blob([JSON.stringify(data,null,1)],{type:'application/json'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='mapeo-proyecto.json'; a.click(); URL.revokeObjectURL(a.href);
+  toast('proyecto guardado');
+});
+const fileProject=$('fileProject');
+$('btnLoad').addEventListener('click',()=>fileProject.click());
+fileProject.addEventListener('change',e=>{
+  const f=e.target.files[0]; if(!f) return;
+  const reader=new FileReader();
+  reader.onload=()=>{
+    try{
+      const data=JSON.parse(reader.result);
+      if(!data.outputW||!data.outputH||!Array.isArray(data.slices)) throw new Error('formato inválido');
+      applyRes(data.outputW,data.outputH,false);
+      resSel.value = (data.outputW+'x'+data.outputH in {'1920x1080':1,'1280x720':1,'1080x1920':1}) ? data.outputW+'x'+data.outputH : 'custom';
+      if(resSel.value==='custom'){ resW.value=data.outputW; resH.value=data.outputH; resW.style.display='inline-block'; resH.style.display='inline-block'; }
+      else { resW.style.display='none'; resH.style.display='none'; }
+      $('showGrid').checked=!!data.showGrid;
+      slices=data.slices.map(s=>({id:nextId++, type:s.type, rows:s.rows||2, cols:s.cols||2, points:s.points, name:'SLICE '+(nextId-1)}));
+      selId=slices.length?slices[0].id:null;
+      renderSliceList(); renderEditPanel();
+      toast('proyecto cargado');
+    }catch(err){ toast('error: archivo inválido'); }
+  };
+  reader.readAsText(f);
+});
+
+renderSliceList(); renderEditPanel();
+</script>
+</body></html>
