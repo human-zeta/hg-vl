@@ -1,0 +1,185 @@
+<!doctype html><html lang="es"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MARCADORES — Human Glitche · BPM, drops y acentos para Premiere</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{ --acid:#b8ff00; --glitch:#ff2d55; --cyan:#3ad0ff; --gold:#ffcc33; --ink:#f0ede6; --line:rgba(240,237,230,.12); --bg:#050505; }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{min-height:100%;background:var(--bg);color:var(--ink);font-family:'Space Mono',monospace;}
+  body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");z-index:0;pointer-events:none;opacity:.4;}
+  .wrap{position:relative;z-index:1;max-width:1000px;margin:0 auto;padding:28px 22px 80px;}
+  header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;}
+  .brand{font-family:'Bebas Neue',sans-serif;font-size:42px;letter-spacing:.03em;line-height:.82;}
+  .brand b{color:var(--acid);font-weight:400;} .brand .sub{display:block;font-size:10px;letter-spacing:.2em;color:rgba(240,237,230,.45);margin-top:7px;}
+  header a{font-size:10px;letter-spacing:.2em;color:rgba(240,237,230,.4);text-decoration:none;} header a:hover{color:var(--acid);}
+  #drop{border:1.5px dashed var(--line);border-radius:8px;padding:46px 20px;text-align:center;cursor:pointer;transition:.2s;background:rgba(184,255,0,.02);}
+  #drop:hover,#drop.over{border-color:var(--acid);background:rgba(184,255,0,.06);}
+  #drop .big{font-family:'Bebas Neue',sans-serif;font-size:26px;color:var(--acid);} #drop .sm{font-size:11px;color:rgba(240,237,230,.5);margin-top:8px;}
+  .stage{display:none;margin-top:22px;} .stage.on{display:block;}
+  .topline{display:flex;gap:18px;align-items:center;flex-wrap:wrap;margin-bottom:14px;}
+  .bpm{font-family:'Bebas Neue',sans-serif;font-size:34px;color:var(--acid);line-height:1;}
+  .bpm small{font-family:'Space Mono';font-size:10px;letter-spacing:.2em;color:rgba(240,237,230,.45);display:block;}
+  .play{background:var(--acid);color:#050505;border:none;width:48px;height:48px;border-radius:50%;font-size:18px;cursor:pointer;}
+  #wave{width:100%;height:150px;border:1px solid var(--line);border-radius:6px;background:#0a0a0a;display:block;cursor:pointer;margin-bottom:16px;}
+  .groups{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px;margin-bottom:16px;}
+  .grp{border:1px solid var(--line);border-radius:6px;padding:12px 13px;}
+  .grp .h{display:flex;align-items:center;gap:8px;margin-bottom:7px;}
+  .grp .dot{width:11px;height:11px;border-radius:2px;}
+  .grp .nm{font-size:12px;letter-spacing:.05em;flex:1;} .grp .ct{font-size:11px;color:rgba(240,237,230,.5);}
+  .grp .row{display:flex;gap:8px;align-items:center;margin-top:8px;}
+  .grp label{font-size:10px;color:rgba(240,237,230,.6);display:flex;align-items:center;gap:5px;cursor:pointer;}
+  .grp .exp{margin-left:auto;background:transparent;border:1px solid var(--line);color:var(--ink);font:inherit;font-size:10px;letter-spacing:.08em;padding:5px 9px;cursor:pointer;border-radius:4px;}
+  .grp .exp:hover{border-color:var(--acid);color:var(--acid);}
+  .grp select{background:#0a0a0a;color:var(--ink);border:1px solid var(--line);font:inherit;font-size:10px;padding:3px 5px;border-radius:4px;}
+  .opts{display:flex;gap:18px;align-items:center;flex-wrap:wrap;margin-bottom:16px;font-size:11px;color:rgba(240,237,230,.7);}
+  .opts input[type=range]{accent-color:var(--acid);width:150px;vertical-align:middle;} .opts b{color:var(--acid);font-weight:400;}
+  .opts select{background:#0a0a0a;color:var(--ink);border:1px solid var(--line);font:inherit;font-size:11px;padding:4px 7px;border-radius:4px;}
+  #exportAll{background:var(--acid);color:#050505;border:none;font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:.04em;padding:12px 26px;cursor:pointer;border-radius:5px;}
+  #status{font-size:11px;color:rgba(240,237,230,.55);margin:8px 0;min-height:15px;} #status b{color:var(--acid);font-weight:400;}
+  .note{font-size:10px;color:rgba(240,237,230,.4);line-height:1.7;margin-top:22px;border-left:1px solid rgba(184,255,0,.3);padding-left:12px;} .note b{color:var(--acid);font-weight:400;}
+  audio{display:none;}
+</style></head><body>
+<div class="wrap">
+  <header><div class="brand"><b>MARCADORES</b><span class="sub">Human Glitche · BPM, drops y acentos → marcadores para Premiere · 100% local</span></div><a href="/labs/">← LABS</a></header>
+  <div id="drop"><div class="big">⤓ Soltá un tema o un show acá</div><div class="sm">o clic para elegir · MP3 · WAV · M4A · hasta ~45 min · no se sube a ningún lado</div>
+    <input type="file" id="file" accept="audio/*" style="display:none"></div>
+  <div id="status"></div>
+  <div class="stage" id="stage">
+    <div class="topline">
+      <button class="play" id="play">▶</button>
+      <div class="bpm"><span id="bpmv">—</span><small>BPM detectado</small></div>
+    </div>
+    <canvas id="wave" width="1800" height="300"></canvas>
+    <div class="groups" id="groups"></div>
+    <div class="opts">
+      <span>sensibilidad <b id="sensv">media</b> <input type="range" id="sens" min="0" max="1" step="0.05" value="0.5"></span>
+      <span>fps export <select id="fps"><option>24</option><option>25</option><option selected>30</option><option>23.976</option><option>29.97</option><option>60</option></select></span>
+      <button id="exportAll">⤓ EXPORTAR CSV (grupos activos)</button>
+    </div>
+  </div>
+  <audio id="audio"></audio>
+  <p class="note">Detecta <b>cuatro grupos</b>: grilla de <b>BPM</b>, <b>drops</b> (subidas de energía), <b>breaks</b> (bajadas) y <b>acentos</b> (golpes fuertes). Cada uno se ve en la waveform, se prende/apaga y se exporta solo o combinado. El CSV trae timecode <b>HH:MM:SS:FF</b> al fps elegido — en Premiere: panel Marcadores → importar. Es un <b>asistente</b>: flaggea lo obvio para no escuchar mil veces; verificá en la onda.</p>
+</div>
+<script>
+const $=id=>document.getElementById(id);
+const drop=$('drop'), fileInput=$('file'), stage=$('stage'), audio=$('audio'), wave=$('wave'), wctx=wave.getContext('2d');
+const GROUPS={ bpm:{name:'BPM (grilla)',color:'#3ad0ff',on:true,density:'bar'}, drop:{name:'Drops',color:'#b8ff00',on:true}, break:{name:'Breaks',color:'#ff2d55',on:true}, accent:{name:'Acentos',color:'#ffcc33',on:true} };
+let env=null, efps=0, energy=null, gfps=0, bpm=0, beatLag=0, beatPhase=0, dur=0, markers={}, audioURL=null;
+
+drop.addEventListener('click',()=>fileInput.click());
+fileInput.addEventListener('change',e=>{ if(e.target.files[0]) load(e.target.files[0]); });
+drop.addEventListener('dragover',e=>{e.preventDefault();drop.classList.add('over');});
+drop.addEventListener('dragleave',()=>drop.classList.remove('over'));
+drop.addEventListener('drop',e=>{e.preventDefault();drop.classList.remove('over');const f=[...e.dataTransfer.files].find(f=>f.type.startsWith('audio/'));if(f)load(f);});
+
+async function load(file){
+  $('status').innerHTML='decodificando audio… <b>(temas largos tardan unos segundos)</b>';
+  if(audioURL) URL.revokeObjectURL(audioURL); audioURL=URL.createObjectURL(file); audio.src=audioURL;
+  drop.querySelector('.big').textContent='⤓ '+file.name;
+  await new Promise(r=>setTimeout(r,30));
+  try{
+    const ab=await file.arrayBuffer();
+    const ac=new (window.AudioContext||window.webkitAudioContext)();
+    const buf=await ac.decodeAudioData(ab); ac.close();
+    dur=buf.duration;
+    $('status').innerHTML='analizando BPM y energía…'; await new Promise(r=>setTimeout(r,30));
+    const SR=11025; const mono=await toMono(buf, SR);
+    const oe=onsetEnvelope(mono, SR); env=oe.env; efps=oe.fps;
+    const ec=energyCurve(mono, SR); energy=ec.e; gfps=ec.fps;
+    const bd=detectBPM(env, efps); bpm=bd.bpm; beatLag=bd.lag; beatPhase=bd.phase;
+    $('bpmv').textContent=bpm; stage.classList.add('on');
+    recompute(); $('status').innerHTML='listo — '+fmtDur(dur)+' · '+bpm+' BPM';
+  }catch(err){ $('status').textContent='No se pudo analizar: '+err.message; }
+}
+
+function toMono(buf, SR){
+  const oac=new OfflineAudioContext(1, Math.max(1,Math.ceil(buf.duration*SR)), SR);
+  const s=oac.createBufferSource(); s.buffer=buf; s.connect(oac.destination); s.start();
+  return oac.startRendering().then(r=>r.getChannelData(0));
+}
+function onsetEnvelope(mono, SR){
+  const hop=Math.max(1,Math.floor(SR*0.0116)), win=hop*2;
+  const n=Math.max(1,Math.floor((mono.length-win)/hop)); const env=new Float32Array(n); let prev=0;
+  for(let i=0;i<n;i++){ let e=0; const s=i*hop; for(let j=0;j<win;j++){ const v=mono[s+j]; e+=v*v; } e=Math.sqrt(e/win); env[i]=Math.max(0,e-prev); prev=e; }
+  return {env, fps:SR/hop};
+}
+function energyCurve(mono, SR){
+  const hop=Math.max(1,Math.floor(SR*0.1)), n=Math.max(1,Math.floor(mono.length/hop)); const e=new Float32Array(n);
+  for(let i=0;i<n;i++){ let s=0; const o=i*hop; for(let j=0;j<hop;j++){ const v=mono[o+j]||0; s+=v*v; } e[i]=Math.sqrt(s/hop); }
+  return {e, fps:SR/hop};
+}
+function detectBPM(env, fps, min=70, max=180){
+  const minLag=Math.floor(fps*60/max), maxLag=Math.ceil(fps*60/min); let best=-1,bestLag=minLag;
+  for(let lag=minLag; lag<=maxLag; lag++){ let s=0; for(let i=0;i+lag<env.length;i++) s+=env[i]*env[i+lag]; if(s>best){best=s;bestLag=lag;} }
+  let phase=0,ps=-1; for(let ph=0;ph<bestLag;ph++){ let s=0; for(let i=ph;i<env.length;i+=bestLag) s+=env[i]; if(s>ps){ps=s;phase=ph;} }
+  let b=fps*60/bestLag; while(b<90)b*=2; while(b>180)b/=2;
+  return {bpm:Math.round(b*10)/10, lag:bestLag, phase};
+}
+function smooth(a,w){ const o=new Float32Array(a.length); let acc=0; for(let i=0;i<a.length;i++){ acc+=a[i]; if(i>=w)acc-=a[i-w]; o[i]=acc/Math.min(i+1,w); } return o; }
+
+function recompute(){
+  const sens=+$('sens').value;
+  $('sensv').textContent= sens<0.34?'baja':sens>0.66?'alta':'media';
+  markers={ bpm:[], drop:[], break:[], accent:[] };
+  // BPM grid
+  const beatSec=beatLag/efps; const mult={beat:1,bar:4,frase:16}[GROUPS.bpm.density]||4;
+  for(let t=beatPhase/efps, k=0; t<dur; t+=beatSec*mult, k++){ if(t>=0) markers.bpm.push({t, label:GROUPS.bpm.density+' '+(k+1)}); }
+  // energy-based drops/breaks
+  const sm=smooth(energy, Math.round(gfps*1)); let mx=0; for(const v of sm) if(v>mx)mx=v; mx=mx||1;
+  const norm=Array.from(sm,v=>v/mx);
+  const look=Math.round(gfps*4), gap=Math.round(gfps*6), thr=0.30*(1.35-sens); let last=-1e9, lastB=-1e9;
+  for(let i=look;i<norm.length;i++){ const d=norm[i]-norm[i-look];
+    if(d>thr && i-last>gap){ markers.drop.push({t:i/gfps,label:'Drop'}); last=i; }
+    else if(d<-thr && i-lastB>gap){ markers.break.push({t:i/gfps,label:'Break'}); lastB=i; } }
+  // accents: strong onset peaks
+  let em=0; for(const v of env) if(v>em)em=v; em=em||1;
+  const aThr=em*(0.55-sens*0.35), aGap=Math.round(efps*(0.5+sens*0)); let lastA=-1e9;
+  for(let i=1;i<env.length-1;i++){ if(env[i]>aThr && env[i]>=env[i-1] && env[i]>env[i+1] && i-lastA>aGap){ markers.accent.push({t:i/efps,label:'Acento'}); lastA=i; } }
+  renderGroups(); draw();
+}
+
+function renderGroups(){
+  $('groups').innerHTML=Object.entries(GROUPS).map(([k,g])=>`
+    <div class="grp"><div class="h"><span class="dot" style="background:${g.color}"></span><span class="nm">${g.name}</span><span class="ct">${markers[k].length}</span></div>
+    <div class="row"><label><input type="checkbox" data-k="${k}" ${g.on?'checked':''}> mostrar/incluir</label>
+    ${k==='bpm'?`<select data-dens><option value="beat"${g.density==='beat'?' selected':''}>cada beat</option><option value="bar"${g.density==='bar'?' selected':''}>cada compás</option><option value="frase"${g.density==='frase'?' selected':''}>cada frase</option></select>`:''}
+    <button class="exp" data-exp="${k}">⤓ solo este</button></div></div>`).join('');
+  $('groups').querySelectorAll('input[data-k]').forEach(c=>c.addEventListener('change',e=>{ GROUPS[e.target.dataset.k].on=e.target.checked; draw(); }));
+  const ds=$('groups').querySelector('[data-dens]'); if(ds) ds.addEventListener('change',e=>{ GROUPS.bpm.density=e.target.value; recompute(); });
+  $('groups').querySelectorAll('[data-exp]').forEach(b=>b.addEventListener('click',()=>exportCSV([b.dataset.exp])));
+}
+
+function draw(){
+  const W=wave.width, H=wave.height; wctx.clearRect(0,0,W,H);
+  // energy waveform
+  wctx.fillStyle='rgba(240,237,230,0.18)'; const n=energy.length;
+  let mx=0; for(const v of energy) if(v>mx)mx=v; mx=mx||1;
+  for(let x=0;x<W;x++){ const i=Math.floor(x/W*n); const h=(energy[i]/mx)*(H*0.46); wctx.fillRect(x,H/2-h,1,h*2); }
+  // markers
+  for(const [k,g] of Object.entries(GROUPS)){ if(!g.on) continue; wctx.strokeStyle=g.color; wctx.globalAlpha=k==='bpm'?0.35:0.9; wctx.lineWidth=k==='bpm'?1:2;
+    for(const m of markers[k]){ const x=Math.round(m.t/dur*W); wctx.beginPath(); wctx.moveTo(x,0); wctx.lineTo(x,H); wctx.stroke(); } }
+  wctx.globalAlpha=1;
+  // playhead
+  if(dur){ const x=Math.round(audio.currentTime/dur*W); wctx.strokeStyle='#fff'; wctx.lineWidth=1; wctx.beginPath(); wctx.moveTo(x,0); wctx.lineTo(x,H); wctx.stroke(); }
+}
+wave.addEventListener('click',e=>{ const r=wave.getBoundingClientRect(); audio.currentTime=((e.clientX-r.left)/r.width)*dur; draw(); });
+$('play').addEventListener('click',()=>{ if(audio.paused){ audio.play(); $('play').textContent='⏸'; } else { audio.pause(); $('play').textContent='▶'; } });
+audio.addEventListener('timeupdate',draw); audio.addEventListener('ended',()=>$('play').textContent='▶');
+$('sens').addEventListener('input',recompute);
+
+function fmtDur(s){ const m=Math.floor(s/60), ss=Math.floor(s%60); return m+':'+String(ss).padStart(2,'0'); }
+function tc(sec,fps){ const r=Math.round(fps); let f=Math.round(sec*r); const ff=f%r; f=(f-ff)/r; const s=f%60,mn=Math.floor(f/60)%60,h=Math.floor(f/3600); return [h,mn,s].map(x=>String(x).padStart(2,'0')).join(':')+':'+String(ff).padStart(2,'0'); }
+function exportCSV(keys){
+  const fps=parseFloat($('fps').value)||30; const rows=[];
+  keys.forEach(k=>{ if(k!=='__all'&&!GROUPS[k]) return; markers[k].forEach((m,i)=>rows.push({t:m.t,name:(k.toUpperCase())+' '+(i+1),desc:GROUPS[k].name})); });
+  rows.sort((a,b)=>a.t-b.t);
+  if(!rows.length){ $('status').textContent='Ese grupo no tiene marcadores.'; return; }
+  let csv='Marker Name,Description,In,Out,Duration,Marker Type\r\n';
+  rows.forEach(r=>{ csv+=`"${r.name}","${r.desc}",${tc(r.t,fps)},,00:00:00:00,Comment\r\n`; });
+  const blob=new Blob([csv],{type:'text/csv'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download='marcadores-'+(keys.length===1?keys[0]:'todos')+'.csv'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+  $('status').innerHTML='<b>'+rows.length+' marcadores</b> exportados ('+(keys.length===1?GROUPS[keys[0]].name:'grupos activos')+')';
+}
+$('exportAll').addEventListener('click',()=>exportCSV(Object.keys(GROUPS).filter(k=>GROUPS[k].on)));
+</script></body></html>
