@@ -1,0 +1,135 @@
+<!doctype html><html lang="es"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>COMPÁS — Human Glitche · BPM → loop frame-accurate</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{ --acid:#b8ff00; --glitch:#ff2d55; --cyan:#3ad0ff; --ink:#f0ede6; --line:rgba(240,237,230,.12); --bg:#050505; }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{min-height:100%;background:var(--bg);color:var(--ink);font-family:'Space Mono',monospace;}
+  body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");z-index:0;pointer-events:none;opacity:.4;}
+  .wrap{position:relative;z-index:1;max-width:920px;margin:0 auto;padding:28px 22px 80px;}
+  header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:26px;}
+  .brand{font-family:'Bebas Neue',sans-serif;font-size:42px;letter-spacing:.03em;line-height:.82;}
+  .brand b{color:var(--acid);font-weight:400;}
+  .brand .sub{display:block;font-size:10px;letter-spacing:.2em;color:rgba(240,237,230,.45);margin-top:7px;}
+  header a{font-size:10px;letter-spacing:.2em;color:rgba(240,237,230,.4);text-decoration:none;} header a:hover{color:var(--acid);}
+  .panel{border:1px solid var(--line);border-radius:8px;padding:22px 20px;background:rgba(184,255,0,.015);margin-bottom:20px;}
+  .row{display:flex;gap:22px;flex-wrap:wrap;margin-bottom:4px;}
+  .fld{flex:1;min-width:130px;}
+  .fld label{display:block;font-size:9px;letter-spacing:.18em;color:rgba(240,237,230,.45);text-transform:uppercase;margin-bottom:6px;}
+  .fld input,.fld select{width:100%;background:#0a0a0a;color:var(--ink);border:1px solid var(--line);font:inherit;font-size:16px;padding:9px 10px;border-radius:5px;}
+  .fld input:focus,.fld select:focus{outline:none;border-color:var(--acid);}
+  .stepper{display:flex;align-items:center;gap:10px;}
+  .stepper button{background:transparent;border:1px solid var(--line);color:var(--ink);font:inherit;font-size:16px;width:34px;height:38px;cursor:pointer;border-radius:5px;}
+  .stepper button:hover{border-color:var(--acid);color:var(--acid);}
+  .stepper .v{font-family:'Bebas Neue',sans-serif;font-size:24px;color:var(--acid);min-width:42px;text-align:center;}
+  .out{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-top:20px;}
+  .out .cell{border:1px solid var(--line);border-radius:6px;padding:14px 14px;}
+  .out .cell .lbl{font-size:9px;letter-spacing:.16em;color:rgba(240,237,230,.45);text-transform:uppercase;margin-bottom:7px;}
+  .out .cell .val{font-family:'Bebas Neue',sans-serif;font-size:26px;color:var(--acid);line-height:1;}
+  .out .cell .val small{font-family:'Space Mono';font-size:11px;color:rgba(240,237,230,.5);margin-left:4px;}
+  .out .cell.warn .val{color:var(--glitch);}
+  table{width:100%;border-collapse:collapse;font-size:12px;}
+  th{text-align:left;font-size:9px;letter-spacing:.14em;color:rgba(240,237,230,.45);text-transform:uppercase;padding:8px 10px;border-bottom:1px solid var(--line);}
+  td{padding:9px 10px;border-bottom:1px solid var(--line);}
+  tr.perfect td.dr{color:var(--acid);}
+  tr:hover td{background:rgba(184,255,0,.04);}
+  td.bpm-ideal{color:var(--cyan);cursor:pointer;}
+  td.bpm-ideal:hover{text-decoration:underline;}
+  .note{font-size:10px;color:rgba(240,237,230,.4);line-height:1.7;margin-top:22px;border-left:1px solid rgba(184,255,0,.3);padding-left:12px;}
+  .note b{color:var(--acid);font-weight:400;}
+  #toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);z-index:20;background:rgba(5,5,5,.94);border:1px solid var(--acid);color:var(--acid);font-size:11px;padding:9px 16px;border-radius:5px;opacity:0;transition:opacity .2s;pointer-events:none;}
+  #toast.show{opacity:1;}
+  @media(max-width:560px){ .row{flex-direction:column;} }
+</style></head><body>
+<div class="wrap">
+  <header><div class="brand"><b>COMPÁS</b><span class="sub">Human Glitche · BPM → duración de loop frame-accurate</span></div><a href="/labs/">← LABS</a></header>
+  <div class="panel">
+    <div class="row">
+      <div class="fld"><label>BPM</label><input type="number" id="bpm" value="128" min="20" max="300" step="0.01"></div>
+      <div class="fld"><label>FPS del proyecto</label>
+        <select id="fps">
+          <option value="23.976">23.976</option>
+          <option value="24">24</option>
+          <option value="25">25</option>
+          <option value="29.97">29.97</option>
+          <option value="30" selected>30</option>
+          <option value="50">50</option>
+          <option value="59.94">59.94</option>
+          <option value="60">60</option>
+        </select>
+      </div>
+      <div class="fld"><label>Beats por compás</label><input type="number" id="bpb" value="4" min="1" max="16" step="1"></div>
+      <div class="fld"><label>Compases del loop</label>
+        <div class="stepper">
+          <button id="dec">−</button><div class="v" id="barsV">4</div><button id="inc">+</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="out" id="out"></div>
+
+  <div class="panel" style="margin-top:20px;">
+    <table>
+      <thead><tr><th>compases</th><th>duración</th><th>frames</th><th>drift</th><th>bpm ideal (sin drift)</th></tr></thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+
+  <p class="note">Un loop <b>frame-accurate</b> es el que no tiene drift: la cantidad de frames exportados coincide exacto con el ciclo de BPM, así no se nota el salto al repetirlo. Si el drift no es ~0, ajustá el BPM al sugerido en <b>bpm ideal</b> (clic para copiarlo) o cambiá la cantidad de compases.</p>
+</div>
+<div id="toast"></div>
+<script type="module">
+const $=id=>document.getElementById(id);
+let bars=4;
+
+function fmtDur(s){ const m=Math.floor(s/60), ss=(s%60); return m+':'+(ss<10?'0':'')+ss.toFixed(3); }
+function tc(sec,fps){ let f=Math.round(sec*fps); const ff=f%Math.round(fps); f=(f-ff)/Math.round(fps);
+  const s=f%60, mn=Math.floor(f/60)%60, h=Math.floor(f/3600);
+  return [h,mn,s].map(x=>String(x).padStart(2,'0')).join(':')+':'+String(ff).padStart(2,'0'); }
+
+function calc(bpm, fps, bpb, n){
+  const dur = n * bpb * 60 / bpm;
+  const framesExact = dur * fps;
+  const framesRound = Math.round(framesExact);
+  const driftMs = (framesExact - framesRound) / fps * 1000;
+  const bpmIdeal = framesRound>0 ? (n * bpb * 60 * fps / framesRound) : bpm;
+  return { dur, framesExact, framesRound, driftMs, bpmIdeal };
+}
+
+function render(){
+  const bpm=+$('bpm').value||128, fps=+$('fps').value||30, bpb=+$('bpb').value||4;
+  $('barsV').textContent=bars;
+  const main = calc(bpm, fps, bpb, bars);
+  $('out').innerHTML = `
+    <div class="cell"><div class="lbl">duración</div><div class="val">${main.dur.toFixed(3)}<small>seg</small></div></div>
+    <div class="cell"><div class="lbl">timecode</div><div class="val" style="font-size:20px;">${tc(main.dur,fps)}</div></div>
+    <div class="cell"><div class="lbl">frames</div><div class="val">${main.framesRound}<small>@ ${fps}fps</small></div></div>
+    <div class="cell ${Math.abs(main.driftMs)>1?'warn':''}"><div class="lbl">drift</div><div class="val">${main.driftMs>=0?'+':''}${main.driftMs.toFixed(1)}<small>ms</small></div></div>
+  `;
+  const rowsN=[1,2,4,8,16,32,64];
+  $('tbody').innerHTML = rowsN.map(n=>{
+    const c=calc(bpm,fps,bpb,n);
+    const perfect=Math.abs(c.driftMs)<1;
+    return `<tr class="${perfect?'perfect':''}">
+      <td>${n}</td><td>${c.dur.toFixed(3)}s</td><td>${c.framesRound}</td>
+      <td class="dr">${perfect?'✓ exacto':(c.driftMs>=0?'+':'')+c.driftMs.toFixed(1)+'ms'}</td>
+      <td class="bpm-ideal" data-bpm="${c.bpmIdeal.toFixed(3)}">${c.bpmIdeal.toFixed(3)}</td>
+    </tr>`;
+  }).join('');
+}
+
+['bpm','fps','bpb'].forEach(id=>$(id).addEventListener('input',render));
+$('inc').addEventListener('click',()=>{ bars=Math.min(256,bars*2); render(); });
+$('dec').addEventListener('click',()=>{ bars=Math.max(1,Math.round(bars/2)); render(); });
+$('tbody').addEventListener('click',e=>{ const td=e.target.closest('.bpm-ideal'); if(!td) return;
+  $('bpm').value=td.dataset.bpm; render(); copy(td.dataset.bpm, 'BPM ajustado a '+td.dataset.bpm); });
+
+async function copy(t,msg){ try{ await navigator.clipboard.writeText(t); toast(msg); }catch(e){ toast(msg); } }
+function toast(t){ const el=$('toast'); el.textContent=t; el.classList.add('show'); clearTimeout(el._h); el._h=setTimeout(()=>el.classList.remove('show'),1800); }
+
+render();
+</script>
+</body></html>

@@ -1,0 +1,255 @@
+<!doctype html><html lang="es"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>STEMS — Human Glitche · separar voz, batería y bajo con IA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{ --acid:#b8ff00; --glitch:#ff2d55; --cyan:#3ad0ff; --gold:#ffcc33; --ink:#f0ede6; --line:rgba(240,237,230,.12); --bg:#050505; }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{min-height:100%;background:var(--bg);color:var(--ink);font-family:'Space Mono',monospace;}
+  body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");z-index:0;pointer-events:none;opacity:.4;}
+  .wrap{position:relative;z-index:1;max-width:920px;margin:0 auto;padding:28px 22px 80px;}
+  header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;}
+  .brand{font-family:'Bebas Neue',sans-serif;font-size:42px;letter-spacing:.03em;line-height:.82;}
+  .brand b{color:var(--acid);font-weight:400;}
+  .brand .sub{display:block;font-size:10px;letter-spacing:.2em;color:rgba(240,237,230,.45);margin-top:7px;}
+  header a{font-size:10px;letter-spacing:.2em;color:rgba(240,237,230,.4);text-decoration:none;} header a:hover{color:var(--acid);}
+  #drop{border:1.5px dashed var(--line);border-radius:8px;padding:46px 20px;text-align:center;cursor:pointer;transition:.2s;background:rgba(184,255,0,.02);}
+  #drop:hover,#drop.over{border-color:var(--acid);background:rgba(184,255,0,.06);}
+  #drop .big{font-family:'Bebas Neue',sans-serif;font-size:26px;color:var(--acid);} #drop .sm{font-size:11px;color:rgba(240,237,230,.5);margin-top:8px;}
+  .stage{display:none;margin-top:22px;} .stage.on{display:block;}
+  .topline{display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin-bottom:14px;border:1px solid var(--line);border-radius:7px;padding:14px 16px;}
+  .topline .nm{font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--ink);flex:1;min-width:160px;}
+  .topline .dur{font-size:11px;color:rgba(240,237,230,.5);}
+  #goBtn{background:var(--acid);color:#050505;border:none;font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:.04em;padding:11px 22px;cursor:pointer;border-radius:5px;}
+  #goBtn:disabled{opacity:.4;cursor:default;}
+  .warn{font-size:10px;color:rgba(240,237,230,.4);line-height:1.7;margin:0 0 16px;border-left:1px solid rgba(184,255,0,.3);padding-left:12px;}
+  .warn b{color:var(--acid);font-weight:400;}
+  #prog{display:none;margin-bottom:18px;}
+  #prog.on{display:block;}
+  .pbar{height:9px;background:rgba(240,237,230,.07);border-radius:4px;overflow:hidden;margin:7px 0 10px;}
+  .pbar i{display:block;height:100%;width:0%;background:var(--acid);transition:width .15s;}
+  #plog{font-size:10px;color:rgba(240,237,230,.5);line-height:1.6;min-height:15px;} #plog b{color:var(--acid);font-weight:400;}
+  #plog.err b{color:var(--glitch);}
+  .results{display:none;} .results.on{display:block;}
+  .transport{display:flex;align-items:center;gap:14px;margin-bottom:16px;border:1px solid var(--line);border-radius:7px;padding:12px 16px;}
+  .transport button{background:var(--acid);color:#050505;border:none;width:42px;height:42px;border-radius:50%;font-size:16px;cursor:pointer;flex-shrink:0;}
+  .transport .time{font-size:12px;color:rgba(240,237,230,.6);}
+  .tracks{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;}
+  .trk{border:1px solid var(--line);border-radius:7px;padding:14px 14px;}
+  .trk .nm{font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--acid);margin-bottom:10px;}
+  .trk .btns{display:flex;gap:6px;}
+  .trk button{flex:1;background:transparent;border:1px solid var(--line);color:var(--ink);font:inherit;font-size:10px;letter-spacing:.08em;padding:8px 4px;cursor:pointer;border-radius:4px;}
+  .trk button:hover{border-color:var(--acid);color:var(--acid);}
+  .trk button.on.mute{border-color:var(--glitch);color:var(--glitch);background:rgba(255,45,85,.1);}
+  .trk button.on.solo{border-color:var(--cyan);color:var(--cyan);background:rgba(58,208,255,.1);}
+  .note{font-size:10px;color:rgba(240,237,230,.4);line-height:1.7;margin-top:22px;border-left:1px solid rgba(184,255,0,.3);padding-left:12px;}
+  .note b{color:var(--acid);font-weight:400;}
+  .note a{color:var(--cyan);text-decoration:none;} .note a:hover{text-decoration:underline;}
+</style></head><body>
+<div class="wrap">
+  <header><div class="brand"><b>STEMS</b><span class="sub">Human Glitche · separá voz, batería, bajo y resto con IA · el audio nunca se sube</span></div><a href="/labs/">← LABS</a></header>
+
+  <div id="drop"><div class="big">⤓ Soltá un tema o show acá</div><div class="sm">MP3 · WAV · OGG · todo el procesamiento corre en tu navegador (Demucs/ONNX), nada se sube a ningún servidor</div>
+    <input type="file" id="file" accept="audio/*" style="display:none"></div>
+
+  <div class="stage" id="stage">
+    <div class="topline">
+      <div class="nm" id="fname"></div>
+      <div class="dur" id="fdur"></div>
+      <button id="goBtn">SEPARAR ▶</button>
+    </div>
+    <p class="warn">La primera vez descarga un modelo de IA (<b>~170MB</b>, htdemucs) desde Hugging Face — tu navegador lo cachea, así que la próxima vez es instantáneo. El procesamiento corre 100% local (WebGPU si tu navegador lo soporta, sino WASM) y puede tardar varios minutos según tu equipo y la duración del tema.</p>
+
+    <div id="prog">
+      <div id="plabel1">descargando modelo</div>
+      <div class="pbar"><i id="pbar1"></i></div>
+      <div id="plabel2">separando audio</div>
+      <div class="pbar"><i id="pbar2"></i></div>
+      <div id="plog"></div>
+    </div>
+
+    <div class="results" id="results">
+      <div class="transport">
+        <button id="ppBtn">▶</button>
+        <div class="time"><span id="tcur">0:00</span> / <span id="ttot">0:00</span></div>
+      </div>
+      <div class="tracks" id="tracks"></div>
+    </div>
+  </div>
+
+  <p class="note">Separación con <b>Demucs</b> (Meta AI / HTDemucs) corriendo en el navegador vía ONNX Runtime Web, usando el port <b>demucs-web</b>. Soló/muteá pistas para escuchar cada una, o descargalas en WAV para llevarlas a tu editor — combinalas con <a href="/marcadores/">/marcadores/</a> para sacar BPM y drops de la pista de batería aislada.</p>
+</div>
+<script type="module">
+const $=id=>document.getElementById(id);
+const drop=$('drop'), fileInput=$('file'), stage=$('stage');
+let decodedBuf=null, fileName='';
+
+drop.addEventListener('click',()=>fileInput.click());
+fileInput.addEventListener('change',e=>{ if(e.target.files[0]) load(e.target.files[0]); });
+drop.addEventListener('dragover',e=>{e.preventDefault();drop.classList.add('over');});
+drop.addEventListener('dragleave',()=>drop.classList.remove('over'));
+drop.addEventListener('drop',e=>{e.preventDefault();drop.classList.remove('over');const f=[...e.dataTransfer.files].find(f=>f.type.startsWith('audio/'));if(f)load(f);});
+
+function fmtDur(s){ const m=Math.floor(s/60), ss=Math.floor(s%60); return m+':'+String(ss).padStart(2,'0'); }
+
+async function load(file){
+  fileName=file.name.replace(/\.[^.]+$/,'');
+  const ab=await file.arrayBuffer();
+  const tmp=new (window.AudioContext||window.webkitAudioContext)();
+  decodedBuf=await tmp.decodeAudioData(ab); tmp.close();
+  $('fname').textContent=file.name;
+  $('fdur').textContent=fmtDur(decodedBuf.duration)+' · '+decodedBuf.sampleRate+'Hz · '+decodedBuf.numberOfChannels+'ch';
+  stage.classList.add('on'); $('goBtn').disabled=false;
+  $('prog').classList.remove('on'); $('results').classList.remove('on');
+}
+
+async function toStereo44100(buf){
+  const sr=44100;
+  const offline=new OfflineAudioContext(2, Math.ceil(buf.duration*sr)+1, sr);
+  const src=offline.createBufferSource(); src.buffer=buf; src.connect(offline.destination); src.start();
+  const rendered=await offline.startRendering();
+  return { left: rendered.getChannelData(0).slice(), right: rendered.getChannelData(1).slice(), sampleRate: sr };
+}
+
+function plog(msg, isErr){ const el=$('plog'); el.classList.toggle('err', !!isErr); el.innerHTML=msg; }
+
+$('goBtn').addEventListener('click', async ()=>{
+  if(!decodedBuf) return;
+  $('goBtn').disabled=true; $('prog').classList.add('on'); $('results').classList.remove('on');
+  $('pbar1').style.width='0%'; $('pbar2').style.width='0%';
+  plog('preparando audio…');
+  try{
+    const { left, right, sampleRate } = await toStereo44100(decodedBuf);
+
+    plog('cargando ONNX Runtime Web + demucs-web…');
+    const [ort, demucs] = await Promise.all([
+      import('https://cdn.jsdelivr.net/npm/onnxruntime-web@1.27.0/dist/ort.bundle.min.mjs'),
+      import('https://esm.sh/demucs-web@1.0.2')
+    ]);
+    const { DemucsProcessor, CONSTANTS } = demucs;
+    ort.env.wasm.wasmPaths = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.27.0/dist/';
+    ort.env.wasm.numThreads = (typeof crossOriginIsolated!=='undefined' && crossOriginIsolated) ? (navigator.hardwareConcurrency||4) : 1;
+
+    let backend='wasm';
+    if('gpu' in navigator){ try{ const adapter=await navigator.gpu.requestAdapter(); if(adapter) backend='webgpu'; }catch(e){} }
+    plog('backend: <b>'+backend+'</b> · iniciando descarga del modelo…');
+
+    const processor = new DemucsProcessor({
+      ort,
+      sessionOptions:{ enableCpuMemArena:false, enableMemPattern:false },
+      onDownloadProgress:(loaded,total)=>{
+        const pct = total ? (loaded/total*100) : 0;
+        $('pbar1').style.width=pct+'%';
+        $('plabel1').textContent='descargando modelo IA · '+(loaded/1048576).toFixed(0)+'MB / '+(total?(total/1048576).toFixed(0):'?')+'MB';
+      },
+      onProgress:({progress,currentSegment,totalSegments})=>{
+        $('pbar2').style.width=(progress*100)+'%';
+        $('plabel2').textContent='separando audio · segmento '+currentSegment+'/'+totalSegments;
+      },
+      onLog:(phase,msg)=>plog('['+phase+'] '+msg)
+    });
+
+    await processor.loadModel(CONSTANTS.DEFAULT_MODEL_URL);
+    plog('modelo cargado · separando (esto puede tardar varios minutos)…');
+    const result = await processor.separate(left, right);
+    plog('<b>listo</b> · '+CONSTANTS.TRACKS.join(', '));
+
+    buildPlayer(result, sampleRate, decodedBuf.duration);
+    $('results').classList.add('on');
+  }catch(err){
+    console.error(err);
+    plog('error: '+(err && err.message ? err.message : err), true);
+  }finally{
+    $('goBtn').disabled=false;
+  }
+});
+
+/* ---------- WAV encode ---------- */
+function encodeWav(left, right, sampleRate){
+  const len=left.length;
+  const buffer=new ArrayBuffer(44+len*4);
+  const view=new DataView(buffer);
+  const writeStr=(o,s)=>{ for(let i=0;i<s.length;i++) view.setUint8(o+i,s.charCodeAt(i)); };
+  writeStr(0,'RIFF'); view.setUint32(4,36+len*4,true); writeStr(8,'WAVE');
+  writeStr(12,'fmt '); view.setUint32(16,16,true); view.setUint16(20,1,true); view.setUint16(22,2,true);
+  view.setUint32(24,sampleRate,true); view.setUint32(28,sampleRate*4,true); view.setUint16(32,4,true); view.setUint16(34,16,true);
+  writeStr(36,'data'); view.setUint32(40,len*4,true);
+  let off=44;
+  for(let i=0;i<len;i++){
+    const l=Math.max(-1,Math.min(1,left[i])), r=Math.max(-1,Math.min(1,right[i]));
+    view.setInt16(off, l<0?l*32768:l*32767, true); off+=2;
+    view.setInt16(off, r<0?r*32768:r*32767, true); off+=2;
+  }
+  return new Blob([buffer],{type:'audio/wav'});
+}
+
+/* ---------- player / mixer ---------- */
+let pactx=null, tracks={}, playState={playing:false, offset:0, startedAt:0}, totalDur=0, tickH=null;
+
+function buildPlayer(result, sampleRate, dur){
+  if(pactx) pactx.close();
+  pactx=new (window.AudioContext||window.webkitAudioContext)();
+  tracks={}; totalDur=dur; playState={playing:false, offset:0, startedAt:0};
+  $('ttot').textContent=fmtDur(dur); $('tcur').textContent='0:00'; $('ppBtn').textContent='▶';
+
+  const wrap=$('tracks'); wrap.innerHTML='';
+  const NAMES={drums:'DRUMS',bass:'BASS',other:'OTHER',vocals:'VOCALS'};
+  for(const key of Object.keys(result)){
+    const {left,right}=result[key];
+    const buf=pactx.createBuffer(2, left.length, sampleRate);
+    buf.copyToChannel(left,0); buf.copyToChannel(right,1);
+    tracks[key]={buffer:buf, muted:false, solo:false, gainNode:null, source:null, left, right, sampleRate};
+
+    const card=document.createElement('div'); card.className='trk';
+    card.innerHTML=`<div class="nm">${NAMES[key]||key.toUpperCase()}</div>
+      <div class="btns">
+        <button class="mute" data-k="${key}">MUTE</button>
+        <button class="solo" data-k="${key}">SOLO</button>
+        <button class="dl" data-k="${key}">⤓ WAV</button>
+      </div>`;
+    wrap.appendChild(card);
+  }
+  wrap.addEventListener('click', onTrackBtn);
+}
+
+function onTrackBtn(e){
+  const btn=e.target.closest('button'); if(!btn) return;
+  const k=btn.dataset.k, t=tracks[k]; if(!t) return;
+  if(btn.classList.contains('mute')){ t.muted=!t.muted; btn.classList.toggle('on',t.muted); refreshGains(); }
+  else if(btn.classList.contains('solo')){ t.solo=!t.solo; btn.classList.toggle('on',t.solo); refreshGains(); }
+  else if(btn.classList.contains('dl')){
+    const blob=encodeWav(t.left, t.right, t.sampleRate);
+    const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=fileName+'-'+k+'.wav'; a.click(); URL.revokeObjectURL(a.href);
+  }
+}
+function trackGain(k){ const anySolo=Object.values(tracks).some(t=>t.solo);
+  if(anySolo) return tracks[k].solo?1:0; return tracks[k].muted?0:1; }
+function refreshGains(){ for(const k in tracks) if(tracks[k].gainNode) tracks[k].gainNode.gain.value=trackGain(k); }
+function computePos(){ return playState.playing ? (pactx.currentTime-playState.startedAt+playState.offset) : playState.offset; }
+function stopAllSources(){ for(const k in tracks){ const t=tracks[k]; if(t.source){ try{t.source.stop();}catch(e){} t.source.disconnect(); t.source=null; } } }
+function playAll(){
+  stopAllSources();
+  if(playState.offset>=totalDur-0.02) playState.offset=0;
+  for(const k in tracks){ const t=tracks[k];
+    const src=pactx.createBufferSource(); src.buffer=t.buffer;
+    const gain=pactx.createGain(); gain.gain.value=trackGain(k);
+    src.connect(gain).connect(pactx.destination);
+    src.start(0, playState.offset);
+    t.source=src; t.gainNode=gain;
+  }
+  playState.startedAt=pactx.currentTime; playState.playing=true; $('ppBtn').textContent='⏸';
+  tick();
+}
+function pauseAll(){ if(!playState.playing) return; playState.offset=computePos(); stopAllSources(); playState.playing=false; $('ppBtn').textContent='▶'; }
+function tick(){
+  clearInterval(tickH);
+  tickH=setInterval(()=>{
+    const pos=computePos();
+    $('tcur').textContent=fmtDur(Math.min(pos,totalDur));
+    if(playState.playing && pos>=totalDur-0.05){ playState.playing=false; playState.offset=0; $('ppBtn').textContent='▶'; $('tcur').textContent='0:00'; clearInterval(tickH); }
+  },200);
+}
+$('ppBtn').addEventListener('click',()=>{ if(!pactx) return; playState.playing?pauseAll():playAll(); });
+</script>
+</body></html>
