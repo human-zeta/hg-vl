@@ -258,6 +258,15 @@ body.ctrl-collapsed #ctrl-toggle{bottom:2rem;}
   border-radius:2px;transition:all 0.2s;
 }
 .auth-tab.active{color:var(--acid);border-color:rgba(184,255,0,0.35);background:rgba(184,255,0,0.05);}
+#auth-type-group{margin-bottom:0.2rem;}
+.auth-type-label{display:block;font-size:8px;letter-spacing:0.14em;color:rgba(240,237,230,0.35);margin-bottom:0.4rem;}
+.auth-type-row{display:flex;gap:0.4rem;}
+.auth-type-btn{
+  flex:1;background:none;border:1px solid rgba(240,237,230,0.1);color:rgba(240,237,230,0.3);
+  font-family:var(--mono);font-size:8px;letter-spacing:0.14em;padding:7px 0;cursor:none;
+  border-radius:2px;transition:all 0.2s;
+}
+.auth-type-btn.active{color:var(--acid);border-color:rgba(184,255,0,0.35);background:rgba(184,255,0,0.05);}
 #auth-title{font-size:9px;letter-spacing:0.24em;color:rgba(240,237,230,0.4);text-align:center;margin-bottom:1rem;}
 #auth-form{display:flex;flex-direction:column;gap:0.6rem;}
 #auth-form input{
@@ -973,6 +982,13 @@ body.visual-mode #exit-visual{z-index:9000!important;}
     </div>
     <div id="auth-title">CREÁ TU CUENTA HG</div>
     <form id="auth-form">
+      <div id="auth-type-group" style="display:none;">
+        <span class="auth-type-label">REGISTRARME COMO</span>
+        <div class="auth-type-row">
+          <button type="button" class="auth-type-btn active" data-type="comunidad">COMUNIDAD</button>
+          <button type="button" class="auth-type-btn" data-type="cliente">CLIENTE</button>
+        </div>
+      </div>
       <input type="text" id="auth-name" placeholder="NOMBRE" autocomplete="name" style="display:none;">
       <input type="email" id="auth-email" placeholder="EMAIL" autocomplete="email" required>
       <input type="password" id="auth-pass" placeholder="CONTRASEÑA" autocomplete="current-password" required minlength="6">
@@ -2558,10 +2574,18 @@ document.querySelectorAll('.bcard').forEach(c=>{
   const greeting  = document.getElementById('auth-greeting');
   const logoutBtn = document.getElementById('auth-logout');
   const trigger   = document.getElementById('auth-trigger');
+  const typeGroup = document.getElementById('auth-type-group');
+  const typeBtns  = document.querySelectorAll('.auth-type-btn');
 
   if(!overlay || !form) return;
 
   let mode = 'register'; // 'register' | 'login'
+  let accountType = 'comunidad'; // 'comunidad' | 'cliente'
+
+  typeBtns.forEach(b=> b.addEventListener('click', ()=>{
+    typeBtns.forEach(x=> x.classList.toggle('active', x===b));
+    accountType = b.dataset.type;
+  }));
 
   function setStatus(msg, type){
     statusEl.textContent = msg || '';
@@ -2573,6 +2597,7 @@ document.querySelectorAll('.bcard').forEach(c=>{
     mode = m;
     tabs.forEach(t=>t.classList.toggle('active', t.dataset.mode===m));
     nameInp.style.display = (m==='register') ? 'block' : 'none';
+    typeGroup.style.display = (m==='register') ? 'block' : 'none';
     title.textContent = (m==='register') ? 'CREÁ TU CUENTA HG' : 'INGRESÁ A TU CUENTA';
     submitBtn.textContent = (m==='register') ? 'CREAR CUENTA' : 'INGRESAR';
     setStatus('');
@@ -2670,7 +2695,11 @@ document.querySelectorAll('.bcard').forEach(c=>{
         data = await idtRequest('signUp', { email, password: pass, returnSecureToken: true });
         const session = { uid: data.localId, email: data.email, idToken: data.idToken, refreshToken: data.refreshToken, name: name || email.split('@')[0] };
         saveSession(session);
-        await saveProfile(session.uid, session.idToken, { name: session.name, email: session.email, joined: Date.now() });
+        await saveProfile(session.uid, session.idToken, { name: session.name, email: session.email, joined: Date.now(), accountType });
+        fetch(`${FB_URL}/profiles/${session.uid}.json?auth=${session.idToken}`, {
+          method:'PATCH', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({ accountType })
+        }).catch(()=>{});
         setStatus('¡Cuenta creada! Bienvenido.', 'ok');
         setTimeout(()=> { showLoggedIn(session); document.dispatchEvent(new CustomEvent('hg-auth-changed')); }, 500);
       } else {
