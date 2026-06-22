@@ -1,4 +1,5 @@
-// Bloquea el contenido de la página hasta confirmar sesión activa + suscripción TIER 03.
+// Bloquea el contenido de la página hasta confirmar sesión activa registrada como
+// parte de la comunidad (accountType !== 'cliente'; cualquier tier alcanza, incluido el gratuito).
 // Debe incluirse como el primer elemento dentro de <body> para evitar el flash de contenido.
 (function(){
   var LS_KEY = 'hg_auth_session';
@@ -30,8 +31,8 @@
       '</style>' +
       '<div class="hg-box">' +
       '<h1>ACCESO EXCLUSIVO</h1>' +
-      '<p>Esto es parte de la comunidad HUMAN GLITCHE — disponible para quienes se registran y se suscriben a TIER 03 — COMPARTIR ☉.</p>' +
-      '<a href="/home.html#comunidad">VER PLANES</a>' +
+      '<p>Esto es parte de la comunidad HUMAN GLITCHE — disponible para quienes se registran como comunidad. Es gratis.</p>' +
+      '<a href="/home.html#comunidad">REGISTRARME</a>' +
       '<a href="/home.html" class="hg-ghost">VOLVER AL INICIO</a>' +
       '</div>';
     return ov;
@@ -50,10 +51,12 @@
   function check(){
     var session = getSession();
     if(!session || !session.uid){ lock(); return; }
-    fetch(FB_URL + '/profiles/' + session.uid + '/subscription.json')
+    fetch(FB_URL + '/profiles/' + session.uid + '/accountType.json')
       .then(function(r){ return r.json(); })
-      .then(function(sub){
-        if(sub && String(sub.tier) === '3'){ unlock(); } else { lock(); }
+      .then(function(accountType){
+        // las cuentas registradas antes de este rol no tienen accountType guardado
+        // y son comunidad por defecto — solo 'cliente' explícito queda afuera.
+        if(accountType !== 'cliente'){ unlock(); } else { lock(); }
       })
       .catch(function(){ lock(); });
   }
