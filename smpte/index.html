@@ -22,9 +22,11 @@
   .fld label{display:block;font-size:9px;letter-spacing:.18em;color:rgba(240,237,230,.45);text-transform:uppercase;margin-bottom:6px;}
   .fld input,.fld select{width:100%;background:#0a0a0a;color:var(--ink);border:1px solid var(--line);font:inherit;font-size:15px;padding:9px 10px;border-radius:5px;}
   .fld input:focus,.fld select:focus{outline:none;border-color:var(--acid);}
-  .tcrow{display:flex;gap:6px;align-items:center;}
+  .tcrow{display:flex;gap:6px;align-items:center;flex-wrap:wrap;}
   .tcrow input{width:48px;text-align:center;padding:9px 4px;}
   .tcrow span{color:rgba(240,237,230,.35);font-size:13px;}
+  #filePreviewVideo{display:none;width:100%;border-radius:6px;margin-top:14px;background:#000;}
+  #findTcBlock{display:none;margin-top:16px;border-top:1px solid var(--line);padding-top:16px;}
   .btnrow{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px;}
   .btn{background:transparent;border:1px solid var(--line);color:var(--ink);font:inherit;font-size:11px;letter-spacing:.1em;padding:11px 18px;cursor:pointer;border-radius:5px;transition:.15s;}
   .btn:hover{border-color:var(--acid);color:var(--acid);}
@@ -53,7 +55,7 @@
   .meter{display:flex;align-items:center;gap:8px;}
   .meter .bar{flex:1;height:8px;background:rgba(240,237,230,.07);border-radius:3px;overflow:hidden;}
   .meter .bar i{display:block;height:100%;width:0%;background:var(--acid);transition:width .08s linear;}
-  .meter .dbv{font-size:9px;color:rgba(240,237,230,.45);min-width:62px;text-align:right;}
+  .dbv{font-size:9px;color:rgba(240,237,230,.45);min-width:62px;text-align:right;}
   .resultbox{margin-top:16px;border-top:1px solid var(--line);padding-top:16px;display:none;}
   .resultbox.show{display:block;}
   .resultbox .ok{color:var(--acid);}
@@ -130,9 +132,10 @@
       <div id="micErr"></div>
     </div>
     <div id="fileControls" style="display:none;">
-      <div class="btnrow"><button class="btn primary" id="btnPickFile">⤓ ELEGIR ARCHIVO DE AUDIO</button></div>
-      <input type="file" id="fileInput" accept="audio/*">
+      <div class="btnrow"><button class="btn primary" id="btnPickFile">⤓ ELEGIR AUDIO O VIDEO</button></div>
+      <input type="file" id="fileInput" accept="audio/*,video/*">
       <div id="fileStatus"></div>
+      <video id="filePreviewVideo" controls></video>
     </div>
 
     <div class="resultbox" id="decResults" style="margin-top:22px;border-top:1px solid var(--line);padding-top:18px;">
@@ -146,6 +149,19 @@
         <div class="cell"><div class="lbl">nivel señal</div><div class="meter"><div class="bar"><i id="decLevelBar"></i></div></div><div class="dbv" id="decLevelDb" style="margin-top:5px;">-∞ dBFS</div></div>
       </div>
       <div class="resultbox" id="fileSummary"></div>
+      <div id="findTcBlock">
+        <div class="fld">
+          <label>buscar timecode en el video</label>
+          <div class="tcrow">
+            <input type="number" id="findH" value="0" min="0" max="23"><span>:</span>
+            <input type="number" id="findM" value="0" min="0" max="59"><span>:</span>
+            <input type="number" id="findS" value="0" min="0" max="59"><span>:</span>
+            <input type="number" id="findF" value="0" min="0" max="59">
+            <button class="btn primary" id="btnFindTc">▶ IR A ESE TC</button>
+          </div>
+        </div>
+        <p class="note" id="findTcResult"></p>
+      </div>
     </div>
   </div>
 
@@ -379,6 +395,7 @@ $('btnDownload').addEventListener('click',()=>{
 /* ---------- 2. checker ---------- */
 let decCtx=null, decProcessor=null, decSourceNode=null, decMicStream=null, decDecoder=null, decSilentGain=null;
 let decListening=false, decMode='mic', decLastFrameTime=0, decLastSignalTime=0, decPeakLevel=0, decPrevFrame=null, decDiscontinuities=0;
+let fileObjectURL=null, fileIsVideo=false, fileSampleRate=48000;
 
 function ensureDecCtx(){ if(!decCtx) decCtx=new (window.AudioContext||window.webkitAudioContext)(); return decCtx; }
 function newDecoder(){ decDecoder=new LTCDecoder(); decPrevFrame=null; decDiscontinuities=0; decPeakLevel=0; decLastFrameTime=0; decLastSignalTime=0; $('decResults').classList.add('show'); $('fileSummary').classList.remove('show'); $('fileSummary').innerHTML=''; }
@@ -457,14 +474,26 @@ async function startMic(){
 $('btnListen').addEventListener('click',()=>{ decListening?stopDecodeSource():startMic(); });
 $('btnResetMic').addEventListener('click',()=>{ newDecoder(); updateDecReadout(decCtx?decCtx.sampleRate:48000); });
 
+function isVideoFile(file){ return file.type.startsWith('video/') || /\.(mp4|mov|webm|m4v|avi|mkv)$/i.test(file.name); }
 async function analyzeFile(file){
   ensureDecCtx(); stopDecodeSource(); newDecoder();
   $('fileStatus').textContent='analizando "'+file.name+'"…';
+  const video=$('filePreviewVideo');
+  if(fileObjectURL){ URL.revokeObjectURL(fileObjectURL); fileObjectURL=null; }
+  fileIsVideo=isVideoFile(file);
+  $('findTcBlock').style.display='none';
+  if(fileIsVideo){
+    fileObjectURL=URL.createObjectURL(file);
+    video.src=fileObjectURL; video.style.display='block';
+  } else {
+    video.pause(); video.removeAttribute('src'); video.load(); video.style.display='none';
+  }
   let audioBuf;
   try{
     const ab=await file.arrayBuffer();
     audioBuf=await decCtx.decodeAudioData(ab);
-  }catch(e){ $('fileStatus').textContent='no se pudo decodificar ese archivo de audio.'; toast('archivo inválido'); return; }
+  }catch(e){ $('fileStatus').textContent='no se pudo decodificar el audio de ese archivo.'; toast('archivo inválido'); return; }
+  fileSampleRate=audioBuf.sampleRate;
   const data=audioBuf.getChannelData(0);
   const sr=audioBuf.sampleRate;
   const chunkSize=65536; let i=0;
@@ -481,7 +510,7 @@ function finalizeFile(durationSec){
   const frames=decDecoder.frames;
   $('fileStatus').textContent='análisis completo.';
   const box=$('fileSummary'); box.classList.add('show');
-  if(!frames.length){ box.innerHTML='<p class="bad">No se detectó ninguna trama LTC válida en este archivo.</p>'; return; }
+  if(!frames.length){ box.innerHTML='<p class="bad">No se detectó ninguna trama LTC válida en este archivo.</p>'; $('findTcBlock').style.display='none'; return; }
   const first=frames[0], last=frames[frames.length-1];
   const fpsEst=estimateFps(decCtx.sampleRate);
   const ok=decDecoder.bitErrors===0 && decDiscontinuities===0;
@@ -490,13 +519,38 @@ function finalizeFile(durationSec){
     <p>primer TC: ${fmtTC(first,first.dropFrame)} · último TC: ${fmtTC(last,last.dropFrame)}</p>
     <p>fps detectado: ${fpsEst?fpsEst.toFixed(3):'—'} · drop-frame: ${last.dropFrame?'sí':'no'}</p>
     <p>errores de bit: ${decDecoder.bitErrors} · discontinuidades: ${decDiscontinuities}</p>`;
+  $('findTcBlock').style.display=fileIsVideo?'block':'none';
+  $('findTcResult').textContent='';
 }
+function findFrameForTc(target){
+  const frames=decDecoder.frames;
+  let best=null;
+  for(const f of frames){
+    if(f.h===target.h && f.m===target.m && f.s===target.s && f.f===target.f){ best=f; break; }
+  }
+  return best;
+}
+$('btnFindTc').addEventListener('click',()=>{
+  const target={ h:+$('findH').value||0, m:+$('findM').value||0, s:+$('findS').value||0, f:+$('findF').value||0 };
+  const frames=decDecoder.frames;
+  if(!fileIsVideo || !frames.length){ $('findTcResult').textContent='primero analizá un archivo de video con LTC decodificado.'; return; }
+  const match=findFrameForTc(target);
+  if(!match){
+    const first=frames[0], last=frames[frames.length-1];
+    $('findTcResult').textContent=`no se encontró ${fmtTC(target,false)} — el rango decodificado va de ${fmtTC(first,first.dropFrame)} a ${fmtTC(last,last.dropFrame)}.`;
+    return;
+  }
+  const t=match.sampleIdx/fileSampleRate;
+  $('filePreviewVideo').currentTime=t;
+  $('findTcResult').textContent=`encontrado en ${t.toFixed(3)}s del video (TC ${fmtTC(match,match.dropFrame)}).`;
+});
 $('btnPickFile').addEventListener('click',()=>$('fileInput').click());
 $('fileInput').addEventListener('change',e=>{ if(e.target.files[0]) analyzeFile(e.target.files[0]); });
 
 $('btnSrcMic').addEventListener('click',()=>{
   decMode='mic'; $('btnSrcMic').classList.add('on'); $('btnSrcFile').classList.remove('on');
   $('micControls').style.display=''; $('fileControls').style.display='none';
+  $('filePreviewVideo').pause(); $('findTcBlock').style.display='none';
   stopDecodeSource();
 });
 $('btnSrcFile').addEventListener('click',()=>{
