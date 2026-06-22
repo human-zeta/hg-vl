@@ -1,0 +1,508 @@
+<!doctype html><html lang="es"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SMPTE — Human Glitche · generador y checker de timecode LTC</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{ --acid:#b8ff00; --glitch:#ff2d55; --cyan:#3ad0ff; --ink:#f0ede6; --line:rgba(240,237,230,.12); --bg:#050505; }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{min-height:100%;background:var(--bg);color:var(--ink);font-family:'Space Mono',monospace;}
+  body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");z-index:0;pointer-events:none;opacity:.4;}
+  .wrap{position:relative;z-index:1;max-width:920px;margin:0 auto;padding:28px 22px 80px;}
+  header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:26px;}
+  .brand{font-family:'Bebas Neue',sans-serif;font-size:42px;letter-spacing:.03em;line-height:.82;}
+  .brand b{color:var(--acid);font-weight:400;}
+  .brand .sub{display:block;font-size:10px;letter-spacing:.2em;color:rgba(240,237,230,.45);margin-top:7px;}
+  header a{font-size:10px;letter-spacing:.2em;color:rgba(240,237,230,.4);text-decoration:none;} header a:hover{color:var(--acid);}
+  h2.sec{font-size:10px;letter-spacing:.2em;color:rgba(240,237,230,.45);text-transform:uppercase;margin:0 0 14px;}
+  .panel{border:1px solid var(--line);border-radius:8px;padding:22px 20px;background:rgba(184,255,0,.015);margin-bottom:20px;}
+  .row{display:flex;gap:18px;flex-wrap:wrap;margin-bottom:14px;}
+  .row:last-child{margin-bottom:0;}
+  .fld{flex:1;min-width:110px;}
+  .fld label{display:block;font-size:9px;letter-spacing:.18em;color:rgba(240,237,230,.45);text-transform:uppercase;margin-bottom:6px;}
+  .fld input,.fld select{width:100%;background:#0a0a0a;color:var(--ink);border:1px solid var(--line);font:inherit;font-size:15px;padding:9px 10px;border-radius:5px;}
+  .fld input:focus,.fld select:focus{outline:none;border-color:var(--acid);}
+  .tcrow{display:flex;gap:6px;align-items:center;}
+  .tcrow input{width:48px;text-align:center;padding:9px 4px;}
+  .tcrow span{color:rgba(240,237,230,.35);font-size:13px;}
+  .btnrow{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px;}
+  .btn{background:transparent;border:1px solid var(--line);color:var(--ink);font:inherit;font-size:11px;letter-spacing:.1em;padding:11px 18px;cursor:pointer;border-radius:5px;transition:.15s;}
+  .btn:hover{border-color:var(--acid);color:var(--acid);}
+  .btn.primary{background:var(--acid);color:#050505;border-color:var(--acid);}
+  .btn.primary:hover{opacity:.85;color:#050505;}
+  .btn.on{border-color:var(--cyan);color:var(--cyan);background:rgba(58,208,255,.1);}
+  .genreadout{font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--cyan);margin-top:14px;letter-spacing:.04em;}
+  .genreadout small{font-family:'Space Mono';font-size:9px;color:rgba(240,237,230,.4);letter-spacing:.12em;display:block;margin-bottom:4px;}
+  .src-row{display:flex;gap:8px;margin-bottom:14px;}
+  .src-row .btn{flex:1;}
+  #fileStatus,#micErr{font-size:10px;color:rgba(240,237,230,.45);margin-top:8px;line-height:1.6;}
+  .tcbig-wrap{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:18px;}
+  .tcbig{font-family:'Bebas Neue',sans-serif;font-size:56px;letter-spacing:.04em;color:var(--ink);line-height:1;}
+  .pill{display:inline-block;font-size:9px;letter-spacing:.16em;text-transform:uppercase;padding:6px 12px;border-radius:20px;border:1px solid var(--line);color:rgba(240,237,230,.5);}
+  .pill.locked{border-color:var(--acid);color:var(--acid);background:rgba(184,255,0,.08);}
+  .pill.acq{border-color:var(--cyan);color:var(--cyan);background:rgba(58,208,255,.08);animation:pulse 1.1s infinite;}
+  .pill.lost{border-color:var(--glitch);color:var(--glitch);background:rgba(255,45,85,.08);}
+  .pill.nosig{color:rgba(240,237,230,.35);}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.45;}}
+  .out{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:14px;}
+  .out .cell{border:1px solid var(--line);border-radius:6px;padding:13px 14px;}
+  .out .cell .lbl{font-size:9px;letter-spacing:.16em;color:rgba(240,237,230,.45);text-transform:uppercase;margin-bottom:7px;}
+  .out .cell .val{font-family:'Bebas Neue',sans-serif;font-size:24px;color:var(--acid);line-height:1;}
+  .out .cell .val small{font-family:'Space Mono';font-size:10px;color:rgba(240,237,230,.5);margin-left:3px;}
+  .out .cell.warn .val{color:var(--glitch);}
+  .meter{display:flex;align-items:center;gap:8px;}
+  .meter .bar{flex:1;height:8px;background:rgba(240,237,230,.07);border-radius:3px;overflow:hidden;}
+  .meter .bar i{display:block;height:100%;width:0%;background:var(--acid);transition:width .08s linear;}
+  .meter .dbv{font-size:9px;color:rgba(240,237,230,.45);min-width:62px;text-align:right;}
+  .resultbox{margin-top:16px;border-top:1px solid var(--line);padding-top:16px;display:none;}
+  .resultbox.show{display:block;}
+  .resultbox .ok{color:var(--acid);}
+  .resultbox .bad{color:var(--glitch);}
+  .explain{font-size:12px;line-height:1.85;color:rgba(240,237,230,.65);}
+  .explain b{color:var(--acid);font-weight:400;}
+  .explain ul,.explain ol{margin:0 0 18px 0;padding-left:20px;}
+  .explain li{margin-bottom:9px;}
+  .explain ol li::marker{color:var(--cyan);}
+  .explain h3{font-size:11px;letter-spacing:.1em;color:var(--ink);text-transform:uppercase;margin:0 0 12px;}
+  .explain h3 b{color:var(--acid);}
+  .note{font-size:10px;color:rgba(240,237,230,.4);line-height:1.7;margin-top:18px;border-left:1px solid rgba(184,255,0,.3);padding-left:12px;}
+  .note b{color:var(--acid);font-weight:400;}
+  #fileInput{display:none;}
+  #toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);z-index:20;background:rgba(5,5,5,.94);border:1px solid var(--acid);color:var(--acid);font-size:11px;padding:9px 16px;border-radius:5px;opacity:0;transition:opacity .2s;pointer-events:none;}
+  #toast.show{opacity:1;}
+  @media(max-width:560px){ .row{flex-direction:column;} .tcbig{font-size:42px;} }
+</style></head><body>
+<div class="wrap">
+  <header><div class="brand"><b>SMPTE</b><span class="sub">Human Glitche · generador y checker de timecode LTC</span></div><a href="/labs/">← LABS</a></header>
+
+  <div class="panel">
+    <h2 class="sec">1 · generador de tono de test</h2>
+    <div class="row">
+      <div class="fld"><label>timecode inicial</label>
+        <div class="tcrow">
+          <input type="number" id="genH" value="1" min="0" max="23"><span>:</span>
+          <input type="number" id="genM" value="0" min="0" max="59"><span>:</span>
+          <input type="number" id="genS" value="0" min="0" max="59"><span>:</span>
+          <input type="number" id="genF" value="0" min="0" max="59">
+        </div>
+      </div>
+      <div class="fld"><label>fps</label>
+        <select id="genFps">
+          <option value="24">24</option>
+          <option value="25" selected>25</option>
+          <option value="30">30 (NDF)</option>
+          <option value="29.97df">29.97 (drop-frame)</option>
+        </select>
+      </div>
+      <div class="fld"><label>duración</label>
+        <select id="genDur">
+          <option value="30">30 seg</option>
+          <option value="60" selected>1 min</option>
+          <option value="300">5 min</option>
+          <option value="600">10 min</option>
+        </select>
+      </div>
+      <div class="fld"><label>nivel salida</label>
+        <select id="genLevel">
+          <option value="-18">-18 dBFS</option>
+          <option value="-12" selected>-12 dBFS</option>
+          <option value="-6">-6 dBFS</option>
+          <option value="-3">-3 dBFS</option>
+        </select>
+      </div>
+    </div>
+    <div class="btnrow">
+      <button class="btn primary" id="btnPlay">▶ REPRODUCIR</button>
+      <button class="btn" id="btnDownload">⤓ DESCARGAR WAV</button>
+    </div>
+    <div class="genreadout"><small>tc en reproducción</small><span id="genReadout">—</span></div>
+    <p class="note">Reproducí esto por la <b>misma salida de audio</b> que vas a usar en el show (interfaz, consola, splitter) y escuchá el resultado con el <b>checker</b> de abajo para validar tu cableado antes de tocar. También podés descargar el WAV y mandarlo por tu cadena real (DAW, reproductor, grabador) en lugar de reproducirlo desde el navegador.</p>
+  </div>
+
+  <div class="panel">
+    <h2 class="sec">2 · checker / decodificador</h2>
+    <div class="src-row">
+      <button class="btn on" id="btnSrcMic">🎙 MIC / LÍNEA</button>
+      <button class="btn" id="btnSrcFile">⤓ ARCHIVO</button>
+    </div>
+    <div id="micControls">
+      <div class="btnrow"><button class="btn primary" id="btnListen">▶ ESCUCHAR</button><button class="btn" id="btnResetMic">⟲ REINICIAR</button></div>
+      <div id="micErr"></div>
+    </div>
+    <div id="fileControls" style="display:none;">
+      <div class="btnrow"><button class="btn primary" id="btnPickFile">⤓ ELEGIR ARCHIVO DE AUDIO</button></div>
+      <input type="file" id="fileInput" accept="audio/*">
+      <div id="fileStatus"></div>
+    </div>
+
+    <div class="resultbox" id="decResults" style="margin-top:22px;border-top:1px solid var(--line);padding-top:18px;">
+      <div class="tcbig-wrap"><div class="tcbig" id="decTC">--:--:--:--</div><span class="pill nosig" id="decStatus">SIN SEÑAL</span></div>
+      <div class="out">
+        <div class="cell"><div class="lbl">fps detectado</div><div class="val" id="decFps">—</div></div>
+        <div class="cell"><div class="lbl">drop-frame</div><div class="val" id="decDf">—</div></div>
+        <div class="cell"><div class="lbl">errores de bit</div><div class="val" id="decErrors">0</div></div>
+        <div class="cell"><div class="lbl">discontinuidades</div><div class="val" id="decDisc">0</div></div>
+        <div class="cell"><div class="lbl">frames leídos</div><div class="val" id="decFrameCount">0</div></div>
+        <div class="cell"><div class="lbl">nivel señal</div><div class="meter"><div class="bar"><i id="decLevelBar"></i></div></div><div class="dbv" id="decLevelDb" style="margin-top:5px;">-∞ dBFS</div></div>
+      </div>
+      <div class="resultbox" id="fileSummary"></div>
+    </div>
+  </div>
+
+  <div class="panel explain">
+    <h2 class="sec">3 · cómo armar el circuito de audio del show</h2>
+    <ul>
+      <li><b>Canal dedicado.</b> El LTC viaja en un canal/pista propio, separado del programa principal — nunca lo mandes mezclado con música o efectos en el bus master.</li>
+      <li><b>Nivel de línea, no de mic.</b> Salí por una salida de línea (interfaz de audio, consola) hacia una entrada de línea. Si lo metés por una entrada de mic vas a tener demasiada ganancia/preamp y el pulso se distorsiona.</li>
+      <li><b>Cero procesamiento.</b> Sin EQ, sin compresor/limiter, sin reverb/delay, sin noise gate, sin auto-gain ni normalización en ese canal. Cualquiera de estos corrompe el timing exacto de las transiciones y el decodificador empieza a fallar.</li>
+      <li><b>Cableado balanceado.</b> Para distancias largas usá XLR/TRS balanceado — un cable mal apantallado mete ruido/zumbido que ensucia los cruces por cero que el decodificador necesita.</li>
+      <li><b>Distribución con DA, no con un Y.</b> Si tenés que mandar la misma señal a varios equipos, usá un distribuidor de audio (DA) real. Un simple cable en Y carga mal las salidas y atenúa/distorsiona la señal.</li>
+      <li><b>Nivel moderado.</b> Apuntá a algo entre -18 y -12 dBFS. Muy caliente clipea y desfasa los cruces por cero; muy bajo se pierde contra el ruido de piso.</li>
+      <li><b>Documentá el canal.</b> En shows con varios operadores, marcá bien cuál fader/canal es el de timecode para que nadie lo mutee, lo procese o le suba un efecto sin querer.</li>
+      <li><b>La polaridad no importa.</b> LTC usa Biphase Mark Code — es self-clocking y funciona igual con el cable invertido. Lo que rompe la lectura es el procesamiento, el ruido y el nivel, no la polaridad.</li>
+    </ul>
+
+    <h2 class="sec">4 · cómo probar tu instalación con esta herramienta</h2>
+    <ol>
+      <li>En <b>1 · generador</b>, elegí el timecode inicial y el fps/drop-frame que vas a usar en el show real, y tocá <b>▶ REPRODUCIR</b> (o descargá el WAV si vas a probar desde tu DAW/reproductor real).</li>
+      <li>Sacá esa señal por la <b>misma salida física</b> que usarías en el show — mismo cable, mismo splitter/DA, mismo canal de consola sin procesar.</li>
+      <li>En el otro extremo de esa cadena, conectá la salida a la <b>entrada de línea/mic de tu computadora</b> (placa de audio o entrada integrada).</li>
+      <li>En <b>2 · checker</b>, dejá seleccionado <b>MIC / LÍNEA</b> y tocá <b>▶ ESCUCHAR</b>. Aceptá el permiso de micrófono que pide el navegador.</li>
+      <li>Confirmá: el estado pasa a <b>LOCKED</b> en uno o dos segundos, el fps detectado coincide con el que generaste, el timecode corre sin saltos ni congelamientos, y <b>errores de bit</b> / <b>discontinuidades</b> se mantienen en 0.</li>
+      <li>Si no llega a <b>LOCKED</b> o hay errores: revisá que estés en una entrada de <b>línea</b> (no mic), que no haya efectos en ese canal, que el nivel no esté clipeando ni demasiado bajo, y que el cable/conector no tenga ruido.</li>
+      <li>Para validar un archivo ya grabado (un bounce de tu DAW, o una captura del cable real), usá <b>⤓ ARCHIVO</b> en el checker y subí el audio — te muestra un resumen con el rango de timecode leído y cualquier error encontrado.</li>
+    </ol>
+    <p class="note">Esto corre 100% en tu navegador — el audio no se sube a ningún lado, todo el análisis (generación, decodificación, lectura de archivo) pasa en tu máquina.</p>
+  </div>
+</div>
+<div id="toast"></div>
+<script type="module">
+const $=id=>document.getElementById(id);
+function toast(t){ const el=$('toast'); el.textContent=t; el.classList.add('show'); clearTimeout(el._h); el._h=setTimeout(()=>el.classList.remove('show'),2200); }
+
+/* ---------- LTC engine (verified via Node round-trip test suite: 24/25/30 NDF, 29.97 DF,
+   minute-boundary drop-frame skip both at and off multiples of 10, hour rollover, multiple
+   sample rates, noise, polarity inversion, low amplitude) ---------- */
+const SYNC_BITS=[0,0,1,1,1,1,1,1,1,1,1,1,1,1,0,1];
+function pushField(arr,value,n){ for(let i=0;i<n;i++) arr.push((value>>i)&1); }
+function frameToBits(tc,dropFrame){
+  const fu=tc.f%10, ft=Math.floor(tc.f/10);
+  const su=tc.s%10, st=Math.floor(tc.s/10);
+  const mu=tc.m%10, mt=Math.floor(tc.m/10);
+  const hu=tc.h%10, ht=Math.floor(tc.h/10);
+  const bits=[];
+  pushField(bits,fu,4); pushField(bits,0,4);
+  pushField(bits,ft,2); bits.push(dropFrame?1:0); bits.push(0); pushField(bits,0,4);
+  pushField(bits,su,4); pushField(bits,0,4);
+  pushField(bits,st,3); bits.push(0); pushField(bits,0,4);
+  pushField(bits,mu,4); pushField(bits,0,4);
+  pushField(bits,mt,3); bits.push(0); pushField(bits,0,4);
+  pushField(bits,hu,4); pushField(bits,0,4);
+  pushField(bits,ht,2); bits.push(0); bits.push(0); pushField(bits,0,4);
+  bits.push(...SYNC_BITS);
+  return bits;
+}
+function incrementTC(tc,fpsNominal,dropFrame){
+  let {h,m,s,f}=tc;
+  f++;
+  if(f>=fpsNominal){
+    f=0; s++;
+    if(s>=60){
+      s=0; m++;
+      if(dropFrame && m%10!==0) f=2;
+      if(m>=60){ m=0; h++; if(h>=24) h=0; }
+    }
+  }
+  return {h,m,s,f};
+}
+function synthesizeLTC(startTc,fpsNominal,dropFrame,numFrames,sampleRate,amplitude=0.7){
+  const fpsActual=dropFrame?30000/1001:fpsNominal;
+  const bitDurSamples=sampleRate/(80*fpsActual);
+  const totalBits=numFrames*80;
+  const totalSamples=Math.ceil(bitDurSamples*(totalBits+1))+4;
+  const out=new Float32Array(totalSamples);
+  let phase=1,bitIndex=0,tc=startTc;
+  function fillRange(fromExact,toExact,value){ const from=Math.round(fromExact),to=Math.round(toExact); for(let i=from;i<to&&i<out.length;i++) out[i]=value; }
+  for(let fr=0;fr<numFrames;fr++){
+    const bits=frameToBits(tc,dropFrame);
+    for(const bit of bits){
+      const cellStart=bitIndex*bitDurSamples, cellEnd=(bitIndex+1)*bitDurSamples;
+      phase=-phase;
+      if(bit===1){
+        const mid=cellStart+bitDurSamples/2;
+        fillRange(cellStart,mid,phase*amplitude);
+        phase=-phase;
+        fillRange(mid,cellEnd,phase*amplitude);
+      } else {
+        fillRange(cellStart,cellEnd,phase*amplitude);
+      }
+      bitIndex++;
+    }
+    tc=incrementTC(tc,fpsNominal,dropFrame);
+  }
+  phase=-phase;
+  fillRange(bitIndex*bitDurSamples,(bitIndex+1)*bitDurSamples,phase*amplitude);
+  return out;
+}
+class LTCDecoder{
+  constructor(){
+    this.prevSample=0; this.absIdx=0; this.lastEdge=null; this.refHalf=null; this.pendingHalf=false;
+    this.bitBuf=[]; this.syncReg=0; this.frames=[]; this.bitErrors=0; this.sampleRate=48000;
+  }
+  pushSamples(chunk,sampleRate){
+    this.sampleRate=sampleRate;
+    const EPS=0.02;
+    let prevSign=this.prevSample>=0?1:-1;
+    for(let i=0;i<chunk.length;i++){
+      const s=chunk[i];
+      const sign=s>=EPS?1:(s<=-EPS?-1:prevSign);
+      if(sign!==prevSign){
+        const prevS=this.prevSample;
+        const denom=(prevS-s);
+        const frac=denom!==0?prevS/denom:0;
+        const crossPos=(this.absIdx-1)+Math.min(1,Math.max(0,frac));
+        this._handleEdge(crossPos);
+        prevSign=sign;
+      }
+      this.prevSample=s; this.absIdx++;
+    }
+  }
+  _handleEdge(pos){
+    if(this.lastEdge===null){ this.lastEdge=pos; return; }
+    const interval=pos-this.lastEdge; this.lastEdge=pos;
+    if(interval<=0) return;
+    this._classify(interval);
+  }
+  _classify(interval){
+    if(this.refHalf===null) this.refHalf=this.sampleRate/(2*80*25);
+    const threshold=this.refHalf*1.5;
+    if(interval<threshold){
+      if(this.pendingHalf){ this._emit(1); this.refHalf=this.refHalf*0.9+interval*0.1; this.pendingHalf=false; }
+      else this.pendingHalf=true;
+    } else {
+      if(this.pendingHalf){ this.bitErrors++; this.pendingHalf=false; }
+      this._emit(0); this.refHalf=this.refHalf*0.9+(interval/2)*0.1;
+    }
+  }
+  _emit(bit){
+    this.bitBuf.push(bit);
+    this.syncReg=((this.syncReg<<1)|bit)&0xFFFF;
+    if(this.syncReg===0x3FFD && this.bitBuf.length>=80){
+      const data=this.bitBuf.slice(this.bitBuf.length-80,this.bitBuf.length-16);
+      const frame=this._decodeFields(data);
+      frame.sampleIdx=this.absIdx;
+      this.frames.push(frame);
+    }
+    if(this.bitBuf.length>300) this.bitBuf.splice(0,this.bitBuf.length-160);
+  }
+  _decodeFields(b){
+    const val=(start,n)=>{ let v=0; for(let i=0;i<n;i++) v|=(b[start+i]<<i); return v; };
+    const fu=val(0,4), ft=val(8,2), df=b[10];
+    const su=val(16,4), st=val(24,3);
+    const mu=val(32,4), mt=val(40,3);
+    const hu=val(48,4), ht=val(56,2);
+    return { h:ht*10+hu, m:mt*10+mu, s:st*10+su, f:ft*10+fu, dropFrame:!!df };
+  }
+}
+
+/* ---------- WAV export ---------- */
+function floatTo16WAV(samples,sampleRate){
+  const buf=new ArrayBuffer(44+samples.length*2);
+  const view=new DataView(buf);
+  function writeStr(o,str){ for(let i=0;i<str.length;i++) view.setUint8(o+i,str.charCodeAt(i)); }
+  writeStr(0,'RIFF'); view.setUint32(4,36+samples.length*2,true); writeStr(8,'WAVE');
+  writeStr(12,'fmt '); view.setUint32(16,16,true); view.setUint16(20,1,true); view.setUint16(22,1,true);
+  view.setUint32(24,sampleRate,true); view.setUint32(28,sampleRate*2,true); view.setUint16(32,2,true); view.setUint16(34,16,true);
+  writeStr(36,'data'); view.setUint32(40,samples.length*2,true);
+  let off=44;
+  for(let i=0;i<samples.length;i++){ const s=Math.max(-1,Math.min(1,samples[i])); view.setInt16(off, s<0?s*0x8000:s*0x7FFF, true); off+=2; }
+  return new Blob([buf],{type:'audio/wav'});
+}
+
+/* ---------- shared helpers ---------- */
+function pad2(n){ return String(n).padStart(2,'0'); }
+function fmtTC(tc,df){ return pad2(tc.h)+':'+pad2(tc.m)+':'+pad2(tc.s)+(df?';':':')+pad2(tc.f); }
+function readFpsConfig(){ const v=$('genFps').value; if(v==='29.97df') return {fpsNominal:30,dropFrame:true}; return {fpsNominal:+v,dropFrame:false}; }
+
+/* ---------- 1. generador ---------- */
+let genCtx=null, genSrcNode=null, genPlaying=false, genFps=25, genDF=false, genCurrentTc=null, genFrameCounter=0, genPlayStartTime=0, genTickHandle=null;
+function ensureGenCtx(){ if(!genCtx) genCtx=new (window.AudioContext||window.webkitAudioContext)(); return genCtx; }
+function buildGenBuffer(){
+  const tc={ h:+$('genH').value||0, m:+$('genM').value||0, s:+$('genS').value||0, f:+$('genF').value||0 };
+  const {fpsNominal,dropFrame}=readFpsConfig();
+  const durSec=+$('genDur').value;
+  const fpsActual=dropFrame?30000/1001:fpsNominal;
+  const numFrames=Math.ceil(durSec*fpsActual);
+  const sampleRate=genCtx?genCtx.sampleRate:48000;
+  const amp=Math.pow(10,(+$('genLevel').value)/20);
+  const samples=synthesizeLTC(tc,fpsNominal,dropFrame,numFrames,sampleRate,amp);
+  return {samples,sampleRate,tc,fpsNominal,dropFrame};
+}
+function stopGen(){
+  if(genSrcNode){ try{genSrcNode.stop();}catch(e){} genSrcNode.disconnect(); genSrcNode=null; }
+  genPlaying=false; $('btnPlay').textContent='▶ REPRODUCIR'; cancelAnimationFrame(genTickHandle); $('genReadout').textContent='—';
+}
+function tickGenReadout(){
+  if(!genPlaying) return;
+  const elapsed=genCtx.currentTime-genPlayStartTime;
+  const fpsActual=genDF?30000/1001:genFps;
+  const targetFrame=Math.floor(elapsed*fpsActual);
+  while(genFrameCounter<targetFrame){ genCurrentTc=incrementTC(genCurrentTc,genFps,genDF); genFrameCounter++; }
+  $('genReadout').textContent=fmtTC(genCurrentTc,genDF);
+  genTickHandle=requestAnimationFrame(tickGenReadout);
+}
+$('btnPlay').addEventListener('click',()=>{
+  if(genPlaying){ stopGen(); return; }
+  ensureGenCtx();
+  const built=buildGenBuffer();
+  genFps=built.fpsNominal; genDF=built.dropFrame; genCurrentTc={...built.tc}; genFrameCounter=0;
+  const buf=genCtx.createBuffer(1,built.samples.length,built.sampleRate);
+  buf.copyToChannel(built.samples,0);
+  genSrcNode=genCtx.createBufferSource(); genSrcNode.buffer=buf; genSrcNode.connect(genCtx.destination);
+  genSrcNode.onended=()=>{ if(genPlaying) stopGen(); };
+  genSrcNode.start();
+  genPlaying=true; genPlayStartTime=genCtx.currentTime;
+  $('btnPlay').textContent='⏸ DETENER';
+  tickGenReadout();
+});
+$('btnDownload').addEventListener('click',()=>{
+  const built=buildGenBuffer();
+  const blob=floatTo16WAV(built.samples,built.sampleRate);
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url; a.download=`ltc_${fmtTC(built.tc,built.dropFrame).replace(/[:;]/g,'-')}_${built.fpsNominal}fps${built.dropFrame?'df':''}.wav`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),2000);
+  toast('WAV descargado');
+});
+
+/* ---------- 2. checker ---------- */
+let decCtx=null, decProcessor=null, decSourceNode=null, decMicStream=null, decDecoder=null, decSilentGain=null;
+let decListening=false, decMode='mic', decLastFrameTime=0, decLastSignalTime=0, decPeakLevel=0, decPrevFrame=null, decDiscontinuities=0;
+
+function ensureDecCtx(){ if(!decCtx) decCtx=new (window.AudioContext||window.webkitAudioContext)(); return decCtx; }
+function newDecoder(){ decDecoder=new LTCDecoder(); decPrevFrame=null; decDiscontinuities=0; decPeakLevel=0; decLastFrameTime=0; decLastSignalTime=0; $('decResults').classList.add('show'); $('fileSummary').classList.remove('show'); $('fileSummary').innerHTML=''; }
+
+function checkNewFrames(framesBeforeLen,fpsEstimate){
+  const frames=decDecoder.frames;
+  const fpsNominal=[24,25,30].reduce((best,v)=>Math.abs(v-fpsEstimate)<Math.abs(best-fpsEstimate)?v:best,25);
+  for(let i=framesBeforeLen;i<frames.length;i++){
+    const f=frames[i];
+    if(decPrevFrame){
+      const expected=incrementTC(decPrevFrame,fpsNominal,decPrevFrame.dropFrame);
+      if(!(expected.h===f.h&&expected.m===f.m&&expected.s===f.s&&expected.f===f.f)) decDiscontinuities++;
+    }
+    decPrevFrame=f;
+  }
+}
+function estimateFps(sampleRate){
+  const frames=decDecoder.frames;
+  if(frames.length<2) return null;
+  const from=Math.max(0,frames.length-11);
+  const a=frames[from], b=frames[frames.length-1];
+  const n=frames.length-1-from;
+  if(n<=0) return null;
+  const secs=(b.sampleIdx-a.sampleIdx)/sampleRate;
+  return secs>0 ? n/secs : null;
+}
+function updateDecReadout(sampleRate){
+  const now=performance.now();
+  const frames=decDecoder.frames;
+  const hasSignal=(now-decLastSignalTime)<800;
+  const hasLock=(now-decLastFrameTime)<800 && frames.length>0;
+  let statusText,statusClass;
+  if(!hasSignal && frames.length===0){ statusText='SIN SEÑAL'; statusClass='nosig'; }
+  else if(!hasLock){ statusText=frames.length?'SEÑAL PERDIDA':'ADQUIRIENDO…'; statusClass=frames.length?'lost':'acq'; }
+  else { statusText='LOCKED'; statusClass='locked'; }
+  $('decStatus').textContent=statusText; $('decStatus').className='pill '+statusClass;
+  const last=frames[frames.length-1];
+  $('decTC').textContent=last?fmtTC(last,last.dropFrame):'--:--:--:--';
+  const fpsEst=estimateFps(sampleRate);
+  $('decFps').textContent=fpsEst?fpsEst.toFixed(3):'—';
+  $('decDf').textContent=last?(last.dropFrame?'sí':'no'):'—';
+  $('decErrors').textContent=decDecoder.bitErrors;
+  $('decDisc').textContent=decDiscontinuities;
+  $('decFrameCount').textContent=frames.length;
+  $('decLevelBar').style.width=Math.min(100,decPeakLevel*140)+'%';
+  $('decLevelDb').textContent=decPeakLevel>0.0001?(20*Math.log10(decPeakLevel)).toFixed(1)+' dBFS':'-∞ dBFS';
+}
+function handleDecChunk(chunk,sampleRate){
+  let peak=0; for(let i=0;i<chunk.length;i++){ const a=Math.abs(chunk[i]); if(a>peak) peak=a; }
+  decPeakLevel=decPeakLevel*0.7+peak*0.3;
+  if(peak>0.01) decLastSignalTime=performance.now();
+  const before=decDecoder.frames.length;
+  decDecoder.pushSamples(chunk,sampleRate);
+  if(decDecoder.frames.length>before){ decLastFrameTime=performance.now(); checkNewFrames(before, estimateFps(sampleRate)||25); }
+  updateDecReadout(sampleRate);
+}
+function stopDecodeSource(){
+  if(decProcessor){ try{decProcessor.disconnect();}catch(e){} decProcessor.onaudioprocess=null; decProcessor=null; }
+  if(decSourceNode){ try{decSourceNode.disconnect();}catch(e){} decSourceNode=null; }
+  if(decSilentGain){ try{decSilentGain.disconnect();}catch(e){} decSilentGain=null; }
+  if(decMicStream){ decMicStream.getTracks().forEach(t=>t.stop()); decMicStream=null; }
+  decListening=false; $('btnListen').textContent='▶ ESCUCHAR';
+}
+async function startMic(){
+  ensureDecCtx(); stopDecodeSource(); newDecoder(); $('micErr').textContent='';
+  try{
+    decMicStream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}});
+  }catch(e){ $('micErr').textContent='no se pudo acceder al micrófono/línea — revisá los permisos del navegador.'; toast('permiso de micrófono denegado'); return; }
+  decSourceNode=decCtx.createMediaStreamSource(decMicStream);
+  decProcessor=decCtx.createScriptProcessor(4096,1,1);
+  decSilentGain=decCtx.createGain(); decSilentGain.gain.value=0;
+  decProcessor.onaudioprocess=e=>handleDecChunk(e.inputBuffer.getChannelData(0),decCtx.sampleRate);
+  decSourceNode.connect(decProcessor); decProcessor.connect(decSilentGain); decSilentGain.connect(decCtx.destination);
+  decListening=true; $('btnListen').textContent='⏸ DETENER';
+}
+$('btnListen').addEventListener('click',()=>{ decListening?stopDecodeSource():startMic(); });
+$('btnResetMic').addEventListener('click',()=>{ newDecoder(); updateDecReadout(decCtx?decCtx.sampleRate:48000); });
+
+async function analyzeFile(file){
+  ensureDecCtx(); stopDecodeSource(); newDecoder();
+  $('fileStatus').textContent='analizando "'+file.name+'"…';
+  let audioBuf;
+  try{
+    const ab=await file.arrayBuffer();
+    audioBuf=await decCtx.decodeAudioData(ab);
+  }catch(e){ $('fileStatus').textContent='no se pudo decodificar ese archivo de audio.'; toast('archivo inválido'); return; }
+  const data=audioBuf.getChannelData(0);
+  const sr=audioBuf.sampleRate;
+  const chunkSize=65536; let i=0;
+  function step(){
+    const end=Math.min(i+chunkSize,data.length);
+    handleDecChunk(data.subarray(i,end),sr);
+    i=end;
+    if(i<data.length) setTimeout(step,0);
+    else finalizeFile(audioBuf.duration);
+  }
+  step();
+}
+function finalizeFile(durationSec){
+  const frames=decDecoder.frames;
+  $('fileStatus').textContent='análisis completo.';
+  const box=$('fileSummary'); box.classList.add('show');
+  if(!frames.length){ box.innerHTML='<p class="bad">No se detectó ninguna trama LTC válida en este archivo.</p>'; return; }
+  const first=frames[0], last=frames[frames.length-1];
+  const fpsEst=estimateFps(decCtx.sampleRate);
+  const ok=decDecoder.bitErrors===0 && decDiscontinuities===0;
+  box.innerHTML=`<p class="${ok?'ok':'bad'}">${ok?'✓ Señal LTC válida y estable.':'⚠ se encontraron problemas en la señal.'}</p>
+    <p>duración del archivo: ${durationSec.toFixed(2)}s · frames leídos: ${frames.length}</p>
+    <p>primer TC: ${fmtTC(first,first.dropFrame)} · último TC: ${fmtTC(last,last.dropFrame)}</p>
+    <p>fps detectado: ${fpsEst?fpsEst.toFixed(3):'—'} · drop-frame: ${last.dropFrame?'sí':'no'}</p>
+    <p>errores de bit: ${decDecoder.bitErrors} · discontinuidades: ${decDiscontinuities}</p>`;
+}
+$('btnPickFile').addEventListener('click',()=>$('fileInput').click());
+$('fileInput').addEventListener('change',e=>{ if(e.target.files[0]) analyzeFile(e.target.files[0]); });
+
+$('btnSrcMic').addEventListener('click',()=>{
+  decMode='mic'; $('btnSrcMic').classList.add('on'); $('btnSrcFile').classList.remove('on');
+  $('micControls').style.display=''; $('fileControls').style.display='none';
+  stopDecodeSource();
+});
+$('btnSrcFile').addEventListener('click',()=>{
+  decMode='file'; $('btnSrcFile').classList.add('on'); $('btnSrcMic').classList.remove('on');
+  $('fileControls').style.display=''; $('micControls').style.display='none';
+  stopDecodeSource();
+});
+</script>
+</body></html>
