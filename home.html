@@ -450,6 +450,9 @@ section{min-height:100vh;display:flex;align-items:center;position:relative;paddi
 .nav-links{display:flex;gap:2.5rem;}
 .nav-links a{font-family:var(--mono);font-size:10px;letter-spacing:0.25em;color:rgba(240,237,230,0.25);text-decoration:none;transition:color 0.2s;}
 .nav-links a:hover{color:var(--acid);}
+/* accesos a contenido de comunidad: ocultos por defecto (sin flash); el script
+   los revela sólo a sesiones de comunidad, espejando /gate/gate.js */
+.nav-links a.nav-gated{display:none;}
 .nav-auth-btn,.nav-area-btn{
   border:1px solid rgba(184,255,0,0.25);border-radius:2px;padding:6px 12px;
   color:rgba(184,255,0,0.55) !important;letter-spacing:0.18em !important;
@@ -1123,10 +1126,10 @@ body.visual-mode #exit-visual{z-index:9000!important;}
   <span class="nav-logo">HG — VL / 2026</span>
   <div class="nav-links">
     <a href="#manifiesto">SISTEMA</a>
-    <a href="test/">TEST</a>
-    <a href="glitch-night/">NIGHT</a>
-    <a href="aether-2/">AETHER</a>
-    <a href="labs/">⚗ LABS</a>
+    <a href="test/" class="nav-gated">TEST</a>
+    <a href="glitch-night/" class="nav-gated">NIGHT</a>
+    <a href="aether-2/" class="nav-gated">AETHER</a>
+    <a href="labs/" class="nav-gated">⚗ LABS</a>
     <a href="#blog">BLOG</a>
     <a href="#catalogo">SERVICIOS</a>
     <a href="galeria/">GALERÍA</a>
@@ -3075,5 +3078,29 @@ document.querySelectorAll('.bcard').forEach(c=>{
 
 <script defer src="chat-widget.js"></script>
   <script src="/glass/glass.js" defer data-target="#nav, #manifiesto, #aether-sec, #blog, #catalogo, #comunidad, #live, #footer"></script>
+<script>
+/* Nav: los accesos a contenido de comunidad (LABS·NIGHT·AETHER·TEST) se muestran
+   sólo a sesiones de comunidad — espeja /gate/gate.js (accountType !== 'cliente').
+   Invitados y clientes ven el menú simplificado. Ocultos por defecto vía CSS. */
+(function(){
+  var LS_KEY='hg_auth_session';
+  var FB_URL='https://hg-vl-shaders-default-rtdb.firebaseio.com';
+  var links=[].slice.call(document.querySelectorAll('.nav-links a.nav-gated'));
+  if(!links.length) return;
+  function getSession(){ try{ return JSON.parse(localStorage.getItem(LS_KEY)||'null'); }catch(e){ return null; } }
+  function reveal(on){ links.forEach(function(a){ a.classList.toggle('nav-gated', !on); }); }
+  function check(){
+    var s=getSession();
+    if(!s||!s.uid){ reveal(false); return; }
+    fetch(FB_URL+'/profiles/'+s.uid+'/accountType.json')
+      .then(function(r){ return r.json(); })
+      .then(function(t){ reveal(t!=='cliente'); })
+      .catch(function(){ reveal(false); });
+  }
+  check();
+  document.addEventListener('hg-auth-changed', check);
+  window.addEventListener('storage', function(e){ if(e.key===LS_KEY) check(); });
+})();
+</script>
 </body>
 </html>
