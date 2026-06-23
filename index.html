@@ -3,52 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>HUMAN GLITCHE — HAY UNA GRIETA EN LA INTERFAZ DE LA REALIDAD</title>
-<meta name="description" content="Antesala de Human Glitche. Una grieta en la interfaz de la realidad. Scrolleá y entrá.">
+<title>HUMAN GLITCHE — STUDIO</title>
+<meta name="description" content="Estudio de contenido visual de altísima calidad. Mapping, VFX, 3D e IA para marcas y artistas. Diseñamos la experiencia que tu público va a vivir.">
 <!--
-  ANTESALA WebGL v2 — puerta de entrada del sitio (work_list.json item 18,
-  antesala_galaxia_strobo; upgrade del item 17). STAGING en web/antesala/. NO VIVO.
-
-  Concepto: el visitante scrollea y VUELA a través de una GRIETA / túnel que
-  glitchea en la realidad, dentro de una GALAXIA de partículas en deriva fluida,
-  con una nebulosa lejana de fondo, hasta que la grieta se abre en luz ácida y
-  aparece el botón ENTRAR que lleva al home. Es la cara de marca de Human Glitche:
-  "humanos que encontraron una grieta en la interfaz de la realidad".
-
-  Stack estático, sin build (apto GitHub Pages):
-    · Three.js r160 por CDN con importmap (ES modules).
-    · Lenis por CDN para scroll suave; el progreso 0→1 maneja cámara + uniforms.
-    · EffectComposer + RenderPass + ShaderPass propio (aberración cromática que
-      late + ráfagas de glitch por bloques + film grain) + UnrealBloomPass (clímax).
-
-  CAPAS v2 (sobre el v1, sin rehacer):
-    · Galaxia de partículas GPU (THREE.Points + shader propio, sprite radial
-      procedural por CanvasTexture, AdditiveBlending, paleta ácido/glitch/blanco
-      frío) con deriva fluida por curl-noise/flow-field y reacción al scroll:
-      sutil al inicio, converge/acelera hacia la boca de la grieta en 0.85→1.
-    · Más oscuridad: exposición baja (ACESFilmic + toneMappingExposure), niebla
-      más densa, contraste alto → un void con vida, no gris.
-    · Nebulosa de fondo: antesala-assets/nebula.jpg en una esfera BackSide muy atenuada,
-      con parallax sutil (scroll + mouse), DETRÁS de túnel y partículas.
-    · STROBO SEGURO (no fotosensible). Reglas, todas implementadas abajo:
-        (a) NUNCA bajo prefers-reduced-motion (cae a fallback estático, sin escena).
-        (b) frecuencia capada < 3 flashes/s (mínimo 0.34s entre destellos).
-        (c) SIN flash blanco a pantalla completa — tintes ácido/glitch y pulsos
-            parciales/localizados (bloom + partículas + venas), nunca un blanco
-            que cubra todo el viewport.
-        (d) amplitud moderada con rampa suave (no salto 0→100% de luminancia).
-      Los destellos se atan a PICOS de glitch del recorrido (no constante).
-
-  Estética Visual Lab (espejo de web/oferta-studio/servicios.html):
-    --black #050505 · --white #f0ede6 · --acid #b8ff00 · --glitch #ff2d55
-    Bebas Neue (display) + Space Mono (mono).
-
-  Fallbacks OBLIGATORIOS: prefers-reduced-motion, sin-WebGL, Three falla al
-  cargar → fallback estático bello con ENTRAR inmediato. Nunca pantalla en blanco.
-
-  PUBLICACIÓN (GATE humano): el path real al home lo define el humano; la
-  antesala es la nueva puerta de entrada (raíz / splash). El href de
-  ENTRAR (y del skip persistente) lleva al home real del sitio: home.html.
+  ANTESALA CINE v1 — entrada scroll-cinematic estilo exebenus.com, orientada a CLIENTES.
+  Mecánica: una secuencia de fotogramas (frames/f_NNN.jpg) se "scrubea" con el scroll
+  (canvas fijo, técnica tipo Apple). Loader que precarga → beats narrativos sincronizados
+  al progreso → clímax en luz ácida con ENTRAR. Hero TEMPORAL: render neón 3D (placeholder);
+  el final se reemplaza por un cinematic bespoke (Higgsfield) sin tocar el motor.
+  Estética Visual Lab: --black #050505 · --acid #b8ff00 · --glitch #ff2d55 · Bebas + Space Mono.
+  Fallbacks: prefers-reduced-motion / sin-canvas → primer frame estático + ENTRAR inmediato.
 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -56,902 +20,263 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 :root{
-  --black:#050505;
-  --white:#f0ede6;
-  --acid:#b8ff00;
-  --glitch:#ff2d55;
-  --mono:'Space Mono',monospace;
-  --display:'Bebas Neue',sans-serif;
+  --black:#050505; --white:#f0ede6; --acid:#b8ff00; --glitch:#ff2d55;
+  --mono:'Space Mono',monospace; --display:'Bebas Neue',sans-serif;
 }
 html,body{background:var(--black);color:var(--white);font-family:var(--mono);overflow-x:hidden;}
-body{min-height:100%;}
 
-/* ── Lienzo fijo de la grieta ─────────────────────────────── */
-#bg{position:fixed;inset:0;z-index:0;background:var(--black);}
-#bg canvas{display:block;width:100%;height:100%;}
-
-/* viñeta + grano sutil sobre el canvas (refuerzo CSS).
-   v2: más oscuridad — viñeta más cerrada y profunda para empujar el negro. */
+/* ── Lienzo fijo de la secuencia ─────────────────────────── */
+#stage{position:fixed;inset:0;z-index:0;background:var(--black);}
+#seq{display:block;width:100%;height:100%;}
+/* tratamiento premium sobre el canvas */
 #vignette{position:fixed;inset:0;z-index:1;pointer-events:none;
-  background:radial-gradient(ellipse at center,transparent 30%,rgba(2,2,3,0.78) 100%);}
+  background:radial-gradient(ellipse 75% 75% at 50% 48%,transparent 32%,rgba(2,2,3,0.82) 100%);}
+#scan{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:0.5;mix-blend-mode:overlay;
+  background:repeating-linear-gradient(0deg,rgba(0,0,0,0) 0 2px,rgba(0,0,0,0.22) 2px 3px);}
 #grain{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:0.05;
   background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");}
 
-/* ── Pista de scroll (da recorrido) ───────────────────────── */
+/* ── Pista de scroll ─────────────────────────────────────── */
 #track{position:relative;z-index:2;height:560vh;pointer-events:none;}
 
-/* ── Capa fija de UI/overlays ─────────────────────────────── */
-#overlay{position:fixed;inset:0;z-index:3;pointer-events:none;}
-
-/* marca arriba */
-.brand{position:fixed;top:1.8rem;left:8vw;z-index:5;
-  font-family:var(--mono);font-size:11px;letter-spacing:0.28em;
-  color:rgba(240,237,230,0.4);text-decoration:none;pointer-events:auto;}
+/* ── Marca + skip ────────────────────────────────────────── */
+.brand{position:fixed;top:1.8rem;left:6vw;z-index:8;font-size:11px;letter-spacing:0.28em;
+  color:rgba(240,237,230,0.5);text-decoration:none;}
+.brand b{color:var(--acid);}
 .brand:hover{color:var(--acid);}
-
-/* skip / ENTRAR persistente y discreto (a11y) */
-.skip{position:fixed;top:1.6rem;right:8vw;z-index:6;pointer-events:auto;
-  font-family:var(--mono);font-size:10px;letter-spacing:0.22em;
-  color:rgba(240,237,230,0.45);text-decoration:none;
-  border:1px solid rgba(240,237,230,0.18);padding:0.55rem 1rem;
-  background:rgba(5,5,5,0.4);backdrop-filter:blur(6px);transition:all 0.25s;}
+.skip{position:fixed;top:1.5rem;right:6vw;z-index:8;font-size:10px;letter-spacing:0.22em;
+  color:rgba(240,237,230,0.55);text-decoration:none;border:1px solid rgba(240,237,230,0.2);
+  padding:0.55rem 1rem;background:rgba(5,5,5,0.4);backdrop-filter:blur(6px);transition:all 0.25s;}
 .skip:hover{color:var(--acid);border-color:var(--acid);}
-.skip:focus-visible{outline:2px solid var(--acid);outline-offset:3px;color:var(--acid);}
 
-/* hint de scroll */
-#hint{position:fixed;left:50%;bottom:2.2rem;transform:translateX(-50%);z-index:5;
-  font-family:var(--mono);font-size:10px;letter-spacing:0.3em;
-  color:rgba(240,237,230,0.5);text-align:center;transition:opacity 0.6s;}
-#hint .arrow{display:block;margin-top:0.6rem;font-size:14px;color:var(--acid);
-  animation:bob 1.8s ease-in-out infinite;}
+/* ── Loader ──────────────────────────────────────────────── */
+#loader{position:fixed;inset:0;z-index:20;background:var(--black);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.4rem;
+  transition:opacity 0.8s ease;text-align:center;padding:0 8vw;}
+#loader.done{opacity:0;pointer-events:none;}
+#loader .lk{font-size:10px;letter-spacing:0.4em;color:rgba(240,237,230,0.5);text-transform:uppercase;}
+#loader .lpct{font-family:var(--display);font-size:clamp(4rem,16vw,11rem);line-height:0.8;color:var(--white);}
+#loader .lpct .pc{color:var(--acid);}
+#loader .lbar{width:min(340px,60vw);height:2px;background:rgba(240,237,230,0.12);overflow:hidden;}
+#loader .lbar i{display:block;height:100%;width:0;background:var(--acid);transition:width 0.2s ease;}
+#loader .lsub{font-size:10px;letter-spacing:0.22em;color:rgba(240,237,230,0.35);}
+
+/* ── Beats narrativos ────────────────────────────────────── */
+.beat{position:fixed;left:0;right:0;z-index:5;padding:0 8vw;text-align:left;
+  top:50%;transform:translateY(-46%);opacity:0;transition:opacity 0.55s ease,transform 0.55s ease;
+  pointer-events:none;}
+.beat.show{opacity:1;transform:translateY(-50%);}
+.beat .bk{font-size:10px;letter-spacing:0.34em;color:var(--acid);text-transform:uppercase;margin-bottom:1rem;}
+.beat h2{font-family:var(--display);font-weight:400;line-height:0.92;letter-spacing:0.01em;
+  font-size:clamp(2.4rem,7.5vw,6.6rem);max-width:16ch;text-shadow:0 2px 40px rgba(5,5,5,0.7);}
+.beat h2 .ac{color:var(--acid);} .beat h2 .gl{color:var(--glitch);}
+
+/* franja de credibilidad */
+#creds{position:fixed;left:0;right:0;bottom:8vh;z-index:5;padding:0 6vw;
+  display:flex;gap:2.4rem;flex-wrap:wrap;opacity:0;transition:opacity 0.6s ease;pointer-events:none;}
+#creds.show{opacity:1;}
+#creds .c{font-size:10px;letter-spacing:0.1em;color:rgba(240,237,230,0.75);}
+#creds .c b{display:block;font-family:var(--display);font-size:1.5rem;letter-spacing:0.02em;color:var(--acid);line-height:1;margin-bottom:3px;}
+
+/* hint scroll */
+#hint{position:fixed;left:50%;bottom:2.2rem;transform:translateX(-50%);z-index:6;
+  font-size:10px;letter-spacing:0.3em;color:rgba(240,237,230,0.5);text-align:center;transition:opacity 0.5s;}
+#hint .a{display:block;margin-top:0.5rem;color:var(--acid);animation:bob 1.8s ease-in-out infinite;}
 @keyframes bob{0%,100%{transform:translateY(0);opacity:0.5;}50%{transform:translateY(6px);opacity:1;}}
 
-/* ── BEATS de texto a lo largo del scroll ─────────────────── */
-.beat{position:fixed;left:0;right:0;top:50%;transform:translateY(-50%);z-index:4;
-  text-align:center;padding:0 8vw;opacity:0;transition:opacity 0.5s ease;
-  pointer-events:none;}
-.beat.show{opacity:1;}
-.beat h2{font-family:var(--display);line-height:0.92;letter-spacing:0.01em;
-  font-size:clamp(2.4rem,7vw,6.5rem);max-width:18ch;margin:0 auto;
-  text-shadow:0 0 28px rgba(184,255,0,0.12);}
-.beat h2 .acc{color:var(--acid);}
-.beat h2 .gl{color:var(--glitch);}
-
-/* ── CLÍMAX: logo + ENTRAR ────────────────────────────────── */
+/* ── Clímax ──────────────────────────────────────────────── */
 #climax{position:fixed;inset:0;z-index:7;display:flex;flex-direction:column;
-  align-items:center;justify-content:center;gap:2.4rem;
-  opacity:0;pointer-events:none;transition:opacity 0.7s ease;text-align:center;padding:0 8vw;}
+  align-items:center;justify-content:center;gap:1.6rem;text-align:center;padding:0 8vw;
+  opacity:0;pointer-events:none;transition:opacity 0.7s ease;}
 #climax.show{opacity:1;pointer-events:auto;}
-.logo-hg{font-family:var(--display);font-size:clamp(3.5rem,11vw,9rem);line-height:0.85;
-  letter-spacing:0.02em;}
-.logo-hg .g{color:var(--acid);text-shadow:0 0 40px rgba(184,255,0,0.5);}
-.logo-tag{font-family:var(--mono);font-size:11px;letter-spacing:0.32em;
-  color:rgba(240,237,230,0.55);margin-top:-1.2rem;}
-.enter{display:inline-flex;align-items:center;gap:0.9rem;
-  font-family:var(--display);font-size:clamp(1.8rem,4vw,2.8rem);letter-spacing:0.18em;
-  color:var(--black);background:var(--acid);text-decoration:none;
-  padding:0.85rem 2.8rem;border:2px solid var(--acid);
-  box-shadow:0 0 0 0 rgba(184,255,0,0.5);transition:transform 0.2s,box-shadow 0.3s;
-  animation:pulse 2.4s ease-in-out infinite;}
-.enter:hover{transform:scale(1.04);box-shadow:0 0 48px rgba(184,255,0,0.55);}
-.enter:focus-visible{outline:3px solid var(--white);outline-offset:4px;}
-.enter .ch{font-family:var(--mono);font-size:0.6em;}
-@keyframes pulse{0%,100%{box-shadow:0 0 26px rgba(184,255,0,0.28);}50%{box-shadow:0 0 56px rgba(184,255,0,0.5);}}
+#climax::before{content:'';position:absolute;inset:0;z-index:-1;
+  background:radial-gradient(ellipse 70% 60% at 50% 50%,rgba(184,255,0,0.16),transparent 62%);}
+.logo{font-family:var(--display);font-size:clamp(3.4rem,11vw,9rem);line-height:0.82;letter-spacing:0.02em;}
+.logo .g{color:var(--acid);text-shadow:0 0 50px rgba(184,255,0,0.5);}
+.ctag{font-size:11px;letter-spacing:0.3em;color:rgba(240,237,230,0.6);max-width:42ch;line-height:1.9;text-transform:uppercase;}
+.ctag b{color:var(--white);}
+.enter{display:inline-flex;align-items:center;gap:0.9rem;margin-top:0.6rem;
+  font-family:var(--display);font-size:clamp(1.7rem,4vw,2.6rem);letter-spacing:0.18em;
+  color:var(--black);background:var(--acid);text-decoration:none;padding:0.7rem 2.6rem;border:2px solid var(--acid);
+  transition:transform 0.2s,box-shadow 0.3s;animation:pulse 2.4s ease-in-out infinite;}
+.enter:hover{transform:scale(1.04);box-shadow:0 0 50px rgba(184,255,0,0.55);}
+.enter .ch{font-family:var(--mono);font-size:0.55em;}
+@keyframes pulse{0%,100%{box-shadow:0 0 24px rgba(184,255,0,0.26);}50%{box-shadow:0 0 54px rgba(184,255,0,0.5);}}
 
-/* ── FALLBACK estático (reduced-motion / sin-WebGL / error) ── */
-#fallback{position:fixed;inset:0;z-index:9;display:none;
-  flex-direction:column;align-items:center;justify-content:center;gap:2rem;
-  text-align:center;padding:0 8vw;background:var(--black);overflow:hidden;}
+/* ── Fallback estático ───────────────────────────────────── */
+#fallback{position:fixed;inset:0;z-index:30;display:none;flex-direction:column;
+  align-items:center;justify-content:center;gap:1.6rem;text-align:center;padding:0 8vw;background:var(--black);}
 #fallback.on{display:flex;}
-/* grieta estática hecha con CSS: rayo ácido vertical sobre negro */
-#fallback::before{content:'';position:absolute;inset:0;z-index:-1;
-  background:
-    radial-gradient(ellipse 60% 90% at 50% 50%,rgba(184,255,0,0.10),transparent 60%),
-    linear-gradient(90deg,transparent 48.6%,rgba(184,255,0,0.85) 49.6%,rgba(240,237,230,0.9) 50%,rgba(184,255,0,0.85) 50.4%,transparent 51.4%),
-    radial-gradient(circle at 50% 50%,rgba(255,45,85,0.12),transparent 45%);
-  filter:blur(0.4px);}
-#fallback .fb-crack{position:absolute;inset:0;z-index:-1;opacity:0.5;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 800'%3E%3Cg fill='none' stroke='%23b8ff00' stroke-width='1' opacity='0.6'%3E%3Cpath d='M200 0 L196 180 L210 320 L188 470 L204 620 L198 800'/%3E%3Cpath d='M196 180 L120 240'/%3E%3Cpath d='M210 320 L300 360'/%3E%3Cpath d='M188 470 L100 540'/%3E%3Cpath d='M204 620 L290 690'/%3E%3C/g%3E%3C/svg%3E");
-  background-position:center;background-repeat:no-repeat;background-size:auto 100%;}
-#fallback .logo-hg{position:relative;}
+#fallback img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0.4;z-index:-1;}
 
-/* responsive */
-@media (max-width:760px){
-  .brand{left:6vw;} .skip{right:6vw;}
-  .beat h2{font-size:clamp(2rem,9vw,3.4rem);}
+@media(max-width:760px){
+  .brand{left:5vw;} .skip{right:5vw;}
+  .beat h2{font-size:clamp(2.1rem,9vw,3.6rem);}
+  #creds{gap:1.2rem;bottom:11vh;}
 }
-
-/* respeto duro a reduced-motion para cualquier animación CSS decorativa */
-@media (prefers-reduced-motion:reduce){
-  .enter{animation:none;} #hint .arrow{animation:none;}
-}
-
-/* noscript */
-.noscript{position:fixed;inset:0;z-index:20;display:flex;align-items:center;
-  justify-content:center;background:var(--black);padding:0 8vw;text-align:center;}
+@media(prefers-reduced-motion:reduce){ .enter{animation:none;} #hint .a{animation:none;} }
 </style>
 </head>
 <body>
 
-<!-- Lienzo de la grieta -->
-<div id="bg"></div>
+<div id="stage"><canvas id="seq"></canvas></div>
 <div id="vignette"></div>
+<div id="scan"></div>
 <div id="grain"></div>
 
-<!-- Pista que da recorrido de scroll -->
 <div id="track" aria-hidden="true"></div>
 
-<!-- Marca + skip persistente (a11y, siempre alcanzable) -->
-<a class="brand" href="home.html">HG — HUMAN GLITCHE</a>
-<!-- PUBLICACIÓN: href real al home lo define el humano (posible rename index→home). -->
+<a class="brand" href="home.html"><b>HUMAN</b> GLITCHE · STUDIO</a>
 <a class="skip" href="home.html" id="skip">ENTRAR ↵</a>
 
-<!-- Overlays de la experiencia -->
+<!-- Beats narrativos (voz para clientes) -->
 <div id="overlay" aria-hidden="true">
-  <!-- Beats de texto (voz HG) -->
-  <div class="beat" data-from="0.04" data-to="0.20">
-    <h2>HAY UNA <span class="acc">GRIETA</span><br>EN LA INTERFAZ<br>DE LA REALIDAD</h2>
+  <div class="beat" data-from="0.05" data-to="0.20">
+    <div class="bk">Estudio de contenido visual</div>
+    <h2>TODA GIRA,<br>TODA MARCA,<br>ES UNA <span class="ac">INTERFAZ</span></h2>
   </div>
   <div class="beat" data-from="0.26" data-to="0.42">
-    <h2>LA MAYORÍA<br>NO LA <span class="gl">VE</span></h2>
+    <div class="bk">El problema</div>
+    <h2>LA MAYORÍA<br>LA DEJA EN MANOS<br>DE <span class="gl">PLANTILLAS</span></h2>
   </div>
   <div class="beat" data-from="0.48" data-to="0.64">
-    <h2>NOSOTROS<br>LA <span class="acc">REDISEÑAMOS</span></h2>
+    <div class="bk">Lo que hacemos</div>
+    <h2>NOSOTROS DISEÑAMOS<br>LA <span class="ac">EXPERIENCIA</span><br>QUE TU PÚBLICO VA A VIVIR</h2>
   </div>
   <div class="beat" data-from="0.68" data-to="0.82">
-    <h2>DEL OTRO LADO<br>SE <span class="acc">CREA</span></h2>
+    <div class="bk">Cómo</div>
+    <h2>MAPPING · VFX<br>3D · IA<br><span class="ac">EN VIVO Y EN PANTALLA</span></h2>
   </div>
 </div>
 
-<!-- Hint de scroll -->
-<div id="hint">SCROLLEÁ<span class="arrow">↓</span></div>
+<div id="creds">
+  <div class="c"><b>80×200 M</b>Mapping · Proyecto Marea</div>
+  <div class="c"><b>TOMORROWLAND</b>Malena Narvay · 2025</div>
+  <div class="c"><b>LOLLA</b>Luck Ra · Lil Cake · Oscu</div>
+</div>
 
-<!-- CLÍMAX: logo + ENTRAR -->
+<div id="hint">SCROLLEÁ<span class="a">↓</span></div>
+
+<!-- Clímax -->
 <div id="climax">
-  <div class="logo-hg">HUMAN<br><span class="g">GLITCHE</span></div>
-  <div class="logo-tag">DEL OTRO LADO DE LA GRIETA</div>
-  <!-- ENTRAR: <a> real, accesible por teclado y foco visible.
-       PUBLICACIÓN: el path real al home lo define el humano; la antesala
-       será la nueva puerta (posible rename de index→home). Placeholder: -->
+  <div class="logo">HUMAN<br><span class="g">GLITCHE</span></div>
+  <div class="ctag">El estudio que crea el <b>contenido de más alta calidad</b><br>para marcas y artistas masivos.</div>
   <a class="enter" href="home.html" id="enter">ENTRAR <span class="ch">↵</span></a>
 </div>
 
-<!-- FALLBACK estático (reduced-motion / sin-WebGL / error de carga) -->
+<!-- Fallback -->
 <div id="fallback" role="dialog" aria-label="Entrada a Human Glitche">
-  <div class="fb-crack" aria-hidden="true"></div>
-  <div class="logo-hg">HUMAN<br><span class="g">GLITCHE</span></div>
-  <div class="logo-tag">HAY UNA GRIETA EN LA INTERFAZ DE LA REALIDAD</div>
+  <img src="antesala-cine/frames/f_110.jpg" alt="" aria-hidden="true">
+  <div class="logo">HUMAN<br><span class="g">GLITCHE</span></div>
+  <div class="ctag">Contenido visual de altísima calidad para marcas y artistas.</div>
   <a class="enter" href="home.html">ENTRAR <span class="ch">↵</span></a>
 </div>
 
-<noscript><div class="noscript">
-  <div class="logo-hg" style="font-family:'Bebas Neue',sans-serif;font-size:4rem;">HUMAN <span style="color:#b8ff00;">GLITCHE</span><br>
-  <a href="home.html" style="color:#050505;background:#b8ff00;padding:.6rem 2rem;text-decoration:none;font-size:1.6rem;">ENTRAR</a></div>
-</div></noscript>
+<script>
+(function(){
+  'use strict';
+  var N = 145, PAD = 3, DIR = 'antesala-cine/frames/f_', EXT = '.jpg';
+  var REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-<!-- ───────────────────────── importmap + módulos ───────────────────────── -->
-<script type="importmap">
-{
-  "imports": {
-    "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
-    "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+  var canvas = document.getElementById('seq');
+  var ctx = canvas.getContext ? canvas.getContext('2d') : null;
+
+  // ── Fallback duro: sin canvas o reduced-motion ──────────────────────
+  function fallback(){ document.getElementById('fallback').classList.add('on'); }
+  if(!ctx || REDUCED){ buildLoader(true); fallback(); return; }
+
+  // ── Loader (se inyecta para no ensuciar el HTML) ────────────────────
+  var loEl, loPct, loBar;
+  function buildLoader(skip){
+    loEl = document.createElement('div'); loEl.id='loader';
+    loEl.innerHTML =
+      '<div class="lk">Inicializando interfaz</div>'+
+      '<div class="lpct"><span class="n">0</span><span class="pc">%</span></div>'+
+      '<div class="lbar"><i></i></div>'+
+      '<div class="lsub">Human Glitche — Visual Studio</div>';
+    document.body.appendChild(loEl);
+    loPct = loEl.querySelector('.lpct .n'); loBar = loEl.querySelector('.lbar i');
+    if(skip){ loEl.classList.add('done'); }
   }
-}
-</script>
+  buildLoader(false);
 
-<!-- Lenis (scroll suave) por CDN clásico; degradamos a scroll nativo si falla -->
-<script src="https://unpkg.com/lenis@1.0.42/dist/lenis.min.js"></script>
-
-<script type="module">
-// ───────────────────────────────────────────────────────────────────────────
-//  ANTESALA — GRIETA / TÚNEL GLITCH · Human Glitche
-//  Progreso de scroll 0→1 maneja: posición de cámara por la curva del túnel +
-//  intensidad de glitch/aberración + apertura final en luz ácida.
-// ───────────────────────────────────────────────────────────────────────────
-
-const REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-const IS_MOBILE = window.matchMedia('(max-width: 760px)').matches
-               || window.matchMedia('(pointer: coarse)').matches;
-
-// Expuesto para verificación/headless.
-window.__antesala = { progress: 0, mode: 'init', rafActive: false, frames: 0 };
-
-const els = {
-  hint:    document.getElementById('hint'),
-  climax:  document.getElementById('climax'),
-  fallback:document.getElementById('fallback'),
-  beats:   Array.from(document.querySelectorAll('.beat')),
-};
-
-// ── Fallback estático: reduced-motion → no corremos la escena pesada ─────────
-function showFallback(reason){
-  window.__antesala.mode = 'fallback:' + reason;
-  els.fallback.classList.add('on');
-  els.hint && (els.hint.style.display = 'none');
-  // climax/ beats no hacen falta: ENTRAR es inmediato en el fallback.
-}
-
-if (REDUCED){
-  showFallback('reduced-motion');
-} else {
-  bootWebGL();
-}
-
-// ── Detección de soporte WebGL ───────────────────────────────────────────────
-function hasWebGL(){
-  try {
-    const c = document.createElement('canvas');
-    return !!(window.WebGLRenderingContext &&
-      (c.getContext('webgl') || c.getContext('experimental-webgl')));
-  } catch(e){ return false; }
-}
-
-async function bootWebGL(){
-  if (!hasWebGL()){ showFallback('no-webgl'); return; }
-
-  let THREE, EffectComposer, RenderPass, ShaderPass, UnrealBloomPass;
-  try {
-    THREE = await import('three');
-    ({ EffectComposer } = await import('three/addons/postprocessing/EffectComposer.js'));
-    ({ RenderPass }     = await import('three/addons/postprocessing/RenderPass.js'));
-    ({ ShaderPass }     = await import('three/addons/postprocessing/ShaderPass.js'));
-    ({ UnrealBloomPass }= await import('three/addons/postprocessing/UnrealBloomPass.js'));
-  } catch(err){
-    console.warn('[antesala] Three.js no cargó; fallback estático.', err);
-    showFallback('three-load-error');
-    return;
+  // ── Precarga de frames ──────────────────────────────────────────────
+  var frames = new Array(N), loaded = 0, ready = false;
+  function pad(i){ i=String(i); while(i.length<PAD) i='0'+i; return i; }
+  function onOne(){
+    loaded++;
+    var pct = Math.round(loaded/N*100);
+    if(loPct) loPct.textContent = pct;
+    if(loBar) loBar.style.width = pct+'%';
+    if(loaded===1){ draw(0); }                 // pinta el primero apenas llega
+    if(loaded>=N && !ready){ ready=true; finishLoad(); }
+  }
+  for(var i=0;i<N;i++){
+    var im = new Image();
+    im.onload = onOne;
+    im.onerror = onOne;                         // un frame que falle no traba la carga
+    im.src = DIR + pad(i+1) + EXT;
+    frames[i] = im;
   }
 
-  try {
-    runScene(THREE, { EffectComposer, RenderPass, ShaderPass, UnrealBloomPass });
-  } catch(err){
-    console.error('[antesala] error montando la escena; fallback estático.', err);
-    showFallback('scene-error');
-  }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-function runScene(THREE, P){
-  window.__antesala.mode = 'webgl';
-
-  const container = document.getElementById('bg');
-  const renderer = new THREE.WebGLRenderer({ antialias: !IS_MOBILE, powerPreference:'high-performance' });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  // v2 · MÁS OSCURIDAD: negro casi puro + tone mapping con exposición baja para
-  // hundir las medias y dejar que solo la luz ácida resalte (void con vida).
-  renderer.setClearColor(0x020203, 1);
-  renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 0.82;
-  container.appendChild(renderer.domElement);
-
-  const scene = new THREE.Scene();
-  // v2 · niebla más densa: profundiza el negro y come el fondo, más contraste.
-  scene.fog = new THREE.FogExp2(0x020203, 0.135);
-
-  const camera = new THREE.PerspectiveCamera(72, window.innerWidth/window.innerHeight, 0.1, 100);
-
-  // ── v2 · NEBULOSA de fondo (antesala-assets/nebula.jpg) ────────────────────────────
-  // Esfera grande BackSide DETRÁS de todo, muy atenuada (color oscuro multiplica
-  // la textura), con parallax sutil por scroll + mouse. Si la textura no carga,
-  // la escena sigue (best-effort): no es un punto de fallo.
-  let nebula = null, nebulaTex = null, nebulaMat = null, nebulaGeo = null;
-  try {
-    nebulaGeo = new THREE.SphereGeometry(60, 40, 24);
-    nebulaMat = new THREE.MeshBasicMaterial({
-      side: THREE.BackSide, fog: false, depthWrite: false,
-      color: new THREE.Color(0x2a2433), // multiplica → mantiene la nebulosa oscura
-      transparent: true, opacity: 0.9,
-    });
-    nebula = new THREE.Mesh(nebulaGeo, nebulaMat);
-    nebula.renderOrder = -10; // se dibuja primero, detrás de todo
-    scene.add(nebula);
-    const loader = new THREE.TextureLoader();
-    loader.load(
-      'antesala-assets/nebula.jpg',
-      (tex) => {
-        if (tex.colorSpace !== undefined && THREE.SRGBColorSpace) tex.colorSpace = THREE.SRGBColorSpace;
-        tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-        nebulaTex = tex;
-        nebulaMat.map = tex;
-        nebulaMat.needsUpdate = true;
-      },
-      undefined,
-      () => { console.warn('[antesala] nebula.jpg no cargó; fondo queda en color sólido oscuro.'); }
-    );
-  } catch(e){ /* nebulosa es decorativa: nunca rompe la escena */ }
-
-  // ── La GRIETA: curva CatmullRom serpenteante + TubeGeometry ───────────────
-  const pts = [];
-  const SEG = IS_MOBILE ? 14 : 22;
-  for (let i=0;i<=SEG;i++){
-    const t = i/SEG;
-    pts.push(new THREE.Vector3(
-      Math.sin(t*Math.PI*3.0)*1.7 + Math.sin(t*Math.PI*7.0)*0.5,
-      Math.cos(t*Math.PI*2.3)*1.4 + Math.cos(t*Math.PI*5.0)*0.4,
-      -t*60
-    ));
-  }
-  const curve = new THREE.CatmullRomCurve3(pts);
-  const tubularSeg = IS_MOBILE ? 240 : 480;
-  const radialSeg  = IS_MOBILE ? 16 : 28;
-  const tubeGeo = new THREE.TubeGeometry(curve, tubularSeg, 1.25, radialSeg, false);
-
-  // Shader de las paredes del túnel: ruido + scanlines + venas ácidas + apertura.
-  const tubeMat = new THREE.ShaderMaterial({
-    side: THREE.BackSide,
-    transparent: true,
-    uniforms: {
-      uTime:    { value: 0 },
-      uProg:    { value: 0 },   // progreso 0→1
-      uOpen:    { value: 0 },   // apertura del clímax 0→1
-      uAcid:    { value: new THREE.Color(0xb8ff00) },
-      uGlitchC: { value: new THREE.Color(0xff2d55) },
-    },
-    vertexShader: /* glsl */`
-      varying vec2 vUv;
-      varying float vZ;
-      void main(){
-        vUv = uv;
-        vec4 mv = modelViewMatrix * vec4(position,1.0);
-        vZ = -mv.z;
-        gl_Position = projectionMatrix * mv;
-      }`,
-    fragmentShader: /* glsl */`
-      precision highp float;
-      varying vec2 vUv;
-      varying float vZ;
-      uniform float uTime, uProg, uOpen;
-      uniform vec3 uAcid, uGlitchC;
-
-      // hash + ruido valor
-      float hash(vec2 p){ return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453); }
-      float noise(vec2 p){
-        vec2 i=floor(p), f=fract(p);
-        float a=hash(i), b=hash(i+vec2(1.,0.)), c=hash(i+vec2(0.,1.)), d=hash(i+vec2(1.,1.));
-        vec2 u=f*f*(3.-2.*f);
-        return mix(a,b,u.x)+(c-a)*u.y*(1.-u.x)+(d-b)*u.x*u.y;
-      }
-      void main(){
-        // u corre alrededor del tubo, v a lo largo
-        vec2 uv = vUv;
-        float t = uTime;
-
-        // textura base oscura con ruido en movimiento (la "realidad" digital)
-        float n = noise(vec2(uv.x*20.0, uv.y*80.0 - t*2.2));
-        float n2 = noise(vec2(uv.x*6.0 + t*0.3, uv.y*30.0 - t*0.8));
-        vec3 base = vec3(0.015,0.018,0.022) + n*0.05 + n2*0.04;
-
-        // scanlines viajando
-        float scan = sin((uv.y*900.0) - t*8.0)*0.5+0.5;
-        base += scan*0.025;
-
-        // VENAS ácidas: líneas finas serpenteantes que laten
-        float vein = 0.0;
-        for(int k=0;k<3;k++){
-          float fk = float(k);
-          float center = fract(0.18 + fk*0.31 + sin(uv.y*3.0 + t*0.5 + fk)*0.06);
-          float d = abs(fract(uv.x - center + 0.5) - 0.5);
-          float pulse = 0.5 + 0.5*sin(uv.y*22.0 - t*4.0 + fk*2.0);
-          vein += smoothstep(0.012, 0.0, d) * (0.4 + pulse*0.6);
-        }
-        vec3 col = base + uAcid * vein * 0.9;
-
-        // destellos rojos de glitch ocasionales en bandas
-        float gb = step(0.985, hash(vec2(floor(uv.y*40.0), floor(t*6.0))));
-        col += uGlitchC * gb * 0.5;
-
-        // CLÍMAX: la boca del túnel se llena de luz ácida (depende de uOpen)
-        // cuanto más lejos (vZ grande) y más abierto, más resplandor blanco-ácido
-        float far = smoothstep(8.0, 42.0, vZ);
-        vec3 lightAcid = mix(uAcid, vec3(1.0), 0.5);
-        col = mix(col, lightAcid, far * uOpen);
-        col += lightAcid * uOpen * far * 0.8;
-
-        // atenuación por profundidad cercana (refuerza la niebla)
-        float fade = smoothstep(0.0, 3.0, vZ);
-        gl_FragColor = vec4(col, fade*0.96 + uOpen*0.04);
-      }`
-  });
-  const tube = new THREE.Mesh(tubeGeo, tubeMat);
-  scene.add(tube);
-
-  // Luz puntual viajera (le da volumen a las venas)
-  const point = new THREE.PointLight(0xb8ff00, 6, 14, 2);
-  scene.add(point);
-  scene.add(new THREE.AmbientLight(0x0a0a0a, 1));
-
-  // ── Esquirlas / fragmentos flotando (instanced) ──────────────────────────
-  const SHARDS = IS_MOBILE ? 90 : 260;
-  const shardGeo = new THREE.TetrahedronGeometry(0.05, 0);
-  const shardMat = new THREE.MeshBasicMaterial({ color:0xb8ff00, transparent:true, opacity:0.55 });
-  const shards = new THREE.InstancedMesh(shardGeo, shardMat, SHARDS);
-  const dummy = new THREE.Object3D();
-  const shardData = [];
-  for (let i=0;i<SHARDS;i++){
-    const z = -Math.random()*60;
-    const fp = curve.getPointAt(THREE.MathUtils.clamp((-z)/60,0,1));
-    const ang = Math.random()*Math.PI*2;
-    const rad = 0.3 + Math.random()*0.95;
-    shardData.push({
-      x: fp.x + Math.cos(ang)*rad,
-      y: fp.y + Math.sin(ang)*rad,
-      z,
-      rx: Math.random()*Math.PI, ry: Math.random()*Math.PI,
-      spin: 0.2 + Math.random()*0.8,
-      s: 0.5 + Math.random()*1.3,
-    });
-  }
-  scene.add(shards);
-
-  // ── v2 · GALAXIA DE PARTÍCULAS GPU ────────────────────────────────────────
-  // THREE.Points con shader propio. Sprite radial procedural (CanvasTexture, sin
-  // asset externo). AdditiveBlending. Paleta ácido / glitch / blanco frío.
-  // Distribución volumétrica envolviendo el recorrido del túnel (no un plano).
-  // Deriva fluida por CURL-NOISE en el vertex shader (flow-field): respiran y
-  // fluyen. Reacción al scroll: sutil al inicio; en el clímax (0.85→1) convergen
-  // y aceleran hacia la boca de la grieta (sensación de ser absorbido a la luz).
-
-  // sprite radial procedural → CanvasTexture (sin archivo externo)
-  function makeParticleSprite(){
-    const s = 64;
-    const cv = document.createElement('canvas'); cv.width = cv.height = s;
-    const ctx = cv.getContext('2d');
-    const g = ctx.createRadialGradient(s/2, s/2, 0, s/2, s/2, s/2);
-    g.addColorStop(0.0, 'rgba(255,255,255,1)');
-    g.addColorStop(0.25,'rgba(255,255,255,0.65)');
-    g.addColorStop(0.55,'rgba(255,255,255,0.18)');
-    g.addColorStop(1.0, 'rgba(255,255,255,0)');
-    ctx.fillStyle = g; ctx.fillRect(0,0,s,s);
-    const tex = new THREE.CanvasTexture(cv);
-    if (tex.colorSpace !== undefined && THREE.SRGBColorSpace) tex.colorSpace = THREE.SRGBColorSpace;
-    return tex;
-  }
-  const sprite = makeParticleSprite();
-
-  const STARS = IS_MOBILE ? 1800 : 7000;   // conteo escalado por dispositivo
-  const sPos   = new Float32Array(STARS*3); // posición base (sobre/junto a la curva)
-  const sSeed  = new Float32Array(STARS);   // semilla por partícula (fase de flujo)
-  const sSize  = new Float32Array(STARS);   // tamaño base
-  const sCol   = new Float32Array(STARS*3); // color (paleta)
-  const sTarget= new Float32Array(STARS*3); // punto de convergencia (boca de grieta)
-
-  const COL_ACID  = new THREE.Color(0xb8ff00);
-  const COL_GLITCH= new THREE.Color(0xff2d55);
-  const COL_COLD  = new THREE.Color(0xcfe6ff); // blanco frío
-  const mouthPt   = curve.getPointAt(0.998);    // boca de la grieta (destino)
-
-  for (let i=0;i<STARS;i++){
-    // distribuir alrededor del recorrido del túnel → nube volumétrica envolvente
-    const ct = Math.random();
-    const base = curve.getPointAt(ct);
-    const ang = Math.random()*Math.PI*2;
-    // radio: anillo grueso fuera de las paredes del tubo (envuelve, no rellena el centro)
-    const rad = 1.8 + Math.pow(Math.random(), 0.6)*7.0;
-    sPos[i*3+0] = base.x + Math.cos(ang)*rad;
-    sPos[i*3+1] = base.y + Math.sin(ang)*rad;
-    sPos[i*3+2] = base.z + (Math.random()-0.5)*3.0;
-
-    sTarget[i*3+0] = mouthPt.x + (Math.random()-0.5)*0.6;
-    sTarget[i*3+1] = mouthPt.y + (Math.random()-0.5)*0.6;
-    sTarget[i*3+2] = mouthPt.z + 2.0 + Math.random()*2.0;
-
-    sSeed[i] = Math.random()*1000.0;
-    sSize[i] = (IS_MOBILE ? 9.0 : 13.0) * (0.5 + Math.random()*1.4);
-
-    // paleta: mayoría blanco frío tenue, acentos ácido, pocos glitch
-    const r = Math.random();
-    const c = r < 0.16 ? COL_ACID : (r < 0.22 ? COL_GLITCH : COL_COLD);
-    sCol[i*3+0] = c.r; sCol[i*3+1] = c.g; sCol[i*3+2] = c.b;
+  function finishLoad(){
+    if(loEl) loEl.classList.add('done');
+    document.getElementById('hint').style.opacity = '1';
+    render();
   }
 
-  const starGeo = new THREE.BufferGeometry();
-  starGeo.setAttribute('position',  new THREE.BufferAttribute(sPos, 3));
-  starGeo.setAttribute('aSeed',     new THREE.BufferAttribute(sSeed, 1));
-  starGeo.setAttribute('aSize',     new THREE.BufferAttribute(sSize, 1));
-  starGeo.setAttribute('aColor',    new THREE.BufferAttribute(sCol, 3));
-  starGeo.setAttribute('aTarget',   new THREE.BufferAttribute(sTarget, 3));
-
-  const starMat = new THREE.ShaderMaterial({
-    transparent: true,
-    depthWrite: false,
-    blending: THREE.AdditiveBlending,
-    uniforms: {
-      uTime:    { value: 0 },
-      uProg:    { value: 0 },   // progreso de scroll 0→1
-      uConverge:{ value: 0 },   // 0→1 en el clímax: absorción a la boca
-      uFlash:   { value: 0 },   // STROBO seguro: pulso de brillo parcial 0→~0.6
-      uSprite:  { value: sprite },
-      uPixelR:  { value: Math.min(window.devicePixelRatio || 1, 2) },
-    },
-    vertexShader: /* glsl */`
-      precision highp float;
-      attribute float aSeed;
-      attribute float aSize;
-      attribute vec3  aColor;
-      attribute vec3  aTarget;
-      uniform float uTime, uProg, uConverge;
-      varying vec3 vColor;
-      varying float vGlow;
-
-      // ── curl-noise barato (gradiente de ruido valor) para flujo orgánico ────
-      vec3 hash3(vec3 p){
-        p = vec3(dot(p,vec3(127.1,311.7,74.7)),
-                 dot(p,vec3(269.5,183.3,246.1)),
-                 dot(p,vec3(113.5,271.9,124.6)));
-        return fract(sin(p)*43758.5453)*2.0-1.0;
-      }
-      float vnoise(vec3 p){
-        vec3 i=floor(p), f=fract(p);
-        vec3 u=f*f*(3.0-2.0*f);
-        float n000=dot(hash3(i+vec3(0,0,0)),f-vec3(0,0,0));
-        float n100=dot(hash3(i+vec3(1,0,0)),f-vec3(1,0,0));
-        float n010=dot(hash3(i+vec3(0,1,0)),f-vec3(0,1,0));
-        float n110=dot(hash3(i+vec3(1,1,0)),f-vec3(1,1,0));
-        float n001=dot(hash3(i+vec3(0,0,1)),f-vec3(0,0,1));
-        float n101=dot(hash3(i+vec3(1,0,1)),f-vec3(1,0,1));
-        float n011=dot(hash3(i+vec3(0,1,1)),f-vec3(0,1,1));
-        float n111=dot(hash3(i+vec3(1,1,1)),f-vec3(1,1,1));
-        return mix(mix(mix(n000,n100,u.x),mix(n010,n110,u.x),u.y),
-                   mix(mix(n001,n101,u.x),mix(n011,n111,u.x),u.y),u.z);
-      }
-      vec3 curl(vec3 p){
-        float e=0.35;
-        vec3 dx=vec3(e,0.,0.), dy=vec3(0.,e,0.), dz=vec3(0.,0.,e);
-        float x = vnoise(p+dy)-vnoise(p-dy) - (vnoise(p+dz)-vnoise(p-dz));
-        float y = vnoise(p+dz)-vnoise(p-dz) - (vnoise(p+dx)-vnoise(p-dx));
-        float z = vnoise(p+dx)-vnoise(p-dx) - (vnoise(p+dy)-vnoise(p-dy));
-        return vec3(x,y,z);
-      }
-
-      void main(){
-        vColor = aColor;
-        vec3 pos = position;
-
-        // DERIVA FLUIDA: flow-field por curl-noise; amplitud baja, respira.
-        float ph = uTime*0.18 + aSeed;
-        vec3 flow = curl(pos*0.16 + vec3(0.0,0.0,ph));
-        float drift = 0.6 + 0.4*sin(uTime*0.5 + aSeed); // respiración
-        pos += flow * drift * 0.9;
-
-        // REACCIÓN AL SCROLL: convergencia/aceleración hacia la boca en el clímax
-        float k = uConverge;
-        // ease cúbico para que la absorción se sienta acelerada, no lineal
-        k = k*k*(3.0-2.0*k);
-        pos = mix(pos, aTarget, k*0.92);
-
-        vec4 mv = modelViewMatrix * vec4(pos,1.0);
-        float dist = -mv.z;
-        gl_Position = projectionMatrix * mv;
-
-        // atenuación de tamaño por distancia + leve crecimiento al converger
-        float size = aSize * (1.0 + uConverge*0.6);
-        gl_PointSize = size * (12.0 / max(dist, 0.6));
-        gl_PointSize = clamp(gl_PointSize, 0.0, 90.0);
-
-        // glow: más cerca y más convergido → más brillo
-        vGlow = (1.0 - smoothstep(0.0, 40.0, dist)) * (0.55 + uConverge*0.65);
-      }`,
-    fragmentShader: /* glsl */`
-      precision highp float;
-      uniform sampler2D uSprite;
-      uniform float uFlash;
-      varying vec3 vColor;
-      varying float vGlow;
-      void main(){
-        float a = texture2D(uSprite, gl_PointCoord).a;
-        if (a < 0.01) discard;
-        // STROBO seguro: el flash sube el brillo de las partículas de forma
-        // PARCIAL (tinte de su propio color, no blanco full-screen). Amplitud
-        // moderada — el factor máximo del flash es ~0.6, sumado con rampa suave.
-        vec3 col = vColor * (vGlow + uFlash*0.6);
-        gl_FragColor = vec4(col, a);
-      }`,
-  });
-  const stars = new THREE.Points(starGeo, starMat);
-  stars.frustumCulled = false;
-  scene.add(stars);
-
-  // ── Postprocesado: RenderPass + glitch/aberración propio + bloom ──────────
-  const composer = new P.EffectComposer(renderer);
-  composer.addPass(new P.RenderPass(scene, camera));
-
-  const GlitchShader = {
-    uniforms: {
-      tDiffuse: { value: null },
-      uTime:    { value: 0 },
-      uAmount:  { value: 0 },   // intensidad de aberración (late)
-      uBurst:   { value: 0 },   // ráfaga de glitch por bloques 0→1
-      uGrain:   { value: 0.06 },
-      uFlash:   { value: 0 },   // STROBO seguro: tinte ácido/glitch PARCIAL 0→~1
-      uFlashC:  { value: new THREE.Color(0xb8ff00) }, // color del destello (nunca blanco)
-      uRes:     { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
-    },
-    vertexShader: /* glsl */`
-      varying vec2 vUv;
-      void main(){ vUv = uv; gl_Position = projectionMatrix*modelViewMatrix*vec4(position,1.0); }`,
-    fragmentShader: /* glsl */`
-      precision highp float;
-      varying vec2 vUv;
-      uniform sampler2D tDiffuse;
-      uniform float uTime, uAmount, uBurst, uGrain, uFlash;
-      uniform vec3 uFlashC;
-      uniform vec2 uRes;
-      float rand(vec2 c){ return fract(sin(dot(c,vec2(12.9898,78.233)))*43758.5453); }
-      void main(){
-        vec2 uv = vUv;
-
-        // ráfaga: desplazamiento de bloques horizontales
-        float blockLine = floor(uv.y*28.0);
-        float r = rand(vec2(blockLine, floor(uTime*12.0)));
-        float shift = (r-0.5) * uBurst * 0.12 * step(0.6, r);
-        uv.x += shift;
-
-        // ABERRACIÓN CROMÁTICA (RGB shift) que late, mayor hacia los bordes
-        vec2 dir = uv - 0.5;
-        float edge = dot(dir,dir);
-        float a = (uAmount*0.006) + edge*(uAmount*0.02) + uBurst*0.01;
-        float cr = texture2D(tDiffuse, uv + vec2(a, 0.0)).r;
-        float cg = texture2D(tDiffuse, uv).g;
-        float cb = texture2D(tDiffuse, uv - vec2(a, 0.0)).b;
-        vec3 col = vec3(cr,cg,cb);
-
-        // línea de scan ocasional brillante en la ráfaga
-        col += vec3(0.0,1.0,0.0) * step(0.97, rand(vec2(floor(uv.y*120.0), floor(uTime*20.0)))) * uBurst * 0.18;
-
-        // FILM GRAIN sutil
-        float g = rand(uv*uRes*0.5 + uTime);
-        col += (g-0.5) * uGrain;
-
-        // ── STROBO SEGURO (full-screen-safe) ──────────────────────────────
-        // El destello NO es un blanco a pantalla completa: es un TINTE del color
-        // ácido/glitch, modulado por una máscara espacial (más fuerte en los
-        // bordes/viñeta y casi nulo en el centro). Amplitud capada (uFlash llega
-        // como máximo a ~1 desde el controlador, y aquí se atenúa a *0.5 con la
-        // máscara). screen-blend para que NUNCA blanquee la imagen entera.
-        vec2 d = uv - 0.5;
-        float mask = smoothstep(0.06, 0.5, dot(d,d)*2.2); // 0 en el centro, ~1 en bordes
-        float fl = uFlash * mask * 0.5;
-        col = col + (uFlashC - col) * fl;   // tira hacia el color del destello, parcial
-
-        gl_FragColor = vec4(col, 1.0);
-      }`
-  };
-  const glitchPass = new P.ShaderPass(GlitchShader);
-  composer.addPass(glitchPass);
-
-  const bloom = new P.UnrealBloomPass(
-    new THREE.Vector2(window.innerWidth, window.innerHeight),
-    0.6,   // strength (se sube en el clímax)
-    0.8,   // radius
-    0.7    // threshold
-  );
-  composer.addPass(bloom);
-
-  // ── Scroll suave (Lenis) con fallback a scroll nativo ─────────────────────
-  // v2 · scroll MÁS SEDOSO: lerp más bajo + duration + easing exponencial.
-  let lenis = null;
-  if (window.Lenis){
-    lenis = new window.Lenis({
-      lerp: 0.055,
-      duration: 1.25,
-      smoothWheel: true,
-      wheelMultiplier: 0.9,
-      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-    });
+  // ── Dibujo cover ─────────────────────────────────────────────────────
+  var vw=0, vh=0, dpr=Math.min(devicePixelRatio||1, 2);
+  function resize(){
+    vw=innerWidth; vh=innerHeight;
+    canvas.width=vw*dpr; canvas.height=vh*dpr;
+    canvas.style.width=vw+'px'; canvas.style.height=vh+'px';
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    draw(curFrame);
   }
-  function scrollProgress(){
-    const max = document.documentElement.scrollHeight - window.innerHeight;
-    return max > 0 ? Math.min(1, Math.max(0, window.scrollY / max)) : 0;
+  function draw(idx){
+    var im = frames[idx];
+    if(!im || !im.complete || !im.naturalWidth) return;
+    var iw=im.naturalWidth, ih=im.naturalHeight;
+    var s=Math.max(vw/iw, vh/ih);
+    var w=iw*s, h=ih*s, x=(vw-w)/2, y=(vh-h)/2;
+    ctx.fillStyle='#050505'; ctx.fillRect(0,0,vw,vh);
+    ctx.drawImage(im, x, y, w, h);
   }
+  window.addEventListener('resize', resize);
 
-  // ── Beats: mostrar/ocultar por rango de progreso ──────────────────────────
-  function updateBeats(p){
-    for (const b of els.beats){
-      const from = parseFloat(b.dataset.from), to = parseFloat(b.dataset.to);
-      b.classList.toggle('show', p >= from && p <= to);
+  // ── Scroll → progreso → frame ────────────────────────────────────────
+  function progress(){
+    var max=document.documentElement.scrollHeight - innerHeight;
+    return max>0 ? Math.min(1, Math.max(0, scrollY/max)) : 0;
+  }
+  var curFrame=-1, lastP=0;
+  var beats=[].slice.call(document.querySelectorAll('.beat'));
+  var creds=document.getElementById('creds');
+  var climax=document.getElementById('climax');
+  var hint=document.getElementById('hint');
+
+  function render(){
+    var p=progress(); lastP=p;
+    var idx=Math.round(p*(N-1));
+    if(idx!==curFrame){ curFrame=idx; draw(idx); }
+    for(var b=0;b<beats.length;b++){
+      var el=beats[b];
+      el.classList.toggle('show', p>=+el.dataset.from && p<=+el.dataset.to);
     }
+    creds.classList.toggle('show', p>0.80 && p<0.97);
+    climax.classList.toggle('show', p>0.90);
+    hint.style.opacity = p>0.04 ? '0' : '1';
   }
 
-  // ── Parallax de mouse (suave) para la nebulosa de fondo ───────────────────
-  const mouse = { x: 0, y: 0, tx: 0, ty: 0 };
-  window.addEventListener('pointermove', (e)=>{
-    mouse.tx = (e.clientX / window.innerWidth  - 0.5) * 2;
-    mouse.ty = (e.clientY / window.innerHeight - 0.5) * 2;
-  }, { passive: true });
+  // render DIRECTO en cada scroll (un drawImage; saltea si es el mismo frame).
+  // No depende de un loop rAF continuo → funciona también en tabs sin foco.
+  addEventListener('scroll', render, {passive:true});
+  addEventListener('resize', function(){ resize(); render(); });
 
-  // ── STROBO SEGURO · controlador con cuota de frecuencia ───────────────────
-  // SEGURIDAD FOTOSENSIBLE (los 4 puntos):
-  //  (a) Bajo prefers-reduced-motion NO se llega aquí: REDUCED cae a fallback
-  //      estático antes de bootWebGL(), así que el strobo jamás corre.
-  //  (b) FRECUENCIA CAPADA < 3 flashes/s: un destello solo puede dispararse si
-  //      pasaron >= MIN_FLASH_GAP segundos desde el anterior (0.34s ≈ 2.9/s máx).
-  //  (c) SIN flash blanco full-screen: el pulso pinta un TINTE ácido/glitch
-  //      PARCIAL con máscara espacial (centro casi intacto) y sube bloom/
-  //      partículas de forma localizada — nunca un blanco que cubra el viewport.
-  //  (d) AMPLITUD MODERADA con RAMPA: el flash sube/baja por interpolación
-  //      (attack/decay), no salta 0→100% de luminancia de golpe; pico capado.
-  const MIN_FLASH_GAP = 0.34;          // segundos → < 3 flashes por segundo
-  const FLASH_PEAK    = 0.62;          // amplitud máxima del pulso (moderada)
-  let flash = 0;                        // valor actual del strobo (0..FLASH_PEAK)
-  let lastFlashT = -10;                 // tiempo del último disparo
-  const flashColor = new THREE.Color();
-
-  function maybeFlash(t, glitchEnergy, calm){
-    // se ATAN a PICOS de glitch del recorrido; nada de strobo constante.
-    // disparo probabilístico solo en picos altos, y siempre con cuota de tiempo.
-    if (calm < 0.25) return;                       // en el clímax (calma) no estroboscopa
-    if (t - lastFlashT < MIN_FLASH_GAP) return;    // (b) cuota de frecuencia dura
-    if (glitchEnergy < 0.55) return;               // solo en picos reales de glitch
-    // probabilidad por frame moderada → no se siente metralleta aunque haya energía
-    if (Math.random() > 0.16) return;
-    lastFlashT = t;
-    // color del destello: ácido la mayoría, glitch (rojo) de vez en cuando
-    flashColor.copy(Math.random() < 0.3 ? COL_GLITCH : COL_ACID);
-  }
-
-  // ── Loop ──────────────────────────────────────────────────────────────────
-  const clock = new THREE.Clock();
-  let running = true;
-  let smoothP = 0;
-  // uniforms suavizados (transiciones orgánicas, no escalones)
-  let sAberr = 0, sBurst = 0, sBloom = 0.55, sConverge = 0;
-
-  function frame(time){
-    if (!running) return;
-    requestAnimationFrame(frame);
-    window.__antesala.rafActive = true;
-    window.__antesala.frames++;
-
-    if (lenis) lenis.raf(time);
-    const t = clock.getElapsedTime();
-
-    // progreso (suavizado extra por si no hay Lenis)
-    const target = scrollProgress();
-    smoothP += (target - smoothP) * 0.12;
-    const p = smoothP;
-    window.__antesala.progress = p;
-
-    // CÁMARA: viaja por la curva. Reservamos el final para la apertura.
-    // v2 · easing suave del recorrido para que no se sienta mecánico.
-    const eased = p*p*(3.0 - 2.0*p);            // smoothstep sobre el progreso
-    const camT = Math.min(0.965, eased * 0.92);
-    const pos = curve.getPointAt(camT);
-    const look = curve.getPointAt(Math.min(0.999, camT + 0.03));
-    camera.position.copy(pos);
-    camera.lookAt(look);
-    // leve cabeceo orgánico + micro-parallax de mouse (más vida)
-    camera.position.x += Math.sin(t*0.7)*0.04 + mouse.x*0.05;
-    camera.position.y += Math.cos(t*0.9)*0.04 - mouse.y*0.05;
-
-    point.position.copy(curve.getPointAt(Math.min(0.999, camT + 0.02)));
-
-    // GLITCH respira: base + latido + picos pseudo-aleatorios; calma en el clímax
-    const open = THREE.MathUtils.clamp((p - 0.85) / 0.15, 0, 1); // apertura final
-    const calm = 1.0 - open;                                     // el glitch se calma
-    const breathe = 0.5 + 0.5*Math.sin(t*1.7);
-    const spike = Math.max(0, Math.sin(t*0.6)) * Math.max(0, Math.sin(t*2.3));
-    const aberr = (0.6 + breathe*0.7 + spike*1.4) * calm;
-    const burst = Math.pow(Math.max(0, Math.sin(t*0.5)*Math.sin(t*1.9+1.0)), 6.0) * calm;
-
-    // v2 · transiciones SUAVIZADAS (lerp por frame) → más orgánico, no escalones
-    sAberr += (aberr - sAberr) * 0.12;
-    sBurst += (burst - sBurst) * 0.16;
-
-    glitchPass.uniforms.uTime.value = t;
-    glitchPass.uniforms.uAmount.value = sAberr;
-    glitchPass.uniforms.uBurst.value = sBurst;
-
-    // ── STROBO SEGURO: energía de glitch = picos de burst + ráfagas de aberr ──
-    const glitchEnergy = Math.min(1, sBurst*1.6 + Math.max(0, spike-0.4)*1.2);
-    maybeFlash(t, glitchEnergy, calm);
-    // (d) rampa: attack rápido cuando se acaba de disparar, decay suave siempre.
-    const flashTarget = (t - lastFlashT < 0.05) ? FLASH_PEAK : 0;
-    if (flashTarget > flash) flash += (flashTarget - flash) * 0.6; // attack
-    else                     flash += (flashTarget - flash) * 0.14; // decay suave
-    glitchPass.uniforms.uFlash.value = flash;
-    glitchPass.uniforms.uFlashC.value.copy(flashColor.r ? flashColor : COL_ACID);
-
-    tubeMat.uniforms.uTime.value = t;
-    tubeMat.uniforms.uProg.value = p;
-    tubeMat.uniforms.uOpen.value = open;
-
-    // ── v2 · GALAXIA: deriva fluida + convergencia al clímax + flash parcial ──
-    sConverge += (open - sConverge) * 0.06; // convergencia suavizada
-    starMat.uniforms.uTime.value = t;
-    starMat.uniforms.uProg.value = p;
-    starMat.uniforms.uConverge.value = sConverge;
-    starMat.uniforms.uFlash.value = flash; // mismo pulso, brillo parcial de partículas
-
-    // ── v2 · NEBULOSA: parallax sutil (scroll + mouse), siempre detrás ────────
-    if (nebula){
-      mouse.x += (mouse.tx - mouse.x) * 0.04;
-      mouse.y += (mouse.ty - mouse.y) * 0.04;
-      nebula.position.copy(camera.position);          // centrada en la cámara (cielo)
-      nebula.rotation.y = p*0.25 + mouse.x*0.06;       // parallax por scroll + mouse
-      nebula.rotation.x = mouse.y*0.04;
-      if (nebulaMat) nebulaMat.opacity = 0.85 - open*0.45; // se desvanece al abrir la luz
-    }
-
-    // bloom sube en el clímax (luz ácida); el strobo le suma un toque PARCIAL
-    // y MODERADO (capado), nunca un blanqueo total de pantalla.
-    sBloom += ((0.55 + open*1.7 + flash*0.5) - sBloom) * 0.2;
-    bloom.strength = sBloom;
-
-    // esquirlas: deriva + giro; envolver al frente cuando quedan atrás
-    const camZ = pos.z;
-    for (let i=0;i<SHARDS;i++){
-      const d = shardData[i];
-      d.z -= 0; // las dejamos quietas en Z mundo; la cámara avanza hacia ellas
-      // si la cámara las pasó, reciclar al frente
-      if (d.z > camZ + 2){
-        d.z = camZ - 55 - Math.random()*5;
-      }
-      d.rx += 0.003*d.spin; d.ry += 0.004*d.spin;
-      dummy.position.set(d.x + Math.sin(t*0.4+i)*0.03, d.y + Math.cos(t*0.3+i)*0.03, d.z);
-      dummy.rotation.set(d.rx, d.ry, 0);
-      dummy.scale.setScalar(d.s * (1.0 + open*0.4));
-      dummy.updateMatrix();
-      shards.setMatrixAt(i, dummy.matrix);
-    }
-    shards.instanceMatrix.needsUpdate = true;
-    shardMat.opacity = 0.35 + open*0.5;
-
-    // UI: hint, beats, clímax
-    if (els.hint) els.hint.style.opacity = p > 0.05 ? '0' : '1';
-    updateBeats(p);
-    els.climax.classList.toggle('show', open > 0.55);
-
-    composer.render();
-  }
-  requestAnimationFrame(frame);
-
-  // ── Resize ────────────────────────────────────────────────────────────────
-  function onResize(){
-    const w = window.innerWidth, h = window.innerHeight;
-    camera.aspect = w/h; camera.updateProjectionMatrix();
-    renderer.setSize(w,h);
-    composer.setSize(w,h);
-    glitchPass.uniforms.uRes.value.set(w,h);
-    starMat.uniforms.uPixelR.value = Math.min(window.devicePixelRatio || 1, 2);
-  }
-  window.addEventListener('resize', onResize);
-
-  // ── Pausa con pestaña oculta (visibilitychange) ───────────────────────────
-  document.addEventListener('visibilitychange', ()=>{
-    if (document.hidden){
-      running = false;
-      window.__antesala.rafActive = false;
-    } else if (window.__antesala.mode === 'webgl'){
-      running = true;
-      clock.getDelta(); // descarta el salto de tiempo acumulado
-      requestAnimationFrame(frame);
-    }
-  });
-
-  // ── dispose() al salir (libera geometrías/materiales/GL) ──────────────────
-  function dispose(){
-    running = false;
-    try {
-      tubeGeo.dispose(); tubeMat.dispose();
-      shardGeo.dispose(); shardMat.dispose();
-      // v2 · liberar galaxia + sprite + nebulosa (geo/mat/textura)
-      starGeo.dispose(); starMat.dispose(); sprite.dispose();
-      if (nebulaGeo) nebulaGeo.dispose();
-      if (nebulaMat) nebulaMat.dispose();
-      if (nebulaTex) nebulaTex.dispose();
-      composer.dispose && composer.dispose();
-      renderer.dispose();
-      if (renderer.domElement && renderer.domElement.parentNode)
-        renderer.domElement.parentNode.removeChild(renderer.domElement);
-    } catch(e){ /* best-effort */ }
-    if (lenis && lenis.destroy) lenis.destroy();
-  }
-  window.addEventListener('pagehide', dispose);
-  window.addEventListener('beforeunload', dispose);
-
-  window.__antesala.dispose = dispose;
-}
+  resize(); render();
+  window.__antesalaCine = { get progress(){ return lastP; }, get frame(){ return curFrame; }, get loaded(){ return loaded; }, render:render };
+})();
 </script>
 </body>
 </html>
