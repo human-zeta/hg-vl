@@ -72,7 +72,15 @@ a:hover{color:var(--white);}
 .topbar .back{font-family:var(--mono);font-size:10px;letter-spacing:0.18em;color:var(--ink-faint);}
 
 /* ───── HERO / TESIS ───── */
-.hero{padding:5.5rem 0 3.5rem;}
+.hero{padding:5.5rem 0 3.5rem;position:relative;}
+/* fondo de video full-bleed detrás del texto de entrada (posterholo duki) */
+.hero-bg{position:absolute;top:0;left:50%;transform:translateX(-50%);width:100vw;height:100%;
+  overflow:hidden;z-index:0;pointer-events:none;}
+.hero-bg video{width:100%;height:100%;object-fit:cover;
+  filter:grayscale(0.25) contrast(1.06) brightness(0.88);}
+.hero-bg::after{content:'';position:absolute;inset:0;
+  background:linear-gradient(180deg,rgba(5,5,5,0.50) 0%,rgba(5,5,5,0.60) 45%,rgba(5,5,5,0.94) 100%);}
+.hero .kicker,.hero h1,.hero .lede,.hero .sub,.hero .anchor-frase{position:relative;z-index:2;}
 .kicker{font-family:var(--mono);font-size:11px;letter-spacing:0.32em;color:var(--acid);
   text-transform:uppercase;margin-bottom:1.6rem;}
 .hero h1{font-family:var(--display);font-weight:400;line-height:0.92;letter-spacing:0.01em;
@@ -289,6 +297,11 @@ a:hover{color:var(--white);}
 
 <!-- ════════════ HERO / TESIS ════════════ -->
 <section class="wrap hero">
+  <div class="hero-bg">
+    <video autoplay muted loop playsinline preload="auto" poster="hero/posterholo-duki.jpg" aria-hidden="true">
+      <source src="hero/posterholo-duki.mp4" type="video/mp4">
+    </video>
+  </div>
   <div class="kicker">Archivo / Galería Visual</div>
   <h1>El estudio que hoy crea<br>el contenido de <span class="gl">más alta calidad</span>.</h1>
   <p class="lede">No empezó como agencia. Empezó como alguien <b>creando por gusto</b>: 80 animaciones en Photoshop, sin cliente. Lo que ves acá es a dónde llegó ese impulso.</p>
