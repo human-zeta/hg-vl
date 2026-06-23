@@ -147,6 +147,32 @@ a:hover{color:var(--white);}
 .case .funnel a:hover{background:var(--acid);color:var(--black);}
 .case .funnel .arr{color:var(--ink-faint);margin-left:0.4rem;}
 
+/* ───── CRÉDITOS + STACK DEL CASO ───── */
+.case .credline{font-family:var(--mono);font-size:11px;letter-spacing:0.04em;color:var(--ink-soft);max-width:760px;margin-bottom:0.6rem;}
+.case .credline b{color:var(--white);font-weight:500;}
+.case .toolset{display:flex;flex-wrap:wrap;gap:0.45rem;margin:0 0 1.4rem;}
+.case .toolset .tlbl{font-family:var(--mono);font-size:10px;letter-spacing:0.16em;color:var(--ink-faint);
+  text-transform:uppercase;align-self:center;margin-right:0.2rem;}
+.case .tool{font-family:var(--mono);font-size:10px;letter-spacing:0.08em;color:var(--white);
+  border:1px solid rgba(184,255,0,0.32);border-radius:2px;padding:0.3rem 0.55rem;text-transform:uppercase;
+  background:rgba(184,255,0,0.015);}
+
+/* ───── ESCENAS CON GIF (masonry tolerante a aspectos mixtos) ───── */
+.scenes-lead{font-family:var(--mono);font-size:10px;letter-spacing:0.18em;color:var(--acid);
+  text-transform:uppercase;margin:0.4rem 0 1.1rem;}
+.scenes{column-count:3;column-gap:0.8rem;}
+@media(max-width:880px){.scenes{column-count:2;}}
+@media(max-width:520px){.scenes{column-count:1;}}
+.scene{position:relative;display:block;width:100%;margin:0 0 0.8rem;break-inside:avoid;
+  border:1px solid var(--line);border-radius:3px;overflow:hidden;background:#0b0b0b;}
+.scene img{display:block;width:100%;height:auto;filter:grayscale(0.12) contrast(1.05);transition:filter 0.4s;}
+.scene:hover img{filter:grayscale(0) contrast(1.06);}
+.scene .sscrim{position:absolute;left:0;right:0;bottom:0;height:52%;pointer-events:none;
+  background:linear-gradient(180deg,rgba(5,5,5,0) 0%,rgba(5,5,5,0.82) 100%);}
+.scene .stitle{position:absolute;left:0;right:0;bottom:0;padding:0.6rem 0.7rem;z-index:2;
+  font-family:var(--mono);font-size:10px;letter-spacing:0.04em;color:var(--white);line-height:1.4;}
+.scene .snum{display:block;color:var(--acid);font-size:9px;letter-spacing:0.16em;margin-bottom:2px;text-transform:uppercase;}
+
 /* ───── CRÉDITOS SIN VIDEO ───── */
 .creds{border:1px solid var(--line);border-radius:3px;padding:2rem 1.6rem;margin-top:1rem;}
 .creds .lead{font-family:var(--mono);font-size:11px;letter-spacing:0.16em;color:var(--ink-soft);
@@ -270,22 +296,12 @@ a:hover{color:var(--white);}
   <p class="anchor-frase">Crear por gusto. Dominar el oficio. Enseñarlo. El portfolio no es la prueba del talento: es la prueba de que el talento se volvió red.</p>
 </section>
 
-<!-- ════════════ EL ARCO ════════════ -->
-<section class="wrap narrow">
-  <div class="sec-head">
-    <span class="n">01 — EL ARCO</span>
-    <h2>De crear por gusto<br>a crear el contenido.</h2>
-    <p>Siete etapas. Cada una sostiene un pilar: primero <b>crear y observar</b>, después la <b>maestría</b>, al final <b>enseñar y expandir</b>. El estudio de hoy es la suma de todas.</p>
-  </div>
-  <div id="arco-track"></div>
-</section>
-
 <!-- ════════════ CASOS CON VIDEO ════════════ -->
 <section class="wrap">
   <div class="sec-head">
-    <span class="n">02 — CASOS DESTACADOS</span>
+    <span class="n">01 — CASOS DESTACADOS</span>
     <h2>Qué hizo el estudio.</h2>
-    <p>Trabajos confirmados, con su registro en video. Los videos son de los canales de los artistas y eventos; lo que aportó Human Studio se nombra con precisión, sin adornar. Cada miniatura abre el video al tocarla.</p>
+    <p>Trabajos confirmados — algunos con su registro en video, otros escena por escena. Los videos son de los canales de los artistas y eventos; lo que aportó Human Studio se nombra con precisión, sin adornar. Cada miniatura de video abre al tocarla; las escenas son loops del trabajo entregado.</p>
   </div>
   <div id="casos"></div>
 </section>
@@ -293,7 +309,7 @@ a:hover{color:var(--white);}
 <!-- ════════════ 3D / MOTION — EL MÚSCULO DE RENDER ════════════ -->
 <section class="wrap">
   <div class="sec-head">
-    <span class="n">03 — 3D / MOTION</span>
+    <span class="n">02 — 3D / MOTION</span>
     <h2>El músculo de render.</h2>
     <p>Acá no hay show en vivo: es el <b>motion y el render de marca y artista</b> que produce el estudio. Loops propios, no plantillas de banco. Es la <b>ventaja más difícil de igualar</b> — IA para explorar a alta velocidad, y producción 3D propia para construir con control total lo que la IA no ejecuta con calidad real.</p>
   </div>
@@ -303,7 +319,7 @@ a:hover{color:var(--white);}
     <span class="pilar">✦ Crear — el render propio es el contenido, no comprarlo</span>
     <div id="motion-grid"></div>
     <div class="motion-funnel">
-      <a href="/servicios.html#seccion-managers">¿Necesitás una pieza así? → A2 · Reality Reel (videoclip / contenido de gira)<span class="arr">→</span></a>
+      <a href="../oferta-studio/servicios.html#seccion-managers">¿Necesitás una pieza así? → A2 · Reality Reel (videoclip / contenido de gira)<span class="arr">→</span></a>
     </div>
   </div>
 </section>
@@ -311,7 +327,7 @@ a:hover{color:var(--white);}
 <!-- ════════════ CRÉDITOS SIN VIDEO ════════════ -->
 <section class="wrap narrow">
   <div class="sec-head">
-    <span class="n">04 — TRABAJÓ CON / FUE PARTE DE</span>
+    <span class="n">03 — TRABAJÓ CON / FUE PARTE DE</span>
     <h2>La red.</h2>
     <p>Nunca hizo publicidad de lo que hace — todo llegó por trabajo y por red. Estos son los nombres y colectivos de los que la trayectoria fue parte, más allá de los casos con video.</p>
   </div>
@@ -321,7 +337,7 @@ a:hover{color:var(--white);}
 <!-- ════════════ OBRAS ORIGINALES · EL ORIGEN ════════════ -->
 <section class="wrap narrow">
   <div class="sec-head">
-    <span class="n">05 — EL ORIGEN</span>
+    <span class="n">04 — EL ORIGEN</span>
     <h2>Las 80 obras originales.</h2>
     <p>Antes del primer cliente, antes del primer escenario: animaciones nacidas <b>por gusto en 2018</b>, sin encargo. El germen de todo lo demás. Crear como la forma más profunda de pensamiento (✦). Hoy están minteadas como NFT.</p>
   </div>
@@ -349,8 +365,8 @@ a:hover{color:var(--white);}
     <h2>¿Tu show merece esto?</h2>
     <p>Si armás una gira, lanzás un álbum o montás un show, este estudio diseña la interfaz visual de la experiencia que tu público va a vivir. Del set en vivo al mapping a gran escala, del videoclip a la identidad escénica.</p>
     <div class="btns">
-      <a class="btn primary" href="/servicios.html#seccion-managers">VER LA OFERTA — STUDIO</a>
-      <a class="btn ghost" href="/servicios.html#proceso">CÓMO TRABAJAMOS</a>
+      <a class="btn primary" href="../oferta-studio/servicios.html#seccion-managers">VER LA OFERTA — STUDIO</a>
+      <a class="btn ghost" href="../oferta-studio/servicios.html#proceso">CÓMO TRABAJAMOS</a>
     </div>
   </div>
 </section>
@@ -373,40 +389,6 @@ a:hover{color:var(--white);}
    Fuente: web/galeria-visual/_fuente-trayectoria.md  (relato fiel del autor).
 ═══════════════════════════════════════════════════════════════════════════ */
 
-// ── EL ARCO (7 etapas) ─────────────────────────────────────────────────────
-const ARCO = [
-  { yr:'01 · El origen',
-    h:'Crear por gusto',
-    p:'Empezó haciendo <b>animaciones en Photoshop por gusto</b>: sus <b>80 obras originales</b>. Sin cliente, sin escenario. Solo el impulso de crear.',
-    pilar:'✦ Crear — crear es la forma más profunda de pensamiento' },
-  { yr:'02 · Primeros visuales',
-    h:'VJ en John Doe',
-    p:'Aprendió a hacer visuales e hizo de <b>VJ en un bar llamado John Doe</b>. La primera vez que el contenido se proyectó frente a gente.',
-    pilar:'⌘ Observar — leer la energía de una sala en vivo' },
-  { yr:'03 · Electrónica',
-    h:'Visuales para la pista',
-    p:'Pasó a <b>fiestas de electrónica</b> y le hizo visuales a varios artistas: <b>Kolombo, Mellino, Bastida</b> y varios más.',
-    pilar:'✦ Crear — el oficio en movimiento' },
-  { yr:'04 · Alta precisión',
-    h:'VonHarv',
-    p:'Entró en eventos para un lugar llamado <b>VonHarv</b>, donde se dedican a <b>operar con alta precisión</b>. El salto de hacer visuales a ejecutarlos con rigor.',
-    pilar:'✦ Crear — maestría: precisión bajo presión' },
-  { yr:'05 · La red',
-    h:'El Ghetto Producciones',
-    p:'Siempre, a la par de su avance, fue parte de <b>El Ghetto Producciones</b>, que le acercó muchos trabajos. <b>Nunca hizo publicidad de lo que hace</b> — todo por trabajo y red.',
-    pilar:'☉ Expandir — la red multiplica lo que uno solo no alcanza' },
-  { yr:'06 · Escala masiva',
-    h:'Artistas masivos + mapping a gran escala',
-    p:'Vía El Ghetto llegó a <b>Luck Ra, Lautaro López, Lil Cake, Un Verano</b> y muchas bandas. Y el <b>mapping a gran escala con Proyecto Marea</b>: una superficie de <b>80 m × 200 m</b>.',
-    pilar:'✦ Crear — del bar a 80 × 200 metros' },
-  { yr:'07 · Hoy',
-    h:'Enseñar y crear el contenido',
-    p:'Ya <b>no opera visuales en lugares</b>. Le <b>enseñó a 7 personas</b> que lo hacen, y él se dedica a <b>crear el contenido de más alta calidad</b>.',
-    pilar:'☉ Expandir — ¿estoy creando algo que pueda continuar sin mí?',
-    final:true,
-    closer:'El cierre del arco <b>es</b> el pilar ☉ Expandir respondido: le enseñó a 7 personas y ahora crea el contenido. El talento dejó de depender de él para existir.' }
-];
-
 // ── CASOS CON VIDEO (facade) ───────────────────────────────────────────────
 // Cada caso: nombre, etiqueta, qué aportó HG (factual), nota, y videos {id,kind,title}.
 // FACTUALIDAD: HG aportó mapping / visuales / VFX / contenido — los videos son de
@@ -419,10 +401,41 @@ const CASOS = [
     role:'<b>Mapping de 80 m × 200 m sobre los silos del puerto + show de luces</b> en el Festival Marea (Mar del Plata).',
     factual:'Proyección a gran escala sobre la fachada de los silos. Registro de los videos: canales del festival/evento.',
     funnel:{ texto:'Este nivel de show → A1 · Live Reality (visuales en vivo & mapping)',
-             href:'/servicios.html#seccion-managers' },
+             href:'../oferta-studio/servicios.html#seccion-managers' },
     videos:[
       { id:'UixJ_ggrkoE', kind:'Mapping', title:'MAREA Puerto MDP — Mapping sobre silos' },
       { id:'__Yv6AI9KXI', kind:'Show de luces', title:'Festival MAREA en vivo — show de luces' }
+    ]
+  },
+  {
+    nombre:'Malena Narvay',
+    tag:'VFX con IA · contenido total · Tomorrowland 2025',
+    role:'<b>VFX con IA en los videoclips</b> (Dame Calor, Manada), <b>creación total del contenido</b> para los shows en vivo con <b>SMPTE</b> (Dualidad, AGS Tecnópolis 2025) y el <b>set de pantalla wide screen</b> de su show en <b>Tomorrowland 2025</b> (Bélgica).',
+    factual:'VFX con IA en los videoclips oficiales y contenido propio para los shows en vivo (sincronizados por SMPTE) y la pantalla de gran formato. Los videos son de los canales oficiales de la artista; las escenas son del set entregado.',
+    tools:['Inteligencia Artificial','3D','Premiere'],
+    funnel:{ texto:'VFX + contenido de show → A2 · Reality Reel · A1 · Live Reality',
+             href:'../oferta-studio/servicios.html#seccion-managers' },
+    videos:[
+      { id:'rvpuVnhwp9s', kind:'VFX IA · videoclip', title:'Malena Narvay — DAME CALOR (Video Oficial)' },
+      { id:'D3j9QXKkcoY', kind:'VFX IA · videoclip', title:'Malena Narvay, Oh My Pop! — Manada (Official Video)' },
+      { id:'94wwxbwZ-4g', kind:'En vivo · SMPTE', title:'Malena Narvay — DUALIDAD (Full Band · Live)' },
+      { id:'JdgMZnNayGU', kind:'En vivo · SMPTE', title:'Malena Narvay — AGS Tecnópolis 2025 (Full Band · Live)' }
+    ],
+    escenas:[
+      { gif:'tomorrowland/01.gif', n:'Tomorrowland 2025', title:'Pieza 01' },
+      { gif:'tomorrowland/02.gif', n:'Tomorrowland 2025', title:'Pieza 02' },
+      { gif:'tomorrowland/03.gif', n:'Tomorrowland 2025', title:'Pieza 03' },
+      { gif:'tomorrowland/04.gif', n:'Tomorrowland 2025', title:'Pieza 04' },
+      { gif:'tomorrowland/05.gif', n:'Tomorrowland 2025', title:'Pieza 05' },
+      { gif:'tomorrowland/06.gif', n:'Tomorrowland 2025', title:'Pieza 06' },
+      { gif:'tomorrowland/07.gif', n:'Tomorrowland 2025', title:'Pieza 07' },
+      { gif:'tomorrowland/08.gif', n:'Tomorrowland 2025', title:'Pieza 08' },
+      { gif:'tomorrowland/09.gif', n:'Tomorrowland 2025', title:'Pieza 09' },
+      { gif:'tomorrowland/10.gif', n:'Tomorrowland 2025', title:'Pieza 10' },
+      { gif:'tomorrowland/11.gif', n:'Tomorrowland 2025', title:'Pieza 11' },
+      { gif:'tomorrowland/12.gif', n:'Tomorrowland 2025', title:'Pieza 12' },
+      { gif:'tomorrowland/13.gif', n:'Tomorrowland 2025', title:'Pieza 13' },
+      { gif:'tomorrowland/14.gif', n:'Tomorrowland 2025', title:'Pieza 14' }
     ]
   },
   {
@@ -431,36 +444,139 @@ const CASOS = [
     role:'<b>Visuales para shows</b> de un artista masivo. Llegó vía El Ghetto Producciones.',
     factual:'HG aportó visuales en los shows; los recitales y registros pertenecen a los canales del artista y los festivales (AGS Flow, Lollapalooza Argentina 2022).',
     funnel:{ texto:'Visuales de gira → A1 · Live Reality · A2 · Reality Reel',
-             href:'/servicios.html#seccion-managers' },
+             href:'../oferta-studio/servicios.html#seccion-managers' },
     videos:[
       { id:'9XTxag6klRc', kind:'En vivo', title:'#AGSFlow2022 — Luck Ra by FILTR' },
       { id:'OMT6lk5wmas', kind:'Recital', title:'Luck Ra — Lollapalooza Argentina 2022 (completo)' }
     ]
   },
   {
-    nombre:'Malena Narvay',
-    tag:'VFX con IA · creación total del contenido',
-    role:'<b>VFX con IA en los videoclips</b> (Dame Calor, Manada) y <b>creación total del contenido</b> para los shows en vivo con <b>SMPTE</b> (Dualidad, AGS Tecnópolis 2025).',
-    factual:'VFX con IA en los videoclips oficiales y contenido propio para el show en vivo sincronizado por SMPTE. Los videos son de los canales oficiales de la artista.',
-    funnel:{ texto:'VFX + contenido de show → A2 · Reality Reel · A1 · Live Reality',
-             href:'/servicios.html#seccion-managers' },
-    videos:[
-      { id:'rvpuVnhwp9s', kind:'VFX IA · videoclip', title:'Malena Narvay — DAME CALOR (Video Oficial)' },
-      { id:'D3j9QXKkcoY', kind:'VFX IA · videoclip', title:'Malena Narvay, Oh My Pop! — Manada (Official Video)' },
-      { id:'94wwxbwZ-4g', kind:'En vivo · SMPTE', title:'Malena Narvay — DUALIDAD (Full Band · Live)' },
-      { id:'JdgMZnNayGU', kind:'En vivo · SMPTE', title:'Malena Narvay — AGS Tecnópolis 2025 (Full Band · Live)' }
-    ]
+    nombre:'Logos para Lollapalooza',
+    tag:'Logo-motion · artistas',
+    role:'<b>Logos animados</b> de <b>Luck Ra, Oscu y Lil Cake</b> para sus shows en <b>Lollapalooza</b>. Aperturas de marca de artista para el escenario.',
+    factual:'Logo-motion de artistas para el festival. Animación propia; los artistas y el festival son sus respectivos titulares.',
+    escenas:[
+      { gif:'lolla/01-luck-ra.gif', n:'Logo', title:'Luck Ra' },
+      { gif:'lolla/02-oscu.gif',    n:'Logo', title:'Oscu' },
+      { gif:'lolla/03-lil-cake.gif',n:'Logo', title:'Lil Cake' }
+    ],
+    funnel:{ texto:'Identidad animada de artista → A2 · Reality Reel',
+             href:'../oferta-studio/servicios.html#seccion-managers' }
+  },
+  {
+    nombre:'Estadio Uno',
+    tag:'Contenido de show',
+    role:'<b>Contenido visual para el show en Estadio Uno</b>. Cuatro piezas del set, una por momento.',
+    factual:'Visuales de show en vivo. Las piezas corresponden al set proyectado en el recital.',
+    escenas:[
+      { gif:'rio/01-magdalena.gif', n:'Show', title:'Magdalena' },
+      { gif:'rio/02-mai.gif',       n:'Show', title:'Mai' },
+      { gif:'rio/03-simon.gif',     n:'Show', title:'Simon' },
+      { gif:'rio/04-rio.gif',       n:'Show', title:'Río' }
+    ],
+    funnel:{ texto:'Visuales de show en vivo → A1 · Live Reality',
+             href:'../oferta-studio/servicios.html#seccion-managers' }
+  },
+  {
+    nombre:'Sofi Fernández',
+    tag:'Pack de gira · visuales de show',
+    role:'<b>Pack de visuales para gira</b> de Sofi Fernández. Loops de escenario para el show en vivo.',
+    factual:'Contenido visual de gira (loops de show). Creación propia para el set en vivo.',
+    escenas:[
+      { gif:'sofi/01-loop-1.gif', n:'Gira', title:'Loop 1' },
+      { gif:'sofi/02-loop-2.gif', n:'Gira', title:'Loop 2' }
+    ],
+    funnel:{ texto:'Contenido de gira → A1 · Live Reality · A2 · Reality Reel',
+             href:'../oferta-studio/servicios.html#seccion-managers' }
   },
   {
     nombre:'Martín Cirio',
-    tag:'VFX',
-    role:'<b>VFX</b> para la pieza “Mani for Supermarket”.',
-    factual:'Aporte de VFX. El video es del canal asociado a la pieza.',
-    funnel:{ texto:'VFX para contenido → A2 · Reality Reel',
-             href:'/servicios.html#seccion-managers' },
+    tag:'VFX + IA · dirección visual',
+    role:'<b>VFX e imagen generada con IA</b> en “Mani for Supermarket”, de Martín Cirio. Concepto co-ideado con el equipo de dirección; <b>ocho escenas</b> construidas, generadas y compuestas una a una — del personaje al plano final.',
+    factual:'Pieza del canal oficial Martín Cirio Música. Human Studio aportó VFX y dirección de imagen con IA; la producción general estuvo a cargo del equipo de dirección y la productora.',
+    creditos:'Dirección <b>Francisco Scigliano</b> · Productora <b>Lucato</b> · VFX + IA <b>Human Studio</b>',
+    tools:['Grok','Midjourney','Topaz','Nano Banana'],
+    escenas:[
+      { gif:'cirio/01-chino-money.gif', n:'Escena 01', title:'Chino money' },
+      { gif:'cirio/02-eye-in.gif',      n:'Escena 02', title:'Eye in' },
+      { gif:'cirio/03-puca-style.gif',  n:'Escena 03', title:'Puca style' },
+      { gif:'cirio/04-brain.gif',       n:'Escena 04', title:'Brain' },
+      { gif:'cirio/05-levitating.gif',  n:'Escena 05', title:'Levitating' },
+      { gif:'cirio/06-throat.gif',      n:'Escena 06', title:'Throat' },
+      { gif:'cirio/07-throat-2.gif',    n:'Escena 07', title:'Throat — variante' },
+      { gif:'cirio/08-wanda.gif',       n:'Escena 08', title:'Wanda' }
+    ],
+    funnel:{ texto:'VFX + IA para contenido → A2 · Reality Reel',
+             href:'../oferta-studio/servicios.html#seccion-managers' },
     videos:[
-      { id:'egVeg8gXhEA', kind:'VFX', title:'MANI FOR SUPERMARKET — Martín Cirio' }
+      { id:'egVeg8gXhEA', kind:'VFX + IA · pieza completa', title:'MANI FOR SUPERMARKET — Martín Cirio' }
     ]
+  },
+  {
+    nombre:'Sernova',
+    tag:'Publicidad · 3D + Octane',
+    role:'<b>Animación 3D y render Octane</b> para publicidad de Sernova. Piezas de producto para marca.',
+    factual:'Contenido publicitario 3D para la marca. Animación y render propios.',
+    tools:['Cinema 4D','Octane'],
+    escenas:[
+      { gif:'sernova/01-2ice.gif',    n:'Publicidad', title:'2ice' },
+      { gif:'sernova/02-blottle.gif', n:'Publicidad', title:'Botella' },
+      { gif:'sernova/03-diamonds.gif',n:'Publicidad', title:'Diamonds' }
+    ],
+    funnel:{ texto:'Pieza de marca en 3D → B · contenido de marca',
+             href:'../oferta-studio/servicios.html#seccion-managers' }
+  },
+  {
+    nombre:'Kook',
+    tag:'Serie de marca · 3D Octane + Insydium',
+    role:'<b>Serie de flyers animados de varios años</b> para Kook — siempre en <b>3D con Octane + Insydium</b>. Aniversarios, Halloween y piezas de feed.',
+    factual:'Piezas animadas de marca producidas a lo largo de varios años. Render 3D propio.',
+    tools:['Cinema 4D','Octane','Insydium'],
+    escenas:[
+      { gif:'kook/01.gif',                  n:'Kook', title:'Pieza 01' },
+      { gif:'kook/02-aniversario.gif',      n:'Kook', title:'Aniversario' },
+      { gif:'kook/03-aniversario-oro.gif',  n:'Kook', title:'Aniversario oro' },
+      { gif:'kook/04-feed.gif',             n:'Kook', title:'Feed' },
+      { gif:'kook/05-fin.gif',              n:'Kook', title:'Cierre' },
+      { gif:'kook/06-halloween.gif',        n:'Kook', title:'Halloween' },
+      { gif:'kook/07-halloween-2024.gif',   n:'Kook', title:'Halloween 2024' },
+      { gif:'kook/08-halloween-2024-b.gif', n:'Kook', title:'Halloween 2024 · II' },
+      { gif:'kook/09.gif',                  n:'Kook', title:'Pieza 04' },
+      { gif:'kook/10.gif',                  n:'Kook', title:'Pieza' }
+    ],
+    funnel:{ texto:'Serie de marca en 3D → B · contenido de marca',
+             href:'../oferta-studio/servicios.html#seccion-managers' }
+  },
+  {
+    nombre:'Pax',
+    tag:'Escaneo 3D de productos',
+    role:'<b>Escaneo 3D de productos</b> y puesta en escena en render. Tres piezas.',
+    factual:'Captura/escaneo 3D de productos y render propio.',
+    tools:['Escaneo 3D','Render 3D'],
+    escenas:[
+      { gif:'pax/01.gif', n:'Producto', title:'Escaneo 01' },
+      { gif:'pax/02.gif', n:'Producto', title:'Escaneo 02' },
+      { gif:'pax/03.gif', n:'Producto', title:'Escaneo 03' }
+    ],
+    funnel:{ texto:'Producto en 3D → B · contenido de marca',
+             href:'../oferta-studio/servicios.html#seccion-managers' }
+  },
+  {
+    nombre:'Bho 2025',
+    tag:'3D · render',
+    role:'<b>Serie de renders 3D</b> — Bho 2025. Seis variantes de la misma pieza.',
+    factual:'Render 3D propio (serie Bho 2025).',
+    tools:['Cinema 4D','Octane'],
+    escenas:[
+      { gif:'bho/01.gif', n:'Bho 2025', title:'Render 01' },
+      { gif:'bho/02.gif', n:'Bho 2025', title:'Render 02' },
+      { gif:'bho/03.gif', n:'Bho 2025', title:'Render 03' },
+      { gif:'bho/04.gif', n:'Bho 2025', title:'Render 04' },
+      { gif:'bho/05.gif', n:'Bho 2025', title:'Render 05' },
+      { gif:'bho/06.gif', n:'Bho 2025', title:'Render 06' }
+    ],
+    funnel:{ texto:'Render de marca en 3D → B · contenido de marca',
+             href:'../oferta-studio/servicios.html#seccion-managers' }
   }
 ];
 
@@ -472,24 +588,13 @@ const CREDITOS = [
   { gl:'Lugares / colectivos', tipo:'place', items:['VonHarv (eventos de precisión)','El Ghetto Producciones (la red)'] }
 ];
 
-/* ── RENDER: ARCO ── */
-const track = document.getElementById('arco-track');
-ARCO.forEach(e=>{
-  const d = document.createElement('div');
-  d.className = 'etapa' + (e.final ? ' final' : '');
-  let html = `<span class="yr">${e.yr}</span><h3>${e.h}</h3><p>${e.p}</p><span class="pilar">${e.pilar}</span>`;
-  if(e.closer) html += `<div class="closer">${e.closer}</div>`;
-  d.innerHTML = html;
-  track.appendChild(d);
-});
-
 /* ── RENDER: CASOS ── */
 const casosEl = document.getElementById('casos');
 CASOS.forEach(c=>{
   const sec = document.createElement('article');
   sec.className = 'case';
   let vids = '';
-  c.videos.forEach(v=>{
+  (c.videos||[]).forEach(v=>{
     vids += `
       <div class="vid" data-yt="${v.id}" role="button" tabindex="0" aria-label="Reproducir: ${v.title}">
         <img class="thumb" loading="lazy" src="https://i.ytimg.com/vi/${v.id}/hqdefault.jpg" alt="${v.title}">
@@ -498,6 +603,23 @@ CASOS.forEach(c=>{
         <div class="vtitle"><span class="vkind">${v.kind}</span>${v.title}</div>
       </div>`;
   });
+  // créditos del caso (opcional)
+  const cred = c.creditos ? `<p class="credline">${c.creditos}</p>` : '';
+  // stack de herramientas (opcional)
+  const tools = (c.tools && c.tools.length)
+    ? `<div class="toolset"><span class="tlbl">Stack</span>${c.tools.map(t=>`<span class="tool">${esc(t)}</span>`).join('')}</div>`
+    : '';
+  // grilla de escenas con GIF (opcional)
+  let scenes = '';
+  if(c.escenas && c.escenas.length){
+    const tiles = c.escenas.map(s=>`
+      <figure class="scene">
+        <img loading="lazy" src="${esc(s.gif)}" alt="${esc(c.nombre)} — ${esc(s.title)} (escena · VFX + IA)">
+        <div class="sscrim"></div>
+        <figcaption class="stitle"><span class="snum">${esc(s.n)}</span>${esc(s.title)}</figcaption>
+      </figure>`).join('');
+    scenes = `<p class="scenes-lead">Escena por escena</p><div class="scenes">${tiles}</div>`;
+  }
   sec.innerHTML = `
     <div class="case-top">
       <h3>${c.nombre}</h3>
@@ -505,7 +627,10 @@ CASOS.forEach(c=>{
     </div>
     <p class="role">${c.role}</p>
     <p class="factual">${c.factual}</p>
-    <div class="vids">${vids}</div>
+    ${cred}
+    ${tools}
+    ${vids ? `<div class="vids">${vids}</div>` : ''}
+    ${scenes}
     <div class="funnel"><a href="${c.funnel.href}">${c.funnel.texto}<span class="arr">→</span></a></div>`;
   casosEl.appendChild(sec);
 });
