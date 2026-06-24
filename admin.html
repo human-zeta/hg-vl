@@ -32,6 +32,18 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 #ad-title{font-family:var(--display);font-size:clamp(2.4rem,6vw,3.6rem);letter-spacing:0.04em;line-height:1;color:var(--white);}
 #ad-title span{color:var(--glitch);}
 #ad-sub{font-family:var(--mono);font-size:10px;letter-spacing:0.2em;color:rgba(240,237,230,0.35);margin-top:0.6rem;text-transform:uppercase;}
+/* ── Launcher de herramientas: botones que despliegan un panel a la vez (sin scroll infinito) ── */
+#tool-launcher{display:flex;flex-wrap:wrap;gap:0.6rem;margin:1.8rem 0 2.2rem;}
+.tool-btn{font-family:var(--mono);font-size:10px;letter-spacing:0.16em;text-transform:uppercase;
+  color:rgba(240,237,230,0.62);background:rgba(240,237,230,0.03);
+  border:1px solid rgba(240,237,230,0.14);border-radius:3px;padding:0.72rem 1.1rem;cursor:pointer;
+  transition:all 0.2s;white-space:nowrap;}
+.tool-btn:hover{color:var(--white);border-color:rgba(184,255,0,0.5);background:rgba(184,255,0,0.05);}
+.tool-btn.active{color:var(--black);background:var(--acid);border-color:var(--acid);font-weight:700;
+  box-shadow:0 0 22px rgba(184,255,0,0.25);}
+.tool-panel{display:none;}
+.tool-panel.active{display:block;animation:toolIn 0.25s ease;}
+@keyframes toolIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
 
 .gate-box{
   max-width:440px;margin:5rem auto 0;text-align:center;
@@ -317,21 +329,25 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
       También vas a ver el <strong>progreso / experiencia</strong> que cada miembro acumuló con sus autoevaluaciones.
     </div>
 
-    <div id="ad-summary"></div>
-    <div id="ad-status">Cargando usuarios…</div>
-    <table class="user-table">
-      <thead>
-        <tr>
-          <th>Usuario</th>
-          <th>Suscripción</th>
-          <th>XP / Nivel</th>
-          <th>Acción</th>
-        </tr>
-      </thead>
-      <tbody id="user-rows"></tbody>
-    </table>
+    <div id="tool-launcher"></div>
 
-    <div id="patch-drop" style="display:none;">
+    <div id="users-section" class="tool-panel">
+      <div id="ad-summary"></div>
+      <div id="ad-status">Cargando usuarios…</div>
+      <table class="user-table">
+        <thead>
+          <tr>
+            <th>Usuario</th>
+            <th>Suscripción</th>
+            <th>XP / Nivel</th>
+            <th>Acción</th>
+          </tr>
+        </thead>
+        <tbody id="user-rows"></tbody>
+      </table>
+    </div>
+
+    <div id="patch-drop" class="tool-panel">
       <div id="pd-title">DROPEAR <span>PARCHE</span></div>
       <div class="pd-intro">
         ⌬ Otorgá manualmente un <strong>parche especial</strong> a un usuario — por ejemplo, por haber asistido a una
@@ -388,7 +404,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
     </div>
 
     <!-- LEADS / CONSULTAS -->
-    <div id="leads-section" style="display:none;">
+    <div id="leads-section" class="tool-panel">
       <div id="pd-title" style="margin-bottom:0.4rem;">CONSULTAS <span>DE SERVICIOS</span></div>
       <div class="pd-intro">
         📩 Mensajes enviados desde el formulario de <a href="servicios.html" target="_blank" style="color:var(--acid);">servicios.html</a>.
@@ -399,7 +415,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
     </div>
 
     <!-- FONDOS LOOP -->
-    <div id="bgloops-section" style="display:none;">
+    <div id="bgloops-section" class="tool-panel">
       <div id="pd-title" style="margin-bottom:0.4rem;">FONDOS <span>LOOP</span></div>
       <div class="pd-intro">
         ⌬ Catálogo de videos loop (generados con Higgsfield u otra fuente) que cualquier usuario puede elegir
@@ -433,7 +449,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
     </div>
 
     <!-- DIARIO HG -->
-    <div id="diario-section" style="display:none;">
+    <div id="diario-section" class="tool-panel">
       <div id="pd-title" style="margin-bottom:0.4rem;">DIARIO <span>HG</span></div>
       <div class="pd-intro">
         📰 Publicá una nota nueva para <strong>El Diario HG</strong> — tecnología explicada de forma clara y accesible.
@@ -481,7 +497,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
     </div>
 
     <!-- DISCORD / SUSCRIPCIONES -->
-    <div id="discord-section" style="display:none;">
+    <div id="discord-section" class="tool-panel">
       <div id="pd-title" style="margin-bottom:0.4rem;">DISCORD <span>&amp; SUSCRIPCIONES</span></div>
       <div class="pd-intro">
         ⌬ Configurá la vinculación de cuentas de Discord y la asignación automática de roles por tier de suscripción.
@@ -515,7 +531,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
       </form>
     </div>
 
-    <div id="glass-section" style="display:none;">
+    <div id="glass-section" class="tool-panel">
       <div id="pd-title" style="margin-bottom:0.4rem;">VIDRIO <span>&amp; APARIENCIA</span></div>
       <div class="pd-intro">
         ⌬ Ajustá el vidrio que se apoya sobre el home, los menús y las páginas oscuras.
@@ -888,43 +904,47 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 
     const introEl = document.getElementById('ad-intro');
     const subEl   = document.getElementById('ad-sub');
-    const dropEl  = document.getElementById('patch-drop');
+    if(introEl) introEl.style.display = 'none'; // el intro largo se reemplaza por el launcher
 
-    if(IS_ADMIN){
-      subEl.textContent = 'Panel de administración — acceso total: comunidad, suscripciones, parches y moderación';
-      introEl.innerHTML = `
-        ⌘ Como <strong>admin</strong> tenés <strong>acceso total</strong>: podés ver la comunidad registrada,
-        activar o desactivar el acceso a la <strong>Academia HG</strong>, ver el progreso / experiencia de cada
-        miembro, <strong>dropear parches</strong> especiales y <strong>nombrar o quitar moderadores</strong>
-        — todo sin tener que entrar a la consola de Firebase.
-      `;
-      if(dropEl) dropEl.style.display = '';
-      const diarioEl = document.getElementById('diario-section');
-      if(diarioEl) diarioEl.style.display = '';
-      loadDiarioNotes();
-      const discordEl = document.getElementById('discord-section');
-      if(discordEl) discordEl.style.display = '';
-      loadDiscordConfig();
-      const leadsEl = document.getElementById('leads-section');
-      if(leadsEl) leadsEl.style.display = '';
-      loadLeads();
-      const bgloopsEl = document.getElementById('bgloops-section');
-      if(bgloopsEl) bgloopsEl.style.display = '';
-      loadBgLoops();
-      const glassEl = document.getElementById('glass-section');
-      if(glassEl) glassEl.style.display = '';
-      initGlass();
-    }else if(IS_MOD){
-      subEl.textContent = 'Panel de moderación — comunidad y suscripciones';
-      introEl.innerHTML = `
-        ✦ Como <strong>moderador</strong> podés ver la <strong>comunidad registrada</strong>, su
-        <strong>progreso / experiencia</strong>, y activar o desactivar el acceso a la <strong>Academia HG</strong>.
-        El dropeo de parches y la designación de moderadores son exclusivos de los admins.
-      `;
-      if(dropEl) dropEl.style.display = 'none';
+    subEl.textContent = IS_ADMIN
+      ? 'Panel de administración — elegí una herramienta'
+      : 'Panel de moderación — comunidad y suscripciones';
+
+    // Catálogo de herramientas. init = se ejecuta UNA vez al abrir su panel
+    // (lazy + aislado en try/catch: el fallo de una no rompe a las demás → arregla el vidrio).
+    const TOOLS = [
+      { id:'users-section',   label:'⌘ Comunidad', init:loadUsers },
+      { id:'patch-drop',      label:'⛒ Parche',    init:null,              adminOnly:true },
+      { id:'leads-section',   label:'✉ Consultas', init:loadLeads,         adminOnly:true },
+      { id:'bgloops-section', label:'▣ Fondos',    init:loadBgLoops,       adminOnly:true },
+      { id:'diario-section',  label:'✎ Diario',    init:loadDiarioNotes,   adminOnly:true },
+      { id:'discord-section', label:'⌬ Discord',   init:loadDiscordConfig, adminOnly:true },
+      { id:'glass-section',   label:'◇ Vidrio',    init:initGlass,         adminOnly:true },
+    ];
+
+    const launcher = document.getElementById('tool-launcher');
+    const inited = {};
+    function openTool(tool, btn){
+      document.querySelectorAll('.tool-panel').forEach(p => p.classList.remove('active'));
+      launcher.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+      const panel = document.getElementById(tool.id);
+      if(panel) panel.classList.add('active');
+      if(btn) btn.classList.add('active');
+      if(tool.init && !inited[tool.id]){
+        inited[tool.id] = true;
+        try { tool.init(); } catch(err){ console.error('[admin] init '+tool.id, err); }
+      }
+      try { window.scrollTo({ top:0, behavior:'smooth' }); } catch(e){ window.scrollTo(0,0); }
     }
 
-    loadUsers();
+    launcher.innerHTML = '';
+    TOOLS.filter(t => IS_ADMIN || !t.adminOnly).forEach((tool, i) => {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'tool-btn'; b.textContent = tool.label;
+      b.addEventListener('click', () => openTool(tool, b));
+      launcher.appendChild(b);
+      if(i === 0) openTool(tool, b); // abre Comunidad por defecto
+    });
   }
 
   // ───────────────────────────────────────────
