@@ -63,8 +63,9 @@ html,body{background:var(--black);color:var(--white);font-family:var(--mono);ove
 
 /* ── Beats narrativos ────────────────────────────────────── */
 .beat{position:fixed;left:0;right:0;z-index:5;padding:0 8vw;text-align:left;
-  top:50%;transform:translateY(-46%);opacity:0;transition:opacity 0.55s ease,transform 0.55s ease;
-  pointer-events:none;}
+  top:50%;transform:translateY(-42%);opacity:0;
+  transition:opacity 0.8s cubic-bezier(0.16,1,0.3,1),transform 0.8s cubic-bezier(0.16,1,0.3,1);
+  pointer-events:none;will-change:transform,opacity;}
 .beat.show{opacity:1;transform:translateY(-50%);}
 .beat .bk{font-size:10px;letter-spacing:0.34em;color:var(--acid);text-transform:uppercase;margin-bottom:1rem;}
 .beat h2{font-family:var(--display);font-weight:400;line-height:0.92;letter-spacing:0.01em;
@@ -79,9 +80,9 @@ html,body{background:var(--black);color:var(--white);font-family:var(--mono);ove
 #creds .c b{display:block;font-family:var(--display);font-size:1.5rem;letter-spacing:0.02em;color:var(--acid);line-height:1;margin-bottom:3px;}
 
 /* hint scroll */
-#hint{position:fixed;left:50%;bottom:2.2rem;transform:translateX(-50%);z-index:6;
-  font-size:10px;letter-spacing:0.3em;color:rgba(240,237,230,0.5);text-align:center;transition:opacity 0.5s;}
-#hint .a{display:block;margin-top:0.5rem;color:var(--acid);animation:bob 1.8s ease-in-out infinite;}
+#hint{position:fixed;left:50%;bottom:2rem;transform:translateX(-50%);z-index:6;
+  text-align:center;transition:opacity 0.5s;}
+#hint .a{display:block;font-size:22px;line-height:1;color:var(--acid);opacity:0.7;animation:bob 1.8s ease-in-out infinite;}
 @keyframes bob{0%,100%{transform:translateY(0);opacity:0.5;}50%{transform:translateY(6px);opacity:1;}}
 
 /* ── Clímax ──────────────────────────────────────────────── */
@@ -100,6 +101,7 @@ html,body{background:var(--black);color:var(--white);font-family:var(--mono);ove
   color:var(--black);background:var(--acid);text-decoration:none;padding:0.7rem 2.6rem;border:2px solid var(--acid);
   transition:transform 0.2s,box-shadow 0.3s;animation:pulse 2.4s ease-in-out infinite;}
 .enter:hover{transform:scale(1.04);box-shadow:0 0 50px rgba(184,255,0,0.55);}
+.enter:active{transform:scale(0.98);}
 .enter .ch{font-family:var(--mono);font-size:0.55em;}
 @keyframes pulse{0%,100%{box-shadow:0 0 24px rgba(184,255,0,0.26);}50%{box-shadow:0 0 54px rgba(184,255,0,0.5);}}
 
@@ -132,19 +134,15 @@ html,body{background:var(--black);color:var(--white);font-family:var(--mono);ove
 <!-- Beats narrativos (voz para clientes) -->
 <div id="overlay" aria-hidden="true">
   <div class="beat" data-from="0.05" data-to="0.20">
-    <div class="bk">Estudio de contenido visual</div>
     <h2>TODA GIRA,<br>TODA MARCA,<br>ES UNA <span class="ac">INTERFAZ</span></h2>
   </div>
   <div class="beat" data-from="0.26" data-to="0.42">
-    <div class="bk">El problema</div>
     <h2>LA MAYORÍA<br>LA DEJA EN MANOS<br>DE <span class="gl">PLANTILLAS</span></h2>
   </div>
   <div class="beat" data-from="0.48" data-to="0.64">
-    <div class="bk">Lo que hacemos</div>
     <h2>NOSOTROS DISEÑAMOS<br>LA <span class="ac">EXPERIENCIA</span><br>QUE TU PÚBLICO VA A VIVIR</h2>
   </div>
   <div class="beat" data-from="0.68" data-to="0.82">
-    <div class="bk">Cómo</div>
     <h2>MAPPING · VFX<br>3D · IA<br><span class="ac">EN VIVO Y EN PANTALLA</span></h2>
   </div>
 </div>
@@ -155,7 +153,7 @@ html,body{background:var(--black);color:var(--white);font-family:var(--mono);ove
   <div class="c"><b>LOLLA</b>Luck Ra · Lil Cake · Oscu</div>
 </div>
 
-<div id="hint">SCROLLEÁ<span class="a">↓</span></div>
+<div id="hint" aria-hidden="true"><span class="a">⌄</span></div>
 
 <!-- Clímax -->
 <div id="climax">
