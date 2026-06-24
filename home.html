@@ -798,7 +798,7 @@ body.visual-mode #exit-visual{z-index:9000!important;}
 .sep{font-family:var(--mono);font-size:9px;letter-spacing:0.3em;color:rgba(240,237,230,0.08);text-align:center;padding:1.5rem;display:block;}
 
 /* REVEAL */
-.rev{opacity:0;transform:translateY(36px);transition:opacity 0.8s ease,transform 0.8s ease;}
+.rev{opacity:0;transform:translateY(36px);transition:opacity 0.9s cubic-bezier(0.16,1,0.3,1),transform 0.9s cubic-bezier(0.16,1,0.3,1);}
 .rev.vis{opacity:1;transform:translateY(0);}
 .rd1{transition-delay:0.1s;}.rd2{transition-delay:0.2s;}.rd3{transition-delay:0.32s;}
 
@@ -1146,10 +1146,9 @@ body.visual-mode #exit-visual{z-index:9000!important;}
 
   <section id="hero" style="padding:0 8vw 10vh;">
     <span class="hero-tag">VISUAL LAB × HUMAN GLITCHE</span>
-    <div class="hero-label">Buenos Aires — AR / EST. 2022</div>
     <div class="hero-glass" aria-hidden="true"></div>
     <h1 class="hero-title glitch" data-text="VISUAL-LAB">VISUAL<br><span class="ac">--LAB-</span></h1>
-    <p class="hero-sub">La realidad es una interfaz — diseñada por alguien, en algún momento, con alguna intención. Human Glitche es el laboratorio de quienes la ven, la cuestionan y construyen la versión siguiente. Arte · Código · Comunidad · Visuales en tiempo real.</p>
+    <p class="hero-sub">La realidad es una interfaz — diseñada por alguien, en algún momento, con alguna intención. Human Glitche es el laboratorio de quienes la ven, la cuestionan y construyen la versión siguiente.</p>
     <div class="hero-socials">
       <a href="https://www.youtube.com/@Human.Glitche" target="_blank">YT</a>
       <a href="https://x.com/HGlitche" target="_blank">X</a>
@@ -1157,7 +1156,7 @@ body.visual-mode #exit-visual{z-index:9000!important;}
       <a href="https://discord.gg/CgmxdSecHY" target="_blank">DISCORD</a>
       <a href="https://github.com/human-zeta" target="_blank">GH</a>
     </div>
-    <div class="hero-scroll">SCROLL</div>
+    <div class="hero-scroll" aria-hidden="true"></div>
   </section>
 
   <section id="manifiesto">
