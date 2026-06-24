@@ -44,6 +44,19 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .tool-panel{display:none;}
 .tool-panel.active{display:block;animation:toolIn 0.25s ease;}
 @keyframes toolIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+/* ── Controles por fila: Tier + Tipo de cuenta ── */
+.row-ctrl{display:flex;flex-direction:column;gap:3px;margin-top:6px;}
+.row-ctrl label{font-family:var(--mono);font-size:7.5px;letter-spacing:0.16em;color:rgba(240,237,230,0.4);text-transform:uppercase;}
+.row-sel{font-family:var(--mono);font-size:9px;letter-spacing:0.06em;color:var(--white);
+  background:rgba(240,237,230,0.04);border:1px solid rgba(240,237,230,0.18);border-radius:2px;
+  padding:5px 6px;cursor:pointer;transition:border-color 0.2s,opacity 0.2s;}
+.row-sel:hover{border-color:rgba(184,255,0,0.45);}
+.row-sel:focus{outline:none;border-color:var(--acid);}
+.row-sel.saving{opacity:0.45;pointer-events:none;}
+.acc-pill{display:inline-block;margin-top:5px;font-family:var(--mono);font-size:8px;letter-spacing:0.12em;
+  padding:2px 7px;border-radius:2px;text-transform:uppercase;}
+.acc-pill.comunidad{color:var(--acid);border:1px solid rgba(184,255,0,0.32);}
+.acc-pill.cliente{color:var(--glitch);border:1px solid rgba(255,45,107,0.4);}
 
 .gate-box{
   max-width:440px;margin:5rem auto 0;text-align:center;
@@ -698,8 +711,55 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
     }
   }
 
-  function renderRow(uid, user, isSub, xp){
+  // Deriva el tier desde el valor de /subscribers/$uid: objeto {tier}, booleano legado, o vacío.
+  function tierOf(v){
+    if(v && typeof v === 'object' && v.tier) return String(v.tier);
+    if(v === true) return '1';   // legado: true = tenía acceso → equivale a Tier 1
+    return '';                   // sin tier / sin acceso
+  }
+
+  // Asignar tier de suscripción (controla Academia). '' = sin acceso (borra el nodo).
+  async function setTier(uid, tier, sel){
+    sel.disabled = true; sel.classList.add('saving');
+    try{
+      const body = tier ? JSON.stringify({ tier: tier }) : 'null';
+      const r = await fetch(`${FB_URL}/subscribers/${uid}.json?auth=${TOKEN}`, {
+        method:'PUT', headers:{'Content-Type':'application/json'}, body
+      });
+      if(!r.ok){
+        if(r.status === 401 || r.status === 403) throw new Error(`sin permiso para escribir en /subscribers (HTTP ${r.status})`);
+        throw new Error(`HTTP ${r.status}`);
+      }
+      await loadUsers();
+    }catch(e){
+      sel.disabled = false; sel.classList.remove('saving');
+      setStatus(`No se pudo cambiar el tier — ${e.message}`, true);
+    }
+  }
+
+  // Asignar tipo de cuenta en /profiles/$uid/accountType: 'comunidad' | 'cliente' (gate.js lo usa).
+  async function setAccountType(uid, type, sel){
+    sel.disabled = true; sel.classList.add('saving');
+    try{
+      const r = await fetch(`${FB_URL}/profiles/${uid}/accountType.json?auth=${TOKEN}`, {
+        method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(type)
+      });
+      if(!r.ok){
+        if(r.status === 401 || r.status === 403) throw new Error(`sin permiso para escribir en /profiles (HTTP ${r.status})`);
+        throw new Error(`HTTP ${r.status}`);
+      }
+      await loadUsers();
+    }catch(e){
+      sel.disabled = false; sel.classList.remove('saving');
+      setStatus(`No se pudo cambiar el tipo de cuenta — ${e.message}`, true);
+    }
+  }
+
+  function renderRow(uid, user, sub, xp, accType){
     const lvl = levelFor(xp);
+    const tier = tierOf(sub);
+    const isSub = tier !== '';
+    const acc = (accType === 'cliente') ? 'cliente' : 'comunidad';
     const tr = document.createElement('tr');
     const name = (user && user.name) || '—';
     const email = (user && user.email) || '';
@@ -716,7 +776,8 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
         ${rolePill}
       </td>
       <td>
-        <span class="sub-pill ${isSub ? 'on' : 'off'}"><span class="dot"></span>${isSub ? 'SUSCRIPTOR' : 'SIN ACCESO'}</span>
+        <span class="sub-pill ${isSub ? 'on' : 'off'}"><span class="dot"></span>${isSub ? 'TIER 0'+tier : 'SIN ACCESO'}</span><br>
+        <span class="acc-pill ${acc}">${acc}</span>
       </td>
       <td>
         <span class="u-xp">${xp} XP</span><br>
@@ -734,12 +795,28 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
     perfilLink.addEventListener('mouseenter',()=>{ perfilLink.style.color='var(--acid)'; perfilLink.style.borderColor='rgba(184,255,0,0.5)'; });
     perfilLink.addEventListener('mouseleave',()=>{ perfilLink.style.color='rgba(184,255,0,0.5)'; perfilLink.style.borderColor='rgba(184,255,0,0.2)'; });
     actionTd.appendChild(perfilLink);
-    actionTd.appendChild(document.createElement('br'));
-    const btn = document.createElement('button');
-    btn.className = 'toggle-btn' + (isSub ? ' revoke' : '');
-    btn.textContent = isSub ? 'QUITAR ACCESO' : 'DAR ACCESO';
-    btn.addEventListener('click', ()=> setSubscription(uid, !isSub, btn));
-    actionTd.appendChild(btn);
+
+    // Control de Tier (suscripción + acceso a Academia). Admins y mods pueden.
+    const tierWrap = document.createElement('div'); tierWrap.className = 'row-ctrl';
+    tierWrap.innerHTML = '<label>Tier · Academia</label>';
+    const tierSel = document.createElement('select'); tierSel.className = 'row-sel';
+    [['','— Sin acceso'],['1','Tier 1 · Conciencia'],['2','Tier 2 · Creación'],['3','Tier 3 · Compartir']]
+      .forEach(([v,l])=>{ const o=document.createElement('option'); o.value=v; o.textContent=l; if(v===tier) o.selected=true; tierSel.appendChild(o); });
+    tierSel.addEventListener('change', ()=> setTier(uid, tierSel.value, tierSel));
+    tierWrap.appendChild(tierSel);
+    actionTd.appendChild(tierWrap);
+
+    // Control de tipo de cuenta (comunidad / cliente). Escribe en /profiles → SOLO admin.
+    if(IS_ADMIN){
+      const typeWrap = document.createElement('div'); typeWrap.className = 'row-ctrl';
+      typeWrap.innerHTML = '<label>Tipo de cuenta</label>';
+      const typeSel = document.createElement('select'); typeSel.className = 'row-sel';
+      [['comunidad','Comunidad'],['cliente','Cliente']]
+        .forEach(([v,l])=>{ const o=document.createElement('option'); o.value=v; o.textContent=l; if(v===acc) o.selected=true; typeSel.appendChild(o); });
+      typeSel.addEventListener('change', ()=> setAccountType(uid, typeSel.value, typeSel));
+      typeWrap.appendChild(typeSel);
+      actionTd.appendChild(typeWrap);
+    }
 
     // Solo los admins pueden nombrar/quitar moderadores (y no a otros admins)
     if(IS_ADMIN && !isUserAdmin){
@@ -790,14 +867,21 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
       USERS_CACHE = users;
       populatePatchUserSelect(uids);
 
+      // accountType por usuario (lectura pública de /profiles/$uid) — para mostrar y editar cliente/comunidad
+      const accEntries = await Promise.all(uids.map(uid =>
+        fetch(`${FB_URL}/profiles/${uid}/accountType.json`)
+          .then(r => r.ok ? r.json() : null).catch(()=>null).then(v => [uid, v])
+      ));
+      const accTypes = Object.fromEntries(accEntries);
+
       let subCount = 0;
       let totalXp = 0;
       uids.forEach(uid=>{
-        const isSub = subs[uid] === true;
+        const tier = tierOf(subs[uid]);
         const xp = xpFromProgress(prog[uid]);
-        if(isSub) subCount++;
+        if(tier) subCount++;
         totalXp += xp;
-        rowsEl.appendChild(renderRow(uid, users[uid], isSub, xp));
+        rowsEl.appendChild(renderRow(uid, users[uid], subs[uid], xp, accTypes[uid]));
       });
 
       summaryEl.innerHTML = `

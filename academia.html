@@ -909,7 +909,8 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
         fetch(`${FB_URL}/admins/${session.uid}.json?auth=${token}`),
         fetch(`${FB_URL}/moderators/${session.uid}.json?auth=${token}`)
       ]);
-      const isSub   = subR.ok   ? (await subR.json())   === true : false;
+      // acepta el booleano legado (true) y el nuevo objeto {tier:'1'|'2'|'3'} — cualquier tier da acceso
+      const isSub   = subR.ok   ? (function(v){ return v === true || (v && typeof v === 'object' && !!v.tier); })(await subR.json()) : false;
       const isAdmin = adminR.ok ? (await adminR.json()) === true : false;
       const isMod   = modR.ok   ? (await modR.json())   === true : false;
       // Los admins y moderadores tienen acceso total a la Academia, con o sin suscripción
