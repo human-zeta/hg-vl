@@ -1374,9 +1374,9 @@ document.addEventListener('mousemove',e=>{
 
     // Planos sutilmente separados — la tipografía "flota" apenas sobre el vidrio y el shader.
     title.style.transform   = `translate3d(${cx*-14}px, ${cy*-9}px, 90px)`;
-    sub.style.transform     = `translate3d(${cx*-7}px, ${cy*-5}px, 50px)`;
-    label.style.transform   = `translate3d(${cx*-4}px, ${cy*-3}px, 30px)`;
-    socials.style.transform = `translate3d(${cx*-3}px, ${cy*-2}px, 16px)`;
+    if(sub)     sub.style.transform     = `translate3d(${cx*-7}px, ${cy*-5}px, 50px)`;
+    if(label)   label.style.transform   = `translate3d(${cx*-4}px, ${cy*-3}px, 30px)`;
+    if(socials) socials.style.transform = `translate3d(${cx*-3}px, ${cy*-2}px, 16px)`;
     requestAnimationFrame(apply);
   }
   apply();
