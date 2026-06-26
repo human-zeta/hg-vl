@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>STARTER KIT — CÉLULAS CREATIVAS · HUMAN GLITCHE VISUAL LAB</title>
+<meta name="description" content="Creative Cell Starter Kit — plan de implementación para células creativas independientes. Empezá desde cero con un teléfono, una compu, o ambos. Kit de herramientas, roles, proyectos de arranque y hoja de ruta de 6 semanas.">
+<!--
+  PÁGINA STARTER KIT (root) — landing del "Creative Cell Starter Kit"
+  (fuente: HGVL_Creative_Cell_Starter_Kit.pdf, 7 páginas). Generada por el
+  `leader` desde web/starter-kits/index.html (cerebro operativo) e integrada
+  a hg-vl. Ver web/README.md y docs/web.md.
+
+  QUÉ ES: landing para publicitar y distribuir el Starter Kit. El kit base es
+  GRATIS (informa → regla de oro). Los "upgrades" (workshop, mini-sitio, retainer
+  de cartelerías, subir al Studio) son la rampa monetizable: todo upgrade es
+  bienvenido. La sección sigue la secuencia de los 3 pilares ⌘ OBSERVAR (la guía,
+  gratis) → ✦ CREAR (el kit + roles) → ☉ EXPANDIR (proyectos que cobran + hub).
+
+  DISCIPLINA (GATES):
+    · Ningún CTA cobra ni descarga un archivo vivo: el CTA principal lleva al
+      formulario de contacto (contacto.html), que degrada con gracia si no
+      reconoce los params. El alta de la descarga del PDF (lead magnet) y
+      cualquier checkout son acciones humanas en cola (cola_aprobacion.md).
+    · Reusa el sistema de diseño de servicios.html: variables CSS, paleta
+      (acid #b8ff00 / glitch #ff2d55), tipografías (Bebas Neue / Space Mono /
+      DM Sans), nav/footer, clases (.sec-hdr, .srow acordeón, .lanes/.lane).
+    · Acento propio del kit: --violet, ecos del periwinkle del PDF, usado con
+      moderación para la identidad de "célula" sin romper la familia visual.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --black:#050505;
+  --white:#f0ede6;
+  --acid:#b8ff00;
+  --glitch:#ff2d55;
+  --violet:#7d7bff;
+  --mono:'Space Mono',monospace;
+  --display:'Bebas Neue',sans-serif;
+  --body:'DM Sans',sans-serif;
+}
+html{scroll-behavior:smooth;}
+body{background:var(--black);color:var(--white);font-family:var(--body);overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");z-index:1;pointer-events:none;opacity:0.4;}
+#scroll-container{position:relative;z-index:2;}
+
+/* NAV (espejo de servicios) */
+#nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:2rem 8vw;display:flex;justify-content:space-between;align-items:center;background:rgba(5,5,5,0.6);backdrop-filter:blur(10px);}
+.nav-logo{font-family:var(--mono);font-size:11px;letter-spacing:0.2em;color:rgba(240,237,230,0.4);text-decoration:none;}
+.nav-links{display:flex;gap:2.2rem;flex-wrap:wrap;}
+.nav-links a{font-family:var(--mono);font-size:10px;letter-spacing:0.25em;color:rgba(240,237,230,0.25);text-decoration:none;transition:color 0.2s;}
+.nav-links a:hover{color:var(--acid);}
+.nav-links a.seg{color:rgba(125,123,255,0.6);}
+.nav-links a.seg:hover{color:var(--violet);}
+
+/* SECTIONS */
+section{position:relative;padding:0 8vw;}
+.sec-hdr{display:flex;justify-content:space-between;align-items:flex-end;width:100%;margin-bottom:2.5rem;flex-wrap:wrap;gap:1rem;}
+.sec-title{font-family:var(--display);font-size:clamp(3rem,6vw,6rem);line-height:0.9;}
+.sec-kicker{font-family:var(--mono);font-size:10px;letter-spacing:0.3em;color:var(--violet);text-transform:uppercase;margin-bottom:1rem;}
+.sec-link{font-family:var(--mono);font-size:10px;letter-spacing:0.2em;color:var(--acid);text-decoration:none;border-bottom:1px solid var(--acid);padding-bottom:2px;transition:color 0.2s,border-color 0.2s;}
+.sec-link:hover{color:var(--white);border-color:var(--white);}
+.sec-intro{font-family:var(--body);font-size:1.02rem;color:rgba(240,237,230,0.7);line-height:1.7;margin-top:-1rem;margin-bottom:2.5rem;max-width:74ch;}
+.sec-intro b{color:var(--acid);font-weight:500;}
+
+/* HERO */
+#kit-hero{padding:14vh 8vw 6vh;}
+.hero-tag{font-family:var(--mono);font-size:9px;letter-spacing:0.3em;color:var(--violet);display:inline-block;margin-bottom:1.5rem;}
+.hero-title{font-family:var(--display);font-size:clamp(3.5rem,9vw,9rem);line-height:0.88;max-width:16ch;}
+.hero-title .vio{color:var(--violet);}
+.hero-llano{font-family:var(--body);font-size:clamp(1.1rem,1.7vw,1.35rem);color:rgba(240,237,230,0.92);line-height:1.55;margin-top:1.8rem;max-width:56ch;}
+.hero-llano b{color:var(--acid);font-weight:500;}
+.hero-thesis{font-family:var(--body);font-size:1.02rem;color:rgba(240,237,230,0.62);line-height:1.7;margin-top:1.6rem;max-width:64ch;border-left:1px solid rgba(125,123,255,0.4);padding-left:1.4rem;}
+.hero-thesis b{color:var(--violet);font-weight:500;}
+
+/* STAT CHIPS (los 4 datos de portada del PDF) */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:rgba(240,237,230,0.07);width:100%;margin-top:2.8rem;border:1px solid rgba(240,237,230,0.07);}
+.stat{background:var(--black);padding:1.6rem 1.4rem;display:flex;flex-direction:column;}
+.stat .sv{font-family:var(--display);font-size:2.4rem;line-height:1;color:var(--acid);}
+.stat .sl{font-family:var(--mono);font-size:9px;letter-spacing:0.16em;text-transform:uppercase;color:rgba(240,237,230,0.4);margin-top:0.7rem;line-height:1.7;}
+@media (max-width:760px){.stats{grid-template-columns:1fr 1fr;}}
+
+/* CTA */
+.cta-line{display:flex;gap:1rem;flex-wrap:wrap;margin-top:2.6rem;align-items:center;}
+.cta-primary{display:inline-block;font-family:var(--mono);font-size:11px;letter-spacing:0.22em;color:var(--black);background:var(--acid);text-decoration:none;border:1px solid var(--acid);padding:0.95rem 1.8rem;transition:all 0.3s;}
+.cta-primary:hover{background:transparent;color:var(--acid);}
+.cta-ghost{display:inline-block;font-family:var(--mono);font-size:11px;letter-spacing:0.22em;color:var(--violet);text-decoration:none;border:1px solid rgba(125,123,255,0.6);padding:0.95rem 1.8rem;transition:all 0.3s;}
+.cta-ghost:hover{background:var(--violet);color:var(--black);border-color:var(--violet);}
+.cta-primary:focus-visible,.cta-ghost:focus-visible{outline:2px solid var(--acid);outline-offset:3px;}
+
+/* HARDWARE — 3 configuraciones (Solo teléfono / 1 compu / Teléfono+compu) */
+#hardware{padding:9vh 8vw;flex-direction:column;border-top:1px solid rgba(240,237,230,0.07);}
+.kit-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:rgba(240,237,230,0.07);width:100%;margin-top:1rem;border:1px solid rgba(240,237,230,0.07);}
+.kit-col{background:var(--black);padding:2rem 1.7rem;display:flex;flex-direction:column;}
+.kit-col.ideal{background:rgba(184,255,0,0.03);}
+.kit-col h3{font-family:var(--display);font-size:1.8rem;line-height:1;color:var(--acid);margin-bottom:0.4rem;}
+.kit-col.ideal h3{color:var(--violet);}
+.kit-col .kc-tag{font-family:var(--mono);font-size:8.5px;letter-spacing:0.18em;text-transform:uppercase;color:rgba(240,237,230,0.35);margin-bottom:1.4rem;}
+.tool{display:flex;justify-content:space-between;align-items:flex-start;gap:0.8rem;padding:0.75rem 0;border-top:1px solid rgba(240,237,230,0.05);}
+.tool:first-of-type{border-top:none;}
+.tool .tn{font-family:var(--mono);font-size:10.5px;color:rgba(240,237,230,0.7);line-height:1.6;}
+.tool .tn b{color:var(--white);font-weight:400;}
+.tool .tp{font-family:var(--mono);font-size:8px;letter-spacing:0.14em;text-transform:uppercase;white-space:nowrap;flex-shrink:0;padding-top:2px;}
+.tp.free{color:var(--acid);}
+.tp.tier{color:var(--violet);}
+.tp.role{color:var(--glitch);}
+@media (max-width:900px){.kit-grid{grid-template-columns:1fr;}}
+
+/* ROLES — 4 roles de la célula */
+#roles{padding:9vh 8vw;flex-direction:column;border-top:1px solid rgba(240,237,230,0.07);}
+.role-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:rgba(240,237,230,0.06);width:100%;margin-top:1rem;border:1px solid rgba(240,237,230,0.06);}
+.role{background:var(--black);padding:2rem 1.8rem;transition:background-color 0.25s;}
+.role:hover{background:rgba(184,255,0,0.03);}
+.role h4{font-family:var(--display);font-size:1.7rem;line-height:1;color:var(--acid);margin-bottom:1.1rem;}
+.role ul{list-style:none;}
+.role li{font-family:var(--mono);font-size:10.5px;color:rgba(240,237,230,0.5);line-height:1.5;padding:0.45rem 0 0.45rem 1.1rem;position:relative;}
+.role li::before{content:'·';position:absolute;left:0;color:var(--violet);}
+.role li b{color:rgba(240,237,230,0.8);font-weight:400;}
+.role-note{font-family:var(--mono);font-size:10px;color:rgba(240,237,230,0.4);line-height:1.9;margin-top:1.6rem;max-width:78ch;}
+.role-note b{color:rgba(240,237,230,0.7);font-weight:400;}
+@media (max-width:760px){.role-grid{grid-template-columns:1fr;}}
+
+/* PROYECTOS DE ARRANQUE — acordeón (espejo .srow de servicios) */
+#proyectos{padding:9vh 8vw;flex-direction:column;border-top:1px solid rgba(240,237,230,0.07);}
+.svc-list{width:100%;margin-top:1rem;}
+.srow{border-top:1px solid rgba(240,237,230,0.07);transition:border-color 0.3s;}
+.srow:hover{border-top-color:var(--acid);}
+.srow:last-child{border-bottom:1px solid rgba(240,237,230,0.07);}
+.pkg-toggle{width:100%;background:none;border:none;cursor:pointer;color:inherit;text-align:left;display:grid;grid-template-columns:70px 1fr auto;align-items:center;gap:2.5rem;padding:2.2rem 0;font:inherit;transition:opacity 0.2s;}
+.pkg-toggle:hover{opacity:0.92;}
+.pkg-toggle:focus-visible{outline:2px solid var(--acid);outline-offset:4px;}
+.snum{font-family:var(--mono);font-size:9px;color:rgba(240,237,230,0.18);align-self:start;padding-top:0.6rem;}
+.pkg-id-line{min-width:0;}
+.sname{font-family:var(--display);font-size:clamp(1.6rem,3vw,2.7rem);line-height:1;display:block;}
+.srole{font-family:var(--mono);font-size:9px;letter-spacing:0.18em;color:rgba(240,237,230,0.3);text-transform:uppercase;margin-top:0.6rem;display:block;}
+.pkg-aside{display:flex;align-items:center;gap:1.2rem;flex-shrink:0;}
+.price-hint{font-family:var(--mono);font-size:11px;letter-spacing:0.04em;color:var(--acid);text-align:right;line-height:1.4;white-space:nowrap;}
+.price-hint .ph-sub{display:block;color:rgba(240,237,230,0.3);font-size:8.5px;letter-spacing:0.16em;text-transform:uppercase;margin-top:0.3rem;}
+.chev{flex-shrink:0;width:1.6rem;height:1.6rem;position:relative;color:var(--acid);}
+.chev::before,.chev::after{content:'';position:absolute;top:50%;left:50%;width:0.8rem;height:1.5px;background:currentColor;transition:transform 0.3s;}
+.chev::before{transform:translate(-50%,-50%) rotate(0deg);}
+.chev::after{transform:translate(-50%,-50%) rotate(90deg);}
+.pkg-toggle[aria-expanded="true"] .chev::after{transform:translate(-50%,-50%) rotate(0deg);}
+.pkg-toggle[aria-expanded="true"] .price-hint{color:rgba(240,237,230,0.4);}
+.pkg-panel{display:grid;grid-template-rows:0fr;transition:grid-template-rows 0.35s ease;}
+.pkg-panel>.pkg-panel-inner{overflow:hidden;min-height:0;}
+.pkg-toggle[aria-expanded="true"]+.pkg-panel{grid-template-rows:1fr;}
+.pkg-panel-inner{padding-left:calc(70px + 2.5rem);padding-bottom:2.6rem;}
+@media (max-width:760px){.pkg-panel-inner{padding-left:0;}}
+.ssub{font-family:var(--mono);font-size:11px;color:rgba(240,237,230,0.45);line-height:1.9;max-width:74ch;}
+.ssub b{color:rgba(240,237,230,0.7);font-weight:400;}
+
+/* lanes mini — inversión / tiempo / cobro */
+.lanes3{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:rgba(240,237,230,0.07);margin-top:1.5rem;border:1px solid rgba(240,237,230,0.07);}
+.lane3{background:var(--black);padding:1.2rem 1.3rem;}
+.lane3 .l3l{font-family:var(--mono);font-size:8px;letter-spacing:0.2em;text-transform:uppercase;color:rgba(240,237,230,0.3);margin-bottom:0.5rem;}
+.lane3 .l3v{font-family:var(--mono);font-size:14px;color:var(--acid);line-height:1.3;}
+.lane3.cobro .l3v{color:var(--violet);}
+@media (max-width:600px){.lanes3{grid-template-columns:1fr;}}
+
+/* pasos numerados del proyecto */
+.steps{list-style:none;margin-top:1.6rem;counter-reset:s;}
+.steps li{font-family:var(--mono);font-size:10.5px;color:rgba(240,237,230,0.55);line-height:1.6;padding:0.55rem 0 0.55rem 2.6rem;position:relative;border-top:1px solid rgba(240,237,230,0.05);counter-increment:s;}
+.steps li:first-child{border-top:none;}
+.steps li::before{content:'0' counter(s);position:absolute;left:0;font-size:9px;color:rgba(184,255,0,0.5);letter-spacing:0.1em;}
+.steps li b{color:rgba(240,237,230,0.85);font-weight:400;}
+.upgrade-tip{font-family:var(--mono);font-size:9.5px;letter-spacing:0.04em;color:rgba(125,123,255,0.75);line-height:1.7;margin-top:1.3rem;border-left:1px solid rgba(125,123,255,0.35);padding-left:1rem;text-transform:uppercase;}
+.upgrade-tip b{color:var(--violet);}
+
+/* CALENDARIO ESTACIONAL */
+#calendario{padding:9vh 8vw;flex-direction:column;border-top:1px solid rgba(240,237,230,0.07);}
+.season-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:rgba(240,237,230,0.06);width:100%;margin-top:1rem;border:1px solid rgba(240,237,230,0.06);}
+.season{background:var(--black);padding:1.8rem 1.7rem;}
+.season h4{font-family:var(--display);font-size:1.5rem;color:var(--acid);margin-bottom:0.9rem;}
+.season ul{list-style:none;}
+.season li{font-family:var(--mono);font-size:10px;color:rgba(240,237,230,0.5);line-height:1.5;padding:0.4rem 0 0.4rem 1.1rem;position:relative;}
+.season li::before{content:'·';position:absolute;left:0;color:var(--violet);}
+@media (max-width:760px){.season-grid{grid-template-columns:1fr;}}
+.price-table{width:100%;margin-top:2.2rem;border:1px solid rgba(240,237,230,0.07);}
+.price-row{display:flex;justify-content:space-between;align-items:center;padding:1rem 1.4rem;border-top:1px solid rgba(240,237,230,0.05);}
+.price-row:first-child{border-top:none;}
+.price-row .prn{font-family:var(--mono);font-size:11px;color:rgba(240,237,230,0.6);}
+.price-row .prv{font-family:var(--mono);font-size:12px;color:var(--acid);}
+.price-cap{font-family:var(--mono);font-size:9px;letter-spacing:0.16em;text-transform:uppercase;color:rgba(240,237,230,0.35);margin:2rem 0 0.6rem;}
+
+/* HOJA DE RUTA */
+#ruta{padding:9vh 8vw;flex-direction:column;border-top:1px solid rgba(240,237,230,0.07);}
+.road{width:100%;margin-top:1rem;}
+.road-row{display:grid;grid-template-columns:120px 1fr;gap:2rem;padding:1.6rem 0;border-top:1px solid rgba(240,237,230,0.07);}
+.road-row:last-child{border-bottom:1px solid rgba(240,237,230,0.07);}
+.road-w{font-family:var(--mono);font-size:11px;letter-spacing:0.16em;color:var(--violet);text-transform:uppercase;padding-top:0.2rem;}
+.road-t{font-family:var(--body);font-size:1rem;color:rgba(240,237,230,0.72);line-height:1.6;}
+.road-t b{color:var(--acid);font-weight:500;}
+@media (max-width:600px){.road-row{grid-template-columns:1fr;gap:0.6rem;}}
+
+/* HUB */
+#hub{padding:9vh 8vw;flex-direction:column;border-top:1px solid rgba(240,237,230,0.07);}
+.hub-copy{font-family:var(--body);font-size:1.02rem;color:rgba(240,237,230,0.7);line-height:1.75;margin-top:-1rem;margin-bottom:2.4rem;max-width:78ch;}
+.hub-copy b{color:var(--acid);font-weight:500;}
+.hub-chips{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:rgba(240,237,230,0.07);width:100%;border:1px solid rgba(240,237,230,0.07);}
+.hub-chip{background:var(--black);padding:1.5rem 1.4rem;display:flex;flex-direction:column;text-decoration:none;transition:background-color 0.25s;}
+.hub-chip:hover{background:rgba(125,123,255,0.05);}
+.hub-chip .hcn{font-family:var(--mono);font-size:11px;letter-spacing:0.08em;color:var(--violet);}
+.hub-chip .hcd{font-family:var(--mono);font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:rgba(240,237,230,0.35);margin-top:0.6rem;line-height:1.6;}
+@media (max-width:760px){.hub-chips{grid-template-columns:1fr 1fr;}}
+
+/* CIERRE / CTA final */
+#cierre{padding:11vh 8vw;flex-direction:column;border-top:1px solid rgba(240,237,230,0.07);align-items:flex-start;}
+.cierre-title{font-family:var(--display);font-size:clamp(2.6rem,6vw,5.5rem);line-height:0.92;max-width:18ch;}
+.cierre-title .vio{color:var(--violet);}
+.cierre-sub{font-family:var(--body);font-size:1.05rem;color:rgba(240,237,230,0.65);line-height:1.7;margin-top:1.6rem;max-width:56ch;}
+.cierre-sub b{color:var(--acid);font-weight:500;}
+
+/* NOTA GATES */
+.gate-note{font-family:var(--mono);font-size:10px;color:rgba(255,45,85,0.7);letter-spacing:0.06em;line-height:1.9;margin-top:3rem;border:1px solid rgba(255,45,85,0.25);padding:1.3rem 1.5rem;background:rgba(255,45,85,0.04);max-width:84ch;}
+
+/* SEP */
+.sep{font-family:var(--mono);font-size:9px;letter-spacing:0.3em;color:rgba(240,237,230,0.08);text-align:center;padding:1.5rem;display:block;}
+
+/* FOOTER (espejo de servicios) */
+#footer{padding:5rem 8vw 3.5rem;display:flex;flex-direction:column;border-top:1px solid rgba(240,237,230,0.07);}
+.ftop{display:flex;justify-content:space-between;align-items:flex-start;width:100%;margin-bottom:4rem;}
+.flogo{font-family:var(--display);font-size:5rem;line-height:0.88;color:rgba(240,237,230,0.06);}
+.flinks{display:flex;gap:2.5rem;flex-wrap:wrap;}
+.flinks a{font-family:var(--mono);font-size:9px;letter-spacing:0.2em;color:rgba(240,237,230,0.25);text-decoration:none;transition:color 0.2s;}
+.flinks a:hover{color:var(--acid);}
+.fbot{display:flex;justify-content:space-between;width:100%;flex-wrap:wrap;gap:1rem;}
+.fcopy{font-family:var(--mono);font-size:9px;color:rgba(240,237,230,0.12);letter-spacing:0.12em;}
+.facid{font-family:var(--mono);font-size:9px;color:var(--violet);letter-spacing:0.12em;opacity:0.5;}
+
+@media (max-width:760px){
+  #nav{padding:1.2rem 5vw;}
+  .nav-links{gap:0.9rem;}
+  .nav-links a{font-size:9px;letter-spacing:0.13em;}
+  section{padding-left:5vw;padding-right:5vw;}
+  #kit-hero{padding:12vh 5vw 5vh;}
+  .pkg-toggle{grid-template-columns:36px 1fr auto;gap:1rem;padding:1.8rem 0;}
+  .pkg-aside{flex-direction:column;align-items:flex-end;gap:0.6rem;}
+  .ftop{flex-direction:column;gap:2rem;}
+  .fbot{flex-direction:column;gap:0.5rem;}
+}
+</style>
+</head>
+<body>
+
+<nav id="nav">
+  <a href="servicios.html" class="nav-logo">HG — VL / 2026</a>
+  <div class="nav-links">
+    <a href="#hardware" class="seg">EL KIT</a>
+    <a href="#roles">ROLES</a>
+    <a href="#proyectos">PROYECTOS</a>
+    <a href="#ruta">HOJA DE RUTA</a>
+    <a href="servicios.html">STUDIO</a>
+  </div>
+</nav>
+
+<div id="scroll-container">
+
+  <!-- HERO -->
+  <section id="kit-hero">
+    <span class="hero-tag">CREATIVE CELL · STARTER KIT</span>
+    <h1 class="hero-title">EMPEZÁ TU <span class="vio">CÉLULA CREATIVA</span> DESDE CERO.</h1>
+    <p class="hero-llano">Un plan de implementación para <b>grupos de amigos</b> que quieren trabajar creativamente — con un teléfono, una computadora, o ambos. Kit de herramientas, roles de equipo, proyectos económicos de arranque y una hoja de ruta para las <b>primeras 6 semanas</b>.</p>
+    <p class="hero-thesis">El kit base es <b>gratis</b>: la información se comparte. Lo que cobrás es la transformación — y <b>todo upgrade es bienvenido</b>: del primer proyecto al workshop, del workshop al retainer, de la célula al Studio.</p>
+
+    <div class="stats">
+      <div class="stat"><span class="sv">$0</span><span class="sl">Inversión inicial</span></div>
+      <div class="stat"><span class="sv">2+</span><span class="sl">Desde 2 personas</span></div>
+      <div class="stat"><span class="sv">6</span><span class="sl">Semanas al primer proyecto</span></div>
+      <div class="stat"><span class="sv">HG·VL</span><span class="sl">Como hub permanente</span></div>
+    </div>
+
+    <div class="cta-line">
+      <a href="contacto.html" class="cta-primary">QUIERO EL STARTER KIT →</a>
+      <a href="#proyectos" class="cta-ghost">VER PROYECTOS DE ARRANQUE</a>
+    </div>
+  </section>
+
+  <span class="sep">— — — — — — — — —</span>
+
+  <!-- 1 · HARDWARE MÍNIMO -->
+  <section id="hardware">
+    <div class="sec-hdr">
+      <div>
+        <div class="sec-kicker">01 · Kit de arranque</div>
+        <h2 class="sec-title">HARDWARE<br>MÍNIMO</h2>
+      </div>
+    </div>
+    <p class="sec-intro">Todo lo que necesitás para producir ya — la mayoría <b>gratis</b>. Elegí tu configuración según lo que tengas a mano.</p>
+
+    <div class="kit-grid">
+      <!-- Solo teléfono -->
+      <div class="kit-col">
+        <h3>SOLO TELÉFONO</h3>
+        <div class="kc-tag">Captura · edición · ideas en la palma</div>
+        <div class="tool"><span class="tn"><b>CapCut</b> mobile — edición de video HD</span><span class="tp free">Gratis</span></div>
+        <div class="tool"><span class="tn"><b>Canva</b> mobile — diseño y templates</span><span class="tp free">Gratis</span></div>
+        <div class="tool"><span class="tn"><b>Claude / ChatGPT</b> — copy, guiones, ideas</span><span class="tp free">Gratis</span></div>
+        <div class="tool"><span class="tn"><b>ElevenLabs</b> mobile — voiceover IA</span><span class="tp tier">Free tier</span></div>
+        <div class="tool"><span class="tn"><b>Trello</b> mobile — gestión de tareas</span><span class="tp free">Gratis</span></div>
+      </div>
+      <!-- 1 computadora -->
+      <div class="kit-col">
+        <h3>1 COMPUTADORA</h3>
+        <div class="kc-tag">Producción · render · código</div>
+        <div class="tool"><span class="tn"><b>DaVinci Resolve</b> — edición y color pro</span><span class="tp free">Gratis</span></div>
+        <div class="tool"><span class="tn"><b>OBS Studio</b> — grabación y streaming</span><span class="tp free">Gratis</span></div>
+        <div class="tool"><span class="tn"><b>Figma</b> — interfaces y assets</span><span class="tp free">Gratis</span></div>
+        <div class="tool"><span class="tn"><b>Photopea / GIMP</b> — edición de imagen</span><span class="tp free">Gratis</span></div>
+        <div class="tool"><span class="tn"><b>Higgsfield / RunwayML</b> — video con IA</span><span class="tp tier">Free tier</span></div>
+        <div class="tool"><span class="tn"><b>VS Code</b> — web y glitch art con código</span><span class="tp free">Gratis</span></div>
+      </div>
+      <!-- Teléfono + compu -->
+      <div class="kit-col ideal">
+        <h3>TELÉFONO + COMPU</h3>
+        <div class="kc-tag">★ La célula ideal</div>
+        <div class="tool"><span class="tn"><b>1 persona con compu</b> — edición, render, gestión</span><span class="tp role">Rol Hub</span></div>
+        <div class="tool"><span class="tn"><b>1–3 con teléfonos</b> — captura, social, ideas</span><span class="tp role">Rol Campo</span></div>
+        <div class="tool"><span class="tn"><b>Google Drive</b> — repositorio central</span><span class="tp free">Gratis</span></div>
+        <div class="tool"><span class="tn"><b>Discord</b> privado — comunicación + referencias</span><span class="tp free">Gratis</span></div>
+        <div class="tool"><span class="tn"><b>Notion</b> — brief, mood boards, calendarios</span><span class="tp free">Gratis</span></div>
+        <div class="tool"><span class="tn"><b>GitHub Pages</b> — deployment web gratuito</span><span class="tp free">Gratis</span></div>
+      </div>
+    </div>
+  </section>
+
+  <span class="sep">— — — — — — — — —</span>
+
+  <!-- 2 · ROLES -->
+  <section id="roles">
+    <div class="sec-hdr">
+      <div>
+        <div class="sec-kicker">02 · La célula</div>
+        <h2 class="sec-title">ROLES<br>DE LA CÉLULA</h2>
+      </div>
+    </div>
+    <p class="sec-intro">Cuatro responsabilidades, no cuatro personas. En una célula chica se reparten: lo importante es que <b>alguien tenga claro cada una</b>.</p>
+
+    <div class="role-grid">
+      <div class="role">
+        <h4>DIRECTOR CREATIVO</h4>
+        <ul>
+          <li>Define la <b>identidad visual y narrativa</b> del proyecto</li>
+          <li>Crea los brief de cada entrega y aprueba resultados</li>
+          <li>Cuida la coherencia entre piezas — todo habla el mismo idioma</li>
+          <li>No necesita saber técnica, sí <b>gusto y convicción</b></li>
+        </ul>
+      </div>
+      <div class="role">
+        <h4>PRODUCTOR DE CONTENIDO</h4>
+        <ul>
+          <li>Graba, fotografía, edita — domina las <b>herramientas de producción</b></li>
+          <li>Genera los assets (video, audio, gráficos) de cada pieza</li>
+          <li>Usa IA para acelerar: CapCut, ElevenLabs, Higgsfield</li>
+          <li>Entrega en tiempo y forma según el calendario</li>
+        </ul>
+      </div>
+      <div class="role">
+        <h4>GESTOR DIGITAL</h4>
+        <ul>
+          <li>Publica, responde, hace crecer las <b>cuentas del proyecto</b></li>
+          <li>Analiza métricas y propone ajustes de estrategia</li>
+          <li>Gestiona comunidad en Discord, X, Instagram</li>
+          <li>Coordina colaboraciones con otras células o creadores</li>
+        </ul>
+      </div>
+      <div class="role">
+        <h4>TÉCNICO / DEV</h4>
+        <ul>
+          <li>Construye el sitio, la landing, el <b>portafolio del proyecto</b></li>
+          <li>Automatiza tareas repetitivas con scripts o no-code</li>
+          <li>Integra APIs: formularios, pagos, bases de datos simples</li>
+          <li>En células chicas puede ser la misma persona que el productor</li>
+        </ul>
+      </div>
+    </div>
+    <p class="role-note"><b>Nota:</b> en células de 2 personas, el productor y el técnico pueden ser la misma persona. Lo que no se reparte es la responsabilidad: cada rol tiene un dueño claro.</p>
+  </section>
+
+  <span class="sep">— — — — — — — — —</span>
+
+  <!-- 3 · PROYECTOS DE ARRANQUE (acordeón) -->
+  <section id="proyectos">
+    <div class="sec-hdr">
+      <div>
+        <div class="sec-kicker">03 · Primer ingreso</div>
+        <h2 class="sec-title">PROYECTOS<br>DE ARRANQUE</h2>
+      </div>
+      <a href="contacto.html" class="sec-link">QUIERO ARRANCAR →</a>
+    </div>
+    <p class="sec-intro">Seis formas de pasar de cero a tu <b>primer caso real</b> — la mayoría con $0 de inversión. Cada una se convierte en portfolio, y cada upgrade abre la siguiente. Tocá para desplegar.</p>
+
+    <div class="svc-list">
+
+      <!-- P1 -->
+      <div class="srow">
+        <button class="pkg-toggle" type="button" id="hdr-P1" aria-expanded="false" aria-controls="pnl-P1">
+          <span class="snum">01</span>
+          <span class="pkg-id-line">
+            <span class="sname">GLITCH ASSET PACK</span>
+            <span class="srole">Producto digital · primer ingreso pasivo</span>
+          </span>
+          <span class="pkg-aside">
+            <span class="price-hint">$5 – 30<span class="ph-sub">$0 · 2 semanas</span></span>
+            <span class="chev" aria-hidden="true"></span>
+          </span>
+        </button>
+        <div class="pkg-panel" id="pnl-P1" role="region" aria-labelledby="hdr-P1"><div class="pkg-panel-inner">
+          <p class="ssub">Empaquetá <b>10–20 loops glitch</b> generados con Aether ISF o grabados de pantalla y vendelos como producto digital. El primer ingreso pasivo de la célula — se produce una vez, se vende muchas.</p>
+          <div class="lanes3">
+            <div class="lane3"><div class="l3l">Inversión</div><div class="l3v">$0</div></div>
+            <div class="lane3"><div class="l3l">Tiempo</div><div class="l3v">2 semanas</div></div>
+            <div class="lane3 cobro"><div class="l3l">Venta mínima</div><div class="l3v">$5 – 30</div></div>
+          </div>
+          <ul class="steps">
+            <li>Generar 10–20 loops glitch con <b>Aether ISF</b> o fragmentos grabados de pantalla</li>
+            <li>Empaquetar en ZIP con preview .mp4 — resolución 1080p mínimo</li>
+            <li>Subir a Gumroad (gratis) — precio libre o desde $5 USD</li>
+            <li>Distribuir en X, Instagram Reels con el visual como teaser</li>
+            <li>Referenciar <b>hg-vl.com</b> como estudio madre del pack</li>
+          </ul>
+          <p class="upgrade-tip">↗ <b>Upgrade:</b> el pack que vende se vuelve serie con suscripción mensual.</p>
+        </div></div>
+      </div>
+
+      <!-- P2 -->
+      <div class="srow">
+        <button class="pkg-toggle" type="button" id="hdr-P2" aria-expanded="false" aria-controls="pnl-P2">
+          <span class="snum">02</span>
+          <span class="pkg-id-line">
+            <span class="sname">VJ SET GRATUITO EN VIVO</span>
+            <span class="srole">Audiencia real · primer caso de estudio</span>
+          </span>
+          <span class="pkg-aside">
+            <span class="price-hint">Portfolio<span class="ph-sub">$0–50 · 3–4 semanas</span></span>
+            <span class="chev" aria-hidden="true"></span>
+          </span>
+        </button>
+        <div class="pkg-panel" id="pnl-P2" role="region" aria-labelledby="hdr-P2"><div class="pkg-panel-inner">
+          <p class="ssub">Ofrecé un <b>VJ set gratis</b> a un bar o local cultural a cambio de crédito. El set gratis genera audiencia real y se convierte en el primer caso de estudio del portfolio.</p>
+          <div class="lanes3">
+            <div class="lane3"><div class="l3l">Inversión</div><div class="l3v">$0 – 50</div></div>
+            <div class="lane3"><div class="l3l">Tiempo</div><div class="l3v">3–4 semanas</div></div>
+            <div class="lane3 cobro"><div class="l3l">Valor</div><div class="l3v">Portfolio</div></div>
+          </div>
+          <ul class="steps">
+            <li>Contactar un bar o local cultural — ofrecer el VJ set <b>gratis a cambio de crédito</b></li>
+            <li>Preparar 20–30 min de loops con Resolume, VDMX o stream desde OBS</li>
+            <li>Grabar el set completo para convertirlo en contenido</li>
+            <li>Publicar en X y YouTube — el set gratis genera <b>audiencia real</b></li>
+            <li>Usar como primer caso de estudio del portfolio de la célula</li>
+          </ul>
+          <p class="upgrade-tip">↗ <b>Upgrade:</b> del set gratis al evento pago → escala a <b>Live Reality</b> del Studio.</p>
+        </div></div>
+      </div>
+
+      <!-- P3 -->
+      <div class="srow">
+        <button class="pkg-toggle" type="button" id="hdr-P3" aria-expanded="false" aria-controls="pnl-P3">
+          <span class="snum">03</span>
+          <span class="pkg-id-line">
+            <span class="sname">MINI-SITIO PARA ARTISTA LOCAL</span>
+            <span class="srole">Primer cliente pagador</span>
+          </span>
+          <span class="pkg-aside">
+            <span class="price-hint">$50 – 200<span class="ph-sub">$0 · 1–2 semanas</span></span>
+            <span class="chev" aria-hidden="true"></span>
+          </span>
+        </button>
+        <div class="pkg-panel" id="pnl-P3" role="region" aria-labelledby="hdr-P3"><div class="pkg-panel-inner">
+          <p class="ssub">Buscá un músico, fotógrafo o artista plástico que necesite presencia online y armale un <b>one-pager</b> en GitHub Pages con un shader ISF de fondo como diferenciador. El cobro simbólico genera el antecedente de cliente pagador.</p>
+          <div class="lanes3">
+            <div class="lane3"><div class="l3l">Inversión</div><div class="l3v">$0</div></div>
+            <div class="lane3"><div class="l3l">Tiempo</div><div class="l3v">1–2 semanas</div></div>
+            <div class="lane3 cobro"><div class="l3l">Cobro sugerido</div><div class="l3v">$50 – 200</div></div>
+          </div>
+          <ul class="steps">
+            <li>Buscar músico, fotógrafo o artista plástico que necesite <b>presencia online</b></li>
+            <li>Construir un one-pager HTML en GitHub Pages: bio, galería, contacto</li>
+            <li>Incluir un <b>shader ISF de fondo</b> como diferenciador visual</li>
+            <li>Cobrar simbólico para generar el antecedente de cliente pagador</li>
+            <li>Documentar el proceso como video para distribuir en redes propias</li>
+          </ul>
+          <p class="upgrade-tip">↗ <b>Upgrade:</b> el one-pager se vuelve <b>Interface Identity</b> completa en el Studio.</p>
+        </div></div>
+      </div>
+
+      <!-- P4 -->
+      <div class="srow">
+        <button class="pkg-toggle" type="button" id="hdr-P4" aria-expanded="false" aria-controls="pnl-P4">
+          <span class="snum">04</span>
+          <span class="pkg-id-line">
+            <span class="sname">ZINE DIGITAL</span>
+            <span class="srole">Obra colectiva · paga lo que puedas</span>
+          </span>
+          <span class="pkg-aside">
+            <span class="price-hint">Free + pago<span class="ph-sub">$0 · 1 semana</span></span>
+            <span class="chev" aria-hidden="true"></span>
+          </span>
+        </button>
+        <div class="pkg-panel" id="pnl-P4" role="region" aria-labelledby="hdr-P4"><div class="pkg-panel-inner">
+          <p class="ssub">Un <b>zine digital</b> de 8–12 páginas donde cada integrante aporta 1–2 piezas. Modelo "paga lo que puedas": genera comunidad y los primeros ingresos al mismo tiempo.</p>
+          <div class="lanes3">
+            <div class="lane3"><div class="l3l">Inversión</div><div class="l3v">$0</div></div>
+            <div class="lane3"><div class="l3l">Tiempo</div><div class="l3v">1 semana</div></div>
+            <div class="lane3 cobro"><div class="l3l">Modelo</div><div class="l3v">Free + pago</div></div>
+          </div>
+          <ul class="steps">
+            <li>Definir un tema: glitch, VJ culture, filosofía de interfaz</li>
+            <li>Diseñar 8–12 páginas en Canva o Figma — <b>cada integrante aporta 1–2 piezas</b></li>
+            <li>Exportar como PDF interactivo — subir a Gumroad o Discord exclusivo</li>
+            <li>Precio sugerido: <b>paga lo que puedas</b> — genera comunidad y primeros ingresos</li>
+            <li>Mencionar HG-VL como referencia conceptual dentro del zine</li>
+          </ul>
+        </div></div>
+      </div>
+
+      <!-- P5 -->
+      <div class="srow">
+        <button class="pkg-toggle" type="button" id="hdr-P5" aria-expanded="false" aria-controls="pnl-P5">
+          <span class="snum">05</span>
+          <span class="pkg-id-line">
+            <span class="sname">WORKSHOP PRESENCIAL O EN VIVO</span>
+            <span class="srole">Conocimiento que se vuelve contenido eterno</span>
+          </span>
+          <span class="pkg-aside">
+            <span class="price-hint">$5 – 20<span class="ph-sub">/persona · 2 semanas prep</span></span>
+            <span class="chev" aria-hidden="true"></span>
+          </span>
+        </button>
+        <div class="pkg-panel" id="pnl-P5" role="region" aria-labelledby="hdr-P5"><div class="pkg-panel-inner">
+          <p class="ssub">Dar un workshop concreto — <b>"Cómo crear loops glitch con tu teléfono"</b> — en un espacio local o vía streaming. Grabado y reeditado, se vuelve una mini-serie de YouTube: contenido eterno.</p>
+          <div class="lanes3">
+            <div class="lane3"><div class="l3l">Inversión</div><div class="l3v">$0 – 20</div></div>
+            <div class="lane3"><div class="l3l">Prep</div><div class="l3v">2 semanas</div></div>
+            <div class="lane3 cobro"><div class="l3l">Cobro</div><div class="l3v">$5 – 20 / persona</div></div>
+          </div>
+          <ul class="steps">
+            <li>Elegir un tema concreto: <b>Cómo crear loops glitch con tu teléfono</b></li>
+            <li>Preparar deck simple (Canva) + material descargable</li>
+            <li>Darlo en espacio local (biblioteca, café cultural) o vía Kick/YouTube</li>
+            <li>Invitar a hg-vl.com como recurso oficial — <b>Aether ISF</b> como herramienta práctica</li>
+            <li>Grabar y reeditar como mini-serie de YouTube — contenido eterno</li>
+          </ul>
+          <p class="upgrade-tip">↗ <b>Upgrade:</b> el workshop suelto se vuelve cohorte paga — la <b>Academia / Taller</b> de HG-VL.</p>
+        </div></div>
+      </div>
+
+      <!-- P6 -->
+      <div class="srow">
+        <button class="pkg-toggle" type="button" id="hdr-P6" aria-expanded="false" aria-controls="pnl-P6">
+          <span class="snum">06</span>
+          <span class="pkg-id-line">
+            <span class="sname">CARTELERÍAS Y VINILOS ESTACIONALES</span>
+            <span class="srole">El que paga recurrente · abono mensual</span>
+          </span>
+          <span class="pkg-aside">
+            <span class="price-hint">$30 – 300<span class="ph-sub">$0 · 3–7 días</span></span>
+            <span class="chev" aria-hidden="true"></span>
+          </span>
+        </button>
+        <div class="pkg-panel" id="pnl-P6" role="region" aria-labelledby="hdr-P6"><div class="pkg-panel-inner">
+          <p class="ssub">Diseño estacional para comercios locales — <b>cartel, vinilo de vitrina, banner o kit social+físico</b>. El modelo recurrente (abono mensual por actualizaciones estacionales) es el ingreso más estable de la célula. Calendario abajo ↓</p>
+          <div class="lanes3">
+            <div class="lane3"><div class="l3l">Inversión</div><div class="l3v">$0</div></div>
+            <div class="lane3"><div class="l3l">Entrega</div><div class="l3v">3–7 días</div></div>
+            <div class="lane3 cobro"><div class="l3l">Cobro</div><div class="l3v">$30 – 300</div></div>
+          </div>
+          <ul class="steps">
+            <li>Definir tipo de entregable: cartel A3, vinilo de vitrina, banner, o kit social+físico</li>
+            <li>Brief de 30 min con el cliente — rubro, temporada, colores, mensaje</li>
+            <li>Diseñar en Canva, Figma o Inkscape — una propuesta inicial en 1–2 días</li>
+            <li>Entregar PDF para imprenta, PNG para redes y SVG para vinilos en un ZIP</li>
+            <li>Fotografiar el resultado instalado — es el <b>portfolio más valioso</b></li>
+            <li>Modelo recurrente: <b>abono mensual $80–150/mes</b> por actualizaciones estacionales</li>
+          </ul>
+          <p class="upgrade-tip">↗ <b>Upgrade:</b> el abono recurrente es el primer <b>Brand Partnership</b> de la célula.</p>
+        </div></div>
+      </div>
+
+    </div>
+  </section>
+
+  <span class="sep">— — — — — — — — —</span>
+
+  <!-- 4 · CARTELERÍAS — CALENDARIO ESTACIONAL -->
+  <section id="calendario">
+    <div class="sec-hdr">
+      <div>
+        <div class="sec-kicker">04 · Cartelerías</div>
+        <h2 class="sec-title">CALENDARIO<br>ESTACIONAL</h2>
+      </div>
+    </div>
+    <p class="sec-intro">A quién golpear en cada temporada del año (Argentina). La cartelería estacional es el ingreso que <b>vuelve solo</b> cada cambio de vitrina.</p>
+
+    <div class="season-grid">
+      <div class="season">
+        <h4>VERANO · DIC–FEB</h4>
+        <ul>
+          <li>Locales de ropa — liquidación / temporada alta</li>
+          <li>Bares y restós — promos de verano y eventos</li>
+          <li>Festivales y shows — cartelería de temporada</li>
+          <li>San Valentín (Feb) — florerías, regalerías</li>
+        </ul>
+      </div>
+      <div class="season">
+        <h4>OTOÑO · MAR–MAY</h4>
+        <ul>
+          <li>Instituciones y academias — inicio de clases</li>
+          <li>Estudios y talleres — nueva temporada de cursos</li>
+          <li>Comercios de hogar — actualización post-verano</li>
+          <li>Dietéticas y farmacias — foco en salud y rutina</li>
+        </ul>
+      </div>
+      <div class="season">
+        <h4>INVIERNO · JUN–AGO</h4>
+        <ul>
+          <li>Ropa de abrigo — colección invierno</li>
+          <li>Panaderías y cafeterías — ambiente de temporada</li>
+          <li>Espacios culturales — programación de invierno</li>
+          <li>Cualquier local que quiera renovar vitrina</li>
+        </ul>
+      </div>
+      <div class="season">
+        <h4>PRIMAVERA · SEP–NOV</h4>
+        <ul>
+          <li>Colecciones primavera-verano — ropa, calzado, accesorios</li>
+          <li>Día de la madre / estudiante / amigos — kits temáticos</li>
+          <li>Hot Sale / Black Friday — carteles urgentes, alta demanda</li>
+          <li>Navidad (desde Oct) — la temporada más activa</li>
+        </ul>
+      </div>
+    </div>
+
+    <p class="price-cap">Precios sugeridos — célula de 2 personas</p>
+    <div class="price-table">
+      <div class="price-row"><span class="prn">Cartel simple (1 pieza)</span><span class="prv">$30 – 60 USD</span></div>
+      <div class="price-row"><span class="prn">Vinilo de vitrina</span><span class="prv">$40 – 100 USD</span></div>
+      <div class="price-row"><span class="prn">Banner / roll-up</span><span class="prv">$50 – 120 USD</span></div>
+      <div class="price-row"><span class="prn">Kit temporada (4 piezas)</span><span class="prv">$120 – 250 USD</span></div>
+      <div class="price-row"><span class="prn">Kit social + físico</span><span class="prv">$80 – 200 USD</span></div>
+      <div class="price-row"><span class="prn">Abono mensual (cliente fijo)</span><span class="prv">$80 – 150 USD/mes</span></div>
+    </div>
+  </section>
+
+  <span class="sep">— — — — — — — — —</span>
+
+  <!-- 5 · HOJA DE RUTA -->
+  <section id="ruta">
+    <div class="sec-hdr">
+      <div>
+        <div class="sec-kicker">05 · Primeras 6 semanas</div>
+        <h2 class="sec-title">HOJA<br>DE RUTA</h2>
+      </div>
+    </div>
+    <p class="sec-intro">De cero a portfolio + audiencia inicial + primer ingreso. Sin perfección: <b>con entrega</b>.</p>
+
+    <div class="road">
+      <div class="road-row">
+        <div class="road-w">Sem 1–2</div>
+        <div class="road-t">Definir nombre, identidad básica y roles. Armar el Discord y Drive compartido. <b>Elegir el proyecto de arranque.</b></div>
+      </div>
+      <div class="road-row">
+        <div class="road-w">Sem 2–3</div>
+        <div class="road-t">Ejecutar el primer proyecto completo. Sin perfección, con entrega. <b>El primer resultado vale más que el plan perfecto.</b></div>
+      </div>
+      <div class="road-row">
+        <div class="road-w">Sem 3–4</div>
+        <div class="road-t">Publicar el resultado y documentar el proceso como contenido propio. <b>Cada entrega se convierte en portfolio.</b></div>
+      </div>
+      <div class="road-row">
+        <div class="road-w">Sem 4–5</div>
+        <div class="road-t">Postmortem en equipo — qué funcionó, qué ajustar, qué repetir. Corregir antes del segundo proyecto.</div>
+      </div>
+      <div class="road-row">
+        <div class="road-w">Sem 5–6</div>
+        <div class="road-t">Segundo proyecto con lo aprendido. A esta altura ya tienen <b>portfolio, audiencia inicial y primer ingreso.</b></div>
+      </div>
+    </div>
+  </section>
+
+  <span class="sep">— — — — — — — — —</span>
+
+  <!-- 6 · HG-VL COMO HUB -->
+  <section id="hub">
+    <div class="sec-hdr">
+      <div>
+        <div class="sec-kicker">06 · Punto de apoyo</div>
+        <h2 class="sec-title">HG·VL<br>COMO HUB</h2>
+      </div>
+    </div>
+    <p class="hub-copy">hg-vl.com actúa como <b>punto de apoyo permanente</b> de cada célula: Aether ISF como herramienta de shaders gratuita, blog con conceptos de glitch y diseño de interfaz, repositorio comunitario de shaders, y el manifiesto filosófico como marco de identidad compartido. Las células pueden citar HG-VL, usar Aether en sus talleres, y eventualmente unirse al repositorio como <b>colaboradores activos</b>. Cada cartel con textura glitch, cada sitio con shader ISF, es una puerta de entrada al ecosistema.</p>
+    <div class="hub-chips">
+      <a href="servicios.html" class="hub-chip"><span class="hcn">hg-vl.com</span><span class="hcd">El estudio madre</span></a>
+      <a href="#hardware" class="hub-chip"><span class="hcn">Aether ISF Generator</span><span class="hcd">Shaders gratis</span></a>
+      <a href="servicios.html" class="hub-chip"><span class="hcn">Blog / Manifiesto</span><span class="hcd">Marco de identidad</span></a>
+      <a href="https://github.com/human-zeta" target="_blank" rel="noopener" class="hub-chip"><span class="hcn">Repositorio shaders</span><span class="hcd">Colaborá</span></a>
+    </div>
+  </section>
+
+  <span class="sep">— — — — — — — — —</span>
+
+  <!-- CIERRE / CTA FINAL -->
+  <section id="cierre">
+    <h2 class="cierre-title">UNA GRIETA.<br>UN <span class="vio">TELÉFONO.</span><br>UNA CÉLULA.</h2>
+    <p class="cierre-sub">Pedí el <b>Creative Cell Starter Kit</b> y armá tu primer proyecto en 6 semanas. El kit es gratis; el camino que abre — del primer ingreso al Studio — <b>lo recorrés vos</b>.</p>
+    <div class="cta-line">
+      <a href="contacto.html" class="cta-primary">QUIERO EL STARTER KIT →</a>
+      <a href="servicios.html" class="cta-ghost">CONOCER EL STUDIO</a>
+    </div>
+
+    <div class="gate-note">
+      NOTA DE PUBLICACIÓN (GATES) — Artefacto de staging. Ningún CTA cobra ni descarga un archivo
+      vivo: todos llevan al formulario de contacto (contacto.html). Dar de alta la descarga
+      del PDF como lead magnet, conectar una lista de correo y cualquier checkout son acciones humanas
+      en cola en progress/cola_aprobacion.md. Publicar esta sección en hg-vl (integrar el HTML y git
+      push) también es acción humana. Hasta el APROBADO, nada se publica ni cobra.
+    </div>
+  </section>
+
+  <span class="sep">— — — — — — — — —</span>
+
+  <!-- FOOTER -->
+  <section id="footer">
+    <div class="ftop">
+      <div class="flogo">HG<br>VL</div>
+      <div class="flinks">
+        <a href="https://www.youtube.com/@Human.Glitche" target="_blank" rel="noopener">YOUTUBE</a>
+        <a href="https://x.com/HGlitche" target="_blank" rel="noopener">X / TWITTER</a>
+        <a href="https://kick.com/visuallab" target="_blank" rel="noopener">KICK</a>
+        <a href="https://discord.gg/mkHhBdUw" target="_blank" rel="noopener">DISCORD</a>
+        <a href="https://github.com/human-zeta" target="_blank" rel="noopener">GITHUB</a>
+      </div>
+    </div>
+    <div class="fbot">
+      <span class="fcopy">© 2026 HUMAN GLITCHE — VISUAL LAB — BUENOS AIRES</span>
+      <span class="facid">EMPEZÁ DONDE ESTÁS. CON LO QUE TENÉS.</span>
+    </div>
+  </section>
+
+</div>
+
+<script>
+/* ACORDEÓN de proyectos — cada cabecera es un <button> que alterna su panel.
+   Accesible: aria-expanded refleja el estado, aria-controls apunta al panel,
+   Enter/Espacio funcionan de fábrica. La animación de altura la hace el CSS
+   (grid-template-rows 0fr→1fr). Varios abiertos a la vez para comparar. */
+(function(){
+  'use strict';
+  var toggles = document.querySelectorAll('.pkg-toggle');
+  toggles.forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var open = btn.getAttribute('aria-expanded') === 'true';
+      btn.setAttribute('aria-expanded', open ? 'false' : 'true');
+    });
+  });
+})();
+</script>
+
+</body>
+</html>
