@@ -2702,6 +2702,12 @@ document.querySelectorAll('.bcard').forEach(c=>{
           method:'PATCH', headers:{'Content-Type':'application/json'},
           body: JSON.stringify({ accountType })
         }).catch(()=>{});
+        // Índice email→uid para /equipos (RTDB no admite '.' en claves: se reemplaza por ',')
+        const emailIndexKey = session.email.trim().toLowerCase().replace(/\./g, ',');
+        fetch(`${FB_URL}/emailIndex/${encodeURIComponent(emailIndexKey)}.json?auth=${session.idToken}`, {
+          method:'PUT', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify(session.uid)
+        }).catch(()=>{});
         setStatus('¡Cuenta creada! Bienvenido.', 'ok');
         setTimeout(()=> { showLoggedIn(session); document.dispatchEvent(new CustomEvent('hg-auth-changed')); }, 500);
       } else {
