@@ -1,0 +1,1037 @@
+<!doctype html><html lang="es"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AUDITORÍA — Human Glitche · comercios relevados a mano</title>
+<meta name="description" content="Tablero de presencia digital de comercios locales, relevado a mano por moderadores y comunidad. Mapa con Google Maps, alta gateada, panel de moderación.">
+<!--
+  ARTEFACTO DE STAGING — work_list ítem 30 (comercios_relevamiento_moderado).
+  REESCRIBE el ítem 29 (auditoria_presencia_digital): se DESCARTA el auto-fetch
+  de Overpass API para detectar web/Instagram/Facebook/WhatsApp/TikTok porque
+  la cobertura de esos tags en OpenStreetMap es floja — genera falsos negativos
+  ("sin web" cuando el comercio SÍ tiene sitio) y eso es un riesgo de
+  credibilidad real si se usa para contactar leads. Pasa a RELEVAMIENTO MANUAL.
+
+  ════════════════════════════════════════════════════════════════════════
+  DOS NIVELES DE PERMISO (mismo patrón YA existente en docs/firebase-rules.json,
+  web/lobbies/lobbies.rules.json, web/equipos/equipos.rules.json — NO se inventa
+  un esquema de roles nuevo):
+  ════════════════════════════════════════════════════════════════════════
+    · MODERADORES y ADMINS (/moderators/{uid}, /admins/{uid} — mismos permisos,
+      la distinción es solo organizativa): editan /comercios/{id} DIRECTO, sin
+      paso de confirmación. Ven el panel de moderación.
+    · COMUNIDAD (logueada, accountType !== 'cliente' — mismo gate inline que
+      web/equipos/index.html): solo puede SUGERIR alta o edición. Esa sugerencia
+      escribe en /comercios_pending/{id} con status:'pending' y NUNCA toca
+      /comercios directo. Un moderador la aprueba (mergea a /comercios) o la
+      rechaza.
+    · Visitante sin login: solo lectura del tablero público de /comercios
+      (confirmados). No ve pendientes ni el panel de moderación.
+
+  GATE DE LOGIN: mismo patrón lógico que ~/Desktop/repos/hg-vl/gate/gate.js y
+  que web/equipos/index.html (localStorage[hg_auth_session] válido + fetch a
+  /profiles/{uid}/accountType.json !== 'cliente'), reimplementado inline porque
+  web/ es staging autocontenido y no comparte la carpeta /gate/ del sitio vivo.
+
+  QUÉ SE ELIMINÓ vs el ítem 29: fetchOverpass(), buildOverpassQuery(),
+  elementToBiz() (auto-detección de tags OSM), el caveat de "esto no prueba
+  ausencia real" sobre datos automáticos (ya no aplica: ahora el dato SE
+  CONFIRMA A MANO). Lo que se CONSERVA: geocode() vía Nominatim, como ayuda
+  opcional para ubicar en el mapa una dirección tipeada a mano al dar de alta
+  un comercio — sigue siendo gratis, sin API key, y ya NO dispara Overpass ni
+  alimenta automáticamente ningún campo de presencia digital.
+
+  MAPA: Google Maps JavaScript API con key embebida CLIENT-SIDE (uso
+  intencional del producto — así funciona Maps JS API, no es un descuido ni
+  se traduce a backend). La key SOLO renderiza tiles + marcadores; NUNCA se usa
+  para buscar datos de comercios o de presencia digital — eso sigue siendo
+  100% manual. Reemplaza el mapa pixelado custom (proyección lat/lng a píxeles)
+  del ítem 29.
+
+  FB_URL / FB_API_KEY: PLACEHOLDERS sin credenciales reales (mismo patrón que
+  web/contacto/index.html) — a diferencia de equipos.html/lobbies.html (que ya
+  tienen Firebase real activo), este backend NO está activado todavía. La
+  activación real (pegar auditoria.rules.json en Firebase Console + designar
+  moderadores iniciales) queda como acción humana en progress/cola_aprobacion.md.
+
+  Estética Visual Lab: tokens --acid/--glitch/--gold/--cyan/--ink/--bg/--panel
+  (heredados del ítem 29), Bebas Neue + Space Mono + DM Sans.
+
+  ════════════════════════════════════════════════════════════════════════
+  ADDENDUM ÍTEM 31 (auditoria_pba_multiciudad) — 2026-06-26:
+  ════════════════════════════════════════════════════════════════════════
+  El usuario compartió un mockup con 25 ciudades de la Provincia de Buenos
+  Aires (~184 comercios de ejemplo) y pidió explícitamente "cargarlos como
+  reales directamente", pese a que esos datos tienen el MISMO patrón de
+  datos fabricados (ratings redondos, direcciones genéricas) que llevó a
+  descartar el auto-fetch de OSM en el ítem 30. Se honra la decisión del
+  usuario pero de forma honesta: ver web/auditoria/seed_comercios_pba.json
+  y auditoria.rules.json → $decisiones.seed_pba_cargado_como_confirmado_por_decision_explicita_del_usuario.
+  Ese JSON NO se escribió a Firebase real (no hay backend activo todavía,
+  ver FB_URL/FB_API_KEY arriba) — queda como acción humana encolada en
+  progress/cola_aprobacion.md.
+
+  QUÉ SE AGREGÓ en este ítem (selector multi-ciudad, paginación, panel CRM
+  de seguimiento de leads, export CSV): ver buildCityBtns()/filterCity(),
+  renderCards()/pagerHtml(), panel-crm/renderCRMPanel(). El mapa SIGUE
+  siendo Google Maps real (initGoogleMap/renderMapMarkers) — el mapa canvas
+  pixelado del mockup nuevo NO se adoptó, solo se filtra por ciudad.
+
+  El panel "Notas CRM" es 100% localStorage de este navegador — no escribe
+  a Firebase, no lo ve otro moderador. Si se necesita seguimiento de leads
+  compartido entre el equipo, hay que construir eso (no existe todavía).
+
+  Esto se construyó sin pasar por productor/guardian-filosofico por ítem,
+  bajo la excepción temporal de costo vigente en CLAUDE.md mientras se
+  construye web/ — por eso work_list.json deja este ítem en in_progress,
+  no done, hasta la inspección completa diferida.
+
+  ════════════════════════════════════════════════════════════════════════
+  PUBLICACIÓN A hg-vl — 2026-06-26 (con autorización explícita del operador,
+  "publica y probamos en la web"):
+  ════════════════════════════════════════════════════════════════════════
+  Generada desde web/auditoria/index.html (cerebro operativo) e integrada
+  aquí como auditoria.html. FB_URL/FB_API_KEY de abajo YA son los reales del
+  proyecto Firebase compartido (los mismos de equipos.html/lobbies.html/
+  home.html — no es un secreto nuevo, ya están client-side en esas páginas).
+
+  ⏳ PENDIENTE — sin esto, el tablero público, el login y "Sugerir" van a
+  fallar con permission-denied (degradan con gracia a vacío/alert, no rompen
+  la página, pero NO funcionan):
+    1) Pegar las reglas de auditoria.rules.json en Firebase Console
+       (nodos /comercios y /comercios_pending).
+    2) Designar al menos un moderador/admin en /moderators/{uid} o
+       /admins/{uid}.
+  El operador eligió publicar con el nav link visible ANTES de hacer estos
+  dos pasos (para poder probar el mapa de Google ya mismo); ambos quedan
+  como acción humana en progress/cola_aprobacion.md del cerebro operativo.
+  El mapa (Google Maps JS API, key separada) no depende de Firebase — solo
+  depende de que esa key permita el referrer hg-vl.com en Google Cloud
+  Console.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --acid:#b8ff00; --glitch:#ff2d55; --cyan:#3ad0ff; --gold:#ffcc33; --violet:#7d7bff;
+    --ink:#f0ede6; --line:rgba(240,237,230,.12); --line-strong:rgba(240,237,230,.28);
+    --bg:#050505; --panel:#0c0c0c; --panel-2:#101010;
+    --radius:8px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{min-height:100%;background:var(--bg);color:var(--ink);font-family:'DM Sans',system-ui,sans-serif;}
+  body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");z-index:0;pointer-events:none;opacity:.4;}
+  .wrap{position:relative;z-index:1;max-width:1140px;margin:0 auto;padding:26px 22px 80px;}
+  header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px;gap:14px;flex-wrap:wrap;}
+  .brand{font-family:'Bebas Neue',sans-serif;font-size:42px;letter-spacing:.03em;line-height:.82;}
+  .brand b{color:var(--acid);font-weight:400;}
+  .brand .sub{display:block;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.18em;color:rgba(240,237,230,.45);margin-top:7px;}
+  .hdr-links{display:flex;gap:14px;align-items:center;flex-wrap:wrap;}
+  header a{font-size:10px;letter-spacing:.2em;color:rgba(240,237,230,.4);text-decoration:none;font-family:'Space Mono',monospace;}
+  header a:hover{color:var(--acid);}
+  #session-pill{font-size:10px;letter-spacing:.08em;color:rgba(240,237,230,.45);font-family:'Space Mono',monospace;}
+  #session-pill b{color:var(--acid);}
+
+  .caveat{font-size:11px;color:rgba(240,237,230,.55);line-height:1.7;padding:10px 13px;background:rgba(184,255,0,.04);border:1px solid rgba(184,255,0,.22);border-radius:var(--radius);margin-bottom:1rem;}
+  .caveat b{color:var(--acid);font-weight:500;}
+  .caveat.warn{background:rgba(255,204,51,.05);border-color:rgba(255,204,51,.25);}
+  .caveat.warn b{color:var(--gold);}
+
+  .info-msg{font-size:11px;color:rgba(240,237,230,.55);padding:8px 12px;background:var(--panel);border-radius:var(--radius);border:1px solid var(--line);line-height:1.6;}
+  .info-msg b{color:var(--acid);font-weight:500;}
+  .info-msg.warn{border-color:rgba(255,204,51,.35);color:rgba(255,204,51,.9);}
+  .info-msg.err{border-color:rgba(255,45,85,.4);color:rgba(255,45,85,.9);}
+
+  /* stats */
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin-bottom:1rem;}
+  .stat{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:.65rem .9rem;}
+  .stat-label{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:rgba(240,237,230,.45);margin-bottom:4px;font-family:'Space Mono',monospace;}
+  .stat-value{font-family:'Bebas Neue',sans-serif;font-size:26px;}
+  .v-acc{color:var(--acid);}.v-suc{color:#5ad88a;}.v-war{color:var(--gold);}.v-norm{color:var(--ink);}
+
+  /* tabs */
+  .tabs{display:flex;border-bottom:1px solid var(--line);margin-bottom:1rem;gap:2px;flex-wrap:wrap;}
+  .tab{padding:9px 16px;cursor:pointer;font-size:12px;letter-spacing:.05em;color:rgba(240,237,230,.5);border-bottom:2px solid transparent;margin-bottom:-1px;display:flex;align-items:center;gap:6px;white-space:nowrap;font-family:'Space Mono',monospace;background:none;border-left:none;border-right:none;border-top:none;}
+  .tab.active{color:var(--acid);border-bottom-color:var(--acid);}
+  .tab:hover{color:var(--ink);}
+  .tab[hidden]{display:none;}
+  .panel{display:none;}.panel.active{display:block;}
+
+  /* filters */
+  .filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:.85rem;}
+  .fbtn{font-size:11px;padding:5px 12px;border-radius:20px;border:1px solid var(--line-strong);background:transparent;color:rgba(240,237,230,.6);cursor:pointer;font-family:'Space Mono',monospace;}
+  .fbtn.active{background:rgba(184,255,0,.12);color:var(--acid);border-color:var(--acid);}
+  .fbtn:hover{border-color:rgba(240,237,230,.5);}
+
+  /* selector de ciudad (item 31 — 25 ciudades PBA) */
+  .city-scroll{display:flex;gap:6px;overflow-x:auto;padding-bottom:8px;margin-bottom:.6rem;-webkit-overflow-scrolling:touch;}
+  .city-scroll::-webkit-scrollbar{height:4px;}
+  .city-scroll::-webkit-scrollbar-thumb{background:var(--line-strong);border-radius:4px;}
+  .citybtn{flex-shrink:0;font-size:11px;padding:5px 12px;border-radius:20px;border:1px solid var(--line-strong);background:transparent;color:rgba(240,237,230,.6);cursor:pointer;font-family:'Space Mono',monospace;white-space:nowrap;}
+  .citybtn.active{background:rgba(58,208,255,.14);color:var(--cyan);border-color:var(--cyan);}
+  .citybtn:hover{border-color:rgba(240,237,230,.5);}
+
+  /* paginación */
+  .pager{display:flex;justify-content:center;align-items:center;gap:14px;margin-top:1rem;font-family:'Space Mono',monospace;font-size:11px;color:rgba(240,237,230,.55);}
+  .pager button{background:transparent;border:1px solid var(--line-strong);color:var(--ink);border-radius:var(--radius);padding:5px 12px;cursor:pointer;font-family:'Space Mono',monospace;font-size:11px;}
+  .pager button:hover:not(:disabled){border-color:var(--acid);color:var(--acid);}
+  .pager button:disabled{opacity:.3;cursor:default;}
+
+  .biz-rating{font-size:11px;color:var(--gold);margin-top:2px;font-family:'Space Mono',monospace;}
+
+  /* cards */
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:10px;}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:.9rem 1rem;cursor:pointer;transition:border-color .15s;}
+  .card:hover{border-color:var(--line-strong);}
+  .card.sel{border:1.5px solid var(--acid);}
+  .card.pending{border-style:dashed;border-color:rgba(255,204,51,.4);}
+  .card-top{display:flex;gap:9px;align-items:flex-start;margin-bottom:8px;}
+  .biz-ico{width:36px;height:36px;border-radius:var(--radius);background:rgba(184,255,0,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:17px;}
+  .biz-name{font-size:13px;font-weight:500;line-height:1.3;}
+  .biz-type{font-size:11px;color:rgba(240,237,230,.45);margin-top:2px;font-family:'Space Mono',monospace;}
+  .badges{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:7px;}
+  .badge{font-size:10px;padding:3px 8px;border-radius:20px;display:flex;align-items:center;gap:3px;font-family:'Space Mono',monospace;}
+  .badge.has{background:rgba(90,216,138,.12);color:#5ad88a;}
+  .badge.none{background:rgba(255,45,85,.1);color:var(--glitch);}
+  .opp{font-size:11px;color:rgba(240,237,230,.55);border-top:1px solid var(--line);padding-top:7px;margin-top:4px;line-height:1.5;}
+  .opp strong{color:var(--acid);font-weight:500;}
+  .opp.full{color:#5ad88a;}
+  .verif{font-size:10px;color:rgba(240,237,230,.4);margin-top:5px;font-family:'Space Mono',monospace;}
+  .pendtag{display:inline-block;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);background:rgba(255,204,51,.12);border:1px solid rgba(255,204,51,.35);border-radius:20px;padding:2px 8px;margin-left:6px;font-family:'Space Mono',monospace;}
+
+  /* map */
+  .map-wrap{border:1px solid var(--line);border-radius:12px;overflow:hidden;position:relative;background:var(--panel);}
+  .map-area{position:relative;width:100%;height:480px;overflow:hidden;background:#0a0a0a;}
+  #gmap{width:100%;height:100%;}
+  .map-legend{position:absolute;bottom:10px;left:10px;background:var(--panel-2);border:1px solid var(--line);border-radius:8px;padding:8px 11px;font-size:11px;font-family:'Space Mono',monospace;z-index:5;}
+  .leg-row{display:flex;align-items:center;gap:6px;margin-bottom:3px;color:rgba(240,237,230,.6);}
+  .leg-row:last-child{margin-bottom:0;}
+  .leg-sq{width:10px;height:10px;border-radius:2px;}
+  .map-hint{font-size:11px;color:rgba(240,237,230,.45);margin-top:8px;font-family:'Space Mono',monospace;}
+  .map-fallback{display:flex;align-items:center;justify-content:center;height:100%;text-align:center;padding:2rem;color:rgba(240,237,230,.4);font-size:12px;line-height:1.7;}
+
+  /* side detail */
+  .side{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:1.1rem;margin-bottom:.85rem;}
+  .side h3{font-size:18px;font-family:'Bebas Neue',sans-serif;font-weight:400;margin-bottom:.7rem;display:flex;justify-content:space-between;align-items:flex-start;gap:10px;}
+  .side h3 button{background:none;border:1px solid var(--line);color:rgba(240,237,230,.5);border-radius:6px;font-size:12px;cursor:pointer;padding:2px 8px;font-family:'Space Mono',monospace;}
+  .side h3 button:hover{border-color:var(--acid);color:var(--acid);}
+  .svc-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:.85rem;}
+  .svc{font-size:11px;padding:6px 9px;border-radius:var(--radius);border:1px solid var(--line);font-family:'Space Mono',monospace;}
+  .svc.need{background:rgba(184,255,0,.08);border-color:rgba(184,255,0,.3);color:var(--acid);}
+  .svc.have{background:rgba(90,216,138,.08);border-color:rgba(90,216,138,.3);color:#5ad88a;}
+  .svc-lbl{font-weight:500;}.svc-sub{font-size:10px;opacity:.8;margin-top:1px;}
+  .field-lbl{font-size:11px;font-weight:500;color:rgba(240,237,230,.5);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.5rem;font-family:'Space Mono',monospace;}
+
+  /* forms (alta/edición) */
+  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:.7rem;}
+  .form-grid .full{grid-column:1/-1;}
+  @media (max-width:560px){.form-grid{grid-template-columns:1fr;}}
+  .f-field label{display:block;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:rgba(240,237,230,.45);margin-bottom:4px;font-family:'Space Mono',monospace;}
+  .f-field input,.f-field select,.f-field textarea{width:100%;background:var(--panel-2);color:var(--ink);border:1px solid var(--line);font:inherit;font-size:13px;padding:8px 10px;border-radius:var(--radius);}
+  .f-field input:focus,.f-field select:focus,.f-field textarea:focus{outline:none;border-color:var(--acid);}
+  .f-field textarea{resize:vertical;min-height:54px;}
+  .chk-row{display:flex;flex-wrap:wrap;gap:14px;margin:.4rem 0 .7rem;}
+  .chk-row label{display:flex;align-items:center;gap:6px;font-size:12px;color:rgba(240,237,230,.75);cursor:pointer;}
+  .chk-row input{width:auto;}
+  .btn{background:var(--acid);color:#050505;border:none;font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:.03em;padding:9px 20px;cursor:pointer;border-radius:var(--radius);}
+  .btn:hover{filter:brightness(1.08);}
+  .btn:disabled{background:#3a3a3a;color:rgba(240,237,230,.4);cursor:wait;}
+  .btn.ghost{background:transparent;border:1px solid var(--line-strong);color:var(--ink);}
+  .btn.ghost:hover{border-color:var(--acid);color:var(--acid);}
+  .btn.danger{background:transparent;border:1px solid rgba(255,45,85,.4);color:var(--glitch);}
+  .btn.danger:hover{background:rgba(255,45,85,.1);}
+  .btn.sm{font-size:12px;padding:6px 14px;}
+  .geo-row{display:flex;gap:8px;align-items:flex-end;}
+  .geo-row .f-field{flex:1;}
+
+  /* gate overlay (mismo patrón lógico que web/equipos/index.html) */
+  #gate-overlay{position:fixed;inset:0;z-index:99999;background:var(--bg);display:none;align-items:center;justify-content:center;text-align:center;padding:2rem;}
+  #gate-overlay.show{display:flex;}
+  #gate-box{max-width:460px;}
+  #gate-box h1{font-family:'Bebas Neue',sans-serif;font-size:2.4rem;letter-spacing:.02em;color:var(--acid);margin-bottom:1rem;}
+  #gate-box p{font-family:'Space Mono',monospace;font-size:11px;line-height:1.8;color:rgba(240,237,230,.65);margin-bottom:1.6rem;}
+  #gate-box a{display:inline-block;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.15em;text-decoration:none;color:#050505;background:var(--acid);padding:.85rem 1.7rem;border-radius:2px;margin:.3rem;font-weight:700;}
+  #gate-box a.ghost{background:none;color:var(--ink);border:1px solid rgba(240,237,230,.3);}
+
+  /* sections */
+  .sect{margin-top:2.2rem;}
+  .sect-hdr{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:.8rem;flex-wrap:wrap;gap:8px;}
+  .sect-title{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:.02em;}
+  .sect-num{font-size:10px;letter-spacing:.15em;color:rgba(240,237,230,.35);font-family:'Space Mono',monospace;}
+  .mod-only{display:none;}
+  .mod-only.show{display:block;}
+
+  .pend-list{display:flex;flex-direction:column;gap:8px;}
+  .pend-item{background:var(--panel-2);border:1px solid rgba(255,204,51,.3);border-radius:var(--radius);padding:.8rem .95rem;}
+  .pend-item .pname{font-size:13px;font-weight:500;margin-bottom:3px;}
+  .pend-item .pmeta{font-size:11px;color:rgba(240,237,230,.5);font-family:'Space Mono',monospace;margin-bottom:6px;}
+  .pend-item .pactions{display:flex;gap:8px;}
+  .empty{text-align:center;padding:2.5rem 1rem;color:rgba(240,237,230,.4);}
+  .empty .ico{font-size:30px;display:block;margin-bottom:.75rem;}
+
+  .status-msg{font-size:11px;margin-top:.5rem;font-family:'Space Mono',monospace;}
+  .status-msg.ok{color:#5ad88a;}
+  .status-msg.err{color:var(--glitch);}
+  .status-msg.warn{color:var(--gold);}
+
+  .note{font-size:10px;color:rgba(240,237,230,.4);line-height:1.7;margin-top:30px;border-left:1px solid rgba(184,255,0,.3);padding-left:12px;font-family:'Space Mono',monospace;}
+  .note b{color:var(--acid);font-weight:400;}
+  .foot{font-size:10px;color:rgba(240,237,230,.35);letter-spacing:.1em;margin-top:30px;text-align:center;font-family:'Space Mono',monospace;}
+  @media (max-width:600px){ .map-area{height:360px;} .svc-grid{grid-template-columns:1fr;} }
+</style></head><body>
+
+<!-- GATE OVERLAY: solo cubre las zonas gateadas (alta/edición), NO el tablero público -->
+<div class="wrap">
+  <header>
+    <div class="brand"><b>AUDITORÍA</b><span class="sub">Human Glitche · comercios relevados a mano</span></div>
+    <div class="hdr-links">
+      <span id="session-pill"></span>
+      <a href="/labs/">← LABS</a>
+    </div>
+  </header>
+
+  <p class="caveat">
+    <b>Cómo se hace esto:</b> cada dato de este tablero (si un comercio tiene web, Instagram,
+    Facebook, WhatsApp Business o TikTok) fue <b>confirmado a mano</b> por un moderador o por
+    alguien de la comunidad cuya sugerencia ya fue aprobada — no se "adivina" automáticamente.
+    Ya no usamos detección automática vía OpenStreetMap: la cobertura de esos datos ahí era tan
+    floja que generaba falsos negativos ("sin web" cuando el comercio sí tenía sitio), y eso es
+    un riesgo real si se usa para contactar gente. Si un comercio no tiene fecha de verificación
+    todavía, está recién dado de alta y falta confirmar sus datos.
+  </p>
+
+  <div class="stats">
+    <div class="stat"><div class="stat-label">Comercios</div><div class="stat-value v-acc" id="sTotal">0</div></div>
+    <div class="stat"><div class="stat-label">Sin web</div><div class="stat-value v-war" id="sNoWeb">0</div></div>
+    <div class="stat"><div class="stat-label">Sin redes</div><div class="stat-value v-war" id="sNoSoc">0</div></div>
+    <div class="stat"><div class="stat-label">Oportunidades</div><div class="stat-value v-suc" id="sOpps">0</div></div>
+    <div class="stat"><div class="stat-label">Pendientes</div><div class="stat-value v-norm" id="sPending">0</div></div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('cards',this)">▦ Comercios</button>
+    <button class="tab" onclick="switchTab('map',this)">⟐ Mapa</button>
+    <button class="tab" onclick="switchTab('suggest',this)">✦ Sugerir</button>
+    <button class="tab mod-only" id="tab-mod" onclick="switchTab('mod',this)" hidden>⚑ Moderación</button>
+    <button class="tab mod-only" id="tab-crm" onclick="switchTab('crm',this)" hidden>✎ Notas CRM</button>
+  </div>
+
+  <!-- ════════ TABLERO PÚBLICO (sin login) ════════ -->
+  <div id="panel-cards" class="panel active">
+    <div class="city-scroll" id="cityBtns"></div>
+    <div class="filters">
+      <button class="fbtn active" onclick="setFilter('all',this)">Todos</button>
+      <button class="fbtn" onclick="setFilter('no-web',this)">Sin web</button>
+      <button class="fbtn" onclick="setFilter('no-social',this)">Sin redes</button>
+      <button class="fbtn" onclick="setFilter('no-both',this)">Sin web ni redes</button>
+      <button class="fbtn" onclick="setFilter('con-nota',this)">Con nota</button>
+    </div>
+    <div id="detailSide" class="side" style="display:none"></div>
+    <div id="cardsArea"><div class="empty"><span class="ico">⌖</span><p>Todavía no hay comercios confirmados. Sé el primero en <b>sugerir uno</b> (pestaña Sugerir, requiere cuenta de comunidad).</p></div></div>
+  </div>
+
+  <!-- ════════ MAPA — Google Maps JS API ════════ -->
+  <div id="panel-map" class="panel">
+    <p class="info-msg" id="mapStatus" style="margin-bottom:.7rem;">Cargando Google Maps…</p>
+    <div class="map-wrap">
+      <div class="map-area" id="mapArea">
+        <div id="gmap"></div>
+        <div class="map-legend">
+          <div class="leg-row"><div class="leg-sq" style="background:var(--gold)"></div>Oportunidad</div>
+          <div class="leg-row"><div class="leg-sq" style="background:#5ad88a"></div>Presencia completa</div>
+          <div class="leg-row"><div class="leg-sq" style="background:rgba(240,237,230,.4)"></div>Parcial</div>
+        </div>
+      </div>
+    </div>
+    <p class="map-hint">⌖ Mapa real (Google Maps). Un marcador por comercio confirmado, color por estado de oportunidad. Clic en un marcador abre el detalle. La key de Maps solo dibuja el mapa — no busca ni confirma datos de comercios.</p>
+  </div>
+
+  <!-- ════════ SUGERIR (gateado: login + accountType != cliente) ════════ -->
+  <div id="panel-suggest" class="panel">
+    <div id="suggest-locked" class="caveat warn">
+      <b>Esto requiere cuenta de comunidad.</b> Para sugerir un alta o una corrección necesitás estar
+      logueado en Human Glitche con una cuenta que no sea de cliente. Es gratis — así evitamos que
+      cualquiera escriba directo sobre los datos confirmados: tu sugerencia queda <b>pendiente</b>
+      hasta que un moderador la revise.
+      <div style="margin-top:.6rem;"><a class="btn ghost sm" href="home.html#comunidad" style="text-decoration:none;display:inline-block;">REGISTRARME / INICIAR SESIÓN</a></div>
+    </div>
+
+    <div id="suggest-form-wrap" style="display:none;">
+      <p class="info-msg" style="margin-bottom:.8rem;">
+        Tu sugerencia <b>no se publica directo</b>: queda en una cola de pendientes hasta que un
+        moderador la confirme o la rechace. Así nos asegurarnos de que cada dato del tablero fue
+        revisado por una persona real.
+      </p>
+      <form id="suggest-form">
+        <div class="form-grid">
+          <div class="f-field"><label for="s-name">Nombre del comercio</label><input type="text" id="s-name" maxlength="80" required></div>
+          <div class="f-field"><label for="s-type">Tipo</label><input type="text" id="s-type" maxlength="60" placeholder="Panadería, peluquería, café…"></div>
+          <div class="f-field"><label for="s-city">Ciudad</label><input type="text" id="s-city" maxlength="60" placeholder="La Plata, Mar del Plata…" required></div>
+          <div class="f-field full geo-row">
+            <div class="f-field"><label for="s-address">Dirección</label><input type="text" id="s-address" maxlength="160" placeholder="Calle y número, ciudad" required></div>
+            <button type="button" class="btn ghost sm" id="s-geocode-btn" style="white-space:nowrap;">UBICAR EN MAPA</button>
+          </div>
+          <div class="f-field"><label for="s-phone">Teléfono (opcional)</label><input type="text" id="s-phone" maxlength="40"></div>
+          <div class="f-field"><label for="s-website">Sitio web (si tiene)</label><input type="text" id="s-website" maxlength="200" placeholder="https://…"></div>
+        </div>
+        <p class="field-lbl" style="margin-top:.4rem;">¿Qué confirmaste a mano?</p>
+        <div class="chk-row">
+          <label><input type="checkbox" id="s-web"> Tiene web</label>
+          <label><input type="checkbox" id="s-ig"> Tiene Instagram</label>
+          <label><input type="checkbox" id="s-fb"> Tiene Facebook</label>
+          <label><input type="checkbox" id="s-wa"> Tiene WhatsApp Business</label>
+          <label><input type="checkbox" id="s-tt"> Tiene TikTok</label>
+        </div>
+        <div class="f-field full" style="margin-bottom:.6rem;">
+          <label for="s-notes">Notas para el moderador (opcional)</label>
+          <textarea id="s-notes" maxlength="400" placeholder="Cómo lo confirmaste, link de referencia, si es alta nueva o corrección de un comercio existente…"></textarea>
+        </div>
+        <input type="hidden" id="s-lat"><input type="hidden" id="s-lng">
+        <div id="s-geo-status" class="status-msg"></div>
+        <button type="submit" class="btn" id="s-submit-btn">ENVIAR SUGERENCIA</button>
+        <div id="suggest-status" class="status-msg"></div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ════════ PANEL DE MODERACIÓN (solo /admins o /moderators) ════════ -->
+  <div id="panel-mod" class="panel">
+    <div class="caveat">
+      <b>Panel de moderación.</b> Acá editás <code>/comercios</code> directo (sin paso de
+      confirmación) y resolvés las sugerencias pendientes de la comunidad: <b>aprobar</b> las
+      mergea a la lista pública confirmada; <b>rechazar</b> las descarta sin tocar nada confirmado.
+    </div>
+
+    <div class="sect" style="margin-top:0;">
+      <div class="sect-hdr"><div class="sect-title">Pendientes de aprobación</div><span class="sect-num" id="mod-pend-count">0</span></div>
+      <div id="mod-pend-list" class="pend-list"></div>
+    </div>
+
+    <div class="sect">
+      <div class="sect-hdr"><div class="sect-title">Editar comercio confirmado</div><span class="sect-num">DIRECTO · SIN CONFIRMACIÓN</span></div>
+      <p class="info-msg" style="margin-bottom:.7rem;">Elegí un comercio del tablero (pestaña Comercios) y hacé clic — el panel de detalle te va a mostrar el botón <b>EDITAR (moderador)</b> cuando estés logueado como moderador o admin.</p>
+    </div>
+  </div>
+
+  <!-- ════════ NOTAS CRM (solo moderador/admin — seguimiento personal del funnel, vive en localStorage, NUNCA en Firebase) ════════ -->
+  <div id="panel-crm" class="panel">
+    <div class="caveat">
+      <b>Esto es personal de tu navegador, no compartido.</b> El estado y la nota de cada comercio
+      (Prospecto/Contactado/Cliente/Descartado) se guardan en <code>localStorage</code> de este
+      navegador — no se escriben a Firebase ni las ve otro moderador. Si necesitamos seguimiento
+      compartido entre el equipo más adelante, hay que construir eso (no existe todavía).
+    </div>
+    <div class="sect-hdr" style="margin-bottom:.7rem;">
+      <div class="sect-title">Seguimiento de leads<span class="sect-num" id="crm-scope-note" style="margin-left:8px;"></span></div>
+      <button class="btn ghost sm" onclick="exportCSV()">⬇ EXPORTAR CSV</button>
+    </div>
+    <div id="crmList" class="pend-list"></div>
+  </div>
+
+  <p class="note">
+    Cómo funciona: los datos de presencia digital (web/IG/FB/WhatsApp Biz/TikTok) se
+    <b>relevan a mano</b> — moderadores y admins editan directo; la comunidad logueada (cuenta no
+    cliente) solo puede sugerir, y un moderador aprueba o rechaza antes de que el dato sea público.
+    El mapa usa <b>Google Maps JavaScript API</b> (key embebida client-side, solo para render de
+    tiles y marcadores). El geocoding de una dirección tipeada a mano usa <b>Nominatim</b>
+    (OpenStreetMap, gratis, sin API key) — ya no dispara ninguna búsqueda automática de comercios
+    ni de redes. Esta auditoría alimenta directamente al funnel de servicios de HG Studio: cada
+    "oportunidad" es un lead real para ofrecer diseño web, redes o WhatsApp Business.
+    <br><br>
+    <b>Cobertura multi-ciudad (item 31):</b> los ~184 comercios de las 25 ciudades de PBA del
+    selector de arriba son una carga inicial autorizada directamente por el owner del proyecto —
+    no pasaron por verificación individual de un moderador (coordenadas aproximadas, no
+    geocodificadas una por una). Quedan marcados como tales en su propio registro
+    (<code>verifiedBy: "seed_import_2026-06-26_owner"</code>) y todavía no están en el Firebase
+    real del sitio — ver <code>web/auditoria/seed_comercios_pba.json</code>. El panel "Notas CRM"
+    es de uso personal: se guarda solo en este navegador, no se comparte con otros moderadores.
+  </p>
+  <div class="foot">HUMAN GLITCHE · VISUAL LAB · relevamiento manual, moderado por la comunidad</div>
+</div>
+
+<!-- GATE — overlay liviano que se muestra solo dentro de Sugerir/Moderación cuando corresponde, no bloquea el tablero público -->
+
+<script>
+(function(){
+'use strict';
+const $=id=>document.getElementById(id);
+
+// ── Identidad del backend — mismo proyecto Firebase real que equipos.html/
+// lobbies.html/home.html (no es una key nueva). Las REGLAS (auditoria.rules.json)
+// y los moderadores todavía no están dados de alta en ese proyecto — ver el
+// addendum "PUBLICACIÓN A hg-vl" arriba: hasta que eso pase, tablero/login/
+// sugerencias van a fallar con permission-denied (degradan con gracia).
+const FB_URL = 'https://hg-vl-shaders-default-rtdb.firebaseio.com';
+const FB_API_KEY = 'AIzaSyAeMKHe7dj4bnaUzkF7iDANrC_cBtg4LAA';
+const REFRESH_URL = 'https://securetoken.googleapis.com/v1/token';
+const LS_KEY = 'hg_auth_session';
+
+// ── Key de Google Maps — esta SÍ es real e intencionalmente client-side. ──
+// Solo renderiza el mapa (tiles + marcadores); nunca busca datos de comercios.
+const GMAPS_KEY = 'AIzaSyCnXWhyWR6VxayZBDcTUu7AkkeH60bU180';
+
+const UA_HEADER='HumanGlitcheAuditoria/2.0 (+https://hg-vl.com; relevamiento manual moderado)';
+
+let session=null, accountType=null, isModerator=false;
+let comercios={}, pendientes={}, selectedId=null, currentFilter='all', selectedKind='confirmed';
+let gmap=null, gMarkers=[], geocodedLatLng=null;
+
+// ── 25 ciudades de PBA (item 31) — solo para el selector y el centro inicial del mapa por ciudad.
+// El filtro real usa el campo 'city' de cada comercio, no estas coordenadas.
+const CITIES = {
+  'La Plata':{lat:-34.921,lng:-57.954},'Mar del Plata':{lat:-38.005,lng:-57.542},'Bahía Blanca':{lat:-38.719,lng:-62.269},
+  'Quilmes':{lat:-34.724,lng:-58.253},'Tandil':{lat:-37.321,lng:-59.133},'San Nicolás':{lat:-33.336,lng:-60.226},
+  'Zárate':{lat:-34.098,lng:-59.029},'Olavarría':{lat:-36.892,lng:-60.322},'Junín':{lat:-34.588,lng:-60.945},
+  'Pergamino':{lat:-33.890,lng:-60.573},'Azul':{lat:-36.779,lng:-59.858},'Necochea':{lat:-38.554,lng:-58.737},
+  'Luján':{lat:-34.570,lng:-59.102},'Campana':{lat:-34.163,lng:-58.957},'San Pedro':{lat:-33.679,lng:-59.667},
+  'Tres Arroyos':{lat:-38.376,lng:-60.272},'Pehuajó':{lat:-35.851,lng:-61.899},'Chivilcoy':{lat:-34.896,lng:-60.016},
+  'Bragado':{lat:-35.119,lng:-60.491},'Lobos':{lat:-35.185,lng:-59.091},'Chascomús':{lat:-35.573,lng:-58.012},
+  'Dolores':{lat:-36.313,lng:-57.683},'Pilar':{lat:-34.458,lng:-58.914},'Mercedes':{lat:-34.651,lng:-59.431},
+  'Saladillo':{lat:-35.638,lng:-59.780}
+};
+let currentCity='all', currentPage=1;
+const PER_PAGE=24;
+const CRM_LS_KEY='hg_auditoria_crm';
+const CRM_LABELS={prospect:'Prospecto', contactado:'Contactado', cliente:'Cliente', descartado:'Descartado'};
+let crmStore={};
+
+function escHtml(s){ return String(s==null?'':s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function fmtDate(ts){ if(!ts) return null; try{ return new Date(ts).toLocaleDateString('es-AR',{year:'numeric',month:'short',day:'numeric'}); }catch(e){ return null; } }
+
+// ════════════════════════════════════════════════════════════════════
+// SESIÓN / GATE — mismo patrón lógico inline que web/equipos/index.html
+// ════════════════════════════════════════════════════════════════════
+function getSession(){ try{ return JSON.parse(localStorage.getItem(LS_KEY)||'null'); }catch(e){ return null; } }
+
+async function freshToken(s){
+  if(!s || !s.refreshToken) return s ? s.idToken : null;
+  try{
+    const r = await fetch(`${REFRESH_URL}?key=${FB_API_KEY}`,{
+      method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'},
+      body:`grant_type=refresh_token&refresh_token=${encodeURIComponent(s.refreshToken)}`
+    });
+    if(!r.ok) return s.idToken;
+    const data = await r.json();
+    return data.id_token || s.idToken;
+  }catch(e){ return s.idToken; }
+}
+
+async function checkSession(){
+  session = getSession();
+  const pill = $('session-pill');
+  if(!session || !session.uid){
+    pill.innerHTML = '<a href="home.html#comunidad" style="color:rgba(240,237,230,.4)">iniciar sesión</a>';
+    lockSuggest(); lockMod();
+    return;
+  }
+  pill.innerHTML = `sesión: <b>${escHtml(session.name||session.email||'—')}</b>`;
+  try{
+    const r = await fetch(`${FB_URL}/profiles/${session.uid}/accountType.json`);
+    accountType = r.ok ? await r.json() : null; // cuentas viejas sin accountType = comunidad por defecto
+  }catch(e){ accountType = null; }
+
+  if(accountType !== 'cliente'){ unlockSuggest(); } else { lockSuggest(); }
+
+  try{
+    const [ra, rm] = await Promise.all([
+      fetch(`${FB_URL}/admins/${session.uid}.json`),
+      fetch(`${FB_URL}/moderators/${session.uid}.json`)
+    ]);
+    const isAdmin = ra.ok ? (await ra.json())===true : false;
+    const isMod   = rm.ok ? (await rm.json())===true : false;
+    isModerator = isAdmin || isMod;
+  }catch(e){ isModerator = false; }
+
+  if(isModerator){ unlockMod(); } else { lockMod(); }
+}
+
+function lockSuggest(){ $('suggest-locked').style.display='block'; $('suggest-form-wrap').style.display='none'; }
+function unlockSuggest(){ $('suggest-locked').style.display='none'; $('suggest-form-wrap').style.display='block'; }
+function lockMod(){
+  $('tab-mod').hidden = true; $('tab-crm').hidden = true;
+  if(document.getElementById('panel-mod').classList.contains('active') || document.getElementById('panel-crm').classList.contains('active')) switchTab('cards', document.querySelectorAll('.tab')[0]);
+}
+function unlockMod(){ $('tab-mod').hidden = false; $('tab-crm').hidden = false; renderModPanel(); }
+
+// ════════════════════════════════════════════════════════════════════
+// DATOS — /comercios (confirmados) y /comercios_pending (sugerencias)
+// ════════════════════════════════════════════════════════════════════
+async function loadComercios(){
+  try{
+    const r = await fetch(`${FB_URL}/comercios.json`);
+    comercios = (r.ok ? await r.json() : null) || {};
+  }catch(e){ comercios = {}; }
+}
+async function loadPendientes(){
+  try{
+    const r = await fetch(`${FB_URL}/comercios_pending.json`);
+    pendientes = (r.ok ? await r.json() : null) || {};
+  }catch(e){ pendientes = {}; }
+}
+
+function bizList(){ return Object.entries(comercios).map(([id,b])=>({...b, id})); }
+function pendList(){ return Object.entries(pendientes).filter(([,p])=>p.status==='pending').map(([id,p])=>({...p, id})); }
+function poolList(){ const list=bizList(); return currentCity==='all' ? list : list.filter(b=>b.city===currentCity); }
+
+function getOpp(b){
+  const o=[];
+  if(!b.web) o.push('Diseño web');
+  if(!b.ig) o.push('Instagram');
+  if(!b.fb) o.push('Facebook');
+  if(!b.wa) o.push('WhatsApp Biz');
+  if(!b.tt) o.push('TikTok');
+  return o;
+}
+function oppClass(b){ const n=getOpp(b).length; return n>=3 ? 'opp' : n===0 ? 'full' : 'part'; }
+
+function updateStats(){
+  const list = poolList();
+  const noWeb = list.filter(b=>!b.web).length;
+  const noSoc = list.filter(b=>!b.ig && !b.fb).length;
+  const opps = list.filter(b=>getOpp(b).length>=2).length;
+  $('sTotal').textContent = list.length;
+  $('sNoWeb').textContent = noWeb;
+  $('sNoSoc').textContent = noSoc;
+  $('sOpps').textContent = opps;
+  $('sPending').textContent = pendList().length;
+}
+
+// ════════════════════════════════════════════════════════════════════
+// SELECTOR DE CIUDAD — filtra tablero/stats/mapa por el campo 'city' (item 31)
+// ════════════════════════════════════════════════════════════════════
+function buildCityBtns(){
+  const wrap = $('cityBtns');
+  const names = Object.keys(CITIES);
+  wrap.innerHTML = `<button class="citybtn active" onclick="filterCity('all',this)">Todas (${names.length})</button>` +
+    names.map(c=>`<button class="citybtn" onclick="filterCity('${c.replace(/'/g,"\\'")}',this)">${escHtml(c)}</button>`).join('');
+}
+function filterCity(city, el){
+  currentCity = city; currentPage = 1;
+  document.querySelectorAll('.citybtn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  updateStats(); renderCards();
+  if(gmap) renderMapMarkers();
+  if($('panel-crm').classList.contains('active')) renderCRMPanel();
+}
+
+// ════════════════════════════════════════════════════════════════════
+// TABLERO PÚBLICO — cards
+// ════════════════════════════════════════════════════════════════════
+function filteredList(){
+  return poolList().filter(b=>{
+    if(currentFilter==='no-web') return !b.web;
+    if(currentFilter==='no-social') return !b.ig && !b.fb;
+    if(currentFilter==='no-both') return !b.web && !b.ig && !b.fb;
+    if(currentFilter==='con-nota') return !!(crmStore[b.id] && crmStore[b.id].note);
+    return true;
+  });
+}
+function renderCards(){
+  const all = filteredList();
+  if(!all.length){
+    $('cardsArea').innerHTML = '<div class="empty"><span class="ico">⌖</span><p>Todavía no hay comercios confirmados que coincidan. Probá otro filtro o sumá uno en la pestaña Sugerir.</p></div>';
+    return;
+  }
+  const totalPages = Math.max(1, Math.ceil(all.length/PER_PAGE));
+  if(currentPage>totalPages) currentPage = totalPages;
+  const list = all.slice((currentPage-1)*PER_PAGE, currentPage*PER_PAGE);
+  $('cardsArea').innerHTML = '<div class="grid">'+list.map(b=>{
+    const ops = getOpp(b);
+    const verifDate = fmtDate(b.verifiedAt);
+    return `<div class="card${selectedId===b.id?' sel':''}" onclick="selectBiz('${b.id}','confirmed')">
+      <div class="card-top">
+        <div class="biz-ico">🏬</div>
+        <div style="flex:1;min-width:0">
+          <div class="biz-name">${escHtml(b.name)}</div>
+          <div class="biz-type">${escHtml(b.type||'Comercio')}${b.city?' · 🏙 '+escHtml(b.city):''}</div>
+          ${b.rating ? `<div class="biz-rating">★ ${b.rating}${b.reviews?' <span style="opacity:.6">('+b.reviews+')</span>':''}</div>` : ''}
+        </div>
+      </div>
+      <div class="badges">
+        <span class="badge ${b.web?'has':'none'}">🌐 ${b.web?'Web':'Sin web'}</span>
+        <span class="badge ${b.ig?'has':'none'}">📷 ${b.ig?'IG':'Sin IG'}</span>
+        <span class="badge ${b.fb?'has':'none'}">👍 ${b.fb?'FB':'Sin FB'}</span>
+        <span class="badge ${b.wa?'has':'none'}">💬 ${b.wa?'WA':'Sin WA'}</span>
+      </div>
+      ${ops.length ? `<div class="opp">💡 Ofrecer: <strong>${ops.slice(0,3).join(', ')}${ops.length>3?'…':''}</strong></div>` : `<div class="opp full">✓ Presencia completa (confirmado a mano)</div>`}
+      <div class="verif">${verifDate ? '✓ verificado '+verifDate : '— sin fecha de verificación'}</div>
+    </div>`;
+  }).join('')+'</div>'+pagerHtml(all.length, totalPages);
+}
+function pagerHtml(total, totalPages){
+  if(totalPages<=1) return '';
+  return `<div class="pager">
+    <button onclick="changePage(-1)" ${currentPage<=1?'disabled':''}>← anterior</button>
+    <span>Página ${currentPage} / ${totalPages} · ${total} comercio(s)</span>
+    <button onclick="changePage(1)" ${currentPage>=totalPages?'disabled':''}>siguiente →</button>
+  </div>`;
+}
+function changePage(delta){
+  currentPage += delta;
+  renderCards();
+  $('cardsArea').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+function selectBiz(id, kind){
+  selectedId = id; selectedKind = kind || 'confirmed';
+  renderCards();
+  const b = (kind==='pending' ? pendList() : bizList()).find(x=>x.id===id);
+  if(!b) return;
+  const ops = getOpp(b);
+  const svcs = [{k:'web',l:'Diseño web'},{k:'ig',l:'Instagram'},{k:'fb',l:'Facebook'},{k:'wa',l:'WhatsApp Biz'},{k:'tt',l:'TikTok'}];
+  const verifDate = fmtDate(b.verifiedAt);
+  const side = $('detailSide');
+  side.style.display = 'block';
+  side.innerHTML = `<h3>${escHtml(b.name)}${kind==='pending'?'<span class="pendtag">PENDIENTE</span>':''}<button onclick="closeSide()">✕ cerrar</button></h3>
+  <p style="font-size:11px;color:rgba(240,237,230,.5);margin-bottom:.5rem">📍 ${escHtml(b.address||'sin dirección')}${b.phone?' · ☎ '+escHtml(b.phone):''}</p>
+  <p class="field-lbl">Presencia digital (confirmada a mano)</p>
+  <div class="svc-grid">${svcs.map(s=>`<div class="svc ${b[s.k]?'have':'need'}"><div class="svc-lbl">${b[s.k]?'✓':'✦'} ${s.l}</div><div class="svc-sub">${b[s.k]?'Confirmado':'Oportunidad'}</div></div>`).join('')}</div>
+  <p class="verif" style="margin-bottom:.5rem;">${verifDate ? 'Última verificación: '+verifDate : 'Sin fecha de verificación todavía'}${b.notes?' · '+escHtml(b.notes):''}</p>
+  ${kind!=='pending' && isModerator ? `<button class="btn ghost sm" onclick="openModEdit('${id}')">✎ EDITAR (moderador)</button>` : ''}
+  ${kind==='pending' && isModerator ? `<div style="display:flex;gap:8px;"><button class="btn sm" onclick="approvePending('${id}')">✓ APROBAR</button><button class="btn danger sm" onclick="rejectPending('${id}')">✕ RECHAZAR</button></div>` : ''}`;
+  side.scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+function closeSide(){ selectedId = null; $('detailSide').style.display = 'none'; renderCards(); }
+
+function setFilter(f, el){
+  currentFilter = f;
+  currentPage = 1;
+  document.querySelectorAll('.fbtn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  renderCards();
+}
+
+function switchTab(id, el){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  const tabs = Array.from(document.querySelectorAll('.tab')).filter(t=>!t.hidden);
+  const map = {cards:0, map:1, suggest:2, mod:3, crm:4};
+  const target = (el && el.classList.contains('tab')) ? el : (document.querySelectorAll('.tab')[map[id]] || tabs[0]);
+  target.classList.add('active');
+  $('panel-'+id).classList.add('active');
+  if(id==='map') setTimeout(renderMapMarkers, 50);
+  if(id==='mod') renderModPanel();
+  if(id==='crm') renderCRMPanel();
+}
+
+// ════════════════════════════════════════════════════════════════════
+// MAPA — Google Maps JavaScript API (solo render, nunca busca datos)
+// ════════════════════════════════════════════════════════════════════
+window.initGoogleMap = function(){
+  try{
+    gmap = new google.maps.Map(document.getElementById('gmap'), {
+      center: {lat:-34.92, lng:-57.95}, // fallback: La Plata, AR — se re-centra al primer comercio real
+      zoom: 13,
+      mapId: 'DEMO_MAP_ID',
+      backgroundColor:'#0a0a0a',
+      disableDefaultUI:false,
+      styles:[{elementType:'geometry',stylers:[{color:'#0c0c0c'}]},{elementType:'labels.text.fill',stylers:[{color:'#f0ede6'}]},{elementType:'labels.text.stroke',stylers:[{color:'#050505'}]}]
+    });
+    $('mapStatus').textContent = 'Mapa cargado. ' + (poolList().length ? poolList().length+' comercio(s) confirmado(s).' : 'Todavía no hay comercios confirmados para mostrar.');
+    renderMapMarkers();
+  }catch(e){
+    showMapFallback('No se pudo inicializar Google Maps: '+(e && e.message ? e.message : 'error desconocido')+'. Si ves "RefererNotAllowedMapError" en la consola, es porque la key está restringida a otro dominio (esperado en producción) — esto es configuración de Google Cloud Console, no un bug de la página.');
+  }
+};
+window.gm_authFailure = function(){
+  showMapFallback('Google Maps rechazó la key para este dominio (RefererNotAllowedMapError o similar). Es el comportamiento esperado si la key ya está restringida por HTTP referrer en Google Cloud Console — no es un error de esta página.');
+};
+function showMapFallback(msg){
+  $('mapStatus').className = 'info-msg err';
+  $('mapStatus').textContent = msg;
+  $('gmap').outerHTML = `<div class="map-fallback" id="gmap">${escHtml(msg)}</div>`;
+}
+function renderMapMarkers(){
+  if(!gmap) return;
+  gMarkers.forEach(m=>m.setMap(null));
+  gMarkers = [];
+  const list = poolList().filter(b=>typeof b.lat==='number' && typeof b.lng==='number');
+  if(!list.length) return;
+  const bounds = new google.maps.LatLngBounds();
+  list.forEach(b=>{
+    const cls = oppClass(b);
+    const color = cls==='opp' ? '#ffcc33' : cls==='full' ? '#5ad88a' : 'rgba(240,237,230,.6)';
+    const marker = new google.maps.Marker({
+      position:{lat:b.lat, lng:b.lng},
+      map: gmap,
+      title: b.name,
+      icon:{ path: google.maps.SymbolPath.CIRCLE, scale:9, fillColor:color, fillOpacity:1, strokeColor:'#050505', strokeWeight:2 }
+    });
+    marker.addListener('click', ()=>{
+      const cardsTab = document.querySelectorAll('.tab')[0];
+      switchTab('cards', cardsTab);
+      setTimeout(()=>selectBiz(b.id,'confirmed'), 50);
+    });
+    gMarkers.push(marker);
+    bounds.extend(marker.getPosition());
+  });
+  if(list.length===1) gmap.setCenter(bounds.getCenter()); else gmap.fitBounds(bounds, 60);
+}
+
+// ════════════════════════════════════════════════════════════════════
+// GEOCODING — Nominatim, solo ayuda manual al dar de alta (gratis, sin key)
+// ════════════════════════════════════════════════════════════════════
+async function geocode(q){
+  const url='https://nominatim.openstreetmap.org/search?format=json&limit=1&q='+encodeURIComponent(q);
+  let res;
+  try{
+    const ctrl=new AbortController(); const t=setTimeout(()=>ctrl.abort(),12000);
+    res = await fetch(url, {headers:{'Accept':'application/json'}, signal: ctrl.signal});
+    clearTimeout(t);
+  }catch(e){
+    throw new Error(e.name==='AbortError' ? 'Nominatim no respondió a tiempo. Probá de nuevo.' : 'No se pudo conectar con Nominatim.');
+  }
+  if(res.status===429) throw new Error('Nominatim devolvió "demasiadas solicitudes". Esperá unos segundos y probá de nuevo.');
+  if(!res.ok) throw new Error('Nominatim respondió con error '+res.status+'.');
+  const data = await res.json();
+  if(!Array.isArray(data) || !data.length) throw new Error('No encontramos esa dirección. Probá agregando ciudad y país.');
+  return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon), label: data[0].display_name };
+}
+
+$('s-geocode-btn').addEventListener('click', async ()=>{
+  const addr = $('s-address').value.trim();
+  const statusEl = $('s-geo-status');
+  if(!addr){ statusEl.textContent='Escribí una dirección primero.'; statusEl.className='status-msg warn'; return; }
+  statusEl.textContent='Ubicando con Nominatim…'; statusEl.className='status-msg';
+  try{
+    const geo = await geocode(addr);
+    $('s-lat').value = geo.lat; $('s-lng').value = geo.lng;
+    geocodedLatLng = {lat:geo.lat, lng:geo.lng};
+    statusEl.textContent = 'Ubicado: '+geo.label;
+    statusEl.className = 'status-msg ok';
+  }catch(err){
+    statusEl.textContent = err.message;
+    statusEl.className = 'status-msg err';
+  }
+});
+
+// ════════════════════════════════════════════════════════════════════
+// SUGERIR — escribe a /comercios_pending, NUNCA a /comercios directo
+// ════════════════════════════════════════════════════════════════════
+$('suggest-form').addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  if(!session || !session.uid){ return; }
+  const btn = $('s-submit-btn');
+  const statusEl = $('suggest-status');
+  btn.disabled = true;
+  statusEl.textContent='Enviando sugerencia…'; statusEl.className='status-msg';
+  const record = {
+    name: $('s-name').value.trim(),
+    type: $('s-type').value.trim(),
+    city: $('s-city').value.trim(),
+    address: $('s-address').value.trim(),
+    phone: $('s-phone').value.trim(),
+    website: $('s-website').value.trim(),
+    web: $('s-web').checked,
+    ig: $('s-ig').checked,
+    fb: $('s-fb').checked,
+    wa: $('s-wa').checked,
+    tt: $('s-tt').checked,
+    notes: $('s-notes').value.trim(),
+    lat: $('s-lat').value ? parseFloat($('s-lat').value) : null,
+    lng: $('s-lng').value ? parseFloat($('s-lng').value) : null,
+    status: 'pending',
+    suggestedBy: session.uid,
+    suggestedByName: session.name || session.email || '',
+    suggestedAt: Date.now()
+  };
+  try{
+    const token = await freshToken(session);
+    const r = await fetch(`${FB_URL}/comercios_pending.json?auth=${token}`, {
+      method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(record)
+    });
+    if(!r.ok) throw new Error('Firebase respondió '+r.status);
+    statusEl.textContent = '✓ Sugerencia enviada. Queda pendiente hasta que un moderador la revise.';
+    statusEl.className = 'status-msg ok';
+    e.target.reset();
+    $('s-geo-status').textContent=''; geocodedLatLng=null;
+    await loadPendientes(); updateStats();
+  }catch(err){
+    statusEl.textContent = 'No se pudo enviar (backend de Firebase todavía no está activado en producción — ver auditoria.rules.json). Tu sugerencia no se perdió de tu lado, pero no quedó registrada: probá más tarde o avisá por contacto.';
+    statusEl.className = 'status-msg err';
+  }finally{
+    btn.disabled = false;
+  }
+});
+
+// ════════════════════════════════════════════════════════════════════
+// MODERACIÓN — aprobar/rechazar pendientes, editar /comercios directo
+// ════════════════════════════════════════════════════════════════════
+function renderModPanel(){
+  const list = pendList();
+  $('mod-pend-count').textContent = list.length;
+  if(!list.length){
+    $('mod-pend-list').innerHTML = '<div class="empty" style="padding:1.5rem"><span class="ico">✓</span><p>No hay sugerencias pendientes.</p></div>';
+    return;
+  }
+  $('mod-pend-list').innerHTML = list.map(p=>{
+    const ops = getOpp(p);
+    return `<div class="pend-item">
+      <div class="pname">${escHtml(p.name)} <span class="pendtag">PENDIENTE</span></div>
+      <div class="pmeta">📍 ${escHtml(p.address||'sin dirección')} · sugerido por ${escHtml(p.suggestedByName||p.suggestedBy||'comunidad')}</div>
+      <div class="pmeta">${ops.length ? '💡 '+ops.join(', ') : '✓ presencia completa según la sugerencia'}${p.notes?' · nota: '+escHtml(p.notes):''}</div>
+      <div class="pactions">
+        <button class="btn sm" onclick="approvePending('${p.id}')">✓ APROBAR</button>
+        <button class="btn danger sm" onclick="rejectPending('${p.id}')">✕ RECHAZAR</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function approvePending(id){
+  const p = pendientes[id];
+  if(!p || !session) return;
+  try{
+    const token = await freshToken(session);
+    const merged = {
+      name:p.name, type:p.type||'', city:p.city||'', address:p.address||'', phone:p.phone||'', website:p.website||'',
+      web:!!p.web, ig:!!p.ig, fb:!!p.fb, wa:!!p.wa, tt:!!p.tt,
+      lat: typeof p.lat==='number' ? p.lat : null, lng: typeof p.lng==='number' ? p.lng : null,
+      notes:p.notes||'', verifiedAt: Date.now(), verifiedBy: session.uid
+    };
+    await fetch(`${FB_URL}/comercios/${id}.json?auth=${token}`, { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(merged) });
+    await fetch(`${FB_URL}/comercios_pending/${id}/status.json?auth=${token}`, { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify('approved') });
+    await loadComercios(); await loadPendientes();
+    updateStats(); renderCards(); renderModPanel(); if(gmap) renderMapMarkers();
+  }catch(e){ alert('No se pudo aprobar — backend de Firebase todavía no activado en producción.'); }
+}
+async function rejectPending(id){
+  if(!session) return;
+  try{
+    const token = await freshToken(session);
+    await fetch(`${FB_URL}/comercios_pending/${id}/status.json?auth=${token}`, { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify('rejected') });
+    await loadPendientes();
+    updateStats(); renderModPanel(); closeSide();
+  }catch(e){ alert('No se pudo rechazar — backend de Firebase todavía no activado en producción.'); }
+}
+
+function openModEdit(id){
+  const b = comercios[id];
+  if(!b) return;
+  const side = $('detailSide');
+  side.innerHTML = `<h3>Editar: ${escHtml(b.name)}<button onclick="closeSide()">✕ cerrar</button></h3>
+  <div class="form-grid">
+    <div class="f-field"><label>Nombre</label><input type="text" id="e-name" value="${escHtml(b.name)}"></div>
+    <div class="f-field"><label>Tipo</label><input type="text" id="e-type" value="${escHtml(b.type||'')}"></div>
+    <div class="f-field"><label>Ciudad</label><input type="text" id="e-city" value="${escHtml(b.city||'')}"></div>
+    <div class="f-field full"><label>Dirección</label><input type="text" id="e-address" value="${escHtml(b.address||'')}"></div>
+    <div class="f-field"><label>Teléfono</label><input type="text" id="e-phone" value="${escHtml(b.phone||'')}"></div>
+    <div class="f-field"><label>Web</label><input type="text" id="e-website" value="${escHtml(b.website||'')}"></div>
+  </div>
+  <div class="chk-row">
+    <label><input type="checkbox" id="e-web" ${b.web?'checked':''}> Web</label>
+    <label><input type="checkbox" id="e-ig" ${b.ig?'checked':''}> Instagram</label>
+    <label><input type="checkbox" id="e-fb" ${b.fb?'checked':''}> Facebook</label>
+    <label><input type="checkbox" id="e-wa" ${b.wa?'checked':''}> WhatsApp Biz</label>
+    <label><input type="checkbox" id="e-tt" ${b.tt?'checked':''}> TikTok</label>
+  </div>
+  <button class="btn sm" onclick="saveModEdit('${id}')">💾 GUARDAR (directo, sin confirmación)</button>
+  <div id="mod-edit-status" class="status-msg"></div>`;
+  side.style.display = 'block';
+}
+async function saveModEdit(id){
+  const statusEl = $('mod-edit-status');
+  try{
+    const token = await freshToken(session);
+    const updated = {
+      ...comercios[id],
+      name:$('e-name').value.trim(), type:$('e-type').value.trim(), city:$('e-city').value.trim(), address:$('e-address').value.trim(),
+      phone:$('e-phone').value.trim(), website:$('e-website').value.trim(),
+      web:$('e-web').checked, ig:$('e-ig').checked, fb:$('e-fb').checked, wa:$('e-wa').checked, tt:$('e-tt').checked,
+      verifiedAt: Date.now(), verifiedBy: session.uid
+    };
+    await fetch(`${FB_URL}/comercios/${id}.json?auth=${token}`, { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(updated) });
+    await loadComercios();
+    updateStats(); renderCards(); if(gmap) renderMapMarkers();
+    statusEl.textContent='✓ Guardado.'; statusEl.className='status-msg ok';
+  }catch(e){
+    statusEl.textContent='No se pudo guardar — backend de Firebase todavía no activado en producción.';
+    statusEl.className='status-msg err';
+  }
+}
+
+// ════════════════════════════════════════════════════════════════════
+// CRM / NOTAS — solo localStorage de este navegador, nunca Firebase (item 31)
+// ════════════════════════════════════════════════════════════════════
+function loadCRM(){
+  try{ crmStore = JSON.parse(localStorage.getItem(CRM_LS_KEY) || '{}'); }catch(e){ crmStore = {}; }
+}
+function persistCRM(){
+  try{ localStorage.setItem(CRM_LS_KEY, JSON.stringify(crmStore)); }catch(e){}
+}
+function saveCRMNote(id){
+  const statusSel = document.getElementById('crm-status-'+id);
+  const noteArea = document.getElementById('crm-note-'+id);
+  if(!statusSel || !noteArea) return;
+  crmStore[id] = { status: statusSel.value, note: noteArea.value.trim(), updatedAt: Date.now() };
+  persistCRM();
+  const savedEl = document.getElementById('crm-saved-'+id);
+  if(savedEl){ savedEl.textContent = '✓ guardado'; setTimeout(()=>{ savedEl.textContent=''; }, 1800); }
+}
+function renderCRMPanel(){
+  const list = poolList();
+  const scopeNote = $('crm-scope-note');
+  if(scopeNote) scopeNote.textContent = currentCity==='all' ? `(${list.length} en total)` : `(${list.length} en ${currentCity})`;
+  if(!list.length){
+    $('crmList').innerHTML = '<div class="empty" style="padding:1.5rem"><span class="ico">✎</span><p>No hay comercios confirmados todavía en este filtro.</p></div>';
+    return;
+  }
+  $('crmList').innerHTML = list.map(b=>{
+    const c = crmStore[b.id] || {status:'prospect', note:''};
+    return `<div class="pend-item">
+      <div class="pname">${escHtml(b.name)}${b.city?' <span style="opacity:.55">· '+escHtml(b.city)+'</span>':''}</div>
+      <div class="pmeta">📍 ${escHtml(b.address||'sin dirección')}${b.rating?' · ★ '+b.rating:''}</div>
+      <div class="chk-row" style="margin:.5rem 0;">
+        <select id="crm-status-${b.id}" style="background:transparent;color:var(--ink);border:1px solid var(--line-strong);border-radius:var(--radius);padding:4px 8px;font-family:'Space Mono',monospace;font-size:11px;">
+          ${Object.entries(CRM_LABELS).map(([k,l])=>`<option value="${k}" ${c.status===k?'selected':''}>${l}</option>`).join('')}
+        </select>
+      </div>
+      <textarea id="crm-note-${b.id}" placeholder="Nota de seguimiento…" style="width:100%;min-height:60px;background:transparent;color:var(--ink);border:1px solid var(--line-strong);border-radius:var(--radius);padding:8px;font-family:'Space Mono',monospace;font-size:12px;resize:vertical;">${escHtml(c.note)}</textarea>
+      <div class="pactions">
+        <button class="btn sm" onclick="saveCRMNote('${b.id}')">💾 GUARDAR (solo este navegador)</button>
+        <span id="crm-saved-${b.id}" style="font-size:11px;color:var(--cyan);"></span>
+      </div>
+    </div>`;
+  }).join('');
+}
+function exportCSV(){
+  const list = poolList();
+  const cols = ['ciudad','nombre','tipo','direccion','rating','reviews','web','ig','fb','wa','tt','oportunidades','estado','nota'];
+  const rows = list.map(b=>{
+    const c = crmStore[b.id] || {};
+    return [
+      b.city||'', b.name||'', b.type||'', b.address||'', b.rating||'', b.reviews||'',
+      b.web?'si':'no', b.ig?'si':'no', b.fb?'si':'no', b.wa?'si':'no', b.tt?'si':'no',
+      getOpp(b).join('; '), CRM_LABELS[c.status]||'', (c.note||'').replace(/\n/g,' ')
+    ];
+  });
+  const esc = v => '"'+String(v).replace(/"/g,'""')+'"';
+  const csv = '﻿'+[cols.map(esc).join(','), ...rows.map(r=>r.map(esc).join(','))].join('\r\n');
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'comercios_'+(currentCity==='all'?'todas_las_ciudades':currentCity.replace(/\s+/g,'_'))+'.csv';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+window.selectBiz=selectBiz; window.closeSide=closeSide; window.setFilter=setFilter; window.switchTab=switchTab;
+window.approvePending=approvePending; window.rejectPending=rejectPending; window.openModEdit=openModEdit; window.saveModEdit=saveModEdit;
+window.filterCity=filterCity; window.changePage=changePage; window.saveCRMNote=saveCRMNote; window.exportCSV=exportCSV;
+
+// ── Boot ──
+async function boot(){
+  buildCityBtns();
+  loadCRM();
+  await Promise.all([loadComercios(), loadPendientes()]);
+  updateStats();
+  renderCards();
+  await checkSession();
+}
+boot();
+})();
+</script>
+
+<script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCnXWhyWR6VxayZBDcTUu7AkkeH60bU180&libraries=marker&callback=initGoogleMap"></script>
+
+</body></html>
+</content>
