@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EQUIPOS — HUMAN GLITCHE</title>
+<meta name="description" content="Equipos / Células — registrá tu equipo, sumá miembros por invitación, mirá el ranking por proyectos entregados y colaborá con otros equipos.">
+<!--
+  PÁGINA EQUIPOS / CÉLULAS (root) — work_list ítem 28 (comunidad_equipos_celulas).
+  Generada por el `leader` desde web/equipos/index.html (cerebro operativo) e
+  integrada a hg-vl. Ver web/README.md y docs/web.md.
+
+  QUÉ ES: nivel Comunidad (FASE 4 del ROADMAP — "Activar las Primeras Células").
+  Sucesor natural del Creative Cell Starter Kit: el kit dice CÓMO armar una
+  célula; esto es DÓNDE esa célula se registra como equipo, compite por
+  proyectos entregados (no por XP ni votos) y se cruza con otras células.
+
+  ════════════════════════════════════════════════════════════════════════
+  ESTADO DEL GATE /emailIndex AL INTEGRAR ESTA VERSIÓN (ver equipos.rules.json
+  → $gap_critico para el detalle completo):
+  ════════════════════════════════════════════════════════════════════════
+    1) ✅ home.html puebla /emailIndex/{email con '.'→','}.json=uid en cada
+       signup nuevo (commit 32bc33b).
+    2) ⏳ Backfill admin para cuentas creadas ANTES de (1) — no se hizo (requiere
+       credencial de servidor, fuera de alcance de un cliente estático). Una
+       invitación a una cuenta vieja sin backfill muestra "no encontramos una
+       cuenta con ese email" — falso negativo honesto, no un bug oculto.
+    3) ✅ Reglas de Firebase (teams, teamInvites, emailIndex, collab) pegadas
+       en Firebase Console.
+    4) ✅ Esta página, integrada a hg-vl.
+  ════════════════════════════════════════════════════════════════════════
+
+  GATE DE LOGIN: mismo patrón lógico que ~/Desktop/repos/hg-vl/gate/gate.js
+  (localStorage[hg_auth_session] válido + /profiles/{uid}/accountType !== 'cliente'),
+  reimplementado inline porque web/ es staging autocontenido y no comparte la
+  carpeta /gate/ del sitio vivo.
+
+  RANKING: por projectsDelivered (contador manual que solo el dueño del equipo
+  incrementa desde la UI). NO hay XP, NO hay votos/curación. Documentado como
+  conteo manual, no como verificación automática (no existe tal sistema).
+
+  ESPACIO COLABORATIVO ENTRE EQUIPOS: extiende el patrón member/chat de
+  web/lobbies/index.html (push + escape HTML + polling ~4s) en TRES piezas:
+  muro busco/ofrezco (/collab/wall), hilos por tema/proyecto (/collab/threads),
+  chat en vivo común a todos los equipos (/collab/chat, no por sala).
+
+  Reusa identidad REAL del sitio: FB_URL, FB_API_KEY, LS_KEY, REFRESH_URL son
+  los mismos públicos que ya están en el HTML shippeado de hg-vl.com (visibles
+  para cualquiera que abra el código fuente del sitio — no son secretos).
+  Sin SDK de Firebase: REST plano, mismo patrón que web/lobbies/index.html.
+
+  Estética Visual Lab: tokens --black/--white/--acid/--glitch/--violet,
+  Bebas Neue (display) + Space Mono (mono) + DM Sans (body), nav/footer
+  espejo de servicios.html y starter-kits/index.html.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --black:#050505;
+  --white:#f0ede6;
+  --acid:#b8ff00;
+  --glitch:#ff2d55;
+  --violet:#7d7bff;
+  --mono:'Space Mono',monospace;
+  --display:'Bebas Neue',sans-serif;
+  --body:'DM Sans',sans-serif;
+}
+html{scroll-behavior:smooth;}
+body{background:var(--black);color:var(--white);font-family:var(--body);min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");z-index:0;pointer-events:none;opacity:0.4;}
+
+#wrap{position:relative;z-index:1;max-width:1180px;margin:0 auto;padding:0 1.5rem 6rem;}
+
+/* NAV (espejo servicios/starter-kits) */
+#nav{display:flex;justify-content:space-between;align-items:center;padding:1.8rem 0 2.4rem;flex-wrap:wrap;gap:0.8rem;}
+.nav-logo{font-family:var(--mono);font-size:11px;letter-spacing:0.2em;color:rgba(240,237,230,0.4);text-decoration:none;}
+.nav-logo:hover{color:var(--acid);}
+.nav-links{display:flex;gap:1.6rem;flex-wrap:wrap;align-items:center;}
+.nav-links a{font-family:var(--mono);font-size:9px;letter-spacing:0.2em;color:rgba(240,237,230,0.3);text-decoration:none;transition:color 0.2s;text-transform:uppercase;}
+.nav-links a:hover{color:var(--acid);}
+#nav-session{font-family:var(--mono);font-size:8px;letter-spacing:0.1em;color:rgba(240,237,230,0.4);}
+#nav-session b{color:var(--acid);}
+
+/* GATE OVERLAY (mismo patrón lógico de gate.js, inline) */
+#gate-overlay{position:fixed;inset:0;z-index:99999;background:var(--black);display:none;align-items:center;justify-content:center;text-align:center;padding:2rem;}
+#gate-overlay.show{display:flex;}
+#gate-box{max-width:460px;}
+#gate-box h1{font-family:var(--display);font-size:2.6rem;letter-spacing:0.02em;color:var(--acid);margin-bottom:1rem;}
+#gate-box p{font-family:var(--mono);font-size:11px;line-height:1.8;color:rgba(240,237,230,0.65);margin-bottom:1.8rem;}
+#gate-box a{display:inline-block;font-family:var(--mono);font-size:10px;letter-spacing:0.15em;text-decoration:none;color:#050505;background:var(--acid);padding:0.85rem 1.7rem;border-radius:2px;margin:0.3rem;font-weight:700;}
+#gate-box a.ghost{background:none;color:var(--white);border:1px solid rgba(240,237,230,0.3);}
+body.gated #main{visibility:hidden;}
+
+/* PAGE HEADER */
+#page-header{margin-bottom:2.6rem;}
+.kicker{font-family:var(--mono);font-size:10px;letter-spacing:0.3em;color:var(--violet);text-transform:uppercase;margin-bottom:1rem;}
+#page-title{font-family:var(--display);font-size:clamp(3rem,7vw,5.5rem);letter-spacing:0.03em;line-height:0.95;color:var(--white);}
+#page-title .vio{color:var(--violet);}
+#page-sub{font-family:var(--body);font-size:1rem;color:rgba(240,237,230,0.7);line-height:1.6;margin-top:1.1rem;max-width:64ch;}
+
+/* GATE NOTE (igual patrón que otras páginas de web/) */
+.gate-note{
+  font-family:var(--mono);font-size:9px;line-height:1.8;letter-spacing:0.03em;
+  color:rgba(240,237,230,0.45);background:rgba(125,123,255,0.06);
+  border:1px solid rgba(125,123,255,0.25);border-left:3px solid var(--violet);
+  border-radius:2px;padding:1rem 1.2rem;margin-bottom:2.4rem;
+}
+.gate-note b{color:var(--violet);}
+.gate-note.warn{background:rgba(255,45,85,0.05);border-color:rgba(255,45,85,0.25);border-left-color:var(--glitch);}
+.gate-note.warn b{color:var(--glitch);}
+
+/* SECTIONS */
+.sect{margin-bottom:3.4rem;}
+.sect-hdr{display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:0.8rem;margin-bottom:1.4rem;}
+.sect-title{font-family:var(--display);font-size:clamp(1.7rem,3.4vw,2.4rem);letter-spacing:0.02em;color:var(--white);}
+.sect-num{font-family:var(--mono);font-size:9px;letter-spacing:0.2em;color:rgba(240,237,230,0.25);text-transform:uppercase;}
+
+.card{background:rgba(255,255,255,0.03);border:1px solid rgba(240,237,230,0.08);border-radius:4px;padding:1.5rem;}
+
+/* PILLAR TAGS (los 3 pilares cuando aplican) */
+.pillar-tag{font-family:var(--mono);font-size:8px;letter-spacing:0.15em;color:var(--acid);border:1px solid rgba(184,255,0,0.3);border-radius:20px;padding:3px 9px;display:inline-block;background:rgba(184,255,0,0.06);}
+
+/* FORM */
+.form-field{display:flex;flex-direction:column;gap:0.35rem;margin-bottom:0.85rem;}
+.form-row{display:flex;gap:0.7rem;flex-wrap:wrap;}
+.form-row .form-field{flex:1;min-width:180px;}
+.form-label{font-family:var(--mono);font-size:7.5px;letter-spacing:0.18em;text-transform:uppercase;color:rgba(240,237,230,0.4);}
+.form-field input,.form-field select,.form-field textarea{
+  font-family:var(--mono);font-size:10px;letter-spacing:0.03em;color:var(--white);
+  background:rgba(255,255,255,0.03);border:1px solid rgba(240,237,230,0.15);border-radius:2px;
+  padding:9px 10px;outline:none;transition:border-color 0.2s;width:100%;
+}
+.form-field input:focus,.form-field select:focus,.form-field textarea:focus{border-color:var(--acid);}
+.form-field input.invalid{border-color:var(--glitch);}
+.form-field textarea{resize:vertical;min-height:56px;font-family:var(--body);font-size:11px;}
+.field-hint{font-family:var(--mono);font-size:7px;letter-spacing:0.05em;color:rgba(240,237,230,0.25);}
+.btn{
+  font-family:var(--mono);font-size:9px;letter-spacing:0.16em;text-transform:uppercase;
+  border:none;border-radius:2px;padding:11px 20px;cursor:pointer;font-weight:700;
+  transition:opacity 0.2s;white-space:nowrap;
+}
+.btn.primary{background:var(--acid);color:#050505;}
+.btn.violet{background:var(--violet);color:#050505;}
+.btn.ghost{background:transparent;border:1px solid rgba(240,237,230,0.18);color:rgba(240,237,230,0.6);}
+.btn.ghost:hover{border-color:var(--acid);color:var(--acid);}
+.btn.danger{background:transparent;border:1px solid rgba(255,45,85,0.3);color:var(--glitch);}
+.btn:hover{opacity:0.85;}
+.btn:disabled{opacity:0.35;cursor:not-allowed;}
+.status-msg{font-family:var(--mono);font-size:8.5px;letter-spacing:0.06em;color:rgba(240,237,230,0.4);margin-top:0.6rem;min-height:13px;}
+.status-msg.err{color:var(--glitch);}
+.status-msg.ok{color:var(--acid);}
+
+/* MI EQUIPO */
+#no-team-box{text-align:center;padding:2.2rem 1rem;}
+#no-team-box p{font-family:var(--body);font-size:0.95rem;color:rgba(240,237,230,0.55);margin-bottom:1.3rem;}
+#team-view{display:none;}
+#team-view.show{display:block;}
+#team-name-display{font-family:var(--display);font-size:2rem;letter-spacing:0.02em;color:var(--white);margin-bottom:0.3rem;}
+#team-meta-line{font-family:var(--mono);font-size:8.5px;letter-spacing:0.08em;color:rgba(240,237,230,0.4);margin-bottom:1.4rem;}
+#team-meta-line b{color:var(--acid);}
+
+.roster-list{display:flex;flex-direction:column;gap:0.5rem;margin-bottom:1.2rem;}
+.roster-row{
+  display:flex;justify-content:space-between;align-items:center;gap:0.7rem;
+  padding:0.65rem 0.85rem;background:rgba(255,255,255,0.02);border:1px solid rgba(240,237,230,0.06);
+  border-radius:3px;flex-wrap:wrap;
+}
+.roster-name{font-family:var(--body);font-size:12px;color:var(--white);}
+.roster-email{font-family:var(--mono);font-size:8.5px;color:rgba(240,237,230,0.35);}
+.roster-owner-tag{font-family:var(--mono);font-size:7px;letter-spacing:0.14em;color:var(--violet);border:1px solid rgba(125,123,255,0.3);border-radius:20px;padding:2px 7px;}
+
+#invite-row{display:flex;gap:0.6rem;flex-wrap:wrap;margin-top:0.8rem;}
+#invite-row input{flex:1;min-width:200px;}
+
+.deliver-row{display:flex;align-items:center;gap:0.8rem;margin-top:1.4rem;padding-top:1.2rem;border-top:1px solid rgba(240,237,230,0.07);flex-wrap:wrap;}
+.deliver-count{font-family:var(--display);font-size:2.2rem;color:var(--acid);}
+.deliver-label{font-family:var(--mono);font-size:8px;letter-spacing:0.1em;color:rgba(240,237,230,0.4);text-transform:uppercase;}
+
+/* INVITACIONES RECIBIDAS */
+.invite-card{
+  display:flex;justify-content:space-between;align-items:center;gap:0.8rem;flex-wrap:wrap;
+  padding:0.9rem 1.1rem;background:rgba(125,123,255,0.04);border:1px solid rgba(125,123,255,0.18);
+  border-radius:3px;margin-bottom:0.6rem;
+}
+.invite-text{font-family:var(--body);font-size:12px;color:var(--white);}
+.invite-text b{color:var(--violet);}
+.invite-actions{display:flex;gap:0.5rem;}
+#invites-empty,#wall-empty,#threads-empty{
+  font-family:var(--mono);font-size:9px;letter-spacing:0.06em;color:rgba(240,237,230,0.25);
+  text-align:center;padding:1.6rem 0;
+}
+
+/* RANKING */
+#ranking-table{width:100%;border-collapse:collapse;}
+#ranking-table th{
+  font-family:var(--mono);font-size:8px;letter-spacing:0.12em;text-transform:uppercase;
+  color:rgba(240,237,230,0.35);text-align:left;padding:0.6rem 0.8rem;border-bottom:1px solid rgba(240,237,230,0.1);
+}
+#ranking-table td{padding:0.8rem 0.8rem;border-bottom:1px solid rgba(240,237,230,0.05);font-family:var(--body);font-size:13px;}
+.rank-pos{font-family:var(--display);font-size:1.3rem;color:rgba(240,237,230,0.3);width:2.4rem;}
+.rank-pos.top1{color:var(--acid);}
+.rank-pos.top2{color:var(--violet);}
+.rank-pos.top3{color:rgba(240,237,230,0.6);}
+.rank-name{color:var(--white);}
+.rank-count{font-family:var(--mono);font-size:14px;color:var(--acid);text-align:right;}
+#ranking-empty{font-family:var(--mono);font-size:9px;color:rgba(240,237,230,0.25);text-align:center;padding:2rem 0;}
+
+/* COLLAB TABS */
+.collab-tabs{display:flex;gap:0;border-bottom:1px solid rgba(240,237,230,0.08);margin-bottom:1.4rem;overflow-x:auto;}
+.ctab-btn{
+  font-family:var(--mono);font-size:9px;letter-spacing:0.14em;text-transform:uppercase;
+  padding:0.7rem 1.1rem;border:none;background:none;cursor:pointer;color:rgba(240,237,230,0.3);
+  border-bottom:2px solid transparent;white-space:nowrap;transition:all 0.15s;margin-bottom:-1px;
+}
+.ctab-btn:hover{color:rgba(240,237,230,0.7);}
+.ctab-btn.active{color:var(--violet);border-bottom-color:var(--violet);}
+.ctab-panel{display:none;}
+.ctab-panel.active{display:block;}
+
+/* MURO busco/ofrezco */
+.wall-post{
+  display:flex;gap:0.7rem;padding:0.85rem 1rem;background:rgba(255,255,255,0.02);
+  border:1px solid rgba(240,237,230,0.06);border-radius:3px;margin-bottom:0.6rem;align-items:flex-start;
+}
+.wall-kind{font-family:var(--mono);font-size:7.5px;letter-spacing:0.12em;text-transform:uppercase;border-radius:20px;padding:3px 8px;flex-shrink:0;white-space:nowrap;}
+.wall-kind.busco{color:var(--glitch);border:1px solid rgba(255,45,85,0.3);background:rgba(255,45,85,0.06);}
+.wall-kind.ofrezco{color:var(--acid);border:1px solid rgba(184,255,0,0.3);background:rgba(184,255,0,0.06);}
+.wall-body{flex:1;min-width:0;}
+.wall-text{font-family:var(--body);font-size:12px;color:var(--white);line-height:1.5;word-break:break-word;}
+.wall-meta{font-family:var(--mono);font-size:7.5px;color:rgba(240,237,230,0.3);margin-top:0.3rem;}
+
+/* HILOS */
+.thread-card{padding:0.9rem 1rem;background:rgba(255,255,255,0.02);border:1px solid rgba(240,237,230,0.06);border-radius:3px;margin-bottom:0.6rem;cursor:pointer;transition:border-color 0.2s;}
+.thread-card:hover{border-color:rgba(125,123,255,0.3);}
+.thread-title{font-family:var(--display);font-size:1.2rem;color:var(--white);}
+.thread-meta{font-family:var(--mono);font-size:7.5px;color:rgba(240,237,230,0.3);margin-top:0.2rem;}
+#thread-detail{display:none;margin-top:1.2rem;border-top:1px solid rgba(240,237,230,0.08);padding-top:1.2rem;}
+#thread-detail.show{display:block;}
+#thread-posts{display:flex;flex-direction:column;gap:0.6rem;max-height:280px;overflow-y:auto;margin-bottom:0.8rem;}
+.thread-post{font-family:var(--body);font-size:11.5px;color:rgba(240,237,230,0.8);line-height:1.5;}
+.thread-post b{color:var(--violet);font-family:var(--mono);font-size:10px;}
+
+/* CHAT */
+#collab-chat-box{border:1px solid rgba(240,237,230,0.08);border-radius:4px;background:rgba(255,255,255,0.015);overflow:hidden;}
+.chat-head{font-family:var(--mono);font-size:7.5px;letter-spacing:0.2em;text-transform:uppercase;color:rgba(240,237,230,0.35);padding:8px 12px;border-bottom:1px solid rgba(240,237,230,0.07);display:flex;align-items:center;gap:6px;}
+.led-spin{width:5px;height:5px;border-radius:50%;background:var(--violet);animation:pulse-led 1.4s ease-in-out infinite;}
+@keyframes pulse-led{0%,100%{opacity:0.25;}50%{opacity:1;}}
+#collab-chat-log{max-height:240px;overflow-y:auto;padding:10px 12px;display:flex;flex-direction:column;gap:8px;}
+.chat-msg-head{display:flex;align-items:baseline;gap:6px;font-family:var(--mono);font-size:7.5px;letter-spacing:0.05em;}
+.chat-msg-name{color:var(--violet);}
+.chat-msg.mine .chat-msg-name{color:var(--acid);}
+.chat-msg-time{color:rgba(240,237,230,0.22);font-size:7px;}
+.chat-msg-text{font-family:var(--body);font-size:11px;line-height:1.5;color:rgba(240,237,230,0.8);word-break:break-word;white-space:pre-wrap;}
+#collab-chat-compose{display:flex;gap:6px;padding:10px 12px;border-top:1px solid rgba(240,237,230,0.07);}
+#collab-chat-input{flex:1;min-width:0;font-family:var(--body);font-size:11px;color:var(--white);background:rgba(255,255,255,0.03);border:1px solid rgba(240,237,230,0.15);border-radius:2px;padding:8px 10px;outline:none;}
+#collab-chat-input:focus{border-color:var(--violet);}
+#collab-chat-send{font-family:var(--mono);font-size:8px;letter-spacing:0.14em;text-transform:uppercase;background:var(--violet);color:#050505;border:none;border-radius:2px;font-weight:700;padding:0 14px;cursor:pointer;}
+#collab-chat-send:hover{opacity:0.85;}
+#collab-chat-send:disabled,#collab-chat-input:disabled{opacity:0.4;}
+
+/* MODAL */
+#modal-overlay{display:none;position:fixed;inset:0;z-index:900;background:rgba(5,5,5,0.85);backdrop-filter:blur(6px);align-items:center;justify-content:center;padding:1.5rem;}
+#modal-overlay.show{display:flex;}
+#modal-panel{background:#0c0c0c;border:1px solid rgba(240,237,230,0.12);border-radius:4px;padding:2rem 1.8rem;width:100%;max-width:460px;position:relative;}
+#modal-close{position:absolute;top:1rem;right:1rem;font-family:var(--mono);font-size:9px;color:rgba(240,237,230,0.3);background:none;border:none;cursor:pointer;}
+#modal-close:hover{color:var(--glitch);}
+#modal-title{font-family:var(--display);font-size:1.7rem;color:var(--white);margin-bottom:1.2rem;}
+
+/* FOOTER */
+#footer{margin-top:3rem;padding-top:2rem;border-top:1px solid rgba(240,237,230,0.07);font-family:var(--mono);font-size:8px;letter-spacing:0.12em;color:rgba(240,237,230,0.12);text-align:center;}
+
+@media (max-width:640px){
+  #ranking-table th:nth-child(3),#ranking-table td:nth-child(3){display:none;}
+}
+</style>
+</head>
+<body class="gated">
+
+<!-- GATE OVERLAY -->
+<div id="gate-overlay">
+  <div id="gate-box">
+    <h1>ACCESO EXCLUSIVO</h1>
+    <p>Equipos es parte de la comunidad HUMAN GLITCHE — disponible para quienes se registran como comunidad. Es gratis.</p>
+    <a href="home.html#comunidad">REGISTRARME</a>
+    <a href="home.html" class="ghost">VOLVER AL INICIO</a>
+  </div>
+</div>
+
+<div id="wrap">
+
+  <nav id="nav">
+    <a class="nav-logo" href="home.html">← HUMAN GLITCHE</a>
+    <div class="nav-links">
+      <a href="lobbies.html">SALAS</a>
+      <span id="nav-session"></span>
+    </div>
+  </nav>
+
+  <div id="main">
+
+    <header id="page-header">
+      <div class="kicker">⌘ ✦ ☉ — Comunidad / Células</div>
+      <div id="page-title">EQUIPOS<br><span class="vio">/ CÉLULAS</span></div>
+      <p id="page-sub">El Starter Kit te dijo cómo armar una célula. Esto es dónde se registra,
+      compite por lo que entrega de verdad, y se cruza con otras células. Sin XP, sin votos —
+      el ranking es proyectos entregados, punto.</p>
+    </header>
+
+    <div class="gate-note warn">
+      <b>GATE — leer antes de invitar a alguien:</b> el alta de miembros funciona por
+      invitación que el invitado acepta, NUNCA por escribir un email a mano. Para validar
+      "¿esa persona ya tiene cuenta en el sitio?" esta página necesita un nodo
+      <code>/emailIndex</code> que <b>hoy no existe en producción</b> — se puebla recién
+      cuando alguien se registra después de aplicar el parche en <code>home.html</code>
+      (acción humana, ver <code>equipos.rules.json</code> y <code>progress/cola_aprobacion.md</code>).
+      Mientras tanto, invitar a cuentas viejas puede devolver "no encontrado" aunque la cuenta
+      exista — es honesto, no un hack.
+    </div>
+
+    <!-- ════════ SECCIÓN: CREAR / MI EQUIPO ════════ -->
+    <section class="sect" id="sect-team">
+      <div class="sect-hdr">
+        <div class="sect-title">Mi equipo</div>
+        <span class="sect-num">01 — REGISTRO</span>
+      </div>
+
+      <div class="card">
+        <div id="no-team-box">
+          <p>Todavía no estás en ningún equipo. Creá uno con el nombre de tu célula —
+          después invitás a quien ya tenga cuenta en el sitio.</p>
+          <div class="form-row" style="max-width:420px;margin:0 auto;justify-content:center;">
+            <div class="form-field">
+              <label class="form-label" for="f-team-name">Nombre del equipo</label>
+              <input type="text" id="f-team-name" maxlength="60" placeholder="Glitch Collective, Sala 7…">
+            </div>
+          </div>
+          <button class="btn primary" id="btn-create-team">CREAR EQUIPO</button>
+          <div class="status-msg" id="create-team-status"></div>
+        </div>
+
+        <div id="team-view">
+          <div id="team-name-display"></div>
+          <div id="team-meta-line"></div>
+
+          <div class="roster-list" id="roster-list"></div>
+
+          <div id="owner-invite-zone" style="display:none;">
+            <label class="form-label">Invitar por email <span style="color:rgba(240,237,230,.25);">/ solo cuentas ya registradas</span></label>
+            <div id="invite-row">
+              <input type="email" id="f-invite-email" placeholder="email@dominio.com" maxlength="254">
+              <button class="btn violet" id="btn-send-invite">INVITAR</button>
+            </div>
+            <div class="status-msg" id="invite-status"></div>
+            <div class="field-hint" style="margin-top:0.4rem;">La invitación queda PENDIENTE hasta que el invitado la acepta. Nunca se agrega directo al roster.</div>
+          </div>
+
+          <div class="deliver-row" id="deliver-row" style="display:none;">
+            <div class="deliver-count" id="deliver-count">0</div>
+            <div>
+              <div class="deliver-label">Proyectos entregados</div>
+              <div class="field-hint">Lo incrementa el dueño del equipo a mano, al marcar un proyecto colectivo como entregado. Sin verificación automática — todavía.</div>
+            </div>
+            <button class="btn ghost" id="btn-deliver" style="margin-left:auto;">+1 PROYECTO ENTREGADO</button>
+          </div>
+
+          <div style="margin-top:1.2rem;">
+            <button class="btn danger" id="btn-leave-team">SALIR DEL EQUIPO</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════════ SECCIÓN: INVITACIONES RECIBIDAS ════════ -->
+    <section class="sect" id="sect-invites">
+      <div class="sect-hdr">
+        <div class="sect-title">Invitaciones recibidas</div>
+        <span class="sect-num">02 — PENDIENTES</span>
+      </div>
+      <div class="card">
+        <div id="invites-list"></div>
+        <div id="invites-empty">No tenés invitaciones pendientes.</div>
+      </div>
+    </section>
+
+    <!-- ════════ SECCIÓN: RANKING ════════ -->
+    <section class="sect" id="sect-ranking">
+      <div class="sect-hdr">
+        <div class="sect-title">Ranking entre equipos</div>
+        <span class="sect-num">03 — POR PROYECTOS ENTREGADOS</span>
+      </div>
+      <div class="gate-note">
+        Ordenado por <b>projectsDelivered</b>, un contador que solo el dueño de cada equipo
+        incrementa a mano al cerrar un proyecto colectivo. No es XP, no es popularidad,
+        no es un voto de curación — es cuánto se entregó, declarado por quien lo entregó.
+      </div>
+      <div class="card">
+        <table id="ranking-table">
+          <thead>
+            <tr><th>#</th><th>Equipo</th><th>Miembros</th><th style="text-align:right;">Entregados</th></tr>
+          </thead>
+          <tbody id="ranking-body"></tbody>
+        </table>
+        <div id="ranking-empty" style="display:none;">Todavía no hay equipos registrados — sé el primero.</div>
+      </div>
+    </section>
+
+    <!-- ════════ SECCIÓN: ESPACIO COLABORATIVO ENTRE EQUIPOS ════════ -->
+    <section class="sect" id="sect-collab">
+      <div class="sect-hdr">
+        <div class="sect-title">Entre equipos</div>
+        <span class="sect-num">04 — COLABORACIÓN</span>
+      </div>
+      <p style="font-family:var(--body);font-size:0.95rem;color:rgba(240,237,230,0.6);margin-bottom:1.4rem;max-width:68ch;">
+        No todo se resuelve adentro de la propia célula. Acá un equipo busca lo que le falta,
+        ofrece lo que le sobra, abre un hilo sobre un proyecto cruzado, o simplemente habla
+        con otra célula en vivo.
+      </p>
+
+      <div class="collab-tabs">
+        <button class="ctab-btn active" data-tab="wall">MURO BUSCO/OFREZCO</button>
+        <button class="ctab-btn" data-tab="threads">HILOS</button>
+        <button class="ctab-btn" data-tab="chat">CHAT EN VIVO</button>
+      </div>
+
+      <!-- MURO -->
+      <div class="ctab-panel active" id="panel-wall">
+        <div class="card">
+          <div class="form-row" id="wall-form" style="align-items:flex-end;">
+            <div class="form-field" style="flex:0 0 130px;">
+              <label class="form-label">Tipo</label>
+              <select id="f-wall-kind">
+                <option value="busco">BUSCO</option>
+                <option value="ofrezco">OFREZCO</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label class="form-label">Mensaje</label>
+              <input type="text" id="f-wall-text" maxlength="280" placeholder="VJ para el 12/jul, ofrecemos render farm libre esta semana…">
+            </div>
+            <button class="btn violet" id="btn-wall-post" style="margin-bottom:0.85rem;">PUBLICAR</button>
+          </div>
+          <div class="status-msg" id="wall-status"></div>
+          <div id="wall-list" style="margin-top:1rem;"></div>
+          <div id="wall-empty" style="display:none;">El muro está vacío. ¿Tu equipo busca u ofrece algo?</div>
+        </div>
+      </div>
+
+      <!-- HILOS -->
+      <div class="ctab-panel" id="panel-threads">
+        <div class="card">
+          <div class="form-row">
+            <div class="form-field">
+              <label class="form-label">Nuevo hilo — tema o proyecto</label>
+              <input type="text" id="f-thread-title" maxlength="80" placeholder="Mapping conjunto para el festival de octubre…">
+            </div>
+            <button class="btn violet" id="btn-thread-create" style="margin-bottom:0.85rem;">ABRIR HILO</button>
+          </div>
+          <div class="status-msg" id="thread-status"></div>
+          <div id="threads-list" style="margin-top:1rem;"></div>
+          <div id="threads-empty" style="display:none;">No hay hilos abiertos todavía.</div>
+
+          <div id="thread-detail">
+            <div id="thread-detail-title" style="font-family:var(--display);font-size:1.4rem;color:var(--white);margin-bottom:0.8rem;"></div>
+            <div id="thread-posts"></div>
+            <div style="display:flex;gap:6px;">
+              <input type="text" id="f-thread-post" placeholder="Responder en el hilo…" maxlength="500" style="flex:1;font-family:var(--body);font-size:11px;color:var(--white);background:rgba(255,255,255,0.03);border:1px solid rgba(240,237,230,0.15);border-radius:2px;padding:8px 10px;outline:none;">
+              <button class="btn violet" id="btn-thread-reply">→</button>
+            </div>
+            <button class="btn ghost" id="btn-thread-close" style="margin-top:0.8rem;">← VOLVER A LOS HILOS</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- CHAT -->
+      <div class="ctab-panel" id="panel-chat">
+        <div class="card">
+          <div id="collab-chat-box">
+            <div class="chat-head"><span class="led-spin"></span> CHAT ENTRE EQUIPOS</div>
+            <div id="collab-chat-log"></div>
+            <div id="collab-chat-compose">
+              <input type="text" id="collab-chat-input" placeholder="Escribí algo para todas las células…" maxlength="500" autocomplete="off">
+              <button id="collab-chat-send">→</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div><!-- /#main -->
+
+  <footer id="footer">© 2026 HUMAN GLITCHE — VISUAL LAB · COMUNIDAD</footer>
+
+</div><!-- /#wrap -->
+
+<script>
+(function(){
+  // ── Identidad real del sitio (públicas, ya están en el HTML shippeado) ──
+  const FB_URL      = 'https://hg-vl-shaders-default-rtdb.firebaseio.com';
+  const FB_API_KEY  = 'AIzaSyAeMKHe7dj4bnaUzkF7iDANrC_cBtg4LAA';
+  const REFRESH_URL = 'https://securetoken.googleapis.com/v1/token';
+  const LS_KEY      = 'hg_auth_session';
+
+  let session = null;
+  let myTeam  = null;      // equipo del que session.uid es miembro (o null)
+  let allTeams = [];
+  let collabPollTimer = null;
+  let lastCollabChatSig = null;
+  let activeThreadId = null;
+
+  // ── Sesión / token refresh (mismo patrón que web/lobbies/index.html) ──
+  function getSession(){ try{ return JSON.parse(localStorage.getItem(LS_KEY)||'null'); }catch(e){ return null; } }
+  function saveSession(s){ localStorage.setItem(LS_KEY, JSON.stringify(s)); }
+
+  async function freshToken(s){
+    if(!s || !s.refreshToken) return s ? s.idToken : null;
+    try{
+      const r = await fetch(`${REFRESH_URL}?key=${FB_API_KEY}`,{
+        method:'POST',
+        headers:{'Content-Type':'application/x-www-form-urlencoded'},
+        body:`grant_type=refresh_token&refresh_token=${encodeURIComponent(s.refreshToken)}`
+      });
+      if(!r.ok) return s.idToken;
+      const data = await r.json();
+      s.idToken = data.id_token;
+      s.refreshToken = data.refresh_token;
+      saveSession(s);
+      return s.idToken;
+    }catch(e){ return s.idToken; }
+  }
+
+  function escHtml(s){
+    if(s === 0) return '0';
+    if(!s) return '';
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+  function normEmail(e){ return String(e||'').trim().toLowerCase(); }
+  function isValidEmail(e){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e); }
+  function fmtTime(ts){
+    if(!ts) return '';
+    try{ return new Date(ts).toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'}); }catch(e){ return ''; }
+  }
+
+  // ── GATE (mismo patrón lógico de gate.js, reimplementado inline) ──
+  const gateOverlay = document.getElementById('gate-overlay');
+  function lockGate(){ document.body.classList.add('gated'); gateOverlay.classList.add('show'); }
+  function unlockGate(){ document.body.classList.remove('gated'); gateOverlay.classList.remove('show'); }
+
+  async function checkGate(){
+    session = getSession();
+    if(!session || !session.uid){ lockGate(); return; }
+    try{
+      const r = await fetch(`${FB_URL}/profiles/${session.uid}/accountType.json`);
+      const accountType = r.ok ? await r.json() : null;
+      // cuentas viejas sin accountType guardado son comunidad por defecto
+      if(accountType !== 'cliente'){
+        unlockGate();
+        document.getElementById('nav-session').innerHTML = `sesión: <b>${escHtml(session.name || session.email || '—')}</b>`;
+        boot();
+      } else {
+        lockGate();
+      }
+    }catch(e){ lockGate(); }
+  }
+
+  // ════════════════════════════════════════════════════════════════════
+  // EMAIL INDEX (gap declarado — ver $gap_critico en equipos.rules.json)
+  // ════════════════════════════════════════════════════════════════════
+  // RTDB prohíbe '.' '$' '#' '[' ']' '/' dentro de una clave — un email
+  // crudo no es clave válida. Convención estándar: '.' → ',' antes de usar
+  // como clave. home.html debe escribir /emailIndex con la MISMA conversión.
+  function emailToIndexKey(email){
+    return normEmail(email).replace(/\./g, ',');
+  }
+  async function lookupUidByEmail(email){
+    const key = emailToIndexKey(email);
+    try{
+      const r = await fetch(`${FB_URL}/emailIndex/${encodeURIComponent(key)}.json`);
+      if(!r.ok) return null;
+      const uid = await r.json();
+      return (typeof uid === 'string' && uid) ? uid : null;
+    }catch(e){ return null; } // red caída: tratamos igual que "no encontrado", honesto
+  }
+
+  // ════════════════════════════════════════════════════════════════════
+  // EQUIPOS — crear, leer, roster, ranking, contador de entregas
+  // ════════════════════════════════════════════════════════════════════
+  async function loadAllTeams(){
+    try{
+      const r = await fetch(`${FB_URL}/teams.json`);
+      const data = r.ok ? await r.json() : null;
+      allTeams = data ? Object.entries(data).map(([id, t]) => ({ id, ...t })) : [];
+    }catch(e){ allTeams = []; }
+  }
+
+  function findMyTeam(){
+    if(!session) return null;
+    return allTeams.find(t => t.members && t.members[session.uid]) || null;
+  }
+
+  function renderRanking(){
+    const body = document.getElementById('ranking-body');
+    const empty = document.getElementById('ranking-empty');
+    const sorted = [...allTeams].sort((a,b) => (b.projectsDelivered||0) - (a.projectsDelivered||0));
+    if(!sorted.length){
+      body.innerHTML = '';
+      empty.style.display = 'block';
+      return;
+    }
+    empty.style.display = 'none';
+    body.innerHTML = sorted.map((t, i) => {
+      const pos = i + 1;
+      const posClass = pos === 1 ? 'top1' : pos === 2 ? 'top2' : pos === 3 ? 'top3' : '';
+      const memberCount = t.members ? Object.keys(t.members).length : 0;
+      return `<tr>
+        <td><span class="rank-pos ${posClass}">${pos}</span></td>
+        <td class="rank-name">${escHtml(t.name || '—')}</td>
+        <td>${memberCount}</td>
+        <td class="rank-count">${t.projectsDelivered || 0}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  function renderTeamView(){
+    const noTeamBox = document.getElementById('no-team-box');
+    const teamView  = document.getElementById('team-view');
+    myTeam = findMyTeam();
+
+    if(!myTeam){
+      noTeamBox.style.display = 'block';
+      teamView.classList.remove('show');
+      return;
+    }
+    noTeamBox.style.display = 'none';
+    teamView.classList.add('show');
+
+    const isOwner = session && myTeam.ownerUid === session.uid;
+    document.getElementById('team-name-display').textContent = myTeam.name;
+    document.getElementById('team-meta-line').innerHTML =
+      `Dueño: <b>${escHtml(myTeam.ownerName || '—')}</b> · creado ${new Date(myTeam.createdAt||0).toLocaleDateString('es-AR')}`;
+
+    const members = Object.entries(myTeam.members || {});
+    document.getElementById('roster-list').innerHTML = members.map(([uid, m]) => `
+      <div class="roster-row">
+        <div>
+          <div class="roster-name">${escHtml(m.name || '—')}</div>
+          <div class="roster-email">${escHtml(m.email || '')}</div>
+        </div>
+        ${uid === myTeam.ownerUid ? '<span class="roster-owner-tag">DUEÑO</span>' : ''}
+      </div>
+    `).join('');
+
+    document.getElementById('owner-invite-zone').style.display = isOwner ? 'block' : 'none';
+    document.getElementById('deliver-row').style.display = isOwner ? 'flex' : 'none';
+    document.getElementById('deliver-count').textContent = myTeam.projectsDelivered || 0;
+  }
+
+  function setStatus(elId, msg, type){
+    const el = document.getElementById(elId);
+    el.textContent = msg || '';
+    el.classList.remove('err','ok');
+    if(type) el.classList.add(type);
+  }
+
+  // crear equipo
+  document.getElementById('btn-create-team').addEventListener('click', async () => {
+    if(!session) return;
+    const name = document.getElementById('f-team-name').value.trim();
+    if(!name){ setStatus('create-team-status','Poné un nombre.','err'); return; }
+    if(findMyTeam()){ setStatus('create-team-status','Ya estás en un equipo.','err'); return; }
+    setStatus('create-team-status','Creando…');
+    try{
+      const token = await freshToken(session);
+      const now = Date.now();
+      const payload = {
+        name,
+        ownerUid: session.uid,
+        ownerName: session.name || session.email || '—',
+        createdAt: now,
+        projectsDelivered: 0,
+        members: { [session.uid]: { name: session.name || session.email || '—', email: session.email || '', joinedAt: now } }
+      };
+      const r = await fetch(`${FB_URL}/teams.json?auth=${token}`,{
+        method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)
+      });
+      if(!r.ok){
+        setStatus('create-team-status', `No se pudo crear (HTTP ${r.status}) — falta la regla de Firebase para /teams.`,'err');
+        return;
+      }
+      setStatus('create-team-status','¡Equipo creado!','ok');
+      await refreshAll();
+    }catch(e){ setStatus('create-team-status', `Error de red — ${e.message}`,'err'); }
+  });
+
+  // salir del equipo
+  document.getElementById('btn-leave-team').addEventListener('click', async () => {
+    if(!session || !myTeam) return;
+    if(myTeam.ownerUid === session.uid){
+      alert('Sos el dueño del equipo — no podés salir sin transferir o cerrar el equipo (no implementado en este staging).');
+      return;
+    }
+    if(!confirm('¿Salís del equipo?')) return;
+    try{
+      const token = await freshToken(session);
+      await fetch(`${FB_URL}/teams/${myTeam.id}/members/${session.uid}.json?auth=${token}`,{ method:'DELETE' });
+      await refreshAll();
+    }catch(e){ /* silencioso */ }
+  });
+
+  // +1 proyecto entregado (manual, solo dueño)
+  document.getElementById('btn-deliver').addEventListener('click', async () => {
+    if(!session || !myTeam || myTeam.ownerUid !== session.uid) return;
+    if(!confirm('¿Marcás un proyecto colectivo como entregado? Suma +1 al ranking del equipo.')) return;
+    try{
+      const token = await freshToken(session);
+      const next = (myTeam.projectsDelivered || 0) + 1;
+      await fetch(`${FB_URL}/teams/${myTeam.id}/projectsDelivered.json?auth=${token}`,{
+        method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(next)
+      });
+      await refreshAll();
+    }catch(e){ /* silencioso */ }
+  });
+
+  // ════════════════════════════════════════════════════════════════════
+  // INVITACIONES — crear (solo si emailIndex resuelve), aceptar, rechazar
+  // ════════════════════════════════════════════════════════════════════
+  document.getElementById('btn-send-invite').addEventListener('click', async () => {
+    if(!session || !myTeam || myTeam.ownerUid !== session.uid) return;
+    const emailEl = document.getElementById('f-invite-email');
+    const email = normEmail(emailEl.value);
+    emailEl.classList.remove('invalid');
+    if(!isValidEmail(email)){
+      emailEl.classList.add('invalid');
+      setStatus('invite-status','Email inválido.','err');
+      return;
+    }
+    setStatus('invite-status','Buscando esa cuenta…');
+    const invitedUid = await lookupUidByEmail(email);
+    if(!invitedUid){
+      setStatus('invite-status','No encontramos una cuenta con ese email — todavía no se puede invitar. (El índice de búsqueda es nuevo: ver nota arriba.)','err');
+      return;
+    }
+    if(myTeam.members && myTeam.members[invitedUid]){
+      setStatus('invite-status','Esa persona ya es miembro del equipo.','err');
+      return;
+    }
+    try{
+      const token = await freshToken(session);
+      const now = Date.now();
+      const payload = {
+        teamId: myTeam.id,
+        teamName: myTeam.name,
+        email,
+        invitedByUid: session.uid,
+        invitedByName: session.name || session.email || '—',
+        status: 'pending',
+        createdAt: now,
+        invitedUid
+      };
+      const r = await fetch(`${FB_URL}/teamInvites.json?auth=${token}`,{
+        method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)
+      });
+      if(!r.ok){
+        setStatus('invite-status', `No se pudo invitar (HTTP ${r.status}) — falta la regla de Firebase para /teamInvites.`,'err');
+        return;
+      }
+      setStatus('invite-status','Invitación enviada — queda pendiente hasta que la acepte.','ok');
+      emailEl.value = '';
+    }catch(e){ setStatus('invite-status', `Error de red — ${e.message}`,'err'); }
+  });
+
+  async function loadMyInvites(){
+    if(!session) return [];
+    try{
+      const r = await fetch(`${FB_URL}/teamInvites.json?auth=${session.idToken}`);
+      const data = r.ok ? await r.json() : null;
+      if(!data) return [];
+      return Object.entries(data)
+        .map(([id, inv]) => ({ id, ...inv }))
+        .filter(inv => inv.status === 'pending' && (inv.invitedUid === session.uid || normEmail(inv.email) === normEmail(session.email)));
+    }catch(e){ return []; }
+  }
+
+  function renderInvites(invites){
+    const list = document.getElementById('invites-list');
+    const empty = document.getElementById('invites-empty');
+    if(!invites.length){
+      list.innerHTML = '';
+      empty.style.display = 'block';
+      return;
+    }
+    empty.style.display = 'none';
+    list.innerHTML = invites.map(inv => `
+      <div class="invite-card" data-id="${inv.id}" data-team="${escHtml(inv.teamId)}">
+        <div class="invite-text">Te invitaron a <b>${escHtml(inv.teamName || inv.teamId)}</b> — invitó ${escHtml(inv.invitedByName || '—')}</div>
+        <div class="invite-actions">
+          <button class="btn primary" data-act="accept">ACEPTAR</button>
+          <button class="btn ghost" data-act="reject">RECHAZAR</button>
+        </div>
+      </div>
+    `).join('');
+
+    list.querySelectorAll('[data-act]').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        const card = e.target.closest('.invite-card');
+        const inviteId = card.dataset.id;
+        const teamId = card.dataset.team;
+        const act = btn.dataset.act;
+        btn.disabled = true;
+        await resolveInvite(inviteId, teamId, act);
+      });
+    });
+  }
+
+  async function resolveInvite(inviteId, teamId, action){
+    if(!session) return;
+    try{
+      const token = await freshToken(session);
+      const newStatus = action === 'accept' ? 'accepted' : 'rejected';
+      // 1) marcar la invitación resuelta
+      const r1 = await fetch(`${FB_URL}/teamInvites/${inviteId}.json?auth=${token}`,{
+        method:'PATCH', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ status: newStatus, resolvedAt: Date.now() })
+      });
+      if(!r1.ok){ await refreshAll(); return; }
+      // 2) si aceptó, AHORA sí se escribe el roster (nunca antes)
+      if(action === 'accept'){
+        await fetch(`${FB_URL}/teams/${teamId}/members/${session.uid}.json?auth=${token}`,{
+          method:'PUT', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({ name: session.name || session.email || '—', email: session.email || '', joinedAt: Date.now() })
+        });
+      }
+      await refreshAll();
+    }catch(e){ /* silencioso */ }
+  }
+
+  // ════════════════════════════════════════════════════════════════════
+  // COLLAB: muro busco/ofrezco
+  // ════════════════════════════════════════════════════════════════════
+  document.getElementById('btn-wall-post').addEventListener('click', async () => {
+    if(!session){ setStatus('wall-status','Iniciá sesión.','err'); return; }
+    if(!myTeam){ setStatus('wall-status','Necesitás un equipo para publicar en el muro.','err'); return; }
+    const text = document.getElementById('f-wall-text').value.trim();
+    const kind = document.getElementById('f-wall-kind').value;
+    if(!text){ setStatus('wall-status','Escribí algo.','err'); return; }
+    try{
+      const token = await freshToken(session);
+      const r = await fetch(`${FB_URL}/collab/wall.json?auth=${token}`,{
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ teamId: myTeam.id, teamName: myTeam.name, kind, text, authorUid: session.uid, authorName: session.name || session.email, ts: Date.now() })
+      });
+      if(!r.ok){ setStatus('wall-status', `No se pudo publicar (HTTP ${r.status}).`,'err'); return; }
+      document.getElementById('f-wall-text').value = '';
+      setStatus('wall-status','Publicado.','ok');
+      await loadWall();
+    }catch(e){ setStatus('wall-status', `Error de red — ${e.message}`,'err'); }
+  });
+
+  async function loadWall(){
+    try{
+      const r = await fetch(`${FB_URL}/collab/wall.json?orderBy="ts"&limitToLast=40`);
+      const data = r.ok ? await r.json() : null;
+      const list = document.getElementById('wall-list');
+      const empty = document.getElementById('wall-empty');
+      if(!data){ list.innerHTML=''; empty.style.display='block'; return; }
+      const posts = Object.values(data).sort((a,b) => (b.ts||0)-(a.ts||0));
+      empty.style.display = 'none';
+      list.innerHTML = posts.map(p => `
+        <div class="wall-post">
+          <span class="wall-kind ${p.kind === 'ofrezco' ? 'ofrezco' : 'busco'}">${p.kind === 'ofrezco' ? 'OFREZCO' : 'BUSCO'}</span>
+          <div class="wall-body">
+            <div class="wall-text">${escHtml(p.text)}</div>
+            <div class="wall-meta">${escHtml(p.teamName || p.teamId)} · ${fmtTime(p.ts)}</div>
+          </div>
+        </div>
+      `).join('');
+    }catch(e){ /* silencioso */ }
+  }
+
+  // ════════════════════════════════════════════════════════════════════
+  // COLLAB: hilos por tema/proyecto
+  // ════════════════════════════════════════════════════════════════════
+  document.getElementById('btn-thread-create').addEventListener('click', async () => {
+    if(!session){ setStatus('thread-status','Iniciá sesión.','err'); return; }
+    const title = document.getElementById('f-thread-title').value.trim();
+    if(!title){ setStatus('thread-status','Poné un título.','err'); return; }
+    try{
+      const token = await freshToken(session);
+      const payload = { title, createdBy: session.uid, createdByName: session.name || session.email, createdAt: Date.now() };
+      if(myTeam) payload.teamId = myTeam.id;
+      const r = await fetch(`${FB_URL}/collab/threads.json?auth=${token}`,{
+        method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)
+      });
+      if(!r.ok){ setStatus('thread-status', `No se pudo abrir el hilo (HTTP ${r.status}).`,'err'); return; }
+      document.getElementById('f-thread-title').value = '';
+      setStatus('thread-status','Hilo abierto.','ok');
+      await loadThreads();
+    }catch(e){ setStatus('thread-status', `Error de red — ${e.message}`,'err'); }
+  });
+
+  async function loadThreads(){
+    try{
+      const r = await fetch(`${FB_URL}/collab/threads.json?orderBy="createdAt"&limitToLast=40`);
+      const data = r.ok ? await r.json() : null;
+      const list = document.getElementById('threads-list');
+      const empty = document.getElementById('threads-empty');
+      if(!data){ list.innerHTML=''; empty.style.display='block'; return; }
+      const threads = Object.entries(data).map(([id,t]) => ({id,...t})).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+      empty.style.display = 'none';
+      list.innerHTML = threads.map(t => `
+        <div class="thread-card" data-id="${t.id}">
+          <div class="thread-title">${escHtml(t.title)}</div>
+          <div class="thread-meta">abierto por ${escHtml(t.createdByName||'—')} · ${new Date(t.createdAt||0).toLocaleDateString('es-AR')}</div>
+        </div>
+      `).join('');
+      list.querySelectorAll('.thread-card').forEach(card => {
+        card.addEventListener('click', () => openThread(card.dataset.id, threads.find(t=>t.id===card.dataset.id)));
+      });
+    }catch(e){ /* silencioso */ }
+  }
+
+  async function openThread(id, threadData){
+    activeThreadId = id;
+    document.getElementById('thread-detail').classList.add('show');
+    document.getElementById('thread-detail-title').textContent = threadData ? threadData.title : '';
+    await refreshThreadPosts();
+  }
+
+  async function refreshThreadPosts(){
+    if(!activeThreadId) return;
+    try{
+      const r = await fetch(`${FB_URL}/collab/threads/${activeThreadId}/posts.json?orderBy="ts"&limitToLast=100`);
+      const data = r.ok ? await r.json() : null;
+      const box = document.getElementById('thread-posts');
+      if(!data){ box.innerHTML = '<div class="thread-post" style="opacity:.4;">Sin respuestas todavía.</div>'; return; }
+      const posts = Object.values(data).sort((a,b)=>(a.ts||0)-(b.ts||0));
+      box.innerHTML = posts.map(p => `<div class="thread-post"><b>${escHtml(p.name||'?')}</b> — ${escHtml(p.text)}</div>`).join('');
+      box.scrollTop = box.scrollHeight;
+    }catch(e){ /* silencioso */ }
+  }
+
+  document.getElementById('btn-thread-reply').addEventListener('click', async () => {
+    if(!session || !activeThreadId) return;
+    const input = document.getElementById('f-thread-post');
+    const text = input.value.trim();
+    if(!text) return;
+    input.value = '';
+    try{
+      const token = await freshToken(session);
+      await fetch(`${FB_URL}/collab/threads/${activeThreadId}/posts.json?auth=${token}`,{
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ uid: session.uid, name: session.name || session.email, text, ts: Date.now() })
+      });
+      await refreshThreadPosts();
+    }catch(e){ input.value = text; }
+  });
+
+  document.getElementById('btn-thread-close').addEventListener('click', () => {
+    activeThreadId = null;
+    document.getElementById('thread-detail').classList.remove('show');
+  });
+
+  // ════════════════════════════════════════════════════════════════════
+  // COLLAB: chat en vivo común a todas las células (extiende patrón de lobbies)
+  // ════════════════════════════════════════════════════════════════════
+  async function fetchCollabChat(){
+    try{
+      const r = await fetch(`${FB_URL}/collab/chat.json?orderBy="ts"&limitToLast=80`);
+      if(!r.ok) return null;
+      const data = await r.json();
+      if(!data) return [];
+      return Object.values(data).filter(m => m && typeof m.text === 'string').sort((a,b)=>(a.ts||0)-(b.ts||0));
+    }catch(e){ return null; }
+  }
+
+  function renderCollabChat(msgs){
+    if(msgs === null) return;
+    const sig = msgs.map(m => `${m.ts}|${m.uid}`).join(',');
+    if(sig === lastCollabChatSig) return;
+    lastCollabChatSig = sig;
+    const log = document.getElementById('collab-chat-log');
+    if(!msgs.length){
+      log.innerHTML = '<div style="font-family:var(--mono);font-size:8px;color:rgba(240,237,230,.2);text-align:center;padding:1rem 0;">Todavía no habló ninguna célula.</div>';
+      return;
+    }
+    const uid = session ? session.uid : null;
+    log.innerHTML = msgs.map(m => {
+      const mine = uid && m.uid === uid ? ' mine' : '';
+      return `<div class="chat-msg${mine}">
+        <div class="chat-msg-head"><span class="chat-msg-name">${escHtml(m.name||'?')}${m.teamName ? ' · '+escHtml(m.teamName) : ''}</span><span class="chat-msg-time">${escHtml(fmtTime(m.ts))}</span></div>
+        <div class="chat-msg-text">${escHtml(m.text)}</div>
+      </div>`;
+    }).join('');
+    log.scrollTop = log.scrollHeight;
+  }
+
+  async function refreshCollabChat(){
+    const msgs = await fetchCollabChat();
+    renderCollabChat(msgs);
+  }
+
+  const collabInput = document.getElementById('collab-chat-input');
+  const collabSend  = document.getElementById('collab-chat-send');
+
+  async function sendCollabChat(){
+    if(!session) return;
+    const text = collabInput.value.trim();
+    if(!text || text.length > 500) return;
+    collabInput.value = '';
+    collabSend.disabled = true;
+    try{
+      const token = await freshToken(session);
+      const msg = { uid: session.uid, name: session.name || session.email || 'anónimo', text, ts: Date.now() };
+      if(myTeam) msg.teamName = myTeam.name;
+      const r = await fetch(`${FB_URL}/collab/chat.json?auth=${token}`,{
+        method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(msg)
+      });
+      if(r.ok){ await refreshCollabChat(); } else { collabInput.value = text; }
+    }catch(e){ collabInput.value = text; }
+    finally{ collabSend.disabled = false; }
+  }
+  collabSend.addEventListener('click', sendCollabChat);
+  collabInput.addEventListener('keydown', e => { if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); sendCollabChat(); } });
+
+  // ── Tabs de la sección colaborativa ──
+  document.querySelectorAll('.ctab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.ctab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.ctab-panel').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('panel-' + btn.dataset.tab).classList.add('active');
+    });
+  });
+
+  // ════════════════════════════════════════════════════════════════════
+  // BOOT
+  // ════════════════════════════════════════════════════════════════════
+  async function refreshAll(){
+    await loadAllTeams();
+    renderTeamView();
+    renderRanking();
+    const invites = await loadMyInvites();
+    renderInvites(invites);
+  }
+
+  async function boot(){
+    await refreshAll();
+    await loadWall();
+    await loadThreads();
+    await refreshCollabChat();
+    if(collabPollTimer) clearInterval(collabPollTimer);
+    collabPollTimer = setInterval(refreshCollabChat, 4000);
+    setInterval(refreshAll, 20000);
+  }
+
+  checkGate();
+  document.addEventListener('hg-auth-changed', checkGate);
+  window.addEventListener('storage', e => { if(e.key === LS_KEY) checkGate(); });
+})();
+</script>
+</body>
+</html>
