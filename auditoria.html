@@ -923,6 +923,18 @@ function buildModSearchCitySelect(){
 }
 function gpDedupKey(name, city){ return (name||'').trim().toLowerCase()+'|'+(city||'').trim().toLowerCase(); }
 
+// Abre una búsqueda de Google (nombre + ciudad del lugar) en pestaña nueva —
+// atajo para verificar a mano web/redes, que es justo lo que Places no da. El
+// nombre nunca se mete en el onclick (se lee por índice/id) para no romper con
+// comillas/apóstrofes en el nombre del comercio.
+function openGoogleSearch(name, city){
+  const q = [name, city].filter(Boolean).join(' ').trim();
+  if(!q) return;
+  window.open('https://www.google.com/search?q='+encodeURIComponent(q), '_blank', 'noopener');
+}
+function googleSearchPlace(i){ const r=(window._gpResults||[])[i]; if(r) openGoogleSearch(r.name, window._gpCity); }
+function googleSearchPending(id){ const p=pendientes[id]; if(p) openGoogleSearch(p.name, p.city); }
+
 // Place Details: trae web + teléfono OFICIALES de la ficha de Google. NO vienen
 // en textSearch — hay que pedirlos aparte, y es una llamada PAGA extra por
 // comercio, así que solo se dispara al GUARDAR (no al listar). Las redes
@@ -1008,6 +1020,7 @@ function renderSearchResults(results, city){
       <div class="pname">${escHtml(r.name||'(sin nombre)')}${dup?' <span class="pendtag">YA EN LA BASE</span>':''}</div>
       <div class="pmeta">📍 ${escHtml(r.formatted_address||'sin dirección')}${typeof r.rating==='number' ? ' · ★ '+r.rating+(r.user_ratings_total?' ('+r.user_ratings_total+')':'') : ''}</div>
       <div class="pactions">
+        <button class="btn sm" onclick="googleSearchPlace(${i})">🔍 GOOGLE</button>
         <button class="btn sm" id="gp-add-${i}" onclick="addPlaceToPending(${i})" ${dup?'disabled':''}>${dup?'YA EXISTE':'+ AGREGAR A PENDIENTES'}</button>
       </div>
     </div>`;
@@ -1180,6 +1193,7 @@ function renderModPanel(){
       <div class="pmeta">📍 ${escHtml(p.address||'sin dirección')} · sugerido por ${escHtml(p.suggestedByName||p.suggestedBy||'comunidad')}</div>
       <div class="pmeta">${ops.length ? '💡 '+ops.join(', ') : '✓ presencia completa según la sugerencia'}${p.notes?' · nota: '+escHtml(p.notes):''}</div>
       <div class="pactions">
+        <button class="btn sm" onclick="googleSearchPending('${p.id}')">🔍 GOOGLE</button>
         <button class="btn sm" onclick="approvePending('${p.id}')">✓ APROBAR</button>
         <button class="btn danger sm" onclick="rejectPending('${p.id}')">✕ RECHAZAR</button>
       </div>
@@ -1329,7 +1343,7 @@ function exportCSV(){
 window.selectBiz=selectBiz; window.closeSide=closeSide; window.setFilter=setFilter; window.switchTab=switchTab;
 window.approvePending=approvePending; window.rejectPending=rejectPending; window.openModEdit=openModEdit; window.saveModEdit=saveModEdit;
 window.filterCity=filterCity; window.changePage=changePage; window.saveCRMNote=saveCRMNote; window.exportCSV=exportCSV;
-window.searchGooglePlaces=searchGooglePlaces; window.addPlaceToPending=addPlaceToPending; window.searchAllCities=searchAllCities; window.saveAllSearchResults=saveAllSearchResults;
+window.searchGooglePlaces=searchGooglePlaces; window.addPlaceToPending=addPlaceToPending; window.searchAllCities=searchAllCities; window.saveAllSearchResults=saveAllSearchResults; window.googleSearchPlace=googleSearchPlace; window.googleSearchPending=googleSearchPending;
 
 // ── Boot ──
 async function boot(){
