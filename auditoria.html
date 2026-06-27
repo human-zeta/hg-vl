@@ -934,6 +934,7 @@ function openGoogleSearch(name, city){
 }
 function googleSearchPlace(i){ const r=(window._gpResults||[])[i]; if(r) openGoogleSearch(r.name, window._gpCity); }
 function googleSearchPending(id){ const p=pendientes[id]; if(p) openGoogleSearch(p.name, p.city); }
+function googleSearchEdit(){ openGoogleSearch((($('e-name')||{}).value||''), (($('e-city')||{}).value||'')); }
 
 // Place Details: trae web + teléfono OFICIALES de la ficha de Google. NO vienen
 // en textSearch — hay que pedirlos aparte, y es una llamada PAGA extra por
@@ -1249,6 +1250,7 @@ function openModEdit(id){
     <label><input type="checkbox" id="e-wa" ${b.wa?'checked':''}> WhatsApp Biz</label>
     <label><input type="checkbox" id="e-tt" ${b.tt?'checked':''}> TikTok</label>
   </div>
+  <button class="btn sm" onclick="googleSearchEdit()">🔍 GOOGLE</button>
   <button class="btn sm" onclick="saveModEdit('${id}')">💾 GUARDAR (directo, sin confirmación)</button>
   <div id="mod-edit-status" class="status-msg"></div>`;
   side.style.display = 'block';
@@ -1341,7 +1343,7 @@ function exportCSV(){
 }
 
 window.selectBiz=selectBiz; window.closeSide=closeSide; window.setFilter=setFilter; window.switchTab=switchTab;
-window.approvePending=approvePending; window.rejectPending=rejectPending; window.openModEdit=openModEdit; window.saveModEdit=saveModEdit;
+window.approvePending=approvePending; window.rejectPending=rejectPending; window.openModEdit=openModEdit; window.saveModEdit=saveModEdit; window.googleSearchEdit=googleSearchEdit;
 window.filterCity=filterCity; window.changePage=changePage; window.saveCRMNote=saveCRMNote; window.exportCSV=exportCSV;
 window.searchGooglePlaces=searchGooglePlaces; window.addPlaceToPending=addPlaceToPending; window.searchAllCities=searchAllCities; window.saveAllSearchResults=saveAllSearchResults; window.googleSearchPlace=googleSearchPlace; window.googleSearchPending=googleSearchPending;
 
