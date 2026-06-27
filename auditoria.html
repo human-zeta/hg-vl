@@ -401,6 +401,40 @@
     </div>
 
     <div class="sect" style="margin-top:0;">
+      <div class="sect-hdr"><div class="sect-title">Buscar negocios (Google Maps)</div><span class="sect-num">MANUAL · A PENDIENTES</span></div>
+      <p class="info-msg" style="margin-bottom:.7rem;">
+        Busca negocios reales en Google Maps por ciudad. Google trae <b>nombre, dirección,
+        ubicación y rating confirmados</b> — pero <b>no</b> dice nada de presencia en Instagram,
+        Facebook, WhatsApp Business o TikTok: eso sigue siendo 100% manual, igual que siempre.
+        Cada resultado que agregués cae a <b>pendientes</b>, nunca se confirma solo — lo aprobás o
+        rechazás como cualquier otra sugerencia. Es una búsqueda manual por ciudad (vos elegís
+        cuándo disparar), no automática, porque cada búsqueda consume cuota pagada de la cuenta de
+        Google Cloud del proyecto.
+      </p>
+      <div style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;margin-bottom:.7rem;">
+        <div class="f-field" style="max-width:190px;">
+          <label for="mod-search-city">Ciudad</label>
+          <select id="mod-search-city"></select>
+        </div>
+        <div class="f-field" style="max-width:220px;">
+          <label for="mod-search-query">Qué buscar</label>
+          <input type="text" id="mod-search-query" value="comercios" maxlength="60" placeholder="panadería, peluquería…">
+        </div>
+        <button class="btn sm" onclick="searchGooglePlaces()">⌖ BUSCAR EN GOOGLE MAPS</button>
+        <button class="btn sm" onclick="searchAllCities()">🌎 BUSCAR LAS 25 CIUDADES</button>
+      </div>
+      <p style="font-size:.7rem;color:rgba(240,237,230,.4);margin:-.3rem 0 .5rem;">
+        "Buscar las 25 ciudades" recorre todas las ciudades solo (mismo término de
+        búsqueda en cada una) y manda los resultados nuevos directo a pendientes — te
+        ahorra el click por ciudad, no el review: nada se confirma solo, igual que la
+        búsqueda de una ciudad. Hace 25 llamadas reales a la API, cuota paga incluida —
+        te lo confirma antes de arrancar.
+      </p>
+      <div id="mod-search-status" class="status-msg"></div>
+      <div id="mod-search-results" class="pend-list" style="margin-top:.6rem;"></div>
+    </div>
+
+    <div class="sect">
       <div class="sect-hdr"><div class="sect-title">Pendientes de aprobación</div><span class="sect-num" id="mod-pend-count">0</span></div>
       <div id="mod-pend-list" class="pend-list"></div>
     </div>
@@ -472,7 +506,7 @@ const UA_HEADER='HumanGlitcheAuditoria/2.0 (+https://hg-vl.com; relevamiento man
 
 let session=null, accountType=null, isModerator=false;
 let comercios={}, pendientes={}, selectedId=null, currentFilter='all', selectedKind='confirmed';
-let gmap=null, gMarkers=[], geocodedLatLng=null;
+let gmap=null, gMarkers=[], geocodedLatLng=null, placesService=null;
 
 // ── 25 ciudades de PBA (item 31) — solo para el selector y el centro inicial del mapa por ciudad.
 // El filtro real usa el campo 'city' de cada comercio, no estas coordenadas.
@@ -726,6 +760,7 @@ window.initGoogleMap = function(){
       disableDefaultUI:false,
       styles:[{elementType:'geometry',stylers:[{color:'#0c0c0c'}]},{elementType:'labels.text.fill',stylers:[{color:'#f0ede6'}]},{elementType:'labels.text.stroke',stylers:[{color:'#050505'}]}]
     });
+    placesService = new google.maps.places.PlacesService(gmap);
     $('mapStatus').textContent = 'Mapa cargado. ' + (poolList().length ? poolList().length+' comercio(s) confirmado(s).' : 'Todavía no hay comercios confirmados para mostrar.');
     renderMapMarkers();
   }catch(e){
@@ -854,9 +889,203 @@ $('suggest-form').addEventListener('submit', async (e)=>{
 });
 
 // ════════════════════════════════════════════════════════════════════
+// BÚSQUEDA ASISTIDA — Google Places (Library clásica), solo moderadores.
+// Manual por ciudad (clic explícito), nunca automática. Resultados caen
+// SIEMPRE a /comercios_pending — jamás escribe directo a /comercios.
+// ════════════════════════════════════════════════════════════════════
+const PLACE_TYPE_MAP = {
+  bakery:'Panadería', restaurant:'Restaurante', cafe:'Café', bar:'Bar',
+  clothing_store:'Indumentaria', shoe_store:'Zapatería', jewelry_store:'Joyería',
+  hair_care:'Peluquería', beauty_salon:'Estética', spa:'Spa',
+  pharmacy:'Farmacia', supermarket:'Supermercado', grocery_or_supermarket:'Almacén/Supermercado',
+  hardware_store:'Ferretería', furniture_store:'Mueblería', electronics_store:'Electrónica',
+  book_store:'Librería', florist:'Florería', car_repair:'Taller mecánico',
+  gym:'Gimnasio', bicycle_store:'Bicicletería', pet_store:'Petshop', laundry:'Lavandería'
+};
+function guessTypeFromPlace(place){
+  for(const t of (place.types||[])){ if(PLACE_TYPE_MAP[t]) return PLACE_TYPE_MAP[t]; }
+  return 'Comercio';
+}
+function buildModSearchCitySelect(){
+  const sel = $('mod-search-city');
+  if(!sel || sel.options.length) return;
+  sel.innerHTML = Object.keys(CITIES).map(c=>`<option value="${escHtml(c)}">${escHtml(c)}</option>`).join('');
+  if(currentCity!=='all' && CITIES[currentCity]) sel.value = currentCity;
+}
+function searchGooglePlaces(){
+  const city = $('mod-search-city').value;
+  const c = CITIES[city];
+  const statusEl = $('mod-search-status');
+  const resultsEl = $('mod-search-results');
+  resultsEl.innerHTML = '';
+  if(!placesService || !c){
+    statusEl.textContent = 'Google Maps todavía no cargó (esperá unos segundos o abrí primero la pestaña Mapa) — sin eso no se puede buscar.';
+    statusEl.className = 'status-msg err';
+    return;
+  }
+  const query = ($('mod-search-query').value || '').trim() || 'comercios';
+  statusEl.textContent = 'Buscando en Google Maps…';
+  statusEl.className = 'status-msg';
+  placesService.textSearch({
+    query, location: new google.maps.LatLng(c.lat, c.lng), radius: 6000
+  }, (results, status)=>{
+    if(status !== google.maps.places.PlacesServiceStatus.OK || !results || !results.length){
+      statusEl.textContent = 'Google Maps no encontró resultados (estado: '+status+').';
+      statusEl.className = 'status-msg warn';
+      return;
+    }
+    statusEl.textContent = results.length+' resultado(s) de Google en '+city+' — revisá y agregá los que sirvan a pendientes.';
+    statusEl.className = 'status-msg ok';
+    renderSearchResults(results, city);
+  });
+}
+function renderSearchResults(results, city){
+  const existingNames = new Set([...bizList(), ...pendList()].map(b=>(b.name||'').trim().toLowerCase()));
+  window._gpResults = results;
+  window._gpCity = city;
+  $('mod-search-results').innerHTML = results.map((r,i)=>{
+    const dup = existingNames.has((r.name||'').trim().toLowerCase());
+    return `<div class="pend-item">
+      <div class="pname">${escHtml(r.name||'(sin nombre)')}${dup?' <span class="pendtag">YA EN EL TABLERO</span>':''}</div>
+      <div class="pmeta">📍 ${escHtml(r.formatted_address||'sin dirección')}${typeof r.rating==='number' ? ' · ★ '+r.rating+(r.user_ratings_total?' ('+r.user_ratings_total+')':'') : ''}</div>
+      <div class="pactions">
+        <button class="btn sm" id="gp-add-${i}" onclick="addPlaceToPending(${i})" ${dup?'disabled':''}>${dup?'YA EXISTE':'+ AGREGAR A PENDIENTES'}</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+async function addPlaceToPending(i){
+  const r = (window._gpResults||[])[i];
+  const city = window._gpCity;
+  const btn = $('gp-add-'+i);
+  if(!r || !session || !btn) return;
+  btn.disabled = true; btn.textContent = 'AGREGANDO…';
+  const loc = r.geometry && r.geometry.location;
+  const record = {
+    name: r.name || '', type: guessTypeFromPlace(r), city: city || '',
+    address: r.formatted_address || '', phone: '', website: '',
+    web:false, ig:false, fb:false, wa:false, tt:false,
+    lat: loc ? loc.lat() : null, lng: loc ? loc.lng() : null,
+    rating: typeof r.rating==='number' ? r.rating : null,
+    reviews: typeof r.user_ratings_total==='number' ? r.user_ratings_total : null,
+    notes: 'Importado vía búsqueda de Google Maps (Places) por un moderador — nombre/dirección/'
+      +'ubicación/rating vienen de Google. Presencia de web e Instagram/Facebook/WhatsApp/TikTok '
+      +'SIN VERIFICAR todavía: falta confirmar a mano antes de aprobar.',
+    status: 'pending', suggestedBy: session.uid,
+    suggestedByName: (session.name || session.email || 'Moderador') + ' (búsqueda Google Maps)',
+    suggestedAt: Date.now()
+  };
+  try{
+    const token = await freshToken(session);
+    const resp = await fetch(`${FB_URL}/comercios_pending.json?auth=${token}`, {
+      method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(record)
+    });
+    if(!resp.ok) throw new Error('Firebase respondió '+resp.status);
+    btn.textContent = '✓ AGREGADO';
+    await loadPendientes(); updateStats(); renderModPanel();
+  }catch(e){
+    btn.disabled = false; btn.textContent = '+ AGREGAR A PENDIENTES';
+    alert('No se pudo agregar a pendientes: '+e.message);
+  }
+}
+
+function sleep(ms){ return new Promise(r=>setTimeout(r, ms)); }
+function textSearchOne(query, city){
+  const c = CITIES[city];
+  if(!placesService || !c) return Promise.resolve({ city, status:'NO_SERVICE', results:[] });
+  return new Promise(resolve=>{
+    placesService.textSearch({ query, location: new google.maps.LatLng(c.lat, c.lng), radius: 6000 }, (results, status)=>{
+      resolve({ city, status, results: results||[] });
+    });
+  });
+}
+
+// Recorre las 25 ciudades de CITIES con UNA búsqueda de Places por ciudad y manda
+// cada resultado nuevo (no duplicado) directo a /comercios_pending. Automatiza el
+// click-por-ciudad y el click-por-resultado de arriba, NUNCA la aprobación: todo
+// cae en pendientes con el mismo aviso "SIN VERIFICAR" y pasa por approvePending/
+// rejectPending de siempre. Decisión explícita del usuario (2026-06-27) de
+// automatizar la búsqueda pero no saltar moderación — ver progress/cola_aprobacion.md.
+let bulkSearchRunning = false;
+async function searchAllCities(){
+  if(bulkSearchRunning || !session) return;
+  if(!placesService){
+    $('mod-search-status').textContent = 'Google Maps todavía no cargó (esperá unos segundos o abrí primero la pestaña Mapa) — sin eso no se puede buscar.';
+    $('mod-search-status').className = 'status-msg err';
+    return;
+  }
+  const cities = Object.keys(CITIES);
+  const query = ($('mod-search-query').value || '').trim() || 'comercios';
+  const ok = confirm(`Esto hace ${cities.length} búsquedas reales en Google Places (una por ciudad, término "${query}"), cada una consume cuota paga de tu cuenta de Google Cloud. Los resultados nuevos caen a pendientes — ninguno se confirma solo. ¿Continuar?`);
+  if(!ok) return;
+
+  bulkSearchRunning = true;
+  const statusEl = $('mod-search-status');
+  const resultsEl = $('mod-search-results');
+  resultsEl.innerHTML = '';
+  const seen = new Set([...bizList(), ...pendList()].map(b=>(b.name||'').trim().toLowerCase()));
+  let added = 0, skipped = 0, errors = 0;
+  const summary = [];
+
+  for(let i=0; i<cities.length; i++){
+    const city = cities[i];
+    statusEl.textContent = `Buscando "${query}" en ${city}… (${i+1}/${cities.length}) — agregados hasta ahora: ${added}`;
+    statusEl.className = 'status-msg';
+    let r;
+    try{ r = await textSearchOne(query, city); }
+    catch(e){ errors++; summary.push(`${city}: error de red`); await sleep(350); continue; }
+    if(r.status !== google.maps.places.PlacesServiceStatus.OK || !r.results.length){
+      summary.push(`${city}: 0 resultados (${r.status})`);
+      await sleep(350);
+      continue;
+    }
+    let addedHere = 0;
+    for(const place of r.results){
+      const name = (place.name||'').trim();
+      const address = place.formatted_address||'';
+      const key = name.toLowerCase();
+      if(!name || !address || !key || seen.has(key)){ skipped++; continue; }
+      seen.add(key);
+      const loc = place.geometry && place.geometry.location;
+      const record = {
+        name, type: guessTypeFromPlace(place), city,
+        address, phone: '', website: '',
+        web:false, ig:false, fb:false, wa:false, tt:false,
+        lat: loc ? loc.lat() : null, lng: loc ? loc.lng() : null,
+        rating: typeof place.rating==='number' ? place.rating : null,
+        reviews: typeof place.user_ratings_total==='number' ? place.user_ratings_total : null,
+        notes: 'Importado vía búsqueda automática de Google Maps (Places) por ciudad — nombre/dirección/'
+          +'ubicación/rating vienen de Google. Presencia de web e Instagram/Facebook/WhatsApp/TikTok '
+          +'SIN VERIFICAR todavía: falta confirmar a mano antes de aprobar.',
+        status: 'pending', suggestedBy: session.uid,
+        suggestedByName: (session.name || session.email || 'Moderador') + ' (búsqueda automática Google Maps)',
+        suggestedAt: Date.now()
+      };
+      try{
+        const token = await freshToken(session);
+        const resp = await fetch(`${FB_URL}/comercios_pending.json?auth=${token}`, {
+          method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(record)
+        });
+        if(!resp.ok) throw new Error('Firebase respondió '+resp.status);
+        added++; addedHere++;
+      }catch(e){ errors++; }
+    }
+    summary.push(`${city}: +${addedHere} nuevo(s) de ${r.results.length} resultado(s)`);
+    await sleep(350);
+  }
+
+  bulkSearchRunning = false;
+  statusEl.textContent = `Listo. ${added} agregados a pendientes, ${skipped} duplicados omitidos${errors?`, ${errors} error(es)`:''}. Revisalos en "Pendientes de aprobación" más abajo.`;
+  statusEl.className = errors ? 'status-msg warn' : 'status-msg ok';
+  resultsEl.innerHTML = `<div class="pend-item"><div class="pmeta" style="white-space:pre-line;">${escHtml(summary.join('\n'))}</div></div>`;
+  await loadPendientes(); updateStats(); renderModPanel();
+}
+
+// ════════════════════════════════════════════════════════════════════
 // MODERACIÓN — aprobar/rechazar pendientes, editar /comercios directo
 // ════════════════════════════════════════════════════════════════════
 function renderModPanel(){
+  buildModSearchCitySelect();
   const list = pendList();
   $('mod-pend-count').textContent = list.length;
   if(!list.length){
@@ -886,6 +1115,7 @@ async function approvePending(id){
       name:p.name, type:p.type||'', city:p.city||'', address:p.address||'', phone:p.phone||'', website:p.website||'',
       web:!!p.web, ig:!!p.ig, fb:!!p.fb, wa:!!p.wa, tt:!!p.tt,
       lat: typeof p.lat==='number' ? p.lat : null, lng: typeof p.lng==='number' ? p.lng : null,
+      rating: typeof p.rating==='number' ? p.rating : null, reviews: typeof p.reviews==='number' ? p.reviews : null,
       notes:p.notes||'', verifiedAt: Date.now(), verifiedBy: session.uid
     };
     await fetch(`${FB_URL}/comercios/${id}.json?auth=${token}`, { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(merged) });
@@ -1018,6 +1248,7 @@ function exportCSV(){
 window.selectBiz=selectBiz; window.closeSide=closeSide; window.setFilter=setFilter; window.switchTab=switchTab;
 window.approvePending=approvePending; window.rejectPending=rejectPending; window.openModEdit=openModEdit; window.saveModEdit=saveModEdit;
 window.filterCity=filterCity; window.changePage=changePage; window.saveCRMNote=saveCRMNote; window.exportCSV=exportCSV;
+window.searchGooglePlaces=searchGooglePlaces; window.addPlaceToPending=addPlaceToPending; window.searchAllCities=searchAllCities;
 
 // ── Boot ──
 async function boot(){
@@ -1032,7 +1263,7 @@ boot();
 })();
 </script>
 
-<script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCnXWhyWR6VxayZBDcTUu7AkkeH60bU180&libraries=marker&callback=initGoogleMap"></script>
+<script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCnXWhyWR6VxayZBDcTUu7AkkeH60bU180&libraries=marker,places&callback=initGoogleMap"></script>
 
 </body></html>
 </content>
