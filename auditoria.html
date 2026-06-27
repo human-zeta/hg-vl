@@ -531,9 +531,10 @@ async function checkSession(){
   if(accountType !== 'cliente'){ unlockSuggest(); } else { lockSuggest(); }
 
   try{
+    const token = await freshToken(session);
     const [ra, rm] = await Promise.all([
-      fetch(`${FB_URL}/admins/${session.uid}.json`),
-      fetch(`${FB_URL}/moderators/${session.uid}.json`)
+      fetch(`${FB_URL}/admins/${session.uid}.json?auth=${token}`),
+      fetch(`${FB_URL}/moderators/${session.uid}.json?auth=${token}`)
     ]);
     const isAdmin = ra.ok ? (await ra.json())===true : false;
     const isMod   = rm.ok ? (await rm.json())===true : false;
