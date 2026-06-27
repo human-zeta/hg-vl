@@ -1,0 +1,1182 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PACKGEN — Human Glitche · generador de packaging y plantillas de troquel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #050505;
+  --surface-0: #0a0a0a;
+  --surface-1: #0c0c0c;
+  --surface-2: #131313;
+  --border: rgba(240,237,230,0.12);
+  --border-strong: rgba(240,237,230,0.25);
+  --text-primary: #f0ede6;
+  --text-secondary: rgba(240,237,230,0.6);
+  --text-muted: rgba(240,237,230,0.4);
+  --accent: #b8ff00;
+  --accent-bg: rgba(184,255,0,0.12);
+  --accent-border: rgba(184,255,0,0.35);
+  --green: #3ad0ff;
+  --green-bg: rgba(58,208,255,0.12);
+  --red: #ff2d55;
+  --orange: #ffcc33;
+  --fold-mtn: #b8ff00;
+  --fold-val: #ff2d55;
+  --fold-cut: #3ad0ff;
+  --radius: 6px;
+  --font: 'Space Mono', monospace;
+  --font-display: 'Bebas Neue', sans-serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text-primary); font-family: var(--font); min-height: 100vh; overflow-x: hidden; position: relative; }
+body::before { content: ''; position: fixed; inset: 0; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E"); z-index: 0; pointer-events: none; opacity: .4; }
+
+/* HEADER */
+.header { position: relative; z-index: 1; display: flex; align-items: center; justify-content: space-between; padding: 12px 20px; background: var(--surface-0); border-bottom: 1px solid var(--border); }
+.logo { font-size: 16px; font-weight: 600; letter-spacing: -0.02em; }
+.logo span { color: var(--accent); }
+.header-right { display: flex; align-items: center; gap: 10px; font-size: 12px; color: var(--text-muted); }
+.badge { padding: 3px 8px; border-radius: 99px; background: var(--green-bg); color: var(--green); font-size: 10px; font-weight: 500; border: 1px solid rgba(39,174,96,0.25); }
+
+/* LAYOUT */
+.app { position: relative; z-index: 1; display: grid; grid-template-columns: 270px 1fr; height: calc(100vh - 49px); overflow: hidden; }
+.sidebar { background: var(--surface-1); border-right: 1px solid var(--border); overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 16px; }
+.main { display: flex; flex-direction: column; overflow: hidden; }
+
+/* SIDEBAR */
+.s-section { display: flex; flex-direction: column; gap: 8px; }
+.s-label { font-size: 10px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; }
+.pkg-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.pkg-btn { padding: 10px 6px 8px; border-radius: var(--radius); border: 1px solid var(--border); background: var(--surface-2); cursor: pointer; text-align: center; font-size: 11px; color: var(--text-secondary); transition: all 0.15s; font-family: var(--font); }
+.pkg-btn:hover { border-color: var(--border-strong); color: var(--text-primary); }
+.pkg-btn.active { border-color: var(--accent-border); background: var(--accent-bg); color: var(--accent); }
+.pkg-icon { font-size: 20px; display: block; margin-bottom: 4px; }
+.dim-row { display: flex; align-items: center; gap: 8px; }
+.dim-lbl { font-size: 11px; color: var(--text-secondary); width: 14px; font-weight: 600; }
+.dim-val { font-size: 11px; color: var(--text-primary); min-width: 36px; text-align: right; font-variant-numeric: tabular-nums; }
+input[type=range] { flex: 1; accent-color: var(--accent); cursor: pointer; }
+.mat-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; }
+.mat-btn { padding: 7px 4px; border-radius: var(--radius); border: 1px solid var(--border); background: var(--surface-2); cursor: pointer; text-align: center; font-size: 10px; color: var(--text-secondary); transition: all 0.15s; font-family: var(--font); }
+.mat-btn:hover { border-color: var(--border-strong); }
+.mat-btn.active { border-color: var(--accent-border); background: var(--accent-bg); color: var(--accent); }
+.toggle-row { display: flex; align-items: center; justify-content: space-between; }
+.toggle-lbl { font-size: 12px; color: var(--text-secondary); }
+.toggle { position: relative; width: 32px; height: 18px; flex-shrink: 0; }
+.toggle input { opacity: 0; width: 0; height: 0; }
+.toggle-slider { position: absolute; cursor: pointer; inset: 0; background: var(--border-strong); border-radius: 9px; transition: 0.2s; }
+.toggle input:checked + .toggle-slider { background: var(--accent); }
+.toggle-slider:before { content: ''; position: absolute; height: 12px; width: 12px; left: 3px; top: 3px; background: white; border-radius: 50%; transition: 0.2s; }
+.toggle input:checked + .toggle-slider:before { transform: translateX(14px); }
+.stats { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.stat { background: var(--surface-2); border-radius: var(--radius); padding: 8px 10px; border: 1px solid var(--border); }
+.stat-val { font-size: 16px; font-weight: 500; color: var(--text-primary); }
+.stat-lbl { font-size: 9px; color: var(--text-muted); margin-top: 1px; }
+.action-btn { width: 100%; padding: 9px; border-radius: var(--radius); border: 1px solid var(--accent-border); background: var(--accent-bg); color: var(--accent); font-size: 12px; font-weight: 500; cursor: pointer; font-family: var(--font); transition: all 0.15s; }
+.action-btn:hover { background: var(--accent); color: white; }
+.action-btn.green { border-color: rgba(39,174,96,0.35); background: var(--green-bg); color: var(--green); }
+.action-btn.green:hover { background: var(--green); color: white; }
+
+/* TABS */
+.tabs { display: flex; gap: 2px; padding: 10px 14px; background: var(--surface-1); border-bottom: 1px solid var(--border); }
+.tab { padding: 6px 14px; font-size: 12px; border-radius: var(--radius); border: none; background: transparent; color: var(--text-secondary); cursor: pointer; font-family: var(--font); transition: all 0.15s; }
+.tab:hover { color: var(--text-primary); }
+.tab.active { background: var(--surface-2); color: var(--text-primary); border: 1px solid var(--border); }
+.tab-info { margin-left: auto; font-size: 11px; color: var(--text-muted); display: flex; align-items: center; gap: 6px; }
+.mat-pill { padding: 3px 8px; border-radius: 99px; border: 1px solid var(--border); font-size: 10px; color: var(--text-secondary); }
+
+/* CANVAS */
+.canvas-wrap { flex: 1; position: relative; overflow: hidden; background: var(--surface-0); display: flex; align-items: center; justify-content: center; }
+canvas#mainCanvas { display: block; max-width: 100%; max-height: 100%; }
+.canvas-hint { position: absolute; bottom: 12px; right: 14px; font-size: 10px; color: var(--text-muted); pointer-events: none; }
+.fold-legend { position: absolute; bottom: 12px; left: 14px; font-size: 10px; color: var(--text-muted); line-height: 2; pointer-events: none; display: flex; flex-direction: column; gap: 2px; }
+.legend-row { display: flex; align-items: center; gap: 6px; }
+.legend-line { width: 24px; height: 2px; border-radius: 1px; }
+
+/* OPTIMIZE PANEL */
+.opt-panel { display: none; flex-direction: column; height: 100%; overflow: hidden; }
+.opt-panel.visible { display: flex; }
+.opt-header { padding: 14px 18px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
+.opt-title { font-size: 14px; font-weight: 500; }
+.opt-metrics { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; padding: 14px 18px; border-bottom: 1px solid var(--border); }
+.om { background: var(--surface-2); border-radius: var(--radius); padding: 10px 12px; border: 1px solid var(--border); }
+.om-val { font-size: 18px; font-weight: 500; color: var(--text-primary); }
+.om-lbl { font-size: 9px; color: var(--text-muted); margin-top: 2px; }
+.om-sub { font-size: 10px; color: var(--green); margin-top: 2px; }
+.pips { display: flex; gap: 3px; margin-top: 4px; }
+.pip { width: 8px; height: 8px; border-radius: 2px; background: var(--border-strong); }
+.pip.on { background: var(--accent); }
+.step-area { flex: 1; display: grid; grid-template-columns: 300px 1fr; overflow: hidden; }
+.step-canvas-wrap { background: var(--surface-0); border-right: 1px solid var(--border); display: flex; align-items: center; justify-content: center; }
+.step-detail { padding: 18px 20px; overflow-y: auto; display: flex; flex-direction: column; }
+.step-nav { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+.snav-btn { padding: 5px 12px; font-size: 11px; border-radius: var(--radius); border: 1px solid var(--border-strong); background: transparent; color: var(--text-secondary); cursor: pointer; font-family: var(--font); }
+.snav-btn:disabled { opacity: 0.3; cursor: default; }
+.step-dots { display: flex; gap: 5px; flex-wrap: wrap; }
+.sdot { width: 7px; height: 7px; border-radius: 50%; background: var(--border-strong); cursor: pointer; transition: all 0.15s; }
+.sdot.done { background: var(--green); }
+.sdot.active { background: var(--accent); transform: scale(1.3); }
+.step-progress { height: 2px; background: var(--border); border-radius: 1px; margin-bottom: 14px; overflow: hidden; }
+.step-prog-fill { height: 100%; background: var(--accent); border-radius: 1px; transition: width 0.3s; }
+.step-num { font-size: 10px; color: var(--text-muted); }
+.step-title { font-size: 15px; font-weight: 500; color: var(--text-primary); margin: 4px 0 8px; line-height: 1.3; }
+.step-desc { font-size: 12px; color: var(--text-secondary); line-height: 1.65; margin-bottom: 12px; }
+.tip-box { background: var(--accent-bg); border: 1px solid var(--accent-border); border-radius: var(--radius); padding: 10px 12px; font-size: 11px; color: var(--text-secondary); line-height: 1.6; }
+.tip-label { font-weight: 600; color: var(--accent); margin-bottom: 3px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; }
+.speed-pill { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 99px; font-size: 10px; font-weight: 500; margin-top: 10px; }
+.sp-fast { background: var(--green-bg); color: var(--green); }
+.sp-med { background: rgba(243,156,18,0.15); color: var(--orange); }
+.sp-slow { background: rgba(231,76,60,0.15); color: var(--red); }
+.rules-area { padding: 0 18px 18px; }
+.rules-title { font-size: 10px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px; margin-top: 14px; }
+.rule-item { display: flex; gap: 10px; align-items: flex-start; padding: 8px 0; border-bottom: 1px solid var(--border); }
+.rule-item:last-child { border: none; }
+.rn { min-width: 20px; height: 20px; border-radius: 50%; background: var(--accent-bg); color: var(--accent); font-size: 10px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex-shrink: 0; border: 1px solid var(--accent-border); }
+.rt { font-size: 12px; color: var(--text-secondary); line-height: 1.5; }
+.rt strong { color: var(--text-primary); }
+.warn-box { background: rgba(243,156,18,0.1); border: 1px solid rgba(243,156,18,0.3); border-radius: var(--radius); padding: 10px 12px; font-size: 11px; color: var(--orange); margin-top: 10px; line-height: 1.6; }
+
+/* NEST VIEW */
+.nest-info { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 14px 18px; border-top: 1px solid var(--border); }
+.ni-card { border-radius: var(--radius); border: 1px solid var(--border); padding: 10px 12px; }
+.ni-card.bad { border-color: rgba(231,76,60,0.3); background: rgba(231,76,60,0.08); }
+.ni-card.good { border-color: rgba(39,174,96,0.3); background: var(--green-bg); }
+.ni-title { font-size: 10px; font-weight: 600; margin-bottom: 6px; }
+.ni-card.bad .ni-title { color: var(--red); }
+.ni-card.good .ni-title { color: var(--green); }
+.ni-item { font-size: 11px; color: var(--text-secondary); margin-bottom: 3px; display: flex; gap: 6px; }
+
+/* EXPORT MODAL */
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 100; align-items: center; justify-content: center; }
+.modal-overlay.open { display: flex; }
+.modal { background: var(--surface-1); border: 1px solid var(--border-strong); border-radius: 12px; padding: 24px; max-width: 520px; width: 90%; }
+.modal h3 { font-size: 15px; font-weight: 500; margin-bottom: 6px; }
+.modal p { font-size: 12px; color: var(--text-secondary); margin-bottom: 16px; line-height: 1.6; }
+.modal-btns { display: flex; gap: 8px; justify-content: flex-end; }
+.mbtn { padding: 8px 16px; border-radius: var(--radius); font-size: 12px; font-weight: 500; cursor: pointer; border: 1px solid var(--border); background: var(--surface-2); color: var(--text-secondary); font-family: var(--font); transition: all 0.15s; }
+.mbtn.primary { background: var(--accent); color: white; border-color: var(--accent); }
+.mbtn:hover { opacity: 0.85; }
+.svg-preview { background: white; border-radius: var(--radius); padding: 12px; margin-bottom: 14px; text-align: center; border: 1px solid var(--border); }
+.svg-preview svg { max-width: 100%; max-height: 200px; }
+
+/* SCROLLBAR */
+::-webkit-scrollbar { width: 5px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 3px; }
+
+@media (max-width: 768px) {
+  .app { grid-template-columns: 1fr; }
+  .sidebar { display: none; }
+  .opt-metrics { grid-template-columns: 1fr 1fr; }
+  .step-area { grid-template-columns: 1fr; }
+  .step-canvas-wrap { height: 200px; }
+}
+
+/* HG display type — brand headlines in Bebas Neue, rest stays Space Mono */
+.logo { font-family: var(--font-display); font-size: 22px; letter-spacing: .02em; text-transform: uppercase; }
+.opt-title { font-family: var(--font-display); font-size: 19px; letter-spacing: .02em; }
+.step-title { font-family: var(--font-display); font-size: 19px; letter-spacing: .01em; }
+.stat-val { font-family: var(--font-display); font-size: 19px; }
+.om-val { font-family: var(--font-display); font-size: 21px; }
+.modal h3 { font-family: var(--font-display); font-size: 19px; letter-spacing: .02em; }
+.header-right a { letter-spacing: .08em; font-size: 10px; text-transform: uppercase; }
+.header-right a:hover { color: var(--accent) !important; }
+</style>
+</head>
+<body><script src="/gate/gate.js"></script>
+
+<div class="header">
+  <div class="logo"><span>Pack</span>Gen</div>
+  <div class="header-right">
+    <span>Generador de Packaging</span>
+    <span class="badge">v1.0</span>
+    <a href="/labs/" style="color:var(--text-muted);text-decoration:none;text-transform:uppercase;">← LABS</a>
+  </div>
+</div>
+
+<div class="app">
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="s-section">
+      <div class="s-label">Tipo de envase</div>
+      <div class="pkg-grid">
+        <button class="pkg-btn active" data-type="box" onclick="setType('box',this)"><span class="pkg-icon">📦</span>Caja recta</button>
+        <button class="pkg-btn" data-type="tuck" onclick="setType('tuck',this)"><span class="pkg-icon">🗂️</span>Tuck-end</button>
+        <button class="pkg-btn" data-type="hex" onclick="setType('hex',this)"><span class="pkg-icon">⬡</span>Hexagonal</button>
+        <button class="pkg-btn" data-type="pillow" onclick="setType('pillow',this)"><span class="pkg-icon">🛍️</span>Pillow box</button>
+        <button class="pkg-btn" data-type="pyramid" onclick="setType('pyramid',this)"><span class="pkg-icon">△</span>Pirámide</button>
+        <button class="pkg-btn" data-type="sleeve" onclick="setType('sleeve',this)"><span class="pkg-icon">▭</span>Sleeve</button>
+      </div>
+    </div>
+
+    <div class="s-section">
+      <div class="s-label">Dimensiones (mm)</div>
+      <div class="dim-row"><span class="dim-lbl">A</span><input type="range" min="40" max="300" value="120" id="dW" oninput="update()"><span class="dim-val" id="lW">120</span></div>
+      <div class="dim-row"><span class="dim-lbl">B</span><input type="range" min="40" max="300" value="80" id="dH" oninput="update()"><span class="dim-val" id="lH">80</span></div>
+      <div class="dim-row"><span class="dim-lbl">C</span><input type="range" min="20" max="200" value="60" id="dD" oninput="update()"><span class="dim-val" id="lD">60</span></div>
+    </div>
+
+    <div class="s-section">
+      <div class="s-label">Material</div>
+      <div class="mat-grid">
+        <button class="mat-btn active" onclick="setMat(this,'Cartulina')">Cartulina</button>
+        <button class="mat-btn" onclick="setMat(this,'Kraft')">Kraft</button>
+        <button class="mat-btn" onclick="setMat(this,'Microcan.')">Microcan.</button>
+        <button class="mat-btn" onclick="setMat(this,'Cartón')">Cartón</button>
+        <button class="mat-btn" onclick="setMat(this,'PET')">PET</button>
+        <button class="mat-btn" onclick="setMat(this,'Reciclado')">Reciclado</button>
+      </div>
+    </div>
+
+    <div class="s-section">
+      <div class="s-label">Opciones de pliegue</div>
+      <div class="toggle-row"><span class="toggle-lbl">Margen de sangrado</span><label class="toggle"><input type="checkbox" id="tBleed" checked oninput="update()"><span class="toggle-slider"></span></label></div>
+      <div class="toggle-row"><span class="toggle-lbl">Solapas de pegado</span><label class="toggle"><input type="checkbox" id="tGlue" checked oninput="update()"><span class="toggle-slider"></span></label></div>
+      <div class="toggle-row"><span class="toggle-lbl">Líneas de troquel</span><label class="toggle"><input type="checkbox" id="tCut" checked oninput="update()"><span class="toggle-slider"></span></label></div>
+      <div class="toggle-row"><span class="toggle-lbl">Guías de pliegue</span><label class="toggle"><input type="checkbox" id="tFold" checked oninput="update()"><span class="toggle-slider"></span></label></div>
+      <div class="toggle-row"><span class="toggle-lbl">Optimizar anidado</span><label class="toggle"><input type="checkbox" id="tNest" oninput="update()"><span class="toggle-slider"></span></label></div>
+    </div>
+
+    <div class="s-section">
+      <div class="s-label">Estadísticas</div>
+      <div class="stats">
+        <div class="stat"><div class="stat-val" id="sArea">—</div><div class="stat-lbl">área (cm²)</div></div>
+        <div class="stat"><div class="stat-val" id="sVol">—</div><div class="stat-lbl">volumen (cm³)</div></div>
+        <div class="stat"><div class="stat-val" id="sFolds">—</div><div class="stat-lbl">pliegues</div></div>
+        <div class="stat"><div class="stat-val" id="sWaste">—</div><div class="stat-lbl">desperdicio</div></div>
+      </div>
+    </div>
+
+    <div class="s-section">
+      <button class="action-btn" onclick="openExport()">⬇ Exportar plantilla SVG</button>
+      <button class="action-btn green" onclick="switchTab('opt')">⚡ Optimizador de pliegues</button>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="tabs">
+      <button class="tab active" id="tab-2d" onclick="switchTab('2d')">Plantilla 2D</button>
+      <button class="tab" id="tab-3d" onclick="switchTab('3d')">Vista 3D</button>
+      <button class="tab" id="tab-nest" onclick="switchTab('nest')">Optimizador anidado</button>
+      <button class="tab" id="tab-opt" onclick="switchTab('opt')">Secuencia de pliegues</button>
+      <div class="tab-info">
+        <span class="mat-pill" id="matLabel">Cartulina</span>
+        <span id="typeLabel" style="font-size:11px;color:var(--text-muted)">Caja recta · 120×80×60mm</span>
+      </div>
+    </div>
+
+    <!-- CANVAS VIEWS -->
+    <div class="canvas-wrap" id="viewCanvas">
+      <canvas id="mainCanvas" width="720" height="500"></canvas>
+      <div class="fold-legend" id="foldLegend">
+        <div class="legend-row"><div class="legend-line" style="background:var(--fold-cut)"></div><span>corte</span></div>
+        <div class="legend-row"><div class="legend-line" style="border-top:2px dashed var(--fold-val);background:none"></div><span>valle</span></div>
+        <div class="legend-row"><div class="legend-line" style="border-top:2px dotted var(--fold-mtn);background:none"></div><span>montaña</span></div>
+      </div>
+      <div class="canvas-hint" id="canvasHint"></div>
+    </div>
+
+    <!-- OPTIMIZE PANEL -->
+    <div class="opt-panel" id="optPanel">
+      <div class="opt-header">
+        <span class="opt-title" id="optTitle">Secuencia de pliegues — Caja recta</span>
+        <span class="badge" style="margin-left:auto">Optimizado</span>
+      </div>
+      <div class="opt-metrics" id="optMetrics"></div>
+      <div class="step-area">
+        <div class="step-canvas-wrap"><canvas id="stepCanvas" width="280" height="220"></canvas></div>
+        <div class="step-detail">
+          <div class="step-nav">
+            <button class="snav-btn" id="sPrev" onclick="stepBy(-1)">← anterior</button>
+            <div class="step-dots" id="sDots"></div>
+            <button class="snav-btn" id="sNext" onclick="stepBy(1)">siguiente →</button>
+          </div>
+          <div class="step-progress"><div class="step-prog-fill" id="sProg"></div></div>
+          <div id="stepInfoArea"></div>
+        </div>
+      </div>
+      <div class="rules-area" id="rulesArea"></div>
+    </div>
+  </div>
+</div>
+
+<!-- EXPORT MODAL -->
+<div class="modal-overlay" id="exportModal">
+  <div class="modal">
+    <h3>Exportar plantilla SVG</h3>
+    <p>La plantilla incluye líneas de corte, pliegues de valle y montaña, solapas de pegado y cotas de dimensión. Lista para enviar a troquel o para impresión.</p>
+    <div class="svg-preview" id="svgPreview"></div>
+    <div class="modal-btns">
+      <button class="mbtn" onclick="closeExport()">Cancelar</button>
+      <button class="mbtn primary" onclick="downloadSVG()">Descargar SVG</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════════
+let currentType = 'box';
+let currentMat  = 'Cartulina';
+let currentView = '2d';
+let rotX = 25, rotY = -35;
+let dragging = false, lastX = 0, lastY = 0;
+let currentStep = 0;
+
+// ═══════════════════════════════════════════════════════════════
+// PACKAGING TYPES DATA
+// ═══════════════════════════════════════════════════════════════
+const TYPES = {
+  box:     { name:'Caja recta',  folds:12, time:4.0, saving:38, complexity:2 },
+  tuck:    { name:'Tuck-end',    folds:18, time:5.8, saving:31, complexity:4 },
+  hex:     { name:'Hexagonal',   folds:8,  time:6.2, saving:22, complexity:3 },
+  pillow:  { name:'Pillow box',  folds:6,  time:3.2, saving:18, complexity:1 },
+  pyramid: { name:'Pirámide',    folds:8,  time:4.8, saving:25, complexity:3 },
+  sleeve:  { name:'Sleeve',      folds:6,  time:2.8, saving:15, complexity:1 },
+};
+
+const STEPS = {
+  box: [
+    { t:'Marcado previo (precreasing)', d:'Pasar la herramienta de marcado por todas las líneas de pliegue antes de doblar. En cartulina >300g o Kraft, este paso evita fibras rotas y garantiza pliegues nítidos.', tip:'Presión recomendada: 60–80% de la resistencia del material. Demasiada presión parte las fibras.', tl:'Parámetro de producción', spd:'fast', st:'~0.5s', hl:'all' },
+    { t:'Montañas horizontales — tapa y base', d:'Doblar hacia arriba las líneas horizontales de tapa y base. Empezar por el lado contrario al operario para no bloquear el acceso.', tip:'Los pliegues de montaña crean la "memoria" del cartón. Hacerlos primero evita re-plegarlos.', tl:'Por qué este orden', spd:'fast', st:'~0.6s', hl:'h-mtn' },
+    { t:'Montañas verticales — laterales', d:'Doblar hacia arriba las líneas verticales que separan frente/laterales/fondo. Mantener el plano de la plantilla plano — no formar el cuerpo todavía.', tip:'Pliegue vertical primero si los laterales son más angostos que la mitad de la profundidad.', tl:'Regla de prioridad', spd:'fast', st:'~0.5s', hl:'v-mtn' },
+    { t:'Valles — paneles laterales (bilateral)', d:'Doblar hacia abajo los paneles laterales izquierdo y derecho simultáneamente. Presionar con ambas manos a la vez para que la caja comience a tomar forma sin torcerse.', tip:'Bilateral obligatorio: hacerlos de a uno introduce 2–4° de torsión acumulada en el cuerpo.', tl:'Técnica bilateral', spd:'med', st:'~0.6s', hl:'lat' },
+    { t:'Formación del cuerpo', d:'Girar el conjunto para que tome forma de tubo rectangular. Verificar que las esquinas sean de 90° antes de continuar con los pasos siguientes.', tip:'Error de 2° en esquinas propaga hasta la tapa → tapa no cierra. Calibrar con escuadra.', tl:'Control de calidad', spd:'med', st:'~0.5s', hl:'body' },
+    { t:'Solapa de pegado lateral', d:'Aplicar adhesivo en la solapa y presionar 2 segundos. El cuerpo ya formado garantiza que el adhesivo se distribuya sobre las dos superficies correctas.', tip:'Hotmelt: 1s. PVA: 5s. Adhesivo UV: 1 pulso (requiere banda UV en línea).', tl:'Tiempos por tipo de adhesivo', spd:'slow', st:'~0.8s', hl:'glue' },
+    { t:'Cierre de base — laterales primero', d:'Doblar los cuatro paneles de base: laterales menores primero, luego frente y fondo. El panel frontal de base entra al último y traba los anteriores.', tip:'Orden: laterales → fondo → frente (traba). Elimina la necesidad de adhesivo en la base.', tl:'Ensamble sin pegamento', spd:'med', st:'~0.6s', hl:'base' },
+    { t:'Tapa abierta — lista para carga', d:'La tapa permanece abierta para permitir la carga del producto. Cerrar en la línea de envasado con el mismo orden: laterales → fondo → frente.', tip:'Pre-aplicar adhesivo en tapa si el formato lo requiere, activar con presión al cierre final.', tl:'Integración con línea de envasado', spd:'fast', st:'~0.2s prep', hl:'top' },
+  ],
+  tuck: [
+    { t:'Marcado previo completo (18 líneas)', d:'El tuck-end tiene 18 líneas de pliegue. Marcar todas antes de doblar es imprescindible, especialmente las lengüetas de cierre que son la zona más estrecha.', tip:'Las lengüetas (tuck flaps) se deforman si no están pre-marcadas. Marcar con regla y punzón romo.', tl:'Atención en lengüetas', spd:'slow', st:'~0.8s', hl:'all' },
+    { t:'Montañas del cuerpo principal', d:'Doblar hacia arriba las cuatro líneas verticales del cuerpo. Ignorar por ahora las lengüetas superiores e inferiores.', tip:'El cuerpo del tuck-end es idéntico a la caja recta. Aplicar la misma técnica bilateral.', tl:'Misma base que caja recta', spd:'fast', st:'~0.6s', hl:'v-mtn' },
+    { t:'Valles del cuerpo — bilateral', d:'Cerrar los paneles laterales del cuerpo simultáneamente. El cuerpo tubular toma forma antes de trabajar las solapas.', tip:'No intentar doblar las solapas junto con el cuerpo — genera fricción que deforma las lengüetas.', tl:'Orden estricto', spd:'med', st:'~0.6s', hl:'body' },
+    { t:'Formación del cuerpo + pegado lateral', d:'Formar el tubo y aplicar adhesivo en la solapa lateral. Cuidado de no contaminar las zonas de las lengüetas con adhesivo.', tip:'Enmascarar con cinta si el adhesivo es spray. Contaminación en lengüetas impide el cierre.', tl:'Prevención de contaminación', spd:'slow', st:'~0.8s', hl:'glue' },
+    { t:'Montañas de lengüetas superiores', d:'Doblar hacia arriba las líneas de articulación de las solapas de tapa. No doblar la lengüeta de inserción todavía.', tip:'Estas son montañas porque la solapa cierra hacia adentro de la caja (interior del tubo).', tl:'Dirección de cierre', spd:'fast', st:'~0.5s', hl:'tuck-top-mtn' },
+    { t:'Valles de articulación inferior', d:'Doblar hacia abajo las líneas de base. Solapas laterales de base primero, luego la lengüeta principal.', tip:'Orden: solapas laterales → solapa trasera → lengüeta frontal (tuck). Lengüeta al final.', tl:'Secuencia de base', spd:'med', st:'~0.6s', hl:'tuck-bot' },
+    { t:'Preformado de lengüetas (45°)', d:'Doblar levemente a 45° las lengüetas de tapa y base para facilitar la inserción. No doblar completamente — se insertan con movimiento de barrido.', tip:'Lengüeta a 45° reduce la fuerza de inserción un 60% vs. lengüeta plana. Clave en producción rápida.', tl:'Reducción de fuerza de inserción', spd:'fast', st:'~0.4s', hl:'tuck-preform' },
+    { t:'Cierre de base — insertar lengüeta', d:'Doblar solapas laterales, luego solapa trasera, y finalmente insertar la lengüeta frontal deslizando en movimiento horizontal.', tip:'Movimiento de inserción: HORIZONTAL, no vertical. Empujar verticalmente dobla la lengüeta.', tl:'Técnica de inserción crítica', spd:'slow', st:'~0.9s', hl:'tuck-close-bot' },
+    { t:'Base cerrada — tapa abierta para carga', d:'La tuck-end queda lista para carga con la base trabada. La tapa se cierra en la línea de envasado con el mismo movimiento de inserción horizontal.', tip:'En líneas automatizadas, el cierre de tapa puede hacerse con empujador neumático a 45°.', tl:'Automatización', spd:'fast', st:'~0.3s prep', hl:'tuck-top-open' },
+  ],
+  hex: [
+    { t:'Marcado de las 6 caras laterales', d:'Marcar las 6 líneas verticales que separan las caras del cuerpo hexagonal. La simetría exacta es crítica — cualquier desviación hace que las tapas no cierren.', tip:'Usar plantilla guía para el marcado. El ángulo entre caras debe ser exactamente 120°.', tl:'Precisión angular', spd:'slow', st:'~0.7s', hl:'all' },
+    { t:'Marcado de articulaciones tapa y base', d:'Marcar las líneas horizontales que unen el cuerpo con los hexágonos de tapa y base. Son las más cortas y propensas a desvíos.', tip:'Marcar con guía curva (flexi-ruler) para mantener las líneas perpendiculares al eje.', tl:'Herramienta recomendada', spd:'med', st:'~0.5s', hl:'h-mtn' },
+    { t:'Montañas — 6 líneas en orden 1-4-2-5-3-6', d:'Doblar hacia arriba las 6 líneas verticales en secuencia rotacional opuesta. Este orden distribuye la tensión uniformemente en el prisma.', tip:'Orden 1-4-2-5-3-6 (opuestos de a pares). El orden secuencial 1-2-3-4-5-6 introduce torsión residual visible.', tl:'Orden rotacional CRÍTICO', spd:'slow', st:'~1.1s', hl:'v-mtn' },
+    { t:'Cierre del cuerpo — adhesivo antes de cerrar', d:'Aplicar adhesivo en la solapa antes de cerrar el prisma. Una vez cerrado el hexágono no hay acceso a la solapa interior.', tip:'Aplicar adhesivo ANTES de cerrar. Una vez formado el prisma el acceso interior es imposible.', tl:'Adhesivo antes del cierre — obligatorio', spd:'slow', st:'~1.0s', hl:'glue' },
+    { t:'Verificación dimensional del prisma', d:'Con el cuerpo cerrado, verificar que la sección transversal sea un hexágono regular. Apoyar sobre superficie plana y comprobar que no haya balanceo.', tip:'El balanceo indica ángulo incorrecto. Corregir con presión lateral suave mientras el adhesivo fragua.', tl:'Control de calidad', spd:'med', st:'~0.6s', hl:'body' },
+    { t:'Montañas de articulación — tapa', d:'Doblar hacia arriba las 6 líneas cortas que unen el cuerpo con el hexágono de tapa. De a pares opuestos, igual que el cuerpo.', tip:'Si la tapa es de cierre a presión (sin adhesivo), el preformado a 90° exacto es lo que genera el ajuste.', tl:'Cierre a presión', spd:'med', st:'~0.7s', hl:'tuck-top-mtn' },
+    { t:'Cierre de base — solapas en sentido horario', d:'Plegar las 6 solapas de base en sentido horario. Cada solapa tapa parcialmente a la anterior. La última se inserta bajo la primera para trabar.', tip:'Sentido horario visto desde abajo. Preparar el espacio bajo la primera solapa antes de cerrar las otras 5.', tl:'Traba sin adhesivo', spd:'slow', st:'~1.0s', hl:'base' },
+    { t:'Tapa abierta — lista para carga', d:'Cuerpo y base formados. La tapa hexagonal permanece abierta. Cerrar igual que la base: solapas horarias, última bajo la primera.', tip:'En producción, la tapa puede pre-armarse como pieza separada y acoplarse después de la carga.', tl:'Opción con tapa separada', spd:'fast', st:'~0.3s prep', hl:'top' },
+  ],
+  pillow: [
+    { t:'Marcado de líneas de curvatura', d:'El pillow box tiene dos líneas de curvatura (no rectas) que definen la cintura del envase. Marcar con rueda de marcar continua, no con punzón.', tip:'Rueda de marcar: la curvatura continua no tolera marcado puntual (punzón dejaría puntos de quiebre).', tl:'Herramienta específica', spd:'fast', st:'~0.4s', hl:'all' },
+    { t:'Preformado de curvatura central', d:'Doblar suavemente la hoja sobre un cilindro del diámetro apropiado para crear la curva uniforme. Mantener 3–5 segundos para que el material "recuerde" la forma.', tip:'Diámetro del cilindro guía = ancho del producto + 15%. Cilindro más pequeño → curva más pronunciada.', tl:'Selección del cilindro guía', spd:'med', st:'~0.8s', hl:'h-mtn' },
+    { t:'Montañas — líneas de cierre superior e inferior', d:'Doblar hacia arriba las dos líneas horizontales donde los bordes del envase se van a unir. Son las únicas líneas rectas del formato.', tip:'Estas líneas son la zona de sellado. Una montaña perfecta garantiza superficie de sellado plana.', tl:'Zona de sellado', spd:'fast', st:'~0.4s', hl:'v-mtn' },
+    { t:'Formación del tubo curvo + pegado lateral', d:'Unir los dos bordes laterales con adhesivo o soldadura para formar el tubo ovalado. Aplicar adhesivo en toda la longitud del borde antes de unir.', tip:'Sellado térmico: temperatura 180–200°C, presión 3 bar, tiempo 0.8s. Verificar cordón continuo.', tl:'Parámetros de sellado térmico', spd:'slow', st:'~0.7s', hl:'body' },
+    { t:'Cierre del extremo inferior (sellado)', d:'Sellar el extremo inferior aplastando el tubo perpendicularmente al eje del sellado superior. La cruz de 90° crea la forma de almohada.', tip:'El ángulo de 90° entre ambos sellos ES el pillow box. Sellos paralelos → sobre plano sin forma.', tl:'Geometría del formato — clave', spd:'med', st:'~0.5s', hl:'base' },
+    { t:'Extremo superior — carga y cierre', d:'Cargar el producto y sellar el extremo superior con movimiento idéntico al inferior. La forma de almohada se pronuncia al cargar el contenido.', tip:'El llenado con el producto ejerce presión interior que perfecciona la forma ovalada. No pre-inflar el envase vacío.', tl:'Efecto del contenido', spd:'fast', st:'~0.4s', hl:'top' },
+  ],
+  pyramid: [
+    { t:'Marcado de las 4 aristas laterales', d:'Las 4 aristas desde la base cuadrada hasta el vértice. Son las más largas y definen la forma. Marcar con presión variable: normal en la base, suave cerca del vértice.', tip:'Las aristas de pirámide tienen ángulo variable — no son pliegues rectos uniformes. Presión decreciente hacia el vértice.', tl:'Presión variable en el marcado', spd:'med', st:'~0.6s', hl:'all' },
+    { t:'Marcado de las 4 líneas de base', d:'Las 4 líneas del cuadrado de base son pliegues rectos convencionales a 90° exactos.', tip:'Usar escuadra metálica. Verificar que los 4 lados sean iguales con la diagonal antes de doblar.', tl:'Verificación con diagonal', spd:'fast', st:'~0.4s', hl:'h-mtn' },
+    { t:'Montañas — aristas en pares opuestos', d:'Doblar hacia arriba las 4 aristas en pares opuestos: aristas 1 y 3, luego aristas 2 y 4. El orden simétrico mantiene la forma de la pirámide.', tip:'Par 1-3 primero, luego 2-4. Doblar las 4 en secuencia introduce asimetría visible en la forma final.', tl:'Orden en pares opuestos', spd:'slow', st:'~0.8s', hl:'v-mtn' },
+    { t:'Valles — líneas de base', d:'Doblar hacia abajo las 4 líneas de la base cuadrada. La base comienza a elevarse y las caras triangulares a inclinarse.', tip:'Trabajar sobre superficie plana para que la base quede a nivel durante la formación.', tl:'Superficie de trabajo plana', spd:'med', st:'~0.6s', hl:'lat' },
+    { t:'Formación del cuerpo piramidal', d:'Levantar las 4 caras triangulares simultáneamente hacia el vértice. Verificar que el vértice sea puntual y no tenga hueco antes de pegar.', tip:'Si el vértice tiene hueco, alguna arista está sub-doblada. Corregir ANTES del pegado — después es inaccesible.', tl:'Verificar vértice antes del pegado', spd:'slow', st:'~0.9s', hl:'body' },
+    { t:'Pegado de las 4 aristas — base→vértice', d:'Aplicar adhesivo en las solapas de las 4 aristas y presionar desde la base hacia el vértice. El orden base→vértice expulsa el aire y garantiza contacto uniforme.', tip:'Presión base→vértice. Pegar vértice→base deja una burbuja de aire en la punta que debilita la junta.', tl:'Dirección del pegado — crítica', spd:'slow', st:'~1.0s', hl:'glue' },
+    { t:'Cierre de base — solapas rotacionales', d:'Con la pirámide invertida, doblar las 4 solapas de base en orden rotacional. La última solapa se inserta bajo la primera.', tip:'Invertir la pirámide facilita el cierre. Usar superficie acolchada para no dañar el vértice.', tl:'Técnica invertida', spd:'med', st:'~0.6s', hl:'base' },
+    { t:'Carga por la base y cierre final', d:'La pirámide se carga por la base antes de cerrarla definitivamente. Una vez cargada, cerrar con adhesivo o cinta de doble contacto.', tip:'Cinta de doble contacto en la base da un cierre más prolijo que el adhesivo líquido para presentación premium.', tl:'Opción con doble contacto', spd:'fast', st:'~0.4s', hl:'top' },
+  ],
+  sleeve: [
+    { t:'Marcado de las 4 líneas del sleeve', d:'El sleeve tiene solo 4 líneas de pliegue que forman el tubo rectangular. Es el formato más simple. Para cartón >400g marcar por ambas caras.', tip:'Cartón kraft grueso >400g: marcar frente y dorso. El marcado solo por el frente no penetra suficientemente.', tl:'Cartón grueso: marcar ambas caras', spd:'fast', st:'~0.3s', hl:'all' },
+    { t:'Montañas — 2 pliegues longitudinales', d:'Doblar hacia arriba los dos pliegues que definen el ancho del sleeve. Son los de mayor longitud y mayor resistencia en el material.', tip:'En sleeves de cartón reciclado, doblar en dos pasadas (50° → 100°) para evitar quiebre de fibras externas.', tl:'Técnica de doble pasada', spd:'fast', st:'~0.4s', hl:'v-mtn' },
+    { t:'Valles — 2 pliegues de altura', d:'Doblar hacia abajo los dos pliegues que definen la altura del tubo. El sleeve toma forma de "U".', tip:'Verificar que los valles queden hacia el mismo lado que el frente impreso antes de doblar.', tl:'Verificar cara impresa', spd:'fast', st:'~0.4s', hl:'lat' },
+    { t:'Formación del tubo + posición de solapa', d:'Unir los bordes formando el tubo. La solapa de pegado debe quedar en la cara trasera del envase (lado no impreso).', tip:'Solapa siempre en el dorso. Si queda en el frente, el adhesivo interfiere con la visual del packaging.', tl:'Posición de la solapa — clave visual', spd:'med', st:'~0.5s', hl:'body' },
+    { t:'Pegado de la solapa longitudinal', d:'Aplicar adhesivo y presionar toda la longitud en una sola pasada continua. La alineación es crítica porque el sleeve se ve desde los 4 lados.', tip:'Presión uniforme en toda la longitud. Presión parcial crea una "ola" visible en el sleeve terminado.', tl:'Presión uniforme — sin interrupciones', spd:'slow', st:'~0.6s', hl:'glue' },
+    { t:'Inserción del producto', d:'El sleeve se inserta sobre el producto deslizándolo desde arriba. La fricción del material mantiene el ajuste sin adhesivo adicional.', tip:'Holgura recomendada: 1–2mm por lado. Más ajuste → riesgo de arrugado. Más holgura → sleeve que se cae.', tl:'Tolerancia de ajuste', spd:'fast', st:'~0.6s insert', hl:'top' },
+  ],
+};
+
+const RULES = {
+  box:     [['Montañas antes que valles','Evita re-abrir zonas ya trabajadas y corregir la memoria del cartón.'],['Paneles opuestos en simultáneo','Reduce tensión asimétrica que distorsiona el cuerpo.'],['Pegado siempre después de formar el cuerpo','Garantiza que las superficies de adhesivo queden perfectamente alineadas.'],['Base antes que tapa','Mantiene la caja abierta para la carga del producto.']],
+  tuck:    [['Cuerpo completo antes de trabajar solapas','Las lengüetas se deforman si el tubo no está formado y rígido primero.'],['Lengüetas a 45° antes de insertar','Reduce la fuerza de inserción un 60% — crítico en producción rápida.'],['Inserción horizontal, nunca vertical','El movimiento vertical dobla y rompe la lengüeta.'],['Solapas laterales antes que lengüeta principal','Las laterales guían y contienen la lengüeta al cerrar.'],['Marcar las 18 líneas antes de doblar cualquiera','El tuck-end no tolera pliegues en seco sin marcado previo.']],
+  hex:     [['Marcado angular antes que todo','Sin marcado, los 120° son imposibles de mantener a mano alzada.'],['Orden rotacional 1-4-2-5-3-6','Distribuye tensión simétricamente. El orden secuencial distorsiona el prisma.'],['Adhesivo antes de cerrar el prisma','Una vez cerrado no hay acceso a la solapa interior.'],['Solapas de base en sentido horario','La última solapa se inserta bajo la primera para trabar sin adhesivo.']],
+  pillow:  [['Rueda de marcar, no punzón','La curvatura continua no tolera marcado puntual.'],['Preformar la curva antes del sellado','El material sin preformar resiste el sellado y queda plano.'],['Sellar a 90° entre extremos','El ángulo perpendicular entre ambos sellos crea la forma de almohada.'],['Cargar antes de sellar el extremo superior','El contenido perfecciona la forma ovalada desde adentro.']],
+  pyramid: [['Aristas en pares opuestos 1-3 → 2-4','El orden simétrico evita distorsión de la forma piramidal.'],['Verificar el vértice antes de pegar','Una vez cerrado, el vértice es inaccesible para correcciones.'],['Pegado de aristas base→vértice','Expulsa el aire y garantiza contacto uniforme en toda la junta.'],['Cerrar la base con la pirámide invertida','Facilita el acceso y protege el vértice durante el armado.']],
+  sleeve:  [['Solapa de pegado siempre en el dorso','La solapa visible en el frente arruina la presentación del packaging.'],['Presión continua en toda la longitud al pegar','La presión parcial crea "olas" visibles en el sleeve terminado.'],['Verificar cara impresa antes de doblar valles','Invertir la dirección afecta qué cara queda al exterior.'],['Holgura 1–2mm por lado al insertar','Menos holgura → arrugas. Más holgura → sleeve que se cae.']],
+};
+
+const WARNS = {
+  tuck:    '⚠ Formato con mayor complejidad de armado. Requiere capacitación específica o automatización parcial para superar 30 unidades/minuto.',
+  hex:     '⚠ Alta sensibilidad al error angular. Recomendado para producción corta artesanal o automatización completa — el punto medio manual genera variabilidad dimensional.',
+  pyramid: '⚠ Mayor variabilidad en tiempo de armado: de 3.5s (operario entrenado) a 8s (sin entrenamiento). Considerar jig de armado para producción.',
+};
+
+// ═══════════════════════════════════════════════════════════════
+// MATERIAL COLORS
+// ═══════════════════════════════════════════════════════════════
+const MAT_COLORS = {
+  'Cartulina': [60,100,160],
+  'Kraft':     [140,100,50],
+  'Microcan.': [70,120,160],
+  'Cartón':    [100,90,70],
+  'PET':       [80,140,180],
+  'Reciclado': [110,90,50],
+};
+
+// ═══════════════════════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════════════════════
+function dims() {
+  return { w:+document.getElementById('dW').value, h:+document.getElementById('dH').value, d:+document.getElementById('dD').value };
+}
+function computeArea(w,h,d) {
+  if(currentType==='box')     return 2*(w*h+w*d+h*d);
+  if(currentType==='tuck')    return 2*(w*h+w*d+h*d)+w*15*2;
+  if(currentType==='hex')     return 3*Math.sqrt(3)/2*w*w+6*w*h;
+  if(currentType==='pillow')  return 2*w*(h+d*0.8);
+  if(currentType==='pyramid') return w*w+2*w*Math.sqrt((w/2)**2+h**2);
+  if(currentType==='sleeve')  return 2*(w*d+h*d);
+  return 2*(w*h+w*d+h*d);
+}
+function computeWaste() {
+  const base={box:22,tuck:28,hex:35,pillow:18,pyramid:30,sleeve:15};
+  const nested=document.getElementById('tNest').checked;
+  return Math.max(8,(base[currentType]||22)-(nested?8:0));
+}
+
+// ═══════════════════════════════════════════════════════════════
+// CONTROLS
+// ═══════════════════════════════════════════════════════════════
+function setType(t, el) {
+  currentType = t; currentStep = 0;
+  document.querySelectorAll('.pkg-btn').forEach(e => e.classList.remove('active'));
+  el.classList.add('active');
+  update();
+}
+function setMat(el, m) {
+  currentMat = m;
+  document.querySelectorAll('.mat-btn').forEach(e => e.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('matLabel').textContent = m;
+  draw();
+}
+function switchTab(v) {
+  currentView = v;
+  ['2d','3d','nest','opt'].forEach(x => {
+    const t = document.getElementById('tab-'+x);
+    if(t) t.classList.toggle('active', x===v);
+  });
+  document.getElementById('viewCanvas').style.display = (v==='opt') ? 'none' : 'flex';
+  const op = document.getElementById('optPanel');
+  op.classList.toggle('visible', v==='opt');
+  document.getElementById('canvasHint').textContent = v==='3d' ? 'Arrastrá para rotar' : '';
+  document.getElementById('foldLegend').style.display = v==='2d' ? 'flex' : 'none';
+  if(v==='opt') renderOptimizer();
+  draw();
+}
+function update() {
+  const {w,h,d} = dims();
+  document.getElementById('lW').textContent = w;
+  document.getElementById('lH').textContent = h;
+  document.getElementById('lD').textContent = d;
+  document.getElementById('typeLabel').textContent = TYPES[currentType].name + ' · ' + w + '×' + h + '×' + d + 'mm';
+  const area = computeArea(w,h,d);
+  const vol  = Math.round(w*h*d/1000);
+  document.getElementById('sArea').textContent = (area/100).toFixed(0);
+  document.getElementById('sVol').textContent  = vol;
+  document.getElementById('sFolds').textContent = TYPES[currentType].folds;
+  document.getElementById('sWaste').textContent = computeWaste()+'%';
+  draw();
+  if(currentView==='opt') renderOptimizer();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// DRAW ROUTER
+// ═══════════════════════════════════════════════════════════════
+const mainCanvas = document.getElementById('mainCanvas');
+const ctx = mainCanvas.getContext('2d');
+
+function draw() {
+  if(currentView==='opt') return;
+  ctx.clearRect(0,0,mainCanvas.width,mainCanvas.height);
+  if(currentView==='2d')   draw2D();
+  else if(currentView==='3d')   draw3D();
+  else if(currentView==='nest') drawNest();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// 2D NET
+// ═══════════════════════════════════════════════════════════════
+function draw2D() {
+  const {w,h,d} = dims();
+  const maxW = mainCanvas.width - 80;
+  const maxH = mainCanvas.height - 80;
+  let S;
+  if(currentType==='box'||currentType==='tuck') S = Math.min(maxW/(w*2+d*2+60), maxH/(h+d*2+60), 1.5);
+  else if(currentType==='sleeve') S = Math.min(maxW/(w*2+d*2+60), maxH/(h+20), 1.5);
+  else S = Math.min(maxW/(w*2+50), maxH/(h+d*2+60), 1.5);
+  S = Math.max(0.3, S);
+  const cx = mainCanvas.width/2, cy = mainCanvas.height/2;
+  const showBleed = document.getElementById('tBleed').checked;
+  const showGlue  = document.getElementById('tGlue').checked;
+  const showCut   = document.getElementById('tCut').checked;
+  const showFold  = document.getElementById('tFold').checked;
+  const fill   = 'rgba(184,255,0,0.10)';
+  const fillAlt= 'rgba(184,255,0,0.05)';
+  const cut    = '#3ad0ff';
+  const val    = '#ff2d55';
+  const mtn    = '#b8ff00';
+  const gluec  = '#ffcc33';
+  const textc  = 'rgba(240,237,230,0.55)';
+  ctx.save(); ctx.translate(cx,cy);
+
+  function panel(x,y,pw,ph,lbl,altFill2) {
+    if(showBleed) {
+      const bl=3*S;
+      ctx.fillStyle='rgba(255,204,51,0.08)';
+      ctx.fillRect(x-bl,y-bl,pw+bl*2,ph+bl*2);
+    }
+    ctx.fillStyle = altFill2||fill; ctx.fillRect(x,y,pw,ph);
+    if(showCut) {
+      ctx.strokeStyle=cut; ctx.lineWidth=1.5; ctx.setLineDash([]);
+      ctx.strokeRect(x,y,pw,ph);
+    }
+    if(lbl) {
+      ctx.fillStyle=textc;
+      ctx.font = Math.max(8,Math.min(12,pw*0.13))+'px monospace';
+      ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText(lbl, x+pw/2, y+ph/2);
+    }
+  }
+  function fline(x1,y1,x2,y2,type) {
+    if(!showFold) return;
+    ctx.strokeStyle = type==='mtn'?mtn:val;
+    ctx.lineWidth=1.2;
+    ctx.setLineDash(type==='mtn'?[3,3]:[5,4]);
+    ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  if(currentType==='box' || currentType==='tuck') {
+    const W=w*S, H=h*S, D=d*S, TK=currentType==='tuck'?15*S:0;
+    const lx=-W/2-D, ty=-H/2-D-(TK>0?TK:0), by=H/2;
+    panel(lx,-H/2,D,H,'Lat');
+    panel(-W/2,-H/2,W,H,'Frente');
+    panel(W/2,-H/2,D,H,'Lat');
+    panel(D+W/2,-H/2,W,H,'Fondo');
+    panel(-W/2,-H/2-D,W,D,'Tapa');
+    panel(-W/2,H/2,W,D,'Base');
+    if(currentType==='tuck'&&TK>0) {
+      panel(-W/2,-H/2-D-TK,W,TK,'Tuck ↑','rgba(255,204,51,0.16)');
+      panel(-W/2,H/2+D,W,TK,'Tuck ↓','rgba(255,204,51,0.16)');
+    }
+    if(showGlue) {
+      ctx.fillStyle='rgba(255,204,51,0.22)';
+      ctx.fillRect(D+W/2+W,-H/2,D*0.4,H);
+      ctx.strokeStyle=gluec; ctx.lineWidth=1; ctx.setLineDash([3,3]);
+      ctx.strokeRect(D+W/2+W,-H/2,D*0.4,H); ctx.setLineDash([]);
+      ctx.save(); ctx.translate(D+W/2+W+D*0.2,0); ctx.rotate(-Math.PI/2);
+      ctx.fillStyle=gluec; ctx.font='9px monospace'; ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText('pegado',0,0); ctx.restore();
+    }
+    fline(lx,-H/2,lx,H/2,'mtn'); fline(-W/2,-H/2,-W/2,H/2,'mtn');
+    fline(W/2,-H/2,W/2,H/2,'mtn'); fline(D+W/2,-H/2,D+W/2,H/2,'mtn');
+    fline(-W/2,-H/2-D,W/2,-H/2-D,'mtn'); fline(-W/2,H/2,W/2,H/2,'mtn');
+    fline(lx,-H/2,-W/2,-H/2,'val'); fline(lx,H/2,-W/2,H/2,'val');
+    if(currentType==='tuck'&&TK>0) {
+      fline(-W/2,-H/2-D-TK,W/2,-H/2-D-TK,'val'); fline(-W/2,H/2+D,W/2,H/2+D,'val');
+    }
+    // dim annotations
+    ctx.strokeStyle='rgba(240,237,230,0.18)'; ctx.lineWidth=0.5; ctx.setLineDash([2,3]);
+    ctx.beginPath(); ctx.moveTo(-W/2,H/2+D+8); ctx.lineTo(W/2,H/2+D+8); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle='rgba(240,237,230,0.4)'; ctx.font='9px monospace'; ctx.textAlign='center';
+    ctx.fillText('A='+w+'mm', 0, H/2+D+18);
+    ctx.fillText('B='+h+'mm', -W/2-D-18, 0);
+    ctx.fillText('C='+d+'mm', -W/2-D/2, -H/2-4);
+  }
+  else if(currentType==='hex') {
+    const r=w*S*0.45, H=h*S;
+    function hexPts(cr,cy2) {
+      let pts=[]; for(let i=0;i<6;i++){const a=Math.PI/180*(60*i-30);pts.push([cr*Math.cos(a),cy2+cr*Math.sin(a)]);}return pts;
+    }
+    function drawHex(cr,cy2) {
+      const pts=hexPts(cr,cy2);
+      ctx.fillStyle=fill; ctx.beginPath(); ctx.moveTo(...pts[0]);
+      pts.forEach(p=>ctx.lineTo(...p)); ctx.closePath(); ctx.fill();
+      if(showCut){ctx.strokeStyle=cut;ctx.lineWidth=1.5;ctx.setLineDash([]);ctx.stroke();}
+    }
+    ctx.fillStyle=fill;
+    ctx.fillRect(-r*0.87,-H/2,r*1.74,H);
+    if(showCut){ctx.strokeStyle=cut;ctx.lineWidth=1.5;ctx.setLineDash([]);ctx.strokeRect(-r*0.87,-H/2,r*1.74,H);}
+    drawHex(r*0.75,-H/2-r*0.75); drawHex(r*0.75,H/2+r*0.75);
+    if(showFold){
+      ctx.strokeStyle=mtn;ctx.lineWidth=1;ctx.setLineDash([3,3]);
+      ctx.beginPath();ctx.moveTo(-r*0.87,-H/2);ctx.lineTo(r*0.87,-H/2);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(-r*0.87,H/2);ctx.lineTo(r*0.87,H/2);ctx.stroke();
+      ctx.setLineDash([]);
+    }
+    ctx.fillStyle=textc;ctx.font='11px monospace';ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText('Cuerpo',0,0);ctx.fillText('Tapa',0,-H/2-r*0.75);ctx.fillText('Base',0,H/2+r*0.75);
+  }
+  else if(currentType==='pillow') {
+    const W=w*S, H=h*S, D=d*S*0.45;
+    ctx.fillStyle=fill;
+    ctx.beginPath();
+    ctx.moveTo(-W/2,-H/2+D); ctx.quadraticCurveTo(-W/2-D,-H/2,-W/2+D,-H/2);
+    ctx.lineTo(W/2-D,-H/2); ctx.quadraticCurveTo(W/2+D,-H/2,W/2,-H/2+D);
+    ctx.lineTo(W/2,H/2-D); ctx.quadraticCurveTo(W/2+D,H/2,W/2-D,H/2);
+    ctx.lineTo(-W/2+D,H/2); ctx.quadraticCurveTo(-W/2-D,H/2,-W/2,H/2-D);
+    ctx.closePath(); ctx.fill();
+    if(showCut){ctx.strokeStyle=cut;ctx.lineWidth=1.5;ctx.setLineDash([]);ctx.stroke();}
+    if(showFold){
+      ctx.strokeStyle=val;ctx.lineWidth=1.2;ctx.setLineDash([5,4]);
+      ctx.beginPath();ctx.moveTo(-W/2,0);ctx.lineTo(W/2,0);ctx.stroke();
+      ctx.strokeStyle=mtn;ctx.setLineDash([3,3]);
+      ctx.beginPath();ctx.moveTo(-W/2,-H/4);ctx.lineTo(W/2,-H/4);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(-W/2,H/4);ctx.lineTo(W/2,H/4);ctx.stroke();
+      ctx.setLineDash([]);
+    }
+    ctx.fillStyle=textc;ctx.font='11px monospace';ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText('Pillow',0,0);
+  }
+  else if(currentType==='pyramid') {
+    const W=w*S, H=h*S*1.2;
+    ctx.fillStyle=fill; ctx.fillRect(-W/2,-W/2,W,W);
+    if(showCut){ctx.strokeStyle=cut;ctx.lineWidth=1.5;ctx.setLineDash([]);ctx.strokeRect(-W/2,-W/2,W,W);}
+    const faces=[[[0,-W/2],[W/4,-W/2-H*0.5],[-W/4,-W/2-H*0.5]],
+                 [[W/2,0],[W/2+H*0.5,-W/4],[W/2+H*0.5,W/4]],
+                 [[0,W/2],[W/4,W/2+H*0.5],[-W/4,W/2+H*0.5]],
+                 [[-W/2,0],[-W/2-H*0.5,-W/4],[-W/2-H*0.5,W/4]]];
+    faces.forEach(pts=>{
+      ctx.fillStyle=fillAlt;
+      ctx.beginPath();ctx.moveTo(...pts[0]);pts.forEach(p=>ctx.lineTo(...p));ctx.closePath();ctx.fill();
+      if(showCut){ctx.strokeStyle=cut;ctx.lineWidth=1;ctx.setLineDash([]);ctx.stroke();}
+      if(showFold){
+        ctx.strokeStyle=mtn;ctx.lineWidth=1;ctx.setLineDash([3,3]);
+        ctx.beginPath();ctx.moveTo(...pts[0]);ctx.lineTo(pts[1][0]/2+pts[2][0]/2,pts[1][1]/2+pts[2][1]/2);ctx.stroke();
+        ctx.setLineDash([]);
+      }
+    });
+    if(showFold){
+      ctx.strokeStyle=val;ctx.lineWidth=1;ctx.setLineDash([5,4]);
+      ctx.beginPath();ctx.moveTo(-W/2,-W/2);ctx.lineTo(W/2,-W/2);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(W/2,-W/2);ctx.lineTo(W/2,W/2);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(W/2,W/2);ctx.lineTo(-W/2,W/2);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(-W/2,W/2);ctx.lineTo(-W/2,-W/2);ctx.stroke();
+      ctx.setLineDash([]);
+    }
+    ctx.fillStyle=textc;ctx.font='11px monospace';ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText('Base',0,0);
+  }
+  else if(currentType==='sleeve') {
+    const W=w*S, H=h*S, D=d*S;
+    const ox=-W-D/2;
+    panel(ox,     -H/2, W, H, 'Frente');
+    panel(ox+W,   -H/2, D, H, 'Lat');
+    panel(ox+W+D, -H/2, W, H, 'Fondo');
+    if(showGlue) {
+      ctx.fillStyle='rgba(255,204,51,0.22)';
+      ctx.fillRect(ox+W+D+W,-H/2,D*0.4,H);
+      ctx.strokeStyle=gluec;ctx.lineWidth=1;ctx.setLineDash([3,3]);
+      ctx.strokeRect(ox+W+D+W,-H/2,D*0.4,H);ctx.setLineDash([]);
+    }
+    fline(ox,-H/2,ox,H/2,'mtn'); fline(ox+W,-H/2,ox+W,H/2,'mtn');
+    fline(ox+W+D,-H/2,ox+W+D,H/2,'val'); fline(ox+W+D+W,-H/2,ox+W+D+W,H/2,'val');
+  }
+  ctx.restore();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// 3D VIEW
+// ═══════════════════════════════════════════════════════════════
+function draw3D() {
+  const {w,h,d} = dims();
+  const S = Math.min(190/Math.max(w,h,d), 1.4);
+  const W=w*S, H=h*S, D=d*S;
+  const cx=mainCanvas.width/2, cy=mainCanvas.height/2;
+  const rx=rotX*Math.PI/180, ry=rotY*Math.PI/180;
+  function rot(x,y,z){
+    let y2=y*Math.cos(rx)-z*Math.sin(rx),z2=y*Math.sin(rx)+z*Math.cos(rx);
+    let x2=x*Math.cos(ry)+z2*Math.sin(ry),z3=-x*Math.sin(ry)+z2*Math.cos(ry);
+    return [x2+cx,y2+cy,z3];
+  }
+  const bc = MAT_COLORS[currentMat]||[60,100,160];
+  const light=[0.5,-0.8,0.3]; const nl=Math.sqrt(light[0]**2+light[1]**2+light[2]**2);
+  const lx=light[0]/nl,ly=light[1]/nl,lz=light[2]/nl;
+
+  function drawBox() {
+    const verts=[[-W/2,-H/2,-D/2],[W/2,-H/2,-D/2],[W/2,H/2,-D/2],[-W/2,H/2,-D/2],
+                 [-W/2,-H/2,D/2],[W/2,-H/2,D/2],[W/2,H/2,D/2],[-W/2,H/2,D/2]].map(([x,y,z])=>rot(x,y,z));
+    const faces=[{pts:[0,1,2,3],n:[0,0,-1],lbl:'Frente'},{pts:[5,4,7,6],n:[0,0,1],lbl:'Fondo'},
+                 {pts:[4,0,3,7],n:[-1,0,0],lbl:'Lateral'},{pts:[1,5,6,2],n:[1,0,0],lbl:'Lateral'},
+                 {pts:[4,5,1,0],n:[0,-1,0],lbl:'Base'},{pts:[3,2,6,7],n:[0,1,0],lbl:'Tapa'}];
+    faces.sort((a,b)=>b.pts.reduce((s,i)=>s+verts[i][2],0)/4-a.pts.reduce((s,i)=>s+verts[i][2],0)/4);
+    faces.forEach(f=>{
+      const pts=f.pts.map(i=>verts[i]);
+      const cx2=(pts[1][0]-pts[0][0])*(pts[2][1]-pts[0][1])-(pts[1][1]-pts[0][1])*(pts[2][0]-pts[0][0]);
+      if(cx2>0) return;
+      const diff=Math.max(0,f.n[0]*lx+f.n[1]*ly+f.n[2]*lz);
+      const br=0.25+diff*0.75;
+      const r=Math.round(bc[0]*br),g=Math.round(bc[1]*br),b=Math.round(bc[2]*br);
+      ctx.beginPath(); ctx.moveTo(pts[0][0],pts[0][1]);
+      pts.forEach(p=>ctx.lineTo(p[0],p[1])); ctx.closePath();
+      ctx.fillStyle=`rgb(${r},${g},${b})`; ctx.fill();
+      ctx.strokeStyle='rgba(255,255,255,0.12)'; ctx.lineWidth=1; ctx.setLineDash([]); ctx.stroke();
+      const fcx=pts.reduce((s,p)=>s+p[0],0)/pts.length;
+      const fcy=pts.reduce((s,p)=>s+p[1],0)/pts.length;
+      ctx.fillStyle=`rgba(255,255,255,${0.25*br})`;
+      ctx.font=Math.max(9,Math.min(13,W*0.1))+'px monospace';
+      ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText(f.lbl,fcx,fcy);
+    });
+  }
+
+  function drawHex3D() {
+    const r=W/2, H2=H;
+    function hp(i,y2){const a=Math.PI/180*(60*i-30);return rot(r*Math.cos(a),y2,r*Math.sin(a));}
+    for(let i=0;i<6;i++){
+      const p0=hp(i,-H2/2),p1=hp((i+1)%6,-H2/2),p2=hp((i+1)%6,H2/2),p3=hp(i,H2/2);
+      const pts=[p0,p1,p2,p3];
+      const cx2=(pts[1][0]-pts[0][0])*(pts[2][1]-pts[0][1])-(pts[1][1]-pts[0][1])*(pts[2][0]-pts[0][0]);
+      if(cx2>0) continue;
+      const ang=Math.PI/180*(60*i);
+      const nx=Math.cos(ang), nz=Math.sin(ang);
+      const diff=Math.max(0,nx*lx+nz*lz);
+      const br=0.25+diff*0.75;
+      const r2=Math.round(bc[0]*br),g=Math.round(bc[1]*br),b=Math.round(bc[2]*br);
+      ctx.beginPath();ctx.moveTo(p0[0],p0[1]);[p1,p2,p3].forEach(p=>ctx.lineTo(p[0],p[1]));ctx.closePath();
+      ctx.fillStyle=`rgb(${r2},${g},${b})`;ctx.fill();
+      ctx.strokeStyle='rgba(255,255,255,0.1)';ctx.lineWidth=1;ctx.setLineDash([]);ctx.stroke();
+    }
+    const topPts=Array.from({length:6},(_,i)=>hp(i,-H2/2));
+    const botPts=Array.from({length:6},(_,i)=>hp(i,H2/2));
+    [[topPts,[0,-1,0],'Tapa'],[botPts,[0,1,0],'Base']].forEach(([pts,n,lbl])=>{
+      const diff=Math.max(0,n[0]*lx+n[1]*ly+n[2]*lz);
+      const br=0.25+diff*0.75;
+      const r2=Math.round(bc[0]*br),g=Math.round(bc[1]*br),b=Math.round(bc[2]*br);
+      ctx.beginPath();ctx.moveTo(pts[0][0],pts[0][1]);
+      pts.forEach(p=>ctx.lineTo(p[0],p[1]));ctx.closePath();
+      ctx.fillStyle=`rgb(${r2},${g},${b})`;ctx.fill();
+      ctx.strokeStyle='rgba(255,255,255,0.1)';ctx.lineWidth=1;ctx.stroke();
+    });
+  }
+
+  function drawPillow3D() {
+    const steps=24;
+    for(let i=0;i<steps;i++){
+      const a1=i/steps*Math.PI*2, a2=(i+1)/steps*Math.PI*2;
+      const y1=Math.cos(a1)*H/2, z1=Math.sin(a1)*D/3;
+      const y2=Math.cos(a2)*H/2, z2=Math.sin(a2)*D/3;
+      const p1=rot(-W/2,y1,z1),p2=rot(W/2,y1,z1),p3=rot(W/2,y2,z2),p4=rot(-W/2,y2,z2);
+      const pts=[p1,p2,p3,p4];
+      const cx2=(pts[1][0]-pts[0][0])*(pts[2][1]-pts[0][1])-(pts[1][1]-pts[0][1])*(pts[2][0]-pts[0][0]);
+      if(cx2>0) continue;
+      const ny=-Math.sin((a1+a2)/2), nz=Math.cos((a1+a2)/2);
+      const diff=Math.max(0,ny*ly+nz*lz);
+      const br=0.2+diff*0.8;
+      const r=Math.round(bc[0]*br),g=Math.round(bc[1]*br),b=Math.round(bc[2]*br);
+      ctx.beginPath();ctx.moveTo(p1[0],p1[1]);[p2,p3,p4].forEach(p=>ctx.lineTo(p[0],p[1]));ctx.closePath();
+      ctx.fillStyle=`rgb(${r},${g},${b})`;ctx.fill();
+      ctx.strokeStyle='rgba(255,255,255,0.04)';ctx.lineWidth=0.5;ctx.stroke();
+    }
+  }
+
+  function drawPyramid3D() {
+    const apex=rot(0,-H,0);
+    const base=[rot(-W/2,0,-D/2),rot(W/2,0,-D/2),rot(W/2,0,D/2),rot(-W/2,0,D/2)];
+    const faces=[[0,1],[1,2],[2,3],[3,0]].map(([a,b])=>[base[a],base[b],apex]);
+    faces.sort((a,b)=>(b[0][2]+b[1][2]+b[2][2])-(a[0][2]+a[1][2]+a[2][2]));
+    [[base,[0,1,0],'Base'],...faces.map(f=>[f,[0,0,0],''])].forEach(([pts,n,lbl])=>{
+      const diff=Math.max(0,n[0]*lx+n[1]*ly+n[2]*lz)+0.1;
+      const br=0.2+diff*0.7;
+      const r=Math.round(bc[0]*br),g=Math.round(bc[1]*br),b=Math.round(bc[2]*br);
+      ctx.beginPath();ctx.moveTo(pts[0][0],pts[0][1]);
+      pts.forEach(p=>ctx.lineTo(p[0],p[1]));ctx.closePath();
+      ctx.fillStyle=`rgb(${r},${g},${b})`;ctx.fill();
+      ctx.strokeStyle='rgba(255,255,255,0.12)';ctx.lineWidth=1;ctx.stroke();
+    });
+  }
+
+  function drawSleeve3D() {
+    const verts=[[-W/2,-H/2,-D/2],[W/2,-H/2,-D/2],[W/2,H/2,-D/2],[-W/2,H/2,-D/2],
+                 [-W/2,-H/2,D/2],[W/2,-H/2,D/2],[W/2,H/2,D/2],[-W/2,H/2,D/2]].map(([x,y,z])=>rot(x,y,z));
+    const faces=[{pts:[0,1,2,3],n:[0,0,-1]},{pts:[5,4,7,6],n:[0,0,1]},
+                 {pts:[4,0,3,7],n:[-1,0,0]},{pts:[1,5,6,2],n:[1,0,0]}];
+    faces.sort((a,b)=>b.pts.reduce((s,i)=>s+verts[i][2],0)/4-a.pts.reduce((s,i)=>s+verts[i][2],0)/4);
+    faces.forEach(f=>{
+      const pts=f.pts.map(i=>verts[i]);
+      const cx2=(pts[1][0]-pts[0][0])*(pts[2][1]-pts[0][1])-(pts[1][1]-pts[0][1])*(pts[2][0]-pts[0][0]);
+      if(cx2>0) return;
+      const diff=Math.max(0,f.n[0]*lx+f.n[1]*ly+f.n[2]*lz);
+      const br=0.25+diff*0.75;
+      const r=Math.round(bc[0]*br),g=Math.round(bc[1]*br),b=Math.round(bc[2]*br);
+      ctx.beginPath();ctx.moveTo(pts[0][0],pts[0][1]);
+      pts.forEach(p=>ctx.lineTo(p[0],p[1]));ctx.closePath();
+      ctx.fillStyle=`rgb(${r},${g},${b})`;ctx.fill();
+      ctx.strokeStyle='rgba(255,255,255,0.1)';ctx.lineWidth=1;ctx.stroke();
+    });
+  }
+
+  if(currentType==='box'||currentType==='tuck') drawBox();
+  else if(currentType==='hex')     drawHex3D();
+  else if(currentType==='pillow')  drawPillow3D();
+  else if(currentType==='pyramid') drawPyramid3D();
+  else if(currentType==='sleeve')  drawSleeve3D();
+
+  ctx.fillStyle='rgba(240,237,230,0.4)'; ctx.font='11px monospace'; ctx.textAlign='left';
+  const {w:ww,h:hh,d:dd}=dims();
+  ctx.fillText(ww+'×'+hh+'×'+dd+' mm · '+currentMat, 16, mainCanvas.height-14);
+}
+
+// 3D drag
+mainCanvas.addEventListener('mousedown',e=>{dragging=true;lastX=e.clientX;lastY=e.clientY;});
+window.addEventListener('mousemove',e=>{
+  if(!dragging||currentView!=='3d') return;
+  rotY+=(e.clientX-lastX)*0.5; rotX+=(e.clientY-lastY)*0.5;
+  lastX=e.clientX; lastY=e.clientY; draw();
+});
+window.addEventListener('mouseup',()=>dragging=false);
+mainCanvas.addEventListener('touchstart',e=>{dragging=true;lastX=e.touches[0].clientX;lastY=e.touches[0].clientY;},{passive:true});
+mainCanvas.addEventListener('touchmove',e=>{
+  if(!dragging||currentView!=='3d') return;
+  rotY+=(e.touches[0].clientX-lastX)*0.5; rotX+=(e.touches[0].clientY-lastY)*0.5;
+  lastX=e.touches[0].clientX; lastY=e.touches[0].clientY; draw(); e.preventDefault();
+},{passive:false});
+mainCanvas.addEventListener('touchend',()=>dragging=false);
+
+// ═══════════════════════════════════════════════════════════════
+// NEST VIEW
+// ═══════════════════════════════════════════════════════════════
+function drawNest() {
+  const nested=document.getElementById('tNest').checked;
+  const waste=computeWaste();
+  const util=100-waste;
+  const W=mainCanvas.width, H=mainCanvas.height;
+  const ox=60, oy=50, sw=W-200, sh=H-100;
+  // sheet
+  ctx.fillStyle='#0c0c0c'; ctx.fillRect(ox,oy,sw,sh);
+  ctx.strokeStyle='rgba(240,237,230,0.12)'; ctx.lineWidth=1; ctx.setLineDash([]); ctx.strokeRect(ox,oy,sw,sh);
+  ctx.fillStyle='rgba(240,237,230,0.18)'; ctx.font='10px monospace'; ctx.textAlign='center';
+  ctx.fillText('Pliego A1 — 594×841mm', ox+sw/2, oy+14);
+  // boxes
+  const cols=5, rows=4;
+  const bw=(sw-24)/cols-4, bh=(sh-30)/rows-4;
+  for(let r=0;r<rows;r++) for(let c=0;c<cols;c++){
+    const alt=nested&&(r+c)%2===1;
+    const bx=ox+12+c*(bw+4), by=oy+22+r*(bh+4);
+    ctx.fillStyle=alt?'rgba(184,255,0,0.16)':'rgba(58,208,255,0.12)';
+    ctx.fillRect(bx,by,bw,bh);
+    ctx.strokeStyle=alt?'#b8ff00':'#3ad0ff';
+    ctx.lineWidth=0.8; ctx.strokeRect(bx,by,bw,bh);
+    if(alt){ctx.fillStyle='#b8ff00';ctx.font='11px monospace';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('↻',bx+bw/2,by+bh/2);}
+  }
+  // stats panel
+  const mx=ox+sw+16, my=oy;
+  const stats=[['Unidades/pliego','20'],['Aprovechamiento',util+'%'],['Desperdicio',waste+'%'],['Orientación',nested?'Alternada':'Estándar']];
+  stats.forEach(([lbl,val],i)=>{
+    ctx.fillStyle='#f0ede6'; ctx.font='500 16px monospace'; ctx.textAlign='left';
+    ctx.fillText(val,mx,my+i*52+20);
+    ctx.fillStyle='rgba(240,237,230,0.4)'; ctx.font='10px monospace';
+    ctx.fillText(lbl,mx,my+i*52+34);
+    ctx.strokeStyle='rgba(240,237,230,0.12)'; ctx.lineWidth=0.5; ctx.setLineDash([]);
+    ctx.beginPath();ctx.moveTo(mx,my+i*52+46);ctx.lineTo(mx+120,my+i*52+46);ctx.stroke();
+  });
+  ctx.fillStyle=nested?'#b8ff00':'#3ad0ff';
+  ctx.font='500 11px monospace'; ctx.textAlign='left';
+  ctx.fillText(nested?'✓ Anidado activo':'⬜ Activar anidado',mx,my+230);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// OPTIMIZER PANEL
+// ═══════════════════════════════════════════════════════════════
+function renderOptimizer() {
+  const d=TYPES[currentType];
+  const steps=STEPS[currentType];
+  // title
+  document.getElementById('optTitle').textContent='Secuencia de pliegues — '+d.name;
+  // metrics
+  const pips=Array.from({length:5},(_,i)=>`<div class="pip${i<d.complexity?' on':''}"></div>`).join('');
+  document.getElementById('optMetrics').innerHTML=`
+    <div class="om"><div class="om-val">${d.folds}</div><div class="om-lbl">pliegues totales</div></div>
+    <div class="om"><div class="om-val">${steps.length} <span style="font-size:12px;font-weight:400">pasos</span></div><div class="om-lbl">secuencia óptima</div></div>
+    <div class="om"><div class="om-val">~${d.time}s</div><div class="om-lbl">tiempo de armado</div><div class="om-sub">↓${d.saving}% vs. no optimizado</div></div>
+    <div class="om"><div class="om-lbl" style="margin-bottom:4px">complejidad</div><div class="pips">${pips}</div></div>
+  `;
+  renderStepDots();
+  renderStepInfo();
+  drawStepCanvas();
+  renderRules();
+}
+
+function renderStepDots() {
+  const steps=STEPS[currentType];
+  const row=document.getElementById('sDots');
+  row.innerHTML='';
+  steps.forEach((_,i)=>{
+    const d=document.createElement('div');
+    d.className='sdot'+(i<currentStep?' done':i===currentStep?' active':'');
+    d.onclick=()=>{currentStep=i;renderOptimizer();};
+    row.appendChild(d);
+  });
+  const prog=document.getElementById('sProg');
+  if(prog) prog.style.width=((currentStep+1)/steps.length*100).toFixed(0)+'%';
+  document.getElementById('sPrev').disabled=currentStep===0;
+  document.getElementById('sNext').disabled=currentStep===steps.length-1;
+}
+
+function renderStepInfo() {
+  const s=STEPS[currentType][currentStep];
+  const total=STEPS[currentType].length;
+  const cls={fast:'sp-fast',med:'sp-med',slow:'sp-slow'}[s.spd];
+  document.getElementById('stepInfoArea').innerHTML=`
+    <div class="step-num">Paso ${currentStep+1} de ${total}</div>
+    <div class="step-title">${s.t}</div>
+    <div class="step-desc">${s.d}</div>
+    <div class="tip-box"><div class="tip-label">${s.tl}</div>${s.tip}</div>
+    <span class="speed-pill ${cls}">⏱ ${s.st}</span>
+  `;
+}
+
+function renderRules() {
+  const rules=RULES[currentType];
+  const warn=WARNS[currentType]||'';
+  document.getElementById('rulesArea').innerHTML=`
+    <div class="rules-title">Reglas específicas — ${TYPES[currentType].name}</div>
+    ${rules.map((r,i)=>`<div class="rule-item"><div class="rn">${i+1}</div><div class="rt"><strong>${r[0]}</strong><br>${r[1]}</div></div>`).join('')}
+    ${warn?`<div class="warn-box">${warn}</div>`:''}
+  `;
+}
+
+function stepBy(d2) {
+  const steps=STEPS[currentType];
+  currentStep=Math.max(0,Math.min(steps.length-1,currentStep+d2));
+  renderStepDots();
+  renderStepInfo();
+  drawStepCanvas();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// STEP CANVAS
+// ═══════════════════════════════════════════════════════════════
+function drawStepCanvas() {
+  const sc=document.getElementById('stepCanvas');
+  const sctx=sc.getContext('2d');
+  sctx.clearRect(0,0,sc.width,sc.height);
+  const s=STEPS[currentType][currentStep];
+  const hl=s.hl;
+  const step=currentStep;
+  const fill='rgba(58,208,255,0.12)';
+  const fillDone='rgba(184,255,0,0.16)';
+  const fillAct='rgba(58,208,255,0.30)';
+  const sk='#3ad0ff', skD='#b8ff00', skA='#3ad0ff';
+  const mtn='#b8ff00', val='#ff2d55', gluec='#ffcc33';
+  const txt='rgba(240,237,230,0.55)', txtD='#b8ff00', txtA='#3ad0ff';
+  const muted='#1e2330';
+
+  function p(x,y,w,h,lbl,done,act) {
+    sctx.fillStyle=act?fillAct:done?fillDone:fill;
+    sctx.fillRect(x,y,w,h);
+    sctx.strokeStyle=act?skA:done?skD:sk; sctx.lineWidth=act?1.5:done?1.2:0.8; sctx.setLineDash([]);
+    sctx.strokeRect(x,y,w,h);
+    if(lbl){
+      sctx.fillStyle=act?txtA:done?txtD:txt;
+      sctx.font=Math.min(9,w*0.15)+'px monospace';
+      sctx.textAlign='center'; sctx.textBaseline='middle';
+      sctx.fillText(lbl,x+w/2,y+h/2);
+    }
+  }
+  function fl(x1,y1,x2,y2,type,act) {
+    sctx.strokeStyle=act?(type==='mtn'?mtn:val):'rgba(240,237,230,0.12)';
+    sctx.lineWidth=act?1.5:0.7;
+    sctx.setLineDash(type==='mtn'?[3,3]:[5,4]);
+    sctx.beginPath();sctx.moveTo(x1,y1);sctx.lineTo(x2,y2);sctx.stroke();
+    sctx.setLineDash([]);
+  }
+
+  if(currentType==='box') {
+    const W=110,H=75,D=42,cx=100,cy=110;
+    const lx2=cx-W/2-D,ty=cy-H/2-D,by=cy+H/2;
+    const dH=step>=1,dV=step>=2,dL=step>=3,dB=step>=4,dG=step>=5,dBs=step>=6,dT=step>=7;
+    p(lx2,cy-H/2,D,H,'Lat',dL,hl==='lat');
+    p(cx-W/2,cy-H/2,W,H,'Frente',dB,hl==='body');
+    p(cx+W/2,cy-H/2,D,H,'Lat',dL,hl==='lat');
+    p(cx+W/2+D,cy-H/2,W,H,'Fondo',dB,hl==='body');
+    p(cx-W/2,ty,W,D,'Tapa',dT,hl==='top');
+    p(cx-W/2,by,W,D,'Base',dBs,hl==='base');
+    if(hl==='glue'||dG){
+      sctx.fillStyle='rgba(255,204,51,0.22)';sctx.fillRect(cx+W/2+D+W,cy-H/2,D*0.38,H);
+      sctx.strokeStyle=gluec;sctx.lineWidth=1;sctx.setLineDash([2,2]);
+      sctx.strokeRect(cx+W/2+D+W,cy-H/2,D*0.38,H);sctx.setLineDash([]);
+    }
+    fl(lx2,cy-H/2,lx2,cy+H/2,'mtn',dV||dH);fl(cx-W/2,cy-H/2,cx-W/2,cy+H/2,'mtn',dV||dH);
+    fl(cx+W/2,cy-H/2,cx+W/2,cy+H/2,'mtn',dV||dH);fl(cx+W/2+D,cy-H/2,cx+W/2+D,cy+H/2,'mtn',dV||dH);
+    fl(cx-W/2,ty+D,cx+W/2,ty+D,'mtn',dH);fl(cx-W/2,by,cx+W/2,by,'mtn',dH);
+    fl(lx2,cy-H/2,cx-W/2,cy-H/2,'val',dL);fl(lx2,cy+H/2,cx-W/2,cy+H/2,'val',dL);
+    if(hl==='all'){sctx.fillStyle='rgba(240,237,230,0.55)';sctx.font='9px monospace';sctx.textAlign='center';sctx.fillText('marcar todas las líneas',cx,by+D+14);}
+  }
+  else if(currentType==='tuck') {
+    const W=95,H=65,D=38,TK=20,cx=100,cy=105;
+    const lx2=cx-W/2-D,ty=cy-H/2-D-TK,by=cy+H/2;
+    const dC=step>=2,dG=step>=3,dTM=step>=4,dBV=step>=5,dPF=step>=6,dBC=step>=7,dTO=step>=8;
+    p(lx2,cy-H/2,D,H,'Lat',dC,hl==='body');
+    p(cx-W/2,cy-H/2,W,H,'Frente',dC,hl==='body');
+    p(cx+W/2,cy-H/2,D,H,'Lat',dC,hl==='body');
+    p(cx+W/2+D,cy-H/2,W,H,'Fondo',dC,hl==='body');
+    p(cx-W/2,cy-H/2-D,W,D,'Tapa',dTM,hl==='tuck-top-mtn'||hl==='tuck-top-open');
+    p(cx-W/2,by,W,D,'Base',dBV,hl==='tuck-bot'||hl==='tuck-close-bot');
+    p(cx-W/2,ty,W,TK,'Tuck↑',dPF,hl==='tuck-preform');
+    p(cx-W/2,by+D,W,TK,'Tuck↓',dBC,hl==='tuck-close-bot');
+    if(hl==='glue'||dG){sctx.fillStyle='rgba(255,204,51,0.22)';sctx.fillRect(cx+W/2+D+W,cy-H/2,D*0.35,H);sctx.strokeStyle=gluec;sctx.lineWidth=1;sctx.setLineDash([2,2]);sctx.strokeRect(cx+W/2+D+W,cy-H/2,D*0.35,H);sctx.setLineDash([]);}
+    fl(lx2,cy-H/2,lx2,cy+H/2,'mtn',dC);fl(cx-W/2,cy-H/2,cx-W/2,cy+H/2,'mtn',dC);
+    fl(cx+W/2,cy-H/2,cx+W/2,cy+H/2,'mtn',dC);fl(cx+W/2+D,cy-H/2,cx+W/2+D,cy+H/2,'mtn',dC);
+    fl(cx-W/2,cy-H/2-D,cx+W/2,cy-H/2-D,'mtn',dTM);fl(cx-W/2,by,cx+W/2,by,'val',dBV);
+    fl(cx-W/2,ty+TK,cx+W/2,ty+TK,'val',dPF);
+  }
+  else if(currentType==='hex') {
+    const r=55,H=75,cx=125,cy=110;
+    function hp2(i){const a=Math.PI/180*(60*i-30);return[cx+r*Math.cos(a),cy+r*Math.sin(a)-20];}
+    const pts6=Array.from({length:6},(_,i)=>hp2(i));
+    const dM=step>=2,dG=step>=3,dB=step>=4,dTM=step>=5,dBs=step>=6,dT=step>=7;
+    sctx.fillStyle=dB?fillAct:fill;
+    sctx.beginPath();sctx.moveTo(...pts6[0]);pts6.forEach(p2=>sctx.lineTo(...p2));sctx.closePath();
+    sctx.fill();sctx.strokeStyle=dB?skA:sk;sctx.lineWidth=1;sctx.setLineDash([]);sctx.stroke();
+    pts6.forEach((p2,i)=>{const n=pts6[(i+1)%6];fl(p2[0],p2[1],n[0],n[1],'mtn',dM);});
+    const th=65;
+    sctx.fillStyle=dTM?fillDone:fill;
+    sctx.beginPath();Array.from({length:6},(_,i)=>{const a=Math.PI/180*(60*i-30);return[cx+r*0.7*Math.cos(a),cy-20-th+r*0.7*Math.sin(a)];}).forEach((p2,i)=>{i===0?sctx.moveTo(...p2):sctx.lineTo(...p2);});
+    sctx.closePath();sctx.fill();sctx.strokeStyle=dTM?skD:sk;sctx.lineWidth=0.8;sctx.stroke();
+    sctx.fillStyle=dTM?txtD:txt;sctx.font='8px monospace';sctx.textAlign='center';sctx.textBaseline='middle';sctx.fillText('Tapa',cx,cy-20-th);
+    sctx.fillStyle=dBs?fillDone:fill;
+    sctx.beginPath();Array.from({length:6},(_,i)=>{const a=Math.PI/180*(60*i-30);return[cx+r*0.7*Math.cos(a),cy-20+th+r*0.7*Math.sin(a)];}).forEach((p2,i)=>{i===0?sctx.moveTo(...p2):sctx.lineTo(...p2);});
+    sctx.closePath();sctx.fill();sctx.strokeStyle=dBs?skD:sk;sctx.lineWidth=0.8;sctx.stroke();
+    sctx.fillStyle=dBs?txtD:txt;sctx.font='8px monospace';sctx.textAlign='center';sctx.textBaseline='middle';sctx.fillText('Base',cx,cy-20+th);
+    sctx.fillStyle=txt;sctx.font='8px monospace';sctx.textAlign='center';sctx.fillText('Cuerpo',cx,cy-20);
+  }
+  else if(currentType==='pillow') {
+    const cx=125,cy=105,W=140,H=90,D=30;
+    const dCurv=step>=1,dM=step>=2,dB=step>=3,dBs=step>=4,dT=step>=5;
+    sctx.fillStyle=dB?fillAct:fill;
+    sctx.beginPath();
+    if(dCurv){
+      sctx.moveTo(cx-W/2,cy-H/2+D);sctx.quadraticCurveTo(cx-W/2-D,cy,cx-W/2,cy+H/2-D);
+      sctx.lineTo(cx+W/2,cy+H/2-D);sctx.quadraticCurveTo(cx+W/2+D,cy,cx+W/2,cy-H/2+D);
+      sctx.closePath();
+    } else {sctx.rect(cx-W/2,cy-H/2,W,H);}
+    sctx.fill();sctx.strokeStyle=sk;sctx.lineWidth=1;sctx.setLineDash([]);sctx.stroke();
+    fl(cx-W/2,cy-H/2,cx+W/2,cy-H/2,'mtn',dM);fl(cx-W/2,cy+H/2,cx+W/2,cy+H/2,'mtn',dM);
+    if(dBs){sctx.fillStyle=fillDone;sctx.fillRect(cx-W/2,cy+H/2,W,12);sctx.strokeStyle=skD;sctx.lineWidth=1.5;sctx.strokeRect(cx-W/2,cy+H/2,W,12);sctx.fillStyle=txtD;sctx.font='8px monospace';sctx.textAlign='center';sctx.textBaseline='middle';sctx.fillText('sellado inferior',cx,cy+H/2+6);}
+    if(dT){sctx.fillStyle=fill;sctx.fillRect(cx-W/2,cy-H/2-12,W,12);sctx.strokeStyle=sk;sctx.lineWidth=1;sctx.strokeRect(cx-W/2,cy-H/2-12,W,12);sctx.fillStyle=txt;sctx.font='8px monospace';sctx.textAlign='center';sctx.textBaseline='middle';sctx.fillText('sellado superior',cx,cy-H/2-6);}
+    sctx.fillStyle=txt;sctx.font='10px monospace';sctx.textAlign='center';sctx.textBaseline='middle';sctx.fillText('Pillow box',cx,cy);
+  }
+  else if(currentType==='pyramid') {
+    const cx=125,cy=95,B=120,H=110;
+    const dM=step>=2,dV=step>=3,dB=step>=4,dG=step>=5,dBs=step>=6,dT=step>=7;
+    if(dB){
+      sctx.fillStyle=fillAct;
+      sctx.beginPath();sctx.moveTo(cx,cy-H/2);sctx.lineTo(cx+B/2,cy+H/2);sctx.lineTo(cx-B/2,cy+H/2);sctx.closePath();
+      sctx.fill();sctx.strokeStyle=sk;sctx.lineWidth=1.5;sctx.stroke();
+    } else {
+      sctx.fillStyle=fill;sctx.fillRect(cx-B/2,cy,B,45);sctx.strokeStyle=sk;sctx.lineWidth=0.8;sctx.strokeRect(cx-B/2,cy,B,45);
+      fl(cx-B/2,cy,cx,cy-H/2,'mtn',dM);fl(cx-B/2+B/3,cy,cx,cy-H/2,'mtn',dM);
+      fl(cx+B/2,cy,cx,cy-H/2,'mtn',dM);fl(cx+B/2-B/3,cy,cx,cy-H/2,'mtn',dM);
+    }
+    if(dG){sctx.strokeStyle=gluec;sctx.lineWidth=2;sctx.setLineDash([]);
+      sctx.beginPath();sctx.moveTo(cx,cy-H/2);sctx.lineTo(cx+B/2,cy+H/2);sctx.stroke();
+      sctx.beginPath();sctx.moveTo(cx,cy-H/2);sctx.lineTo(cx-B/2,cy+H/2);sctx.stroke();}
+    if(dBs){sctx.fillStyle=fillDone;sctx.fillRect(cx-B/2,cy+H/2,B,14);sctx.strokeStyle=skD;sctx.lineWidth=1.5;sctx.strokeRect(cx-B/2,cy+H/2,B,14);sctx.fillStyle=txtD;sctx.font='8px monospace';sctx.textAlign='center';sctx.textBaseline='middle';sctx.fillText('base cerrada',cx,cy+H/2+7);}
+    fl(cx-B/2,cy,cx+B/2,cy,'val',dV);
+    sctx.fillStyle=txt;sctx.font='9px monospace';sctx.textAlign='center';sctx.textBaseline='middle';
+    if(!dB) sctx.fillText('Base cuadrada',cx,cy+22);
+  }
+  else if(currentType==='sleeve') {
+    const ox2=20,W=120,H=60,D=40,cy=110;
+    const dM=step>=1,dV=step>=2,dB=step>=3,dG=step>=4,dT=step>=5;
+    p(ox2,cy-H/2,W,H,'Frente',dB,hl==='body');
+    p(ox2+W,cy-H/2,D,H,'Lat',dB,hl==='body');
+    p(ox2+W+D,cy-H/2,W,H,'Fondo',dB,hl==='body');
+    if(hl==='glue'||dG){sctx.fillStyle='rgba(255,204,51,0.22)';sctx.fillRect(ox2+W+D+W,cy-H/2,D*0.35,H);sctx.strokeStyle=gluec;sctx.lineWidth=1;sctx.setLineDash([2,2]);sctx.strokeRect(ox2+W+D+W,cy-H/2,D*0.35,H);sctx.setLineDash([]);}
+    fl(ox2,cy-H/2,ox2,cy+H/2,'mtn',dM);fl(ox2+W,cy-H/2,ox2+W,cy+H/2,'mtn',dM);
+    fl(ox2+W+D,cy-H/2,ox2+W+D,cy+H/2,'val',dV);fl(ox2+W+D+W,cy-H/2,ox2+W+D+W,cy+H/2,'val',dV);
+    if(dT){sctx.strokeStyle=skD;sctx.lineWidth=1.5;sctx.setLineDash([]);
+      sctx.beginPath();sctx.moveTo(ox2,cy-H/2-10);sctx.lineTo(ox2+W+D+W+D*0.35,cy-H/2-10);sctx.stroke();
+      sctx.fillStyle=txtD;sctx.font='8px monospace';sctx.textAlign='center';
+      sctx.fillText('→ insertar sobre producto',ox2+(W+D)*0.8,cy-H/2-18);}
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SVG EXPORT
+// ═══════════════════════════════════════════════════════════════
+function generateSVG() {
+  const {w,h,d}=dims();
+  const S=2;
+  const W=w*S,H=h*S,D=d*S;
+  const pad=40, PW=W*2+D*2+D+pad*2+30, PH=H+D*2+pad*2+30;
+  const ox=pad, oy=pad+D;
+  let svg=`<svg xmlns="http://www.w3.org/2000/svg" width="${PW}" height="${PH}" viewBox="0 0 ${PW} ${PH}">
+<style>.cut{stroke:#4A90D9;stroke-width:1.5;fill:rgba(74,144,217,0.08);}.fold-v{stroke:#E74C3C;stroke-width:1;stroke-dasharray:5 4;fill:none;}.fold-m{stroke:#27AE60;stroke-width:1;stroke-dasharray:3 3;fill:none;}.glue{fill:rgba(243,156,18,0.2);stroke:#F39C12;stroke-width:1;stroke-dasharray:3 3;}.dim{stroke:#5a6478;stroke-width:0.5;fill:#5a6478;font-size:9px;font-family:sans-serif;}</style>
+<title>PackGen — ${TYPES[currentType].name} ${w}x${h}x${d}mm — ${currentMat}</title>`;
+  if(currentType==='box'||currentType==='tuck'){
+    const lx=ox,fx=ox+D,mx=ox+D+W,rx=ox+D+W+D,bx=ox+D+W+D+W;
+    const ty=oy-D,my=oy,by=oy+H;
+    // panels
+    svg+=`<rect class="cut" x="${lx}" y="${my}" width="${D}" height="${H}"/>`;
+    svg+=`<rect class="cut" x="${fx}" y="${my}" width="${W}" height="${H}"/>`;
+    svg+=`<rect class="cut" x="${mx}" y="${my}" width="${D}" height="${H}"/>`;
+    svg+=`<rect class="cut" x="${rx}" y="${my}" width="${W}" height="${H}"/>`;
+    svg+=`<rect class="cut" x="${fx}" y="${ty}" width="${W}" height="${D}"/>`;
+    svg+=`<rect class="cut" x="${fx}" y="${by}" width="${W}" height="${D}"/>`;
+    if(currentType==='tuck'){
+      const TK=15*S;
+      svg+=`<rect class="cut" x="${fx}" y="${ty-TK}" width="${W}" height="${TK}" fill="rgba(243,156,18,0.12)" stroke="#F39C12" stroke-width="1"/>`;
+      svg+=`<rect class="cut" x="${fx}" y="${by+D}" width="${W}" height="${TK}" fill="rgba(243,156,18,0.12)" stroke="#F39C12" stroke-width="1"/>`;
+    }
+    // glue
+    svg+=`<rect class="glue" x="${bx}" y="${my}" width="${D*0.4}" height="${H}"/>`;
+    // fold lines
+    [lx,fx,mx,rx].forEach(x=>{ svg+=`<line class="fold-v" x1="${x}" y1="${my}" x2="${x}" y2="${by}"/>`; });
+    svg+=`<line class="fold-m" x1="${fx}" y1="${ty+D}" x2="${mx}" y2="${ty+D}"/>`;
+    svg+=`<line class="fold-m" x1="${fx}" y1="${by}" x2="${mx}" y2="${by}"/>`;
+    // labels
+    ['Lateral','Frente','Lateral','Fondo'].forEach((lbl,i)=>{
+      const xs=[lx,fx,mx,rx][i];
+      const ws=[D,W,D,W][i];
+      svg+=`<text class="dim" x="${xs+ws/2}" y="${my+H/2}" text-anchor="middle">${lbl}</text>`;
+    });
+    svg+=`<text class="dim" x="${fx+W/2}" y="${ty+D/2}" text-anchor="middle">Tapa</text>`;
+    svg+=`<text class="dim" x="${fx+W/2}" y="${by+D/2}" text-anchor="middle">Base</text>`;
+    // dims
+    svg+=`<line class="dim" x1="${fx}" y1="${by+D+16}" x2="${mx}" y2="${by+D+16}"/>`;
+    svg+=`<text class="dim" x="${(fx+mx)/2}" y="${by+D+30}" text-anchor="middle">A = ${w}mm</text>`;
+    svg+=`<line class="dim" x1="${lx-16}" y1="${my}" x2="${lx-16}" y2="${by}"/>`;
+    svg+=`<text class="dim" x="${lx-24}" y="${(my+by)/2}" text-anchor="middle" transform="rotate(-90,${lx-24},${(my+by)/2})">B = ${h}mm</text>`;
+  }
+  svg+=`</svg>`;
+  return svg;
+}
+
+function openExport() {
+  const svg=generateSVG();
+  document.getElementById('svgPreview').innerHTML=svg;
+  document.getElementById('exportModal').classList.add('open');
+}
+function closeExport() { document.getElementById('exportModal').classList.remove('open'); }
+function downloadSVG() {
+  const svg=generateSVG();
+  const blob=new Blob([svg],{type:'image/svg+xml'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url; a.download=`packgen_${currentType}_${dims().w}x${dims().h}x${dims().d}.svg`;
+  a.click(); URL.revokeObjectURL(url);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════════
+update();
+</script>
+</body>
+</html>
