@@ -48,6 +48,14 @@
   #exportScene{width:100%;background:var(--cyan);color:#050505;border:none;font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:.05em;
     padding:11px;cursor:pointer;border-radius:4px;margin-top:8px;transition:filter .15s;}
   #exportScene:hover{filter:brightness(1.12);}
+  .ai-in{width:100%;background:rgba(240,237,230,.05);border:1px solid var(--line);color:var(--ink);font:inherit;font-size:11px;padding:8px;border-radius:3px;margin-bottom:7px;}
+  .ai-in:focus{outline:none;border-color:var(--acid);}
+  textarea.ai-in{resize:vertical;min-height:54px;}
+  .ai-note{font-size:8px;line-height:1.4;letter-spacing:.04em;color:rgba(240,237,230,.34);margin:-3px 0 8px;}
+  #aiGen{width:100%;background:var(--acid);color:#050505;border:none;font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:.05em;padding:10px;cursor:pointer;border-radius:4px;transition:filter .15s;}
+  #aiGen:hover{filter:brightness(1.12);}
+  #aiGen:disabled{opacity:.5;cursor:wait;}
+  .ai-status{font-size:9px;line-height:1.5;letter-spacing:.04em;color:var(--cyan);margin-top:7px;min-height:12px;}
   #toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);z-index:20;background:rgba(5,5,5,.94);border:1px solid var(--acid);color:var(--acid);
     font-size:11px;padding:9px 16px;border-radius:5px;opacity:0;transition:opacity .2s;pointer-events:none;max-width:80vw;text-align:center;}
   #toast.show{opacity:1;}
@@ -94,6 +102,16 @@
   </div>
   <div class="meter"><i id="audMeter"></i></div>
   <div class="ctrl"><label>sensibilidad <b data-v="audgain"></b></label><input type="range" id="audgain" min="0" max="3" step="0.01"></div>
+  <h2>IA — generar efecto ✨</h2>
+  <input type="password" id="aiKey" class="ai-in" placeholder="tu API key de Anthropic (sk-ant-…)">
+  <div class="ai-note">La key queda solo en este navegador (localStorage) y va directo a api.anthropic.com — no se sube a ningún lado. La pagás vos por uso.</div>
+  <select id="aiModel" class="ai-in">
+    <option value="claude-sonnet-4-6" selected>Sonnet 4.6 — rápido y barato</option>
+    <option value="claude-opus-4-8">Opus 4.8 — mejor, más caro</option>
+  </select>
+  <textarea id="aiPrompt" class="ai-in" rows="3" placeholder="describí el efecto: 'cristal líquido que late con el bass, tonos fríos y estelas'…"></textarea>
+  <button id="aiGen">✨ GENERAR EFECTO</button>
+  <div id="aiStatus" class="ai-status"></div>
   <h2>Salida</h2>
   <button id="exportScene">⤓ SCENE (.synScene)</button>
   <div class="row">
@@ -268,12 +286,34 @@ function resize(){
 }
 window.addEventListener('resize', resize);
 
-const u = name => gl.getUniformLocation(fxProg, name);
-const UL = {};
-['uRes','uTime','uBass','uMid','uHigh','uMode','uHasInput','uFlipX','uInput','uFeedback',
- 'P_warp','P_scale','P_shift','P_sym','P_speed','P_trails','P_glitch'].forEach(n=>UL[n]=u(n));
+// uniformes comunes a fxProg y a los programas de IA — se setean si existen
+const COMMON_U = ['uRes','uTime','uBass','uMid','uHigh','uMode','uHasInput','uFlipX','uInput','uFeedback',
+ 'P_warp','P_scale','P_shift','P_sym','P_speed','P_trails','P_glitch'];
+function locsFor(prog){ const o={}; COMMON_U.forEach(n=>o[n]=gl.getUniformLocation(prog,n)); return o; }
+const UL = locsFor(fxProg);
+let curT=0;
+function setUniforms(L){
+  if(L.uRes) gl.uniform2f(L.uRes, W, H);
+  if(L.uTime) gl.uniform1f(L.uTime, curT);
+  if(L.uBass) gl.uniform1f(L.uBass, audio.bass);
+  if(L.uMid) gl.uniform1f(L.uMid, audio.mid);
+  if(L.uHigh) gl.uniform1f(L.uHigh, audio.high);
+  if(L.uMode) gl.uniform1i(L.uMode, (typeof P.mode==='number')?P.mode:0);
+  if(L.uHasInput) gl.uniform1i(L.uHasInput, hasInput);
+  if(L.uFlipX) gl.uniform1i(L.uFlipX, flipX);
+  if(L.P_warp) gl.uniform1f(L.P_warp, P.warp);
+  if(L.P_scale) gl.uniform1f(L.P_scale, P.scale);
+  if(L.P_shift) gl.uniform1f(L.P_shift, P.shift);
+  if(L.P_sym) gl.uniform1f(L.P_sym, P.sym);
+  if(L.P_speed) gl.uniform1f(L.P_speed, P.speed);
+  if(L.P_trails) gl.uniform1f(L.P_trails, P.trails);
+  if(L.P_glitch) gl.uniform1f(L.P_glitch, P.glitch);
+  gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, inputTex); if(L.uInput) gl.uniform1i(L.uInput, 0);
+  gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, texs[read]); if(L.uFeedback) gl.uniform1i(L.uFeedback, 1);
+}
 
 let read=0, write=1, startT=performance.now();
+let aiProg=null, aiLocs=null, aiRawGLSL=null;  // efecto generado por IA (si hay)
 function frame(){
   resize();
   // subir frame de video/cámara a la textura
@@ -282,21 +322,17 @@ function frame(){
     try{ gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, vid); }catch(e){}
   }
   updateAudio();
-  const t = (performance.now()-startT)/1000;
+  curT = (performance.now()-startT)/1000;
+
+  const useAI = (P.mode==='ai' && aiProg);
+  const prog = useAI ? aiProg : fxProg;
+  const L = useAI ? aiLocs : UL;
 
   // pass FX → escribe al FBO write, leyendo el FBO read como feedback
   gl.bindFramebuffer(gl.FRAMEBUFFER, fbos[write]);
   gl.viewport(0,0,W,H);
-  gl.useProgram(fxProg);
-  gl.uniform2f(UL.uRes, W, H);
-  gl.uniform1f(UL.uTime, t);
-  gl.uniform1f(UL.uBass, audio.bass); gl.uniform1f(UL.uMid, audio.mid); gl.uniform1f(UL.uHigh, audio.high);
-  gl.uniform1i(UL.uMode, P.mode); gl.uniform1i(UL.uHasInput, hasInput); gl.uniform1i(UL.uFlipX, flipX);
-  gl.uniform1f(UL.P_warp, P.warp); gl.uniform1f(UL.P_scale, P.scale); gl.uniform1f(UL.P_shift, P.shift);
-  gl.uniform1f(UL.P_sym, P.sym); gl.uniform1f(UL.P_speed, P.speed); gl.uniform1f(UL.P_trails, P.trails);
-  gl.uniform1f(UL.P_glitch, P.glitch);
-  gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, inputTex); gl.uniform1i(UL.uInput, 0);
-  gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, texs[read]); gl.uniform1i(UL.uFeedback, 1);
+  gl.useProgram(prog);
+  setUniforms(L);
   gl.drawArrays(gl.TRIANGLES, 0, 3);
 
   // present → copia el FBO write a pantalla
@@ -309,6 +345,145 @@ function frame(){
 
   read^=1; write^=1;
   requestAnimationFrame(frame);
+}
+
+// ════════════════════════════════════════════════════════════════════
+// IA — genera un efecto GLSL nuevo desde un prompt (Claude, BYOK).
+// La IA escribe SOLO la función aiEffect() usando un set fijo de helpers
+// (SAMPLE/FEEDBACK/NOISE/…), así el mismo código corre acá y se traduce a
+// Synesthesia. Si no compila, se le manda el error y reintenta (auto-fix).
+// ════════════════════════════════════════════════════════════════════
+const AI_HELPERS_GLSL = `
+float HASH(vec2 p){ p=fract(p*vec2(123.34,456.21)); p+=dot(p,p+45.32); return fract(p.x*p.y); }
+float NOISE(vec2 p){ vec2 i=floor(p),f=fract(p); vec2 u=f*f*(3.0-2.0*f);
+  return mix(mix(HASH(i),HASH(i+vec2(1.0,0.0)),u.x),mix(HASH(i+vec2(0.0,1.0)),HASH(i+vec2(1.0,1.0)),u.x),u.y); }
+float FBM(vec2 p){ float v=0.0,a=0.55; mat2 m=mat2(1.6,1.2,-1.2,1.6); for(int i=0;i<5;i++){ v+=a*NOISE(p); p=m*p; a*=0.5; } return v; }
+vec2 KALEIDO(vec2 p, float f){ if(f<0.5) return p; float a=atan(p.y,p.x),r=length(p),s=3.14159265/f; a=abs(mod(a,2.0*s)-s); return vec2(cos(a),sin(a))*r; }`;
+
+const AI_PREAMBLE = `#version 300 es
+precision highp float;
+out vec4 fragColor;
+uniform sampler2D uInput, uFeedback;
+uniform vec2 uRes;
+uniform float uTime, uBass, uMid, uHigh, P_trails;
+uniform int uHasInput, uFlipX;
+#define RES uRes
+${AI_HELPERS_GLSL}
+vec3 SAMPLE(vec2 uv){
+  if(uHasInput==0){ return 0.5+0.5*cos(vec3(0.0,2.0,4.0)+uv.xyx*5.0+uTime); }
+  if(uFlipX==1) uv.x = 1.0-uv.x;
+  return texture(uInput, clamp(uv,0.0,1.0)).rgb;
+}
+vec3 FEEDBACK(vec2 uv){ return texture(uFeedback, clamp(uv,0.0,1.0)).rgb; }`;
+
+const AI_MAIN = `
+void main(){
+  vec2 uv = gl_FragCoord.xy/uRes;
+  vec2 uvc = uv-0.5; uvc.x *= uRes.x/uRes.y;
+  vec3 c = aiEffect(uv, uvc, uTime, uBass, uMid, uHigh);
+  vec2 fbuv = (uv-0.5)*(1.0-0.012*(0.3+P_trails))+0.5;
+  c = mix(c, max(c*0.6, FEEDBACK(fbuv)*0.992), P_trails);
+  fragColor = vec4(clamp(c,0.0,1.0), 1.0);
+}`;
+
+// efecto IA de arranque — sirve de auto-test del harness y de default
+const AI_DEFAULT = `vec3 aiEffect(vec2 uv, vec2 uvc, float t, float bass, float mid, float high){
+  vec2 d = uv + 0.03*(1.0+bass*2.0)*vec2(NOISE(uvc*5.0+t), NOISE(uvc*5.0-t)-0.5);
+  vec3 col = SAMPLE(d);
+  col *= 0.7+0.5*sin(length(uvc)*10.0 - t*2.0 + high*6.0);
+  return col;
+}`;
+
+function compileAIProgram(aiBody){ return program(AI_PREAMBLE + '\n' + aiBody + '\n' + AI_MAIN); }
+
+const AI_SYSTEM = `Sos un programador experto de shaders GLSL para "WARP", un visualizador VJ audio-reactivo.
+Tu tarea: escribir UNA función GLSL ES 3.00 que distorsiona/transforma una imagen de entrada (cámara o video) de forma hermosa, compleja y musical.
+
+DEVOLVÉ SOLAMENTE el código GLSL crudo. NADA de markdown, backticks, explicaciones, #version, precision, uniform, ni main(). Solo la función aiEffect (y, si querés, funciones helper TUYAS declaradas ANTES de ella).
+
+Firma EXACTA de la entrada (no la cambies):
+vec3 aiEffect(vec2 uv, vec2 uvc, float t, float bass, float mid, float high)
+- uv: coordenada 0..1 de pantalla. uvc: centrada y corregida por aspecto (x va de -ar/2..ar/2). t: tiempo en segundos. bass/mid/high: nivel de audio 0..1 (usalos para que el efecto lata con la música).
+- Devolvé un vec3 de color en rango [0,1].
+
+HELPERS YA DISPONIBLES (no los redefinas):
+- vec3 SAMPLE(vec2 uv)  → lee el pixel de la imagen de entrada (cámara/video) en esa coordenada. Distorsioná la uv antes de pasarla para deformar la imagen.
+- vec3 FEEDBACK(vec2 uv) → lee el frame previo (para estelas/trails).
+- float NOISE(vec2), float FBM(vec2), float HASH(vec2), vec2 KALEIDO(vec2 p, float folds).
+- RES (vec2 resolución).
+
+REGLAS:
+- Usá SAMPLE() para que el efecto trabaje sobre la imagen real (no generes todo de cero, salvo que el pedido lo pida).
+- Hacelo audio-reactivo con bass/mid/high.
+- Bucles acotados (máximo 48 iteraciones) por performance.
+- Movimiento suave y continuo con t. Apuntá a algo visualmente rico y elegante.
+- Todo lo que devuelvas tiene que compilar como GLSL ES 3.00.`;
+
+function extractGLSL(t){ const m = t.match(/```(?:glsl)?\s*([\s\S]*?)```/i); return (m?m[1]:t).trim(); }
+function truncate(s,n){ s=String(s); return s.length>n ? s.slice(0,n)+'…' : s; }
+
+async function callClaude(key, model, messages){
+  const r = await fetch('https://api.anthropic.com/v1/messages', {
+    method:'POST',
+    headers:{ 'content-type':'application/json', 'x-api-key':key, 'anthropic-version':'2023-06-01', 'anthropic-dangerous-direct-browser-access':'true' },
+    body: JSON.stringify({ model, max_tokens:1800, system: AI_SYSTEM, messages })
+  });
+  const data = await r.json().catch(()=>({}));
+  if(!r.ok) throw new Error((data.error && data.error.message) || ('HTTP '+r.status));
+  return (data.content && data.content[0] && data.content[0].text) || '';
+}
+
+async function generateEffect(){
+  const key = $('aiKey').value.trim();
+  const prompt = $('aiPrompt').value.trim();
+  if(!key){ setAiStatus('Pegá tu API key de Anthropic primero.', true); return; }
+  if(!prompt){ setAiStatus('Escribí qué efecto querés.', true); return; }
+  localStorage.setItem('warp_anthropic_key', key);
+  const model = $('aiModel').value;
+  $('aiGen').disabled = true;
+  const messages = [{ role:'user', content:'Creá un efecto para este pedido: '+prompt }];
+  let ok=false, lastErr='';
+  for(let attempt=1; attempt<=4; attempt++){
+    setAiStatus(attempt===1 ? 'Pensando el shader…' : 'Arreglando errores de compilación (intento '+attempt+'/4)…');
+    let text;
+    try{ text = await callClaude(key, model, messages); }
+    catch(e){ setAiStatus('Error de API: '+e.message, true); $('aiGen').disabled=false; return; }
+    const glsl = extractGLSL(text);
+    try{
+      const prog = compileAIProgram(glsl);
+      if(aiProg) gl.deleteProgram(aiProg);
+      aiProg = prog; aiLocs = locsFor(prog); aiRawGLSL = glsl;
+      P.mode = 'ai'; markAIActive();
+      setAiStatus('✓ Efecto generado y corriendo en vivo. Exportalo o pedí otro.');
+      ok=true; break;
+    }catch(e){
+      lastErr = e.message;
+      messages.push({ role:'assistant', content: text });
+      messages.push({ role:'user', content:'Ese shader no compila. Error del compilador GLSL:\n'+truncate(lastErr,1200)+'\nDevolvé SOLO el GLSL corregido (la función aiEffect y sus helpers), sin explicaciones ni markdown.' });
+    }
+  }
+  if(!ok) setAiStatus('No compiló tras 4 intentos. Reformulá el prompt. Último error: '+truncate(lastErr,180), true);
+  $('aiGen').disabled = false;
+}
+function setAiStatus(msg, err){ const el=$('aiStatus'); el.textContent=msg; el.style.color = err ? 'var(--glitch)' : 'var(--cyan)'; }
+function markAIActive(){ const b=$('famAI'); if(b){ $('fams').querySelectorAll('.fam').forEach(x=>x.classList.remove('on')); b.classList.add('on'); } }
+// traduce el cuerpo aiEffect a una escena de Synesthesia
+function aiToSyn(body){
+  return `// WARP IA — efecto generado, exportado a Synesthesia.
+// Asigná una media (cámara o video) en Synesthesia: el shader la transforma.
+#define RES RENDERSIZE
+${AI_HELPERS_GLSL}
+vec3 SAMPLE(vec2 uv){ return _loadMedia(clamp(uv,0.0,1.0)).rgb; }
+vec3 FEEDBACK(vec2 uv){ return texture(warpBuffer, clamp(uv,0.0,1.0)).rgb; }
+${body}
+vec4 fxPass(){
+  vec2 uv=_uv; vec2 uvc=_uvc;
+  vec3 c = aiEffect(uv, uvc, syn_Time, syn_BassLevel, syn_MidLevel, syn_HighLevel);
+  vec2 fbuv=(_uv-0.5)*(1.0-0.012*(0.3+P_trails))+0.5;
+  c = mix(c, max(c*0.6, texture(warpBuffer, clamp(fbuv,0.0,1.0)).rgb*0.992), P_trails);
+  return vec4(clamp(c,0.0,1.0),1.0);
+}
+vec4 renderMain(){ if(PASSINDEX==0.0) return fxPass(); return texture(warpBuffer,_uv); }`;
 }
 
 // ════════════════════════════════════════════════════════════════════
@@ -379,6 +554,7 @@ function useVideoFile(file){
 // El cuerpo de distorsión se traduce a los nombres de Synesthesia.
 // ════════════════════════════════════════════════════════════════════
 function toSynGLSL(){
+  if(P.mode==='ai' && aiRawGLSL) return aiToSyn(aiRawGLSL);
   // Traducción del cuerpo de preview a SSF: P_x → controles, audio → syn_*,
   // input → _loadMedia(), feedback → buffer persistente.
   let body = FX_BODY
@@ -417,18 +593,16 @@ vec4 renderMain(){
 }
 function toSynJSON(){
   const knob = (name, min, max, def) => ({ NAME:name, TYPE:'knob', MIN:min, MAX:max, DEFAULT:def });
+  const isAI = (P.mode==='ai' && aiRawGLSL);
+  const label = isAI ? 'IA' : MODES[P.mode];
+  const controls = isAI
+    ? [ knob('P_trails', 0, 0.98, P.trails) ]
+    : [ knob('P_warp', 0, 1.5, P.warp), knob('P_scale', 0.5, 8, P.scale), knob('P_shift', 0, 2, P.shift),
+        knob('P_sym', 0, 12, P.sym), knob('P_speed', 0, 2, P.speed), knob('P_trails', 0, 0.98, P.trails), knob('P_glitch', 0, 1, P.glitch) ];
   return JSON.stringify({
     CREDIT: 'Human Glitche · WARP',
-    DESCRIPTION: 'Distorsión reactiva de la media de entrada (efecto: '+MODES[P.mode]+'). Generada en hg-vl.com/labs.',
-    CONTROLS: [
-      knob('P_warp', 0, 1.5, P.warp),
-      knob('P_scale', 0.5, 8, P.scale),
-      knob('P_shift', 0, 2, P.shift),
-      knob('P_sym', 0, 12, P.sym),
-      knob('P_speed', 0, 2, P.speed),
-      knob('P_trails', 0, 0.98, P.trails),
-      knob('P_glitch', 0, 1, P.glitch)
-    ],
+    DESCRIPTION: 'Distorsión reactiva de la media de entrada (efecto: '+label+'). Generada en hg-vl.com/labs.',
+    CONTROLS: controls,
     PASSES: [
       { TARGET: 'warpBuffer', PERSISTENT: true, FLOAT: true },
       {}
@@ -461,8 +635,10 @@ function toggleRecord(){
 // UI
 // ════════════════════════════════════════════════════════════════════
 function buildFams(){
-  $('fams').innerHTML = MODES.map((m,i)=>`<button class="fam${i===P.mode?' on':''}" data-m="${i}">${m}</button>`).join('');
-  $('fams').querySelectorAll('.fam').forEach(b=>b.onclick=()=>{ P.mode=+b.dataset.m; $('fams').querySelectorAll('.fam').forEach(x=>x.classList.remove('on')); b.classList.add('on'); });
+  let html = MODES.map((m,i)=>`<button class="fam${i===P.mode?' on':''}" data-m="${i}">${m}</button>`).join('');
+  html += `<button class="fam" id="famAI" data-m="ai" style="grid-column:span 3;border-color:rgba(184,255,0,.45);color:var(--acid)">✨ EFECTO IA</button>`;
+  $('fams').innerHTML = html;
+  $('fams').querySelectorAll('.fam').forEach(b=>b.onclick=()=>{ const m=b.dataset.m; P.mode=(m==='ai')?'ai':+m; $('fams').querySelectorAll('.fam').forEach(x=>x.classList.remove('on')); b.classList.add('on'); });
 }
 function syncSliders(){
   ['warp','scale','shift','sym','speed','trails','glitch','audgain'].forEach(k=>{
@@ -482,13 +658,21 @@ $('audOff').onclick = audioOff; $('audMic').onclick = audioMic; $('audVid').oncl
 $('exportScene').onclick = exportScene;
 $('recBtn').onclick = toggleRecord;
 $('glslBtn').onclick = ()=>{ navigator.clipboard?.writeText(toSynGLSL()).then(()=>toast('GLSL de Synesthesia copiado.'), ()=>toast('No se pudo copiar.')); };
+$('aiGen').onclick = generateEffect;
+$('aiKey').value = localStorage.getItem('warp_anthropic_key') || '';
+$('aiKey').onchange = ()=> localStorage.setItem('warp_anthropic_key', $('aiKey').value.trim());
 addEventListener('keydown', e=>{
-  if(e.target.tagName==='INPUT') return;
+  if(e.target.tagName==='INPUT' || e.target.tagName==='TEXTAREA') return;
   const k=e.key.toLowerCase();
   if(k==='h') $('panel').classList.toggle('hide');
   else if(k==='r') toggleRecord();
   else if(k==='e') exportScene();
 });
+
+// auto-test del harness de IA: compila el efecto default. Si anda, la
+// infraestructura de IA (compilar GLSL generado + correrlo) está sana.
+try{ aiProg = compileAIProgram(AI_DEFAULT); aiLocs = locsFor(aiProg); aiRawGLSL = AI_DEFAULT; console.log('WARP: AI harness OK'); }
+catch(e){ console.warn('WARP: AI harness FAIL —', e.message); }
 
 buildFams(); syncSliders(); setAudBtns(); resize();
 requestAnimationFrame(frame);
