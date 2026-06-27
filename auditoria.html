@@ -597,7 +597,12 @@ async function loadComercios(){
 }
 async function loadPendientes(){
   try{
-    const r = await fetch(`${FB_URL}/comercios_pending.json`);
+    // /comercios_pending tiene regla .read: "auth != null" — sin token el GET
+    // devuelve 401 y el panel de moderación queda vacío. Leemos con token si hay sesión.
+    const s = getSession();
+    const token = s ? await freshToken(s) : null;
+    const url = token ? `${FB_URL}/comercios_pending.json?auth=${token}` : `${FB_URL}/comercios_pending.json`;
+    const r = await fetch(url);
     pendientes = (r.ok ? await r.json() : null) || {};
   }catch(e){ pendientes = {}; }
 }
