@@ -1,0 +1,496 @@
+<!doctype html><html lang="es"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>WARP — Human Glitche · distorsión de cámara y video (Synesthesia-ready)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{ --acid:#b8ff00; --glitch:#ff2d55; --cyan:#3ad0ff; --ink:#f0ede6; --line:rgba(240,237,230,.12); --bg:#050505; }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{height:100%;background:var(--bg);color:var(--ink);font-family:'Space Mono',monospace;overflow:hidden;}
+  #gl{position:fixed;inset:0;width:100vw;height:100vh;display:block;z-index:1;background:#000;}
+  #top{position:fixed;top:0;left:0;right:0;z-index:10;display:flex;justify-content:space-between;align-items:center;padding:16px 20px;pointer-events:none;}
+  #top a,#top .lab{pointer-events:auto;}
+  .brand{font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:.04em;line-height:.8;}
+  .brand b{color:var(--acid);font-weight:400;}
+  .brand .sub{display:block;font-family:'Space Mono';font-size:9px;letter-spacing:.24em;color:rgba(240,237,230,.45);margin-top:4px;}
+  #top a{font-size:10px;letter-spacing:.2em;color:rgba(240,237,230,.4);text-decoration:none;}
+  #top a:hover{color:var(--acid);}
+  #panel{position:fixed;right:0;top:0;bottom:0;width:316px;z-index:9;background:rgba(5,5,5,.74);backdrop-filter:blur(9px);border-left:1px solid var(--line);
+    padding:70px 18px 18px;overflow:auto;transition:transform .25s;}
+  #panel.hide{transform:translateX(100%);}
+  #toggle{position:fixed;right:14px;top:64px;z-index:11;background:rgba(5,5,5,.7);border:1px solid var(--line);color:var(--ink);
+    font:inherit;font-size:10px;letter-spacing:.18em;padding:7px 10px;cursor:pointer;}
+  #toggle:hover{border-color:var(--acid);color:var(--acid);}
+  h2{font-size:9px;letter-spacing:.2em;color:rgba(240,237,230,.4);text-transform:uppercase;margin:16px 0 9px;}
+  h2:first-of-type{margin-top:0;}
+  .src{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+  .src button{background:rgba(184,255,0,.04);border:1px solid var(--line);color:var(--ink);font:inherit;font-size:10px;letter-spacing:.08em;padding:9px 4px;cursor:pointer;border-radius:3px;transition:.15s;}
+  .src button:hover{border-color:var(--acid);color:var(--acid);}
+  .src button.on{border-color:var(--acid);color:var(--acid);background:rgba(184,255,0,.12);}
+  .fams{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;}
+  .fam{background:rgba(58,208,255,.04);border:1px solid var(--line);color:var(--ink);font:inherit;font-size:9px;padding:7px 3px;cursor:pointer;border-radius:3px;transition:.15s;letter-spacing:.02em;}
+  .fam:hover{border-color:var(--cyan);color:var(--cyan);}
+  .fam.on{border-color:var(--cyan);color:var(--cyan);background:rgba(58,208,255,.13);}
+  .ctrl{margin-bottom:11px;}
+  .ctrl label{display:flex;justify-content:space-between;font-size:10px;letter-spacing:.06em;color:rgba(240,237,230,.65);margin-bottom:4px;}
+  .ctrl label b{color:var(--acid);font-weight:400;}
+  .ctrl input[type=range]{width:100%;accent-color:var(--acid);}
+  .aud{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:6px;}
+  .aud button{background:rgba(255,45,85,.04);border:1px solid var(--line);color:var(--ink);font:inherit;font-size:10px;padding:8px 3px;cursor:pointer;border-radius:3px;transition:.15s;}
+  .aud button:hover{border-color:var(--glitch);color:var(--glitch);}
+  .aud button.on{border-color:var(--glitch);color:var(--glitch);background:rgba(255,45,85,.12);}
+  .meter{height:5px;border-radius:3px;background:rgba(240,237,230,.08);overflow:hidden;margin-bottom:11px;}
+  .meter i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--cyan),var(--acid),var(--glitch));transition:width .05s linear;}
+  .row{display:flex;gap:7px;margin-top:8px;}
+  .row button{flex:1;background:transparent;border:1px solid var(--line);color:var(--ink);font:inherit;font-size:10px;letter-spacing:.1em;padding:9px;cursor:pointer;border-radius:3px;transition:.15s;}
+  .row button:hover{border-color:var(--acid);color:var(--acid);}
+  #recBtn.rec{border-color:var(--glitch);color:var(--glitch);}
+  #exportScene{width:100%;background:var(--cyan);color:#050505;border:none;font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:.05em;
+    padding:11px;cursor:pointer;border-radius:4px;margin-top:8px;transition:filter .15s;}
+  #exportScene:hover{filter:brightness(1.12);}
+  #toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);z-index:20;background:rgba(5,5,5,.94);border:1px solid var(--acid);color:var(--acid);
+    font-size:11px;padding:9px 16px;border-radius:5px;opacity:0;transition:opacity .2s;pointer-events:none;max-width:80vw;text-align:center;}
+  #toast.show{opacity:1;}
+  .hint{position:fixed;left:20px;bottom:18px;z-index:8;font-size:10px;letter-spacing:.1em;color:rgba(240,237,230,.4);pointer-events:none;}
+  .hint b{color:var(--acid);font-weight:400;}
+  input[type=file]{display:none;}
+  @media(max-width:640px){ #panel{width:100%;} .brand{font-size:24px;} }
+</style></head><body><script src="/gate/gate.js"></script>
+<canvas id="gl"></canvas>
+<video id="vid" playsinline muted style="display:none"></video>
+<input type="file" id="fileInput" accept="video/*">
+
+<div id="top">
+  <div class="brand lab"><b>W</b>ARP<span class="sub">Human Glitche · distorsión reactiva · Synesthesia-ready</span></div>
+  <div style="display:flex;gap:18px;pointer-events:auto;">
+    <a href="/forge/">FORGE ↔</a>
+    <a href="/home.html">← HOME</a>
+  </div>
+</div>
+<button id="toggle">⚙ PANEL</button>
+<div class="hint">tecla <b>H</b> = panel · <b>R</b> = grabar · <b>E</b> = exportar scene</div>
+
+<div id="panel">
+  <h2>Fuente</h2>
+  <div class="src">
+    <button id="srcCam">◉ CÁMARA</button>
+    <button id="srcVid">▶ VIDEO…</button>
+  </div>
+  <h2>Efecto</h2>
+  <div class="fams" id="fams"></div>
+  <h2>Parámetros</h2>
+  <div class="ctrl"><label>distorsión <b data-v="warp"></b></label><input type="range" id="warp" min="0" max="1.5" step="0.01"></div>
+  <div class="ctrl"><label>escala <b data-v="scale"></b></label><input type="range" id="scale" min="0.5" max="8" step="0.01"></div>
+  <div class="ctrl"><label>RGB split <b data-v="shift"></b></label><input type="range" id="shift" min="0" max="2" step="0.01"></div>
+  <div class="ctrl"><label>simetría (kaleido) <b data-v="sym"></b></label><input type="range" id="sym" min="0" max="12" step="1"></div>
+  <div class="ctrl"><label>velocidad <b data-v="speed"></b></label><input type="range" id="speed" min="0" max="2" step="0.01"></div>
+  <div class="ctrl"><label>trails (feedback) <b data-v="trails"></b></label><input type="range" id="trails" min="0" max="0.98" step="0.01"></div>
+  <div class="ctrl"><label>glitch <b data-v="glitch"></b></label><input type="range" id="glitch" min="0" max="1" step="0.01"></div>
+  <h2>Audio-reactivo</h2>
+  <div class="aud">
+    <button id="audOff" class="on">OFF</button>
+    <button id="audMic">MIC</button>
+    <button id="audVid">VIDEO</button>
+  </div>
+  <div class="meter"><i id="audMeter"></i></div>
+  <div class="ctrl"><label>sensibilidad <b data-v="audgain"></b></label><input type="range" id="audgain" min="0" max="3" step="0.01"></div>
+  <h2>Salida</h2>
+  <button id="exportScene">⤓ SCENE (.synScene)</button>
+  <div class="row">
+    <button id="recBtn">● GRABAR</button>
+    <button id="glslBtn">⧉ GLSL</button>
+  </div>
+</div>
+<div id="toast"></div>
+
+<script>
+'use strict';
+const $ = id => document.getElementById(id);
+const cv = $('gl'), vid = $('vid');
+const gl = cv.getContext('webgl2', { preserveDrawingBuffer:true, antialias:false });
+if(!gl){ document.body.innerHTML = '<p style="padding:40px;font-family:monospace;color:#b8ff00">WARP necesita WebGL2 — probá en un navegador actualizado.</p>'; throw new Error('no webgl2'); }
+
+const MODES = ['WARP','RGB SPLIT','KALEIDO','RIPPLE','SLITSCAN','MIRROR','MOSAICO','LENTE','SACUDÓN'];
+
+// ── estado ──
+const P = { mode:0, warp:0.5, scale:2.5, shift:0.4, sym:0, speed:0.5, trails:0.4, glitch:0.15, audgain:1.2 };
+let hasInput = 0, flipX = 0, audMode = 'off';
+
+// ════════════════════════════════════════════════════════════════════
+// GLSL — la lógica de distorsión vive en distortUV()/sampleSrc(); el mismo
+// cuerpo se reusa para el preview (acá) y para el export a Synesthesia.
+// ════════════════════════════════════════════════════════════════════
+const FX_BODY = `
+float hash(vec2 p){ p=fract(p*vec2(123.34,456.21)); p+=dot(p,p+45.32); return fract(p.x*p.y); }
+float vnoise(vec2 p){ vec2 i=floor(p),f=fract(p); vec2 u=f*f*(3.0-2.0*f);
+  return mix(mix(hash(i),hash(i+vec2(1.0,0.0)),u.x),mix(hash(i+vec2(0.0,1.0)),hash(i+vec2(1.0,1.0)),u.x),u.y); }
+vec2 kaleido(vec2 p, float folds){ if(folds<0.5) return p;
+  float a=atan(p.y,p.x); float r=length(p); float seg=3.14159265/folds;
+  a=abs(mod(a,2.0*seg)-seg); return vec2(cos(a),sin(a))*r; }
+// distorsiona la coordenada de muestreo (uv 0..1) según el modo + audio
+vec2 distortUV(vec2 uv, vec2 uvc, float t, int mode, float bass, float mid, float high){
+  float warp = P_warp*(1.0+bass*1.6);
+  if(mode==0){               // WARP — desplazamiento por ruido
+    vec2 n = vec2(vnoise(uvc*P_scale+t), vnoise(uvc*P_scale+vec2(5.2,1.3)-t));
+    uv += (n-0.5)*warp*0.35;
+  } else if(mode==2){        // KALEIDO
+    vec2 k = kaleido(uvc*P_scale, floor(P_sym+0.5));
+    uv = k*0.5+0.5;
+  } else if(mode==3){        // RIPPLE — ondas radiales
+    float r=length(uvc); uv += normalize(uvc+1e-5)*sin(r*P_scale*4.0 - t*3.0)*warp*0.12;
+  } else if(mode==4){        // SLITSCAN — corte horizontal por fila
+    uv.x += sin(uv.y*P_scale*3.0 + t*2.0)*warp*0.25 + (1.0-uv.y)*bass*warp*0.3;
+  } else if(mode==5){        // MIRROR — espejo horizontal
+    uv.x = abs(uv.x-0.5)+0.5;
+  } else if(mode==6){        // MOSAICO — pixelado por bloques (bass)
+    float bl = mix(80.0, 8.0, clamp(P_warp+bass,0.0,1.0));
+    uv = (floor(uv*bl)+0.5)/bl;
+  } else if(mode==7){        // LENTE — domo/fisheye
+    float ar = uRes.x/uRes.y;
+    vec2 c = uvc; float r = length(c);
+    float k = 1.0 + warp*r*r*1.6;
+    c *= k; uv = vec2(c.x/ar, c.y) + 0.5;
+  } else if(mode==8){        // SACUDÓN — bloques rasgados en el beat
+    float seg = floor(uv.y*20.0); float k = step(0.7, hash(vec2(seg, floor(t*8.0))));
+    uv.x += (hash(vec2(seg,3.1))-0.5)*k*(warp*0.5+high*0.4);
+  }
+  return uv;
+}`;
+
+// Preview-only: cabecera con uniforms WebGL2 y wrappers. El export reescribe
+// estos nombres a los de Synesthesia (syn_BassLevel, _loadMedia, etc.).
+const FX_FRAG = `#version 300 es
+precision highp float;
+out vec4 fragColor;
+uniform sampler2D uInput;
+uniform sampler2D uFeedback;
+uniform vec2 uRes;
+uniform float uTime, uBass, uMid, uHigh;
+uniform float P_warp, P_scale, P_shift, P_sym, P_speed, P_trails, P_glitch;
+uniform int uMode, uHasInput, uFlipX;
+${FX_BODY}
+// patrón de prueba cuando no hay cámara/video activo
+vec3 testPattern(vec2 uv, float t){
+  vec2 g = uv*vec2(uRes.x/uRes.y,1.0)*10.0;
+  float a = step(0.5, fract(g.x*0.5+sin(g.y*0.6+t)))*0.5+0.25;
+  vec3 c = 0.5+0.5*cos(vec3(0,2,4)+uv.xyx*4.0+t);
+  float bars = smoothstep(0.0,0.02,abs(fract(uv.x*8.0+t*0.3)-0.5));
+  return mix(c*a, vec3(0.05), 0.3)*bars + c*0.25;
+}
+vec3 srcRGB(vec2 uv, float t){
+  if(uHasInput==0) return testPattern(uv, t);
+  if(uFlipX==1) uv.x = 1.0-uv.x;
+  uv = clamp(uv, 0.0, 1.0);
+  return texture(uInput, uv).rgb;
+}
+void main(){
+  vec2 uv = gl_FragCoord.xy/uRes;
+  vec2 uvc = uv-0.5; uvc.x *= uRes.x/uRes.y;
+  float t = uTime*P_speed;
+  vec2 duv = distortUV(uv, uvc, t, uMode, uBass, uMid, uHigh);
+  float so = (P_shift*(0.4+uHigh*1.6))*0.03;
+  vec3 col;
+  if(uMode==1){ // RGB SPLIT puro: separa canales sobre la imagen
+    col.r = srcRGB(duv+vec2(so,0.0), t).r;
+    col.g = srcRGB(duv, t).g;
+    col.b = srcRGB(duv-vec2(so,0.0), t).b;
+  } else {
+    col.r = srcRGB(duv+vec2(so,0.0)*0.4, t).r;
+    col.g = srcRGB(duv, t).g;
+    col.b = srcRGB(duv-vec2(so,0.0)*0.4, t).b;
+  }
+  // grano/glitch leve
+  col += (hash(gl_FragCoord.xy+uTime)-0.5)*P_glitch*0.25;
+  // feedback / trails: muestrea el frame previo con un leve zoom hacia el centro
+  vec2 fbuv = (uv-0.5)*(1.0-0.012*(0.3+P_trails)) + 0.5;
+  vec3 fb = texture(uFeedback, fbuv).rgb;
+  col = mix(col, max(col*0.6, fb*0.992), P_trails);
+  fragColor = vec4(clamp(col,0.0,1.0), 1.0);
+}`;
+
+const COPY_FRAG = `#version 300 es
+precision highp float;
+out vec4 o; uniform sampler2D t; uniform vec2 uRes;
+void main(){ o = texture(t, gl_FragCoord.xy/uRes); }`;
+
+const VERT = `#version 300 es
+void main(){ vec2 p = vec2((gl_VertexID<<1)&2, gl_VertexID&2); gl_Position = vec4(p*2.0-1.0, 0.0, 1.0); }`;
+
+function compile(type, src){
+  const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s);
+  if(!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s)+'\n'+src.split('\n').map((l,i)=>(i+1)+': '+l).join('\n'));
+  return s;
+}
+function program(fragSrc){
+  const p = gl.createProgram();
+  gl.attachShader(p, compile(gl.VERTEX_SHADER, VERT));
+  gl.attachShader(p, compile(gl.FRAGMENT_SHADER, fragSrc));
+  gl.linkProgram(p);
+  if(!gl.getProgramParameter(p, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(p));
+  return p;
+}
+
+const fxProg = program(FX_FRAG);
+const copyProg = program(COPY_FRAG);
+
+// textura de input (cámara/video)
+const inputTex = gl.createTexture();
+gl.bindTexture(gl.TEXTURE_2D, inputTex);
+gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([0,0,0,255]));
+
+// ping-pong FBOs para el feedback
+let fbos = [], texs = [], W=0, H=0;
+function makeTarget(w,h){
+  const tex = gl.createTexture();
+  gl.bindTexture(gl.TEXTURE_2D, tex);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, w, h, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+  const fb = gl.createFramebuffer();
+  gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
+  gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex, 0);
+  return { tex, fb };
+}
+function resize(){
+  const w = Math.max(2, Math.floor(cv.clientWidth)), h = Math.max(2, Math.floor(cv.clientHeight));
+  if(w===W && h===H) return;
+  W=w; H=h; cv.width=w; cv.height=h;
+  texs.forEach(t=>gl.deleteTexture(t)); fbos.forEach(f=>gl.deleteFramebuffer(f));
+  texs=[]; fbos=[];
+  for(let i=0;i<2;i++){ const t=makeTarget(w,h); texs.push(t.tex); fbos.push(t.fb); }
+  gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+}
+window.addEventListener('resize', resize);
+
+const u = name => gl.getUniformLocation(fxProg, name);
+const UL = {};
+['uRes','uTime','uBass','uMid','uHigh','uMode','uHasInput','uFlipX','uInput','uFeedback',
+ 'P_warp','P_scale','P_shift','P_sym','P_speed','P_trails','P_glitch'].forEach(n=>UL[n]=u(n));
+
+let read=0, write=1, startT=performance.now();
+function frame(){
+  resize();
+  // subir frame de video/cámara a la textura
+  if(hasInput && vid.readyState>=2){
+    gl.bindTexture(gl.TEXTURE_2D, inputTex);
+    try{ gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, vid); }catch(e){}
+  }
+  updateAudio();
+  const t = (performance.now()-startT)/1000;
+
+  // pass FX → escribe al FBO write, leyendo el FBO read como feedback
+  gl.bindFramebuffer(gl.FRAMEBUFFER, fbos[write]);
+  gl.viewport(0,0,W,H);
+  gl.useProgram(fxProg);
+  gl.uniform2f(UL.uRes, W, H);
+  gl.uniform1f(UL.uTime, t);
+  gl.uniform1f(UL.uBass, audio.bass); gl.uniform1f(UL.uMid, audio.mid); gl.uniform1f(UL.uHigh, audio.high);
+  gl.uniform1i(UL.uMode, P.mode); gl.uniform1i(UL.uHasInput, hasInput); gl.uniform1i(UL.uFlipX, flipX);
+  gl.uniform1f(UL.P_warp, P.warp); gl.uniform1f(UL.P_scale, P.scale); gl.uniform1f(UL.P_shift, P.shift);
+  gl.uniform1f(UL.P_sym, P.sym); gl.uniform1f(UL.P_speed, P.speed); gl.uniform1f(UL.P_trails, P.trails);
+  gl.uniform1f(UL.P_glitch, P.glitch);
+  gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, inputTex); gl.uniform1i(UL.uInput, 0);
+  gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, texs[read]); gl.uniform1i(UL.uFeedback, 1);
+  gl.drawArrays(gl.TRIANGLES, 0, 3);
+
+  // present → copia el FBO write a pantalla
+  gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+  gl.viewport(0,0,W,H);
+  gl.useProgram(copyProg);
+  gl.uniform2f(gl.getUniformLocation(copyProg,'uRes'), W, H);
+  gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, texs[write]); gl.uniform1i(gl.getUniformLocation(copyProg,'t'), 0);
+  gl.drawArrays(gl.TRIANGLES, 0, 3);
+
+  read^=1; write^=1;
+  requestAnimationFrame(frame);
+}
+
+// ════════════════════════════════════════════════════════════════════
+// AUDIO — Web Audio (mic o audio del video) → bass/mid/high suavizados
+// ════════════════════════════════════════════════════════════════════
+let ac=null, analyser=null, freq=null, micStream=null, vidSrcNode=null;
+const audio = { bass:0, mid:0, high:0 };
+function ensureCtx(){ if(!ac){ ac = new (window.AudioContext||window.webkitAudioContext)(); } if(ac.state==='suspended') ac.resume(); }
+function setAnalyser(node){
+  if(!analyser){ analyser = ac.createAnalyser(); analyser.fftSize = 1024; analyser.smoothingTimeConstant = 0.7; freq = new Uint8Array(analyser.frequencyBinCount); }
+  try{ node.connect(analyser); }catch(e){}
+}
+async function audioMic(){
+  ensureCtx();
+  try{
+    micStream = await navigator.mediaDevices.getUserMedia({ audio:true });
+    setAnalyser(ac.createMediaStreamSource(micStream));
+    audMode='mic'; setAudBtns(); toast('Mic conectado — el sonido del ambiente maneja la distorsión.');
+  }catch(e){ toast('No se pudo abrir el micrófono: '+e.message); }
+}
+function audioVideo(){
+  ensureCtx();
+  if(!vidSrcNode){ try{ vidSrcNode = ac.createMediaElementSource(vid); }catch(e){ /* ya creado */ } }
+  if(vidSrcNode){ setAnalyser(vidSrcNode); try{ vidSrcNode.connect(ac.destination); }catch(e){} }
+  vid.muted = false;
+  audMode='vid'; setAudBtns(); toast('Audio del video conectado.');
+}
+function audioOff(){ audMode='off'; setAudBtns(); }
+function updateAudio(){
+  if(audMode==='off' || !analyser){
+    // pulso suave ambiente para que los modos respiren sin audio
+    const t=performance.now()/1000;
+    audio.bass = 0.12+0.12*Math.sin(t*1.7); audio.mid = 0.1+0.1*Math.sin(t*2.3+1.0); audio.high = 0.08+0.08*Math.sin(t*3.1+2.0);
+    setMeter((audio.bass+audio.mid+audio.high)/1.0);
+    return;
+  }
+  analyser.getByteFrequencyData(freq);
+  const n=freq.length, g=P.audgain;
+  const band=(a,b)=>{ let s=0; for(let i=a;i<b;i++)s+=freq[i]; return (s/((b-a)*255)); };
+  const bass=band(1, Math.floor(n*0.08)), mid=band(Math.floor(n*0.08), Math.floor(n*0.3)), high=band(Math.floor(n*0.3), Math.floor(n*0.8));
+  audio.bass = Math.min(1, bass*g*1.4); audio.mid = Math.min(1, mid*g*1.6); audio.high = Math.min(1, high*g*2.2);
+  setMeter((audio.bass+audio.mid+audio.high)/2.0);
+}
+function setMeter(v){ $('audMeter').style.width = Math.min(100, Math.max(0, v*100))+'%'; }
+function setAudBtns(){ $('audOff').classList.toggle('on', audMode==='off'); $('audMic').classList.toggle('on', audMode==='mic'); $('audVid').classList.toggle('on', audMode==='vid'); }
+
+// ════════════════════════════════════════════════════════════════════
+// FUENTE — cámara / archivo de video
+// ════════════════════════════════════════════════════════════════════
+async function useCamera(){
+  try{
+    const stream = await navigator.mediaDevices.getUserMedia({ video:{ width:1280, height:720 }, audio:false });
+    vid.srcObject = stream; vid.muted = true; await vid.play();
+    hasInput=1; flipX=1; $('srcCam').classList.add('on'); $('srcVid').classList.remove('on');
+    toast('Cámara en vivo.');
+  }catch(e){ toast('No se pudo abrir la cámara: '+e.message); }
+}
+function useVideoFile(file){
+  if(vid.srcObject){ vid.srcObject.getTracks().forEach(t=>t.stop()); vid.srcObject=null; }
+  vid.src = URL.createObjectURL(file); vid.loop=true; vid.muted = (audMode!=='vid');
+  vid.play();
+  hasInput=1; flipX=0; $('srcVid').classList.add('on'); $('srcCam').classList.remove('on');
+  toast('Video cargado: '+file.name);
+}
+
+// ════════════════════════════════════════════════════════════════════
+// EXPORT — genera main.glsl + scene.json para una scene .synScene
+// El cuerpo de distorsión se traduce a los nombres de Synesthesia.
+// ════════════════════════════════════════════════════════════════════
+function toSynGLSL(){
+  // Traducción del cuerpo de preview a SSF: P_x → controles, audio → syn_*,
+  // input → _loadMedia(), feedback → buffer persistente.
+  let body = FX_BODY
+    .replace(/uRes/g, 'RENDERSIZE');
+  return `// WARP — Human Glitche · escena generada (efecto: ${MODES[P.mode]})
+// Asigná una media (cámara o video) en Synesthesia: el shader la distorsiona.
+const int FX_MODE = ${P.mode};
+${body}
+
+vec3 srcRGB(vec2 uv){
+  uv = clamp(uv, 0.0, 1.0);
+  return _loadMedia(uv).rgb;
+}
+
+vec4 fxPass(){
+  vec2 uv = _uv;
+  vec2 uvc = _uvc;
+  float t = syn_Time*P_speed;
+  vec2 duv = distortUV(uv, uvc, t, FX_MODE, syn_BassLevel, syn_MidLevel, syn_HighLevel);
+  float so = (P_shift*(0.4+syn_HighLevel*1.6))*0.03;
+  vec3 col;
+  col.r = srcRGB(duv+vec2(so,0.0)).r;
+  col.g = srcRGB(duv).g;
+  col.b = srcRGB(duv-vec2(so,0.0)).b;
+  col += (_rand(_uv+syn_Time)-0.5)*P_glitch*0.25;
+  vec2 fbuv = (_uv-0.5)*(1.0-0.012*(0.3+P_trails))+0.5;
+  vec3 fb = texture(warpBuffer, fbuv).rgb;
+  col = mix(col, max(col*0.6, fb*0.992), P_trails);
+  return vec4(clamp(col,0.0,1.0), 1.0);
+}
+
+vec4 renderMain(){
+  if(PASSINDEX == 0.0) return fxPass();          // efecto + feedback → warpBuffer
+  return texture(warpBuffer, _uv);               // presentación
+}`;
+}
+function toSynJSON(){
+  const knob = (name, min, max, def) => ({ NAME:name, TYPE:'knob', MIN:min, MAX:max, DEFAULT:def });
+  return JSON.stringify({
+    CREDIT: 'Human Glitche · WARP',
+    DESCRIPTION: 'Distorsión reactiva de la media de entrada (efecto: '+MODES[P.mode]+'). Generada en hg-vl.com/labs.',
+    CONTROLS: [
+      knob('P_warp', 0, 1.5, P.warp),
+      knob('P_scale', 0.5, 8, P.scale),
+      knob('P_shift', 0, 2, P.shift),
+      knob('P_sym', 0, 12, P.sym),
+      knob('P_speed', 0, 2, P.speed),
+      knob('P_trails', 0, 0.98, P.trails),
+      knob('P_glitch', 0, 1, P.glitch)
+    ],
+    PASSES: [
+      { TARGET: 'warpBuffer', PERSISTENT: true, FLOAT: true },
+      {}
+    ]
+  }, null, 2);
+}
+function download(name, text){
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([text], { type:'text/plain' }));
+  a.download = name; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href), 1000);
+}
+function exportScene(){
+  download('main.glsl', toSynGLSL());
+  setTimeout(()=>download('scene.json', toSynJSON()), 250);
+  toast('Bajados main.glsl + scene.json — ponelos juntos en una carpeta "WARP.synScene" en tu librería de Synesthesia.');
+}
+
+// ── grabar el canvas a WebM ──
+let rec=null, chunks=[];
+function toggleRecord(){
+  if(rec && rec.state==='recording'){ rec.stop(); return; }
+  const stream = cv.captureStream(30);
+  chunks=[]; rec = new MediaRecorder(stream, { mimeType:'video/webm' });
+  rec.ondataavailable = e=>{ if(e.data.size) chunks.push(e.data); };
+  rec.onstop = ()=>{ const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob(chunks,{type:'video/webm'})); a.download='warp.webm'; a.click(); $('recBtn').classList.remove('rec'); $('recBtn').textContent='● GRABAR'; toast('Clip guardado: warp.webm'); };
+  rec.start(); $('recBtn').classList.add('rec'); $('recBtn').textContent='■ PARAR'; toast('Grabando…');
+}
+
+// ════════════════════════════════════════════════════════════════════
+// UI
+// ════════════════════════════════════════════════════════════════════
+function buildFams(){
+  $('fams').innerHTML = MODES.map((m,i)=>`<button class="fam${i===P.mode?' on':''}" data-m="${i}">${m}</button>`).join('');
+  $('fams').querySelectorAll('.fam').forEach(b=>b.onclick=()=>{ P.mode=+b.dataset.m; $('fams').querySelectorAll('.fam').forEach(x=>x.classList.remove('on')); b.classList.add('on'); });
+}
+function syncSliders(){
+  ['warp','scale','shift','sym','speed','trails','glitch','audgain'].forEach(k=>{
+    const el=$(k); if(!el) return; el.value=P[k];
+    const lab=document.querySelector(`[data-v="${k}"]`); if(lab) lab.textContent=(+P[k]).toFixed(k==='sym'?0:2);
+    el.oninput=()=>{ P[k]=+el.value; if(lab) lab.textContent=(+el.value).toFixed(k==='sym'?0:2); };
+  });
+}
+let toastT=null;
+function toast(msg){ const el=$('toast'); el.textContent=msg; el.classList.add('show'); clearTimeout(toastT); toastT=setTimeout(()=>el.classList.remove('show'), 3200); }
+
+$('toggle').onclick = ()=> $('panel').classList.toggle('hide');
+$('srcCam').onclick = useCamera;
+$('srcVid').onclick = ()=> $('fileInput').click();
+$('fileInput').onchange = e=>{ if(e.target.files[0]) useVideoFile(e.target.files[0]); };
+$('audOff').onclick = audioOff; $('audMic').onclick = audioMic; $('audVid').onclick = audioVideo;
+$('exportScene').onclick = exportScene;
+$('recBtn').onclick = toggleRecord;
+$('glslBtn').onclick = ()=>{ navigator.clipboard?.writeText(toSynGLSL()).then(()=>toast('GLSL de Synesthesia copiado.'), ()=>toast('No se pudo copiar.')); };
+addEventListener('keydown', e=>{
+  if(e.target.tagName==='INPUT') return;
+  const k=e.key.toLowerCase();
+  if(k==='h') $('panel').classList.toggle('hide');
+  else if(k==='r') toggleRecord();
+  else if(k==='e') exportScene();
+});
+
+buildFams(); syncSliders(); setAudBtns(); resize();
+requestAnimationFrame(frame);
+</script>
+</body></html>
