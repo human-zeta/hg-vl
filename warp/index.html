@@ -760,6 +760,60 @@ function parseScene(jsonText){
   return { controls, passes, images, credit:j.CREDIT||'', desc:j.DESCRIPTION||'' };
 }
 
+// Transpilador int→float (etapa 3). Las scenes de GLSL de escritorio mezclan
+// int y float libremente (2*pi, pow(2,x)); WebGL2/ES no. Convertimos los
+// literales enteros a float SALVO en contextos que exigen int: índices [], for/
+// while/switch, ivecN()/int()/texelFetch(), vars declaradas int, case, y cuando
+// el operando vecino es int (p.ej. ivec2(_xy)*2). Heurístico: cuando falla, deja
+// un error de compilación (no rompe nada silenciosamente).
+const INT_FUNCS = new Set(['int','uint','ivec2','ivec3','ivec4','uvec2','uvec3','uvec4','texelFetch','texelFetchOffset','textureSize','imageLoad','imageStore','bitfieldExtract','bitfieldInsert','bitCount','findLSB','findMSB','floatBitsToInt','floatBitsToUint']);
+const INT_TYPES = new Set(['int','uint','ivec2','ivec3','ivec4','uvec2','uvec3','uvec4']);
+const HEADER_KW = new Set(['for','while','switch']);
+const ARITH_OP = new Set(['*','/','+','-','%','<','>','&','|','^']);
+function glslIntToFloat(src){
+  const toks=[]; let i=0; const n=src.length;
+  const isWS=c=>c===' '||c==='\t'||c==='\n'||c==='\r'||c==='\f';
+  const isD=c=>c>='0'&&c<='9';
+  while(i<n){
+    const c=src[i];
+    if(c==='/'&&src[i+1]==='/'){ let j=src.indexOf('\n',i); if(j<0)j=n; toks.push({t:'x',v:src.slice(i,j)}); i=j; continue; }
+    if(c==='/'&&src[i+1]==='*'){ let j=src.indexOf('*/',i); j=j<0?n:j+2; toks.push({t:'x',v:src.slice(i,j)}); i=j; continue; }
+    if(c==='#'){ let j=src.indexOf('\n',i); if(j<0)j=n; toks.push({t:'x',v:src.slice(i,j)}); i=j; continue; }
+    if(isWS(c)){ let j=i+1; while(j<n&&isWS(src[j]))j++; toks.push({t:'x',v:src.slice(i,j)}); i=j; continue; }
+    if(/[A-Za-z_]/.test(c)){ let j=i+1; while(j<n&&/\w/.test(src[j]))j++; toks.push({t:'id',v:src.slice(i,j)}); i=j; continue; }
+    if(isD(c) || (c==='.'&&isD(src[i+1]))){
+      const m=/^(?:\d+\.\d*(?:[eE][+-]?\d+)?|\.\d+(?:[eE][+-]?\d+)?|\d+[eE][+-]?\d+)[fFhH]?|^\d+[uU]?/.exec(src.slice(i));
+      const v=m[0]; toks.push({t:'num',v,isInt:/^\d+[uU]?$/.test(v)}); i+=v.length; continue;
+    }
+    toks.push({t:'p',v:c}); i++;
+  }
+  const parenStack=[]; let brk=0; const intVars=new Set(); let prevSig=null, lastOpInt=false;
+  for(let k=0;k<toks.length;k++){
+    const tk=toks[k];
+    if(tk.t==='x') continue;
+    if(tk.t==='id'){
+      if(prevSig && prevSig.t==='id' && INT_TYPES.has(prevSig.v)) intVars.add(tk.v);  // declaración int
+      if(!(prevSig && prevSig.t==='p' && prevSig.v==='.')) lastOpInt = intVars.has(tk.v)||INT_TYPES.has(tk.v);  // .swizzle no cambia el tipo
+    } else if(tk.t==='p'){
+      if(tk.v==='('){ let ctx='n'; if(prevSig && prevSig.t==='id' && (INT_FUNCS.has(prevSig.v)||HEADER_KW.has(prevSig.v))) ctx='i'; parenStack.push(ctx); lastOpInt=false; }
+      else if(tk.v===')'){ lastOpInt = (parenStack.pop()==='i'); }
+      else if(tk.v==='['){ brk++; lastOpInt=false; }
+      else if(tk.v===']'){ brk--; lastOpInt=false; }
+      else if(';,{}?:='.indexOf(tk.v)>=0){ lastOpInt=false; }
+    } else if(tk.t==='num'){
+      if(tk.isInt){
+        const inInt = brk>0 || (parenStack.length && parenStack[parenStack.length-1]==='i');
+        const isCase = prevSig && prevSig.t==='id' && prevSig.v==='case';
+        const neighborInt = prevSig && prevSig.t==='p' && ARITH_OP.has(prevSig.v) && lastOpInt;
+        if(inInt || isCase || neighborInt){ lastOpInt=true; }
+        else { tk.v = tk.v.replace(/[uU]$/,'') + '.0'; tk.isInt=false; lastOpInt=false; }
+      } else lastOpInt=false;
+    }
+    prevSig=tk;
+  }
+  return toks.map(t=>t.v).join('');
+}
+
 // WebGL2/ES no permite inicializar variables GLOBALES con expresiones no
 // constantes (uniforms). Synesthesia/desktop sí. Separamos esas: declaramos la
 // global sin init y la asignamos en _initGlobals(), que main() llama primero.
@@ -830,6 +884,7 @@ async function loadSceneFiles(glslText, jsonText){
   catch(e){ setAiStatus('scene.json inválido: '+e.message, true); return; }
   try{ resolved = await resolveLygia(glslText); }
   catch(e){ setAiStatus('Falló bajar lygia: '+e.message+' (¿sin conexión?)', true); return; }
+  try{ resolved = glslIntToFloat(resolved); }catch(e){ console.warn('transpile int→float falló, sigo sin él:', e.message); }
   // loop de compilación: si faltan identificadores (uniforms de script.js como
   // spectrum_*/BPMTri*), los auto-declaramos como float y reintentamos.
   let extra = [], prog=null, lastErr='';
