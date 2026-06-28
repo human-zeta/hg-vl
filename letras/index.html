@@ -205,22 +205,29 @@ const rand=a=>a[Math.floor(Math.random()*a.length)];
 // ---------- font bank (lettering-friendly Google Fonts) ----------
 // [name, vibe]; all rendered at weight 400 (display/script are single-weight)
 const FONTS=[
- ['Bungee','graffiti'],['Bungee Inline','graffiti'],['Rubik Spray Paint','graffiti'],['Rubik Wet Paint','graffiti'],
- ['Rubik Distressed','graffiti'],['Rubik Glitch','graffiti'],['Rubik Burned','graffiti'],['Rubik Marker Hatch','graffiti'],
- ['Rubik Puddles','graffiti'],['Rubik Iso','graffiti'],['Rubik Vinyl','graffiti'],['Rubik Maze','graffiti'],
- ['Rubik Microbe','graffiti'],['Rubik Dirt','graffiti'],['Rubik Beastly','graffiti'],['Rubik Mono One','graffiti'],
- ['Permanent Marker','marker'],['Bangers','marker'],['Luckiest Guy','marker'],['Sigmar One','display'],['Sigmar','display'],
- ['Titan One','display'],['Bowlby One','display'],['Bowlby One SC','display'],['Lilita One','display'],['Shrikhand','display'],
- ['Anton','display'],['Archivo Black','display'],['Passion One','display'],['Alfa Slab One','display'],['Ultra','display'],
- ['Bevan','display'],['Rye','display'],['Ewert','display'],['Monoton','display'],['Faster One','display'],['Wallpoet','display'],
- ['Black Ops One','display'],['Iceland','display'],['Pirata One','display'],['Metal Mania','display'],['New Rocker','display'],
- ['Train One','display'],['Vast Shadow','display'],['Diplomata SC','display'],['Fascinate','display'],['Frijole','display'],
- ['Creepster','display'],['Nosifer','display'],['Eater','display'],['Saira Stencil One','stencil'],['Stardos Stencil','stencil'],
- ['Special Elite','stencil'],['Graduate','stencil'],
- ['Lobster','script'],['Pacifico','script'],['Kaushan Script','script'],['Yellowtail','script'],['Satisfy','script'],
- ['Great Vibes','script'],['Sacramento','script'],['Allura','script'],['Alex Brush','script'],['Tangerine','script'],
- ['Cookie','script'],['Damion','script'],['Marck Script','script'],['Style Script','script'],['Parisienne','script'],
- ['Caveat Brush','script'],['Rock Salt','script'],['Homemade Apple','script'],
+ // brutalista / grotescas pesadas y condensadas
+ ['Anton','brutalista'],['Archivo Black','brutalista'],['Syne','brutalista'],['Unbounded','brutalista'],
+ ['Bricolage Grotesque','brutalista'],['Space Grotesk','brutalista'],['Familjen Grotesk','brutalista'],
+ ['Schibsted Grotesk','brutalista'],['Darker Grotesque','brutalista'],['Hanken Grotesk','brutalista'],
+ ['Khand','brutalista'],['Oswald','brutalista'],['Bebas Neue','brutalista'],['Fjalla One','brutalista'],
+ ['Saira Condensed','brutalista'],['Pathway Gothic One','brutalista'],['Teko','brutalista'],['Staatliches','brutalista'],
+ ['Big Shoulders Display','brutalista'],['Chivo','brutalista'],['Archivo','brutalista'],['Sora','brutalista'],['Outfit','brutalista'],
+ // display con carácter
+ ['Climate Crisis','display'],['Bungee','display'],['Bungee Inline','display'],['Monoton','display'],['Wallpoet','display'],
+ ['Black Ops One','display'],['Pirata One','display'],['Rye','display'],['Titan One','display'],['Vast Shadow','display'],
+ ['Bowlby One','display'],['Sigmar One','display'],
+ // serif editorial / elegante
+ ['Playfair Display','serif'],['Bodoni Moda','serif'],['Fraunces','serif'],['DM Serif Display','serif'],['Yeseva One','serif'],
+ ['Cormorant Garamond','serif'],['EB Garamond','serif'],['Marcellus','serif'],['Prata','serif'],['Italiana','serif'],
+ ['Cardo','serif'],['Spectral','serif'],['Abril Fatface','serif'],
+ // caligrafía de pluma (pointed pen / formal)
+ ['Great Vibes','pluma'],['Pinyon Script','pluma'],['Tangerine','pluma'],['Mr Dafoe','pluma'],['Herr Von Muellerhoff','pluma'],
+ ['Mrs Saint Delafield','pluma'],['Petit Formal Script','pluma'],['Ephesis','pluma'],['Birthstone','pluma'],['Ms Madi','pluma'],
+ ['Imperial Script','pluma'],['Lavishly Yours','pluma'],['Bonheur Royale','pluma'],['WindSong','pluma'],['Allura','pluma'],
+ ['Alex Brush','pluma'],['Italianno','pluma'],['Parisienne','pluma'],['Style Script','pluma'],['Sacramento','pluma'],
+ ['Yellowtail','pluma'],['Kaushan Script','pluma'],['Dancing Script','pluma'],['Cookie','pluma'],
+ // marcador / mano
+ ['Permanent Marker','marcador'],['Bangers','marcador'],['Caveat','marcador'],['Reenie Beanie','marcador'],
 ].map(([name,vibe])=>({name,vibe}));
 const byName=n=>FONTS.find(f=>f.name===n);
 
@@ -322,9 +329,10 @@ const PRESETS={
  'NEÓN':{font:'Monoton',fill:'solid',c1:'#ff2d55',o1:false,o2:false,depth:0,glow:34,glowc:'#ff2d55',skew:0,curve:0,tex:'none'},
  'THROW-UP':{font:'Permanent Marker',fill:'solid',c1:'#ffcc33',o1:true,o1c:'#0a0a0a',o1w:8,o2:false,depth:0,glow:0,skew:-6,tex:'none'},
  'BLOQUE 3D':{font:'Anton',fill:'solid',c1:'#ff2d55',o1:true,o1c:'#0a0a0a',o1w:5,o2:false,depth:22,angle:45,depthc:'#5a0014',glow:0,skew:0,tex:'none'},
- 'SPRAY':{font:'Rubik Spray Paint',fill:'solid',c1:'#b8ff00',o1:false,o2:false,depth:0,glow:0,skew:0,tex:'spray',texAmt:0.5},
- 'STENCIL':{font:'Saira Stencil One',fill:'solid',c1:'#f0ede6',o1:false,o2:false,depth:0,glow:0,skew:0,tex:'grain',texAmt:0.3},
- 'SCRIPT GOLD':{font:'Kaushan Script',fill:'chrome',c1:'#7a5a10',c2:'#ffe9a0',o1:true,o1c:'#3a2a00',o1w:3,o2:false,depth:3,angle:90,depthc:'#3a2a00',glow:0,skew:0,curve:6,tex:'none'},
+ 'SPRAY':{font:'Staatliches',fill:'solid',c1:'#b8ff00',o1:false,o2:false,depth:0,glow:0,skew:0,tex:'spray',texAmt:0.5},
+ 'STENCIL':{font:'Saira Condensed',fill:'solid',c1:'#f0ede6',o1:false,o2:false,depth:0,glow:0,skew:0,tex:'grain',texAmt:0.3},
+ 'PLUMA':{font:'Pinyon Script',fill:'chrome',c1:'#7a5a10',c2:'#ffe9a0',o1:true,o1c:'#3a2a00',o1w:2,o2:false,depth:2,angle:90,depthc:'#3a2a00',glow:0,skew:0,curve:6,tex:'none'},
+ 'BRUTAL':{font:'Archivo Black',fill:'solid',c1:'#f0ede6',o1:false,o2:false,depth:0,glow:0,skew:0,curve:0,tex:'none'},
  'STICKER':{font:'Bangers',fill:'solid',c1:'#ff2d55',o1:true,o1c:'#ffffff',o1w:14,o2:true,o2c:'#0a0a0a',o2w:22,depth:0,glow:0,skew:0,tex:'none'},
  'RETRO POP':{font:'Bowlby One',fill:'gradient',c1:'#ffcc33',c2:'#ff6b00',o1:true,o1c:'#0a0a0a',o1w:8,o2:false,depth:14,angle:120,depthc:'#7a1500',glow:0,skew:0,curve:-6,tex:'none'},
  'HORROR':{font:'Creepster',fill:'gradient',c1:'#b8ff00',c2:'#3a7a00',o1:true,o1c:'#0a0a0a',o1w:5,o2:false,depth:0,glow:10,glowc:'#1aff00',skew:0,tex:'grain',texAmt:0.35},
