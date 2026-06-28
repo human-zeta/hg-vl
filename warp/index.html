@@ -56,6 +56,9 @@
   #aiGen:hover{filter:brightness(1.12);}
   #aiGen:disabled{opacity:.5;cursor:wait;}
   .ai-status{font-size:9px;line-height:1.5;letter-spacing:.04em;color:var(--cyan);margin-top:7px;min-height:12px;}
+  #importBtn{width:100%;background:transparent;border:1px solid var(--cyan);color:var(--cyan);font:inherit;font-size:11px;letter-spacing:.1em;padding:10px;cursor:pointer;border-radius:3px;}
+  #importBtn:hover{background:rgba(58,208,255,.1);}
+  #ssfControls .ctrl input[type=range]{accent-color:var(--cyan);}
   #toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);z-index:20;background:rgba(5,5,5,.94);border:1px solid var(--acid);color:var(--acid);
     font-size:11px;padding:9px 16px;border-radius:5px;opacity:0;transition:opacity .2s;pointer-events:none;max-width:80vw;text-align:center;}
   #toast.show{opacity:1;}
@@ -67,6 +70,7 @@
 <canvas id="gl"></canvas>
 <video id="vid" playsinline muted style="display:none"></video>
 <input type="file" id="fileInput" accept="video/*">
+<input type="file" id="sceneInput" webkitdirectory multiple>
 
 <div id="top">
   <div class="brand lab"><b>W</b>ARP<span class="sub">Human Glitche · distorsión reactiva · Synesthesia-ready</span></div>
@@ -119,6 +123,10 @@
     <button id="recBtn">● GRABAR</button>
     <button id="glslBtn">⧉ GLSL</button>
   </div>
+  <h2>Importar .synScene ▣</h2>
+  <button id="importBtn">⤒ IMPORTAR SCENE…</button>
+  <div class="ai-note">Elegí la carpeta <b>.synScene</b> (con main.glsl + scene.json). Etapa 1: resuelve lygia y corre multi-pass sobre tu cámara/video. script.js e imágenes externas todavía no. Si algo no compila, el panel te da el error para que lo cubramos.</div>
+  <div id="ssfControls"></div>
 </div>
 <div id="toast"></div>
 
@@ -284,6 +292,7 @@ function resize(){
   texs=[]; fbos=[];
   for(let i=0;i<2;i++){ const t=makeTarget(w,h); texs.push(t.tex); fbos.push(t.fb); }
   gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+  if(typeof ssf!=='undefined' && ssf) buildSSFBuffers();
 }
 window.addEventListener('resize', resize);
 
@@ -324,6 +333,8 @@ function frame(){
   }
   updateAudio();
   curT = (performance.now()-startT)/1000;
+
+  if(P.mode==='ssf' && ssf){ runSSF(); requestAnimationFrame(frame); return; }
 
   const useAI = (P.mode==='ai' && aiProg);
   const prog = useAI ? aiProg : fxProg;
@@ -657,6 +668,211 @@ function exportScene(){
   toast('Bajados main.glsl + scene.json — ponelos juntos en una carpeta "WARP.synScene" en tu librería de Synesthesia.');
 }
 
+// ════════════════════════════════════════════════════════════════════
+// IMPORTAR .synScene — runtime SSF de Synesthesia (etapa 1).
+// Resuelve #include de lygia (CDN), arma un shim con el entorno syn_*/
+// helpers/_loadMedia, y corre los passes (buffers nombrados; ping-pong para
+// los PERSISTENT). script.js e imágenes externas: todavía no soportados.
+// ════════════════════════════════════════════════════════════════════
+const LYGIA_BASE = 'https://lygia.xyz/';
+const lygiaCache = {};
+async function fetchLygia(path){
+  if(lygiaCache[path]) return lygiaCache[path];
+  const r = await fetch(LYGIA_BASE+path);
+  if(!r.ok) throw new Error('lygia: no pude bajar '+path+' (HTTP '+r.status+')');
+  const t = await r.text(); lygiaCache[path]=t; return t;
+}
+async function resolveLygia(src){
+  const lines = src.split('\n');
+  for(let i=0;i<lines.length;i++){
+    const m = lines[i].match(/^\s*#include\s+"(lygia\/[^"]+)"/);
+    if(m){ lines[i] = await resolveLygia(await fetchLygia(m[1])); }
+  }
+  return lines.join('\n');
+}
+
+// preámbulo del entorno SSF — define lo que Synesthesia da "gratis"
+const SSF_PREAMBLE = `#version 300 es
+precision highp float;
+out vec4 _outColor;
+uniform vec2 RENDERSIZE;
+uniform float TIME, PASSINDEX;
+uniform sampler2D _mediaTex, syn_Spectrum;
+uniform int _hasMedia, _flipX;
+#define syn_Media _mediaTex
+#define syn_UserImage _mediaTex
+#define syn_Resolution RENDERSIZE
+#define _uv (gl_FragCoord.xy / RENDERSIZE)
+vec2 _getUvc(){ vec2 u = gl_FragCoord.xy/RENDERSIZE - 0.5; u.x *= RENDERSIZE.x/RENDERSIZE.y; return u; }
+#define _uvc _getUvc()
+uniform float syn_Time, syn_Level, syn_BassLevel, syn_MidLevel, syn_HighLevel;
+uniform float syn_BassHits, syn_MidHits, syn_HighHits, syn_Hits;
+uniform float syn_BassTime, syn_MidTime, syn_HighTime;
+uniform float syn_Presence, syn_BassPresence, syn_MidPresence, syn_HighPresence;
+uniform float syn_BPM, syn_BPMConfidence, syn_BPMSin, syn_BPMSin2, syn_BPMSin4;
+uniform float syn_BPMTri, syn_BPMTri2, syn_BPMTri4, syn_BPMSqr;
+uniform float syn_Beat, syn_OnBeat, syn_ToggleOnBeat, syn_RandomOnBeat, syn_BeatTime, syn_CurvedTime, syn_Frame, syn_MediaType;
+float _rand(vec2 p){ return fract(sin(dot(p,vec2(12.9898,78.233)))*43758.5453); }
+float _rand(float x){ return fract(sin(x*12.9898)*43758.5453); }
+float _nsin(float x){ return 0.5+0.5*sin(x); }
+float _luminance(vec3 c){ return dot(c, vec3(0.2126,0.7152,0.0722)); }
+float _luminance(vec4 c){ return _luminance(c.rgb); }
+vec2 _pixelate(vec2 v, float n){ return floor(v*n)/n; }
+float _pixelate(float v, float n){ return floor(v*n)/n; }
+vec3 _pixelate(vec3 v, float n){ return floor(v*n)/n; }
+bool _isMediaActive(){ return _hasMedia==1; }
+vec2 _correctMediaCoords(){ return _uv; }
+vec2 _correctMediaCoords(vec2 uv){ return uv; }
+vec4 _loadMedia(vec2 uv){ if(_hasMedia==0){ return vec4(0.5+0.5*cos(vec3(0.0,2.0,4.0)+uv.xyx*5.0+TIME),1.0); } if(_flipX==1) uv.x=1.0-uv.x; return vec4(texture(_mediaTex, clamp(uv,0.0,1.0)).rgb,1.0); }
+vec4 _loadMedia(){ return _loadMedia(_uv); }
+vec4 _loadUserImage(vec2 uv){ return _loadMedia(uv); }
+vec4 _loadUserImage(){ return _loadMedia(_uv); }`;
+
+// nombres syn_ que YA define el preámbulo (para no auto-declararlos de nuevo)
+const SSF_DEFINED = new Set((SSF_PREAMBLE.match(/syn_[A-Za-z0-9_]+/g)||[]).concat(['syn_Media','syn_UserImage','syn_Resolution','syn_Spectrum']));
+
+let ssf = null;  // runtime de la scene importada (null si no hay)
+
+function parseScene(jsonText){
+  const j = JSON.parse(jsonText);
+  const controls = (j.CONTROLS||[]).filter(c=>c && c.NAME && (c.TYPE==='knob'||c.TYPE==='slider'||c.TYPE===undefined)).map(c=>({
+    name:c.NAME, min:(c.MIN!=null?+c.MIN:0), max:(c.MAX!=null?+c.MAX:1), value:(c.DEFAULT!=null?+c.DEFAULT:0.5)
+  }));
+  const passes = (j.PASSES||[{}]).map(p=>({ target:p.TARGET||null, persistent:!!p.PERSISTENT }));
+  if(!passes.length) passes.push({target:null,persistent:false});
+  const images = (j.IMAGES||[]).map(im=> typeof im==='string'?im:(im.NAME||im.PATH)).filter(Boolean);
+  return { controls, passes, images, credit:j.CREDIT||'', desc:j.DESCRIPTION||'' };
+}
+
+function buildSSFFragment(userGLSL, scene){
+  // declara buffers nombrados, imágenes y los syn_ desconocidos (como float=0)
+  const bufNames = [...new Set(scene.passes.map(p=>p.target).filter(Boolean))];
+  let decl = '';
+  bufNames.forEach(n=> decl += `uniform sampler2D ${n};\n`);
+  scene.images.forEach(n=> decl += `uniform sampler2D ${n};\n`);
+  scene.controls.forEach(c=> decl += `uniform float ${c.name};\n`);
+  const used = new Set(userGLSL.match(/syn_[A-Za-z0-9_]+/g)||[]);
+  used.forEach(n=>{ if(!SSF_DEFINED.has(n)) decl += `uniform float ${n};\n`; });  // long-tail audio → 0
+  scene._unknownSyn = [...used].filter(n=>!SSF_DEFINED.has(n));
+  scene._buffers = bufNames;
+  return SSF_PREAMBLE + '\n' + decl + '\n' + userGLSL + '\n\nvoid main(){ _outColor = renderMain(); }';
+}
+
+// crea un par de targets para un buffer (ping-pong)
+function makePingPong(w,h){ return { t:[makeTarget(w,h), makeTarget(w,h)], cur:0 }; }
+function buildSSFBuffers(){
+  if(!ssf) return;
+  // limpiar viejos
+  if(ssf.bufs) Object.values(ssf.bufs).forEach(b=>b.t.forEach(x=>{ gl.deleteTexture(x.tex); gl.deleteFramebuffer(x.fb); }));
+  if(ssf.screen){ gl.deleteTexture(ssf.screen.tex); gl.deleteFramebuffer(ssf.screen.fb); }
+  ssf.bufs = {};
+  ssf.scene._buffers.forEach(n=> ssf.bufs[n] = makePingPong(W,H));
+  ssf.screen = makeTarget(W,H);
+}
+
+async function loadSceneFiles(glslText, jsonText){
+  setAiStatus('Resolviendo includes de lygia…');
+  let scene, resolved;
+  try{ scene = parseScene(jsonText); }
+  catch(e){ setAiStatus('scene.json inválido: '+e.message, true); return; }
+  try{ resolved = await resolveLygia(glslText); }
+  catch(e){ setAiStatus('Falló bajar lygia: '+e.message+' (¿sin conexión?)', true); return; }
+  const frag = buildSSFFragment(resolved, scene);
+  let prog;
+  try{ prog = program(frag); }
+  catch(e){
+    setAiStatus('La scene no compiló en WARP (etapa 1). Pasame el error y lo cubro: '+truncate(e.message,260), true);
+    console.warn('SSF compile error:\n'+e.message);
+    return;
+  }
+  // locs de todos los uniforms relevantes
+  const L = { RENDERSIZE:gl.getUniformLocation(prog,'RENDERSIZE'), TIME:gl.getUniformLocation(prog,'TIME'),
+    PASSINDEX:gl.getUniformLocation(prog,'PASSINDEX'), _mediaTex:gl.getUniformLocation(prog,'_mediaTex'),
+    syn_Spectrum:gl.getUniformLocation(prog,'syn_Spectrum'), _hasMedia:gl.getUniformLocation(prog,'_hasMedia'),
+    _flipX:gl.getUniformLocation(prog,'_flipX'), syn:{}, ctrl:{}, buf:{} };
+  ['syn_Time','syn_Level','syn_BassLevel','syn_MidLevel','syn_HighLevel','syn_BassHits','syn_MidHits','syn_HighHits','syn_Hits',
+   'syn_BassTime','syn_MidTime','syn_HighTime','syn_Presence','syn_BassPresence','syn_MidPresence','syn_HighPresence',
+   'syn_BPM','syn_BPMConfidence','syn_BPMSin','syn_BPMSin2','syn_BPMSin4','syn_BPMTri','syn_BPMTri2','syn_BPMTri4','syn_BPMSqr',
+   'syn_Beat','syn_OnBeat','syn_ToggleOnBeat','syn_RandomOnBeat','syn_BeatTime','syn_CurvedTime','syn_Frame','syn_MediaType']
+   .concat(scene._unknownSyn).forEach(n=> L.syn[n]=gl.getUniformLocation(prog,n));
+  scene.controls.forEach(c=> L.ctrl[c.name]=gl.getUniformLocation(prog,c.name));
+  scene._buffers.forEach(n=> L.buf[n]=gl.getUniformLocation(prog,n));
+  if(ssf && ssf.prog) gl.deleteProgram(ssf.prog);
+  ssf = { prog, locs:L, scene, bufs:null, screen:null, frame:0 };
+  buildSSFBuffers();
+  buildSSFControlsUI();
+  P.mode = 'ssf'; markSSFActive();
+  setAiStatus('✓ Scene importada y corriendo'+(scene._unknownSyn.length?(' ('+scene._unknownSyn.length+' uniforms syn_ no estándar puestos en 0)'):'')+'. Asigná cámara/video como media.');
+}
+
+function synValues(){
+  const t = curT;
+  const lvl = (audio.bass+audio.mid+audio.high)/3;
+  const beat = 0.5+0.5*Math.sin(t*Math.PI*2*120/60); // 120 BPM fake
+  return {
+    syn_Time:t, syn_Level:lvl, syn_BassLevel:audio.bass, syn_MidLevel:audio.mid, syn_HighLevel:audio.high,
+    syn_BassHits:audio.bass>0.6?1:0, syn_MidHits:audio.mid>0.6?1:0, syn_HighHits:audio.high>0.6?1:0, syn_Hits:lvl>0.6?1:0,
+    syn_BassTime:t*(0.5+audio.bass), syn_MidTime:t*(0.5+audio.mid), syn_HighTime:t*(0.5+audio.high),
+    syn_Presence:lvl, syn_BassPresence:audio.bass, syn_MidPresence:audio.mid, syn_HighPresence:audio.high,
+    syn_BPM:120, syn_BPMConfidence:1, syn_BPMSin:Math.sin(t*Math.PI*2*2), syn_BPMSin2:Math.sin(t*Math.PI), syn_BPMSin4:Math.sin(t*Math.PI*0.5),
+    syn_BPMTri:0, syn_BPMTri2:0, syn_BPMTri4:0, syn_BPMSqr:beat>0.5?1:0,
+    syn_Beat:beat, syn_OnBeat:beat, syn_ToggleOnBeat:beat>0.5?1:0, syn_RandomOnBeat:0.5,
+    syn_BeatTime:t, syn_CurvedTime:t, syn_Frame:ssf?ssf.frame:0, syn_MediaType:hasInput?2:0
+  };
+}
+function runSSF(){
+  const L = ssf.locs, sc = ssf.scene, vals = synValues();
+  let lastTex = null;
+  for(let i=0;i<sc.passes.length;i++){
+    const pass = sc.passes[i];
+    const tgtFb = pass.target ? ssf.bufs[pass.target].t[ssf.bufs[pass.target].cur].fb : ssf.screen.fb;
+    gl.bindFramebuffer(gl.FRAMEBUFFER, tgtFb); gl.viewport(0,0,W,H);
+    gl.useProgram(ssf.prog);
+    if(L.RENDERSIZE) gl.uniform2f(L.RENDERSIZE, W, H);
+    if(L.TIME) gl.uniform1f(L.TIME, curT);
+    if(L.PASSINDEX) gl.uniform1f(L.PASSINDEX, i);
+    if(L._hasMedia) gl.uniform1i(L._hasMedia, hasInput);
+    if(L._flipX) gl.uniform1i(L._flipX, flipX);
+    for(const n in vals){ if(L.syn[n]) gl.uniform1f(L.syn[n], vals[n]); }
+    sc.controls.forEach(c=>{ if(L.ctrl[c.name]) gl.uniform1f(L.ctrl[c.name], c.value); });
+    // texturas: media=0, spectrum=1, buffers=2..
+    let unit=0;
+    gl.activeTexture(gl.TEXTURE0+unit); gl.bindTexture(gl.TEXTURE_2D, inputTex); if(L._mediaTex) gl.uniform1i(L._mediaTex, unit); unit++;
+    gl.activeTexture(gl.TEXTURE0+unit); gl.bindTexture(gl.TEXTURE_2D, ssf.spectrumTex||inputTex); if(L.syn_Spectrum) gl.uniform1i(L.syn_Spectrum, unit); unit++;
+    sc._buffers.forEach(n=>{ const b=ssf.bufs[n]; const rd=b.t[b.cur^1].tex;
+      gl.activeTexture(gl.TEXTURE0+unit); gl.bindTexture(gl.TEXTURE_2D, rd); if(L.buf[n]) gl.uniform1i(L.buf[n], unit); unit++; });
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+    if(pass.target){ const b=ssf.bufs[pass.target]; lastTex = b.t[b.cur].tex; if(pass.persistent) b.cur^=1; }
+    else lastTex = ssf.screen.tex;
+  }
+  // present
+  gl.bindFramebuffer(gl.FRAMEBUFFER, null); gl.viewport(0,0,W,H);
+  gl.useProgram(copyProg);
+  gl.uniform2f(gl.getUniformLocation(copyProg,'uRes'), W, H);
+  gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, lastTex||ssf.screen.tex); gl.uniform1i(gl.getUniformLocation(copyProg,'t'), 0);
+  gl.drawArrays(gl.TRIANGLES, 0, 3);
+  ssf.frame++;
+}
+function buildSSFControlsUI(){
+  const box = $('ssfControls'); if(!box) return;
+  if(!ssf || !ssf.scene.controls.length){ box.innerHTML=''; return; }
+  box.innerHTML = '<h2>Controles de la scene</h2>' + ssf.scene.controls.map((c,i)=>
+    `<div class="ctrl"><label>${c.name} <b id="ssfv${i}">${c.value.toFixed(2)}</b></label><input type="range" min="${c.min}" max="${c.max}" step="0.001" value="${c.value}" data-i="${i}" class="ssf-slider"></div>`).join('');
+  box.querySelectorAll('.ssf-slider').forEach(s=> s.oninput=()=>{ const i=+s.dataset.i; ssf.scene.controls[i].value=+s.value; $('ssfv'+i).textContent=(+s.value).toFixed(2); });
+}
+function markSSFActive(){ const b=$('famSSF'); if(b){ $('fams').querySelectorAll('.fam').forEach(x=>x.classList.remove('on')); b.classList.add('on'); } }
+
+function importScene(files){
+  let glslFile=null, jsonFile=null;
+  for(const f of files){
+    const n=f.name.toLowerCase();
+    if(n.endsWith('.glsl')) glslFile=f;
+    else if(n.endsWith('.json')) jsonFile=f;
+  }
+  if(!glslFile || !jsonFile){ setAiStatus('Elegí la carpeta .synScene (necesito main.glsl + scene.json).', true); return; }
+  Promise.all([glslFile.text(), jsonFile.text()]).then(([g,j])=> loadSceneFiles(g, j));
+}
+
 // ── grabar el canvas a WebM ──
 let rec=null, chunks=[];
 function toggleRecord(){
@@ -674,8 +890,9 @@ function toggleRecord(){
 function buildFams(){
   let html = MODES.map((m,i)=>`<button class="fam${i===P.mode?' on':''}" data-m="${i}">${m}</button>`).join('');
   html += `<button class="fam" id="famAI" data-m="ai" style="grid-column:span 3;border-color:rgba(184,255,0,.45);color:var(--acid)">✨ EFECTO IA</button>`;
+  html += `<button class="fam" id="famSSF" data-m="ssf" style="grid-column:span 3;border-color:rgba(58,208,255,.45);color:var(--cyan)">▣ SCENE IMPORTADA</button>`;
   $('fams').innerHTML = html;
-  $('fams').querySelectorAll('.fam').forEach(b=>b.onclick=()=>{ const m=b.dataset.m; P.mode=(m==='ai')?'ai':+m; $('fams').querySelectorAll('.fam').forEach(x=>x.classList.remove('on')); b.classList.add('on'); });
+  $('fams').querySelectorAll('.fam').forEach(b=>b.onclick=()=>{ const m=b.dataset.m; if(m==='ssf'&&!ssf){ setAiStatus('Importá una .synScene primero (abajo, en Importar).', true); return; } P.mode=(m==='ai')?'ai':(m==='ssf')?'ssf':+m; $('fams').querySelectorAll('.fam').forEach(x=>x.classList.remove('on')); b.classList.add('on'); });
 }
 function syncSliders(){
   ['warp','scale','shift','sym','speed','trails','glitch','audgain'].forEach(k=>{
@@ -696,6 +913,8 @@ $('exportScene').onclick = exportScene;
 $('recBtn').onclick = toggleRecord;
 $('glslBtn').onclick = ()=>{ navigator.clipboard?.writeText(toSynGLSL()).then(()=>toast('GLSL de Synesthesia copiado.'), ()=>toast('No se pudo copiar.')); };
 $('aiGen').onclick = generateEffect;
+$('importBtn').onclick = ()=> $('sceneInput').click();
+$('sceneInput').onchange = e=>{ if(e.target.files && e.target.files.length) importScene(e.target.files); };
 $('provGem').onclick = ()=>{ aiProvider='gemini'; applyProvider(); };
 $('provAnt').onclick = ()=>{ aiProvider='anthropic'; applyProvider(); };
 $('aiKey').onchange = ()=> localStorage.setItem(PROVIDERS[aiProvider].keyName, $('aiKey').value.trim());
@@ -712,6 +931,17 @@ addEventListener('keydown', e=>{
 // infraestructura de IA (compilar GLSL generado + correrlo) está sana.
 try{ aiProg = compileAIProgram(AI_DEFAULT); aiLocs = locsFor(aiProg); aiRawGLSL = AI_DEFAULT; console.log('WARP: AI harness OK'); }
 catch(e){ console.warn('WARP: AI harness FAIL —', e.message); }
+// auto-test del runtime SSF: una scene multi-pass con buffer persistente +
+// _loadMedia + syn_ + control, SIN lygia. Si compila, el shim+multipass anda.
+try{
+  const ts = { controls:[{name:'amt',min:0,max:1,value:0.5}], passes:[{target:'buf',persistent:true},{target:null,persistent:false}], images:[] };
+  const tg = `vec4 renderMain(){
+    if(PASSINDEX==0.0){ vec3 prev=texture(buf,_uv).rgb; vec3 m=_loadMedia(_uv+0.01*vec2(sin(syn_Time+_uvc.y*6.0)*syn_BassLevel,0.0)).rgb; return vec4(mix(m,prev,0.6*amt),1.0); }
+    return texture(buf,_uv);
+  }`;
+  const tp = program(buildSSFFragment(tg, ts)); gl.deleteProgram(tp);
+  console.log('WARP: SSF harness OK');
+}catch(e){ console.warn('WARP: SSF harness FAIL —', e.message); }
 
 buildFams(); syncSliders(); setAudBtns(); resize();
 requestAnimationFrame(frame);
