@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GLITCHDOWN — Human Glitche · creador de efectos de video (trails · strobo · glitch) para Premiere</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#050505; --surface-0:#0a0a0a; --surface-1:#0c0c0c; --surface-2:#131313;
+  --border:rgba(240,237,230,.12); --border-strong:rgba(240,237,230,.25);
+  --ink:#f0ede6; --t2:rgba(240,237,230,.6); --t3:rgba(240,237,230,.4);
+  --acid:#b8ff00; --acid-bg:rgba(184,255,0,.12); --acid-br:rgba(184,255,0,.35);
+  --cyan:#3ad0ff; --red:#ff2d55; --orange:#ffcc33;
+  --radius:6px; --font:'Space Mono',monospace; --disp:'Bebas Neue',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);overflow:hidden;position:relative;}
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");z-index:0;pointer-events:none;opacity:.4;}
+
+.app{position:relative;z-index:1;display:flex;flex-direction:column;height:100vh;}
+.header{display:flex;align-items:center;justify-content:space-between;padding:11px 18px;background:var(--surface-0);border-bottom:1px solid var(--border);flex:0 0 auto;}
+.brand{font-family:var(--disp);font-size:30px;letter-spacing:.04em;line-height:.8;}
+.brand b{color:var(--acid);font-weight:400;}
+.brand span{font-size:9px;letter-spacing:.2em;color:var(--t3);display:block;font-family:var(--font);margin-top:3px;}
+.header a{font-size:10px;letter-spacing:.2em;color:var(--t3);text-decoration:none;}
+.header a:hover{color:var(--acid);}
+
+.main{flex:1 1 auto;display:flex;min-height:0;}
+.panel{flex:0 0 330px;background:var(--surface-1);border-right:1px solid var(--border);overflow-y:auto;padding:0 0 60px;}
+.stage{flex:1 1 auto;position:relative;background:#000;display:flex;align-items:center;justify-content:center;min-width:0;overflow:hidden;}
+.stage canvas{max-width:100%;max-height:100%;display:block;image-rendering:auto;box-shadow:0 0 60px rgba(0,0,0,.6);}
+.stats{position:absolute;right:12px;top:12px;font-size:9px;letter-spacing:.1em;color:var(--t3);text-align:right;line-height:1.6;pointer-events:none;}
+.recdot{position:absolute;left:14px;top:14px;display:none;align-items:center;gap:7px;font-size:10px;letter-spacing:.15em;color:var(--red);background:rgba(0,0,0,.5);padding:5px 10px;border-radius:20px;}
+.recdot.on{display:flex;}
+.recdot i{width:9px;height:9px;border-radius:50%;background:var(--red);animation:blink 1s steps(2) infinite;}
+@keyframes blink{50%{opacity:.2;}}
+.dz{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:rgba(184,255,0,.06);outline:2px dashed var(--acid-br);outline-offset:-14px;color:var(--acid);font-size:12px;letter-spacing:.15em;}
+.dz.on{display:flex;}
+
+.sec{border-bottom:1px solid var(--border);}
+.sec>summary{list-style:none;cursor:pointer;padding:13px 18px;display:flex;align-items:center;justify-content:space-between;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--t2);}
+.sec>summary::-webkit-details-marker{display:none;}
+.sec>summary:hover{color:var(--ink);}
+.sec>summary .mk{color:var(--acid);font-size:13px;transition:.2s;}
+.sec[open]>summary .mk{transform:rotate(45deg);}
+.sec .body{padding:4px 18px 16px;}
+
+.row{margin:12px 0;}
+.row label{display:flex;justify-content:space-between;font-size:10px;letter-spacing:.05em;color:var(--t2);margin-bottom:6px;}
+.row label b{color:var(--acid);font-weight:400;}
+input[type=range]{-webkit-appearance:none;width:100%;height:3px;background:var(--border-strong);border-radius:3px;outline:none;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--acid);cursor:pointer;border:2px solid var(--bg);}
+input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:var(--acid);cursor:pointer;border:2px solid var(--bg);}
+input[type=range]:disabled{opacity:.3;}
+
+.seg{display:grid;grid-auto-flow:column;gap:5px;}
+.seg button{font-family:var(--font);font-size:9px;letter-spacing:.06em;text-transform:uppercase;padding:7px 3px;background:var(--surface-2);color:var(--t2);border:1px solid var(--border);border-radius:5px;cursor:pointer;}
+.seg button:hover{color:var(--ink);}
+.seg button.on{color:var(--acid);border-color:var(--acid-br);background:var(--acid-bg);}
+
+.fx{border:1px solid var(--border);border-radius:7px;padding:10px 12px;margin:9px 0;background:var(--surface-2);}
+.fx.on{border-color:var(--acid-br);}
+.fxhead{display:flex;align-items:center;justify-content:space-between;cursor:pointer;}
+.fxhead .nm{font-family:var(--disp);font-size:19px;letter-spacing:.03em;color:var(--t2);}
+.fx.on .fxhead .nm{color:var(--acid);}
+.sw{width:34px;height:18px;border-radius:20px;background:var(--surface-0);border:1px solid var(--border);position:relative;transition:.2s;flex:0 0 auto;}
+.sw::after{content:'';position:absolute;top:1px;left:1px;width:14px;height:14px;border-radius:50%;background:var(--t3);transition:.2s;}
+.fx.on .sw{background:var(--acid-bg);border-color:var(--acid-br);} .fx.on .sw::after{left:17px;background:var(--acid);}
+.fxbody{margin-top:6px;display:none;} .fx.on .fxbody{display:block;}
+
+.chips{display:flex;flex-wrap:wrap;gap:6px;}
+.preset{font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--t2);background:var(--surface-2);border:1px solid var(--border);border-radius:20px;padding:6px 11px;cursor:pointer;}
+.preset:hover{border-color:var(--acid-br);color:var(--acid);}
+
+.btn{font-family:var(--font);font-size:10px;letter-spacing:.1em;text-transform:uppercase;padding:11px 8px;border-radius:6px;border:1px solid var(--border);background:var(--surface-2);color:var(--ink);cursor:pointer;text-align:center;width:100%;}
+.btn:hover{border-color:var(--border-strong);}
+.btn.primary{background:var(--acid);color:#0a0a0a;border-color:var(--acid);font-weight:700;}
+.btn.primary:hover{filter:brightness(1.08);}
+.btn.rec.on{background:var(--red);color:#fff;border-color:var(--red);}
+.btnrow{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px;}
+.hint{font-size:9px;color:var(--t3);line-height:1.6;margin-top:8px;letter-spacing:.02em;}
+.hint b{color:var(--t2);font-weight:400;}
+.upload{display:block;border:1px dashed var(--border-strong);border-radius:6px;padding:13px;text-align:center;font-size:10px;letter-spacing:.08em;color:var(--t2);text-transform:uppercase;cursor:pointer;}
+.upload:hover{border-color:var(--acid-br);color:var(--acid);} .upload b{color:var(--acid);font-weight:400;}
+input[type=file]{display:none;}
+
+.ai input[type=text],.ai input[type=password],.ai select{width:100%;font-family:var(--font);font-size:11px;padding:9px 10px;background:var(--surface-0);border:1px solid var(--border);border-radius:5px;color:var(--ink);margin-bottom:7px;}
+.ai .keyline{font-size:9px;color:var(--t3);margin:-2px 0 8px;} .ai .keyline a{color:var(--cyan);}
+.ai .keyline a:hover{color:var(--acid);}
+.aimode{font-size:9px;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;border-radius:20px;border:1px solid var(--border);color:var(--t3);}
+.aimode.live{color:var(--acid);border-color:var(--acid-br);}
+.panel::-webkit-scrollbar{width:8px;} .panel::-webkit-scrollbar-thumb{background:var(--border-strong);border-radius:8px;}
+.recipe{white-space:pre-wrap;font-size:10px;line-height:1.55;color:var(--t2);background:var(--surface-0);border:1px solid var(--border);border-radius:6px;padding:11px;max-height:240px;overflow:auto;margin-top:8px;}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <div class="brand"><b>GLITCHDOWN</b><span>VIDEO FX · TRAILS / STROBO / GLITCH → PREMIERE</span></div>
+    <a href="/labs/">← LABS</a>
+  </div>
+  <div class="main">
+    <div class="panel">
+
+      <details class="sec" open><summary>FUENTE <span class="mk">+</span></summary>
+        <div class="body">
+          <div class="row">
+            <div class="seg" id="srcSeg">
+              <button data-src="test" class="on">Footage de prueba</button>
+              <button data-src="video">Mi video</button>
+            </div>
+          </div>
+          <label class="upload" id="dropZone">
+            <input type="file" id="fileInput" accept="video/*">
+            Soltá o <b>elegí un video</b><br>(corre local, no se sube nada)
+          </label>
+          <div class="hint">Subí un clip y los efectos se aplican en vivo encima. Si no, usás el footage de prueba para diseñar el look.</div>
+        </div>
+      </details>
+
+      <details class="sec" open><summary>IA — DESCRIBÍ EL EFECTO <span class="mk">+</span></summary>
+        <div class="body ai">
+          <input type="text" id="prompt" placeholder='ej: "glitchdown agresivo en el drop" · "trails fantasma suaves" · "VHS roto"'>
+          <button class="btn primary" id="genBtn">⚡ Generar efecto</button>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin:10px 0 6px">
+            <span style="font-size:9px;letter-spacing:.12em;color:var(--t3)">MOTOR</span>
+            <span class="aimode" id="aiMode">PROCEDURAL (sin key)</span>
+          </div>
+          <select id="provider">
+            <option value="gemini">Google Gemini</option>
+            <option value="claude">Anthropic Claude</option>
+            <option value="grok">xAI Grok</option>
+          </select>
+          <input type="password" id="apikey" placeholder="API key (opcional — se guarda local)">
+          <div class="keyline"><a id="keylink" href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">→ conseguir una key de Gemini</a> · sin key funciona por keywords</div>
+          <div class="btnrow"><button class="btn" id="keySave">Guardar key</button><button class="btn" id="keyClear">Borrar</button></div>
+          <div class="hint">Híbrido: <b>sin key</b> interpreta tu texto por palabras clave (glitchdown, trails, strobo, vhs, shake, ghost…). <b>Con key</b>, el modelo arma el stack completo desde el prompt. La key queda en tu navegador.</div>
+        </div>
+      </details>
+
+      <details class="sec" open><summary>PRESETS <span class="mk">+</span></summary>
+        <div class="body">
+          <div class="chips" id="presetChips"></div>
+        </div>
+      </details>
+
+      <details class="sec" open><summary>EFECTOS <span class="mk">+</span></summary>
+        <div class="body">
+          <div class="row"><label>INTENSIDAD GENERAL <b id="vIntensity">100</b>%</label><input type="range" id="intensity" min="0" max="100" value="100"></div>
+
+          <div class="fx" data-fx="trails" id="fxTrails">
+            <div class="fxhead"><span class="nm">TRAILS / ECO</span><div class="sw"></div></div>
+            <div class="fxbody">
+              <div class="row"><label>RETENCIÓN <b data-v="trailsDecay">85</b></label><input type="range" data-p="trailsDecay" min="20" max="97" value="85"></div>
+              <div class="row"><label>FUSIÓN</label><div class="seg" data-segp="trailsMode"><button data-val="0">Máximo</button><button data-val="1" class="on">Trama</button><button data-val="2">Sumar</button></div></div>
+            </div>
+          </div>
+
+          <div class="fx" data-fx="strobe" id="fxStrobe">
+            <div class="fxhead"><span class="nm">ESTROBO</span><div class="sw"></div></div>
+            <div class="fxbody">
+              <div class="row"><label>FUERZA <b data-v="strobeAmt">60</b></label><input type="range" data-p="strobeAmt" min="5" max="100" value="60"></div>
+              <div class="row"><label>FRECUENCIA <b data-v="strobeRate">8</b> Hz</label><input type="range" data-p="strobeRate" min="1" max="20" value="8"></div>
+              <div class="row"><label>MODO</label><div class="seg" data-segp="strobeMode"><button data-val="0" class="on">Negro</button><button data-val="1">Invertir</button></div></div>
+            </div>
+          </div>
+
+          <div class="fx" data-fx="glitch" id="fxGlitch">
+            <div class="fxhead"><span class="nm">GLITCH / DATAMOSH</span><div class="sw"></div></div>
+            <div class="fxbody">
+              <div class="row"><label>FUERZA <b data-v="glitchAmt">55</b></label><input type="range" data-p="glitchAmt" min="0" max="100" value="55"></div>
+              <div class="row"><label>BLOQUES <b data-v="glitchBlock">50</b></label><input type="range" data-p="glitchBlock" min="0" max="100" value="50"></div>
+              <div class="row"><label>RGB SPLIT <b data-v="glitchRgb">50</b></label><input type="range" data-p="glitchRgb" min="0" max="100" value="50"></div>
+            </div>
+          </div>
+
+          <div class="fx" data-fx="shake" id="fxShake">
+            <div class="fxhead"><span class="nm">SHAKE</span><div class="sw"></div></div>
+            <div class="fxbody">
+              <div class="row"><label>AMPLITUD <b data-v="shakeAmt">50</b></label><input type="range" data-p="shakeAmt" min="0" max="100" value="50"></div>
+            </div>
+          </div>
+
+          <div class="fx" data-fx="scan" id="fxScan">
+            <div class="fxhead"><span class="nm">SCANLINES / VHS</span><div class="sw"></div></div>
+            <div class="fxbody">
+              <div class="row"><label>FUERZA <b data-v="scanAmt">50</b></label><input type="range" data-p="scanAmt" min="0" max="100" value="50"></div>
+            </div>
+          </div>
+        </div>
+      </details>
+
+      <details class="sec" open><summary>EXPORTAR <span class="mk">+</span></summary>
+        <div class="body">
+          <div class="row"><label>DURACIÓN DEL RENDER <b id="vDur">4</b> s</label><input type="range" id="dur" min="1" max="15" value="4"></div>
+          <button class="btn rec primary" id="recBtn">● Grabar overlay .webm</button>
+          <div class="btnrow">
+            <button class="btn" id="pngBtn">↓ PNG frame</button>
+            <button class="btn" id="recipeBtn">Receta Premiere</button>
+          </div>
+          <div class="hint">El <b>.webm</b> sale con todo aplicado: ponelo en una pista superior con fusión <b>Trama/Aclarar</b> sobre tu clip. La <b>receta</b> lista los efectos nativos equivalentes.</div>
+          <div class="recipe" id="recipeBox" style="display:none"></div>
+        </div>
+      </details>
+
+    </div>
+    <div class="stage" id="stage">
+      <canvas id="gl"></canvas>
+      <div class="stats" id="stats"></div>
+      <div class="recdot" id="recdot"><i></i> REC <span id="recTime"></span></div>
+      <div class="dz" id="dz">SOLTÁ EL VIDEO</div>
+    </div>
+  </div>
+</div>
+
+<video id="srcVideo" style="display:none" muted loop playsinline crossorigin="anonymous"></video>
+
+<script>
+const $ = id => document.getElementById(id);
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+
+// ---------------- STATE ----------------
+const S = {
+  source:'test', intensity:1,
+  trails:{on:false, decay:0.85, mode:1},
+  strobe:{on:false, amt:0.60, rate:8, mode:0},
+  glitch:{on:false, amt:0.55, block:0.50, rgb:0.50},
+  shake:{on:false, amt:0.50},
+  scan:{on:false, amt:0.50},
+};
+
+// ================= WEBGL =================
+const canvas = $('gl');
+const gl = canvas.getContext('webgl', {preserveDrawingBuffer:true, antialias:false, premultipliedAlpha:false});
+if(!gl){ alert('Tu navegador no soporta WebGL.'); }
+
+const VERT = `attribute vec2 p; varying vec2 vUv; void main(){ vUv=p*0.5+0.5; gl_Position=vec4(p,0.,1.); }`;
+const FRAG = `
+precision highp float;
+varying vec2 vUv;
+uniform sampler2D uSrc, uPrev;
+uniform vec2 uRes; uniform float uTime, uI;
+uniform float uTrails; uniform int uTrailMode;
+uniform float uStrobe, uStrobeRate; uniform int uStrobeMode;
+uniform float uGlitch, uBlock, uRgb;
+uniform float uShake, uScan;
+float h2(vec2 p){ return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453); }
+float h1(float n){ return fract(sin(n)*43758.5453); }
+void main(){
+  vec2 uv=vUv; float t=uTime; float I=uI;
+  if(uShake>0.0){
+    float f=floor(t*22.0);
+    uv += vec2(h1(f)-0.5, h1(f+9.0)-0.5)*uShake*I*0.06;
+  }
+  if(uGlitch>0.0){
+    float rows=mix(6.0,42.0,uBlock);
+    float band=floor(uv.y*rows);
+    float seed=floor(t*mix(4.0,20.0,uGlitch));
+    float hh=h2(vec2(band,seed));
+    if(hh > 1.0-uGlitch*0.65*I) uv.x += (h2(vec2(band,seed+3.0))-0.5)*uGlitch*0.22*I;
+  }
+  vec2 off=vec2(uRgb*I*0.018,0.0);
+  off.x += uGlitch*I*0.012*(h1(floor(t*30.0))-0.5);
+  vec3 col;
+  col.r=texture2D(uSrc,uv+off).r;
+  col.g=texture2D(uSrc,uv).g;
+  col.b=texture2D(uSrc,uv-off).b;
+  if(uScan>0.0){
+    float line=sin(uv.y*uRes.y*1.7)*0.5+0.5;
+    col *= 1.0-uScan*0.55*I*line;
+    col += (h2(uv*uRes+t)-0.5)*uScan*0.13*I;
+  }
+  if(uStrobe>0.0){
+    float ph=fract(t*uStrobeRate);
+    if(ph < uStrobe*0.5){
+      if(uStrobeMode==1) col=vec3(1.0)-col; else col*=0.0;
+    }
+  }
+  vec3 prev=texture2D(uPrev,vUv).rgb*uTrails;
+  vec3 o=col;
+  if(uTrails>0.0){
+    if(uTrailMode==0) o=max(col,prev);
+    else if(uTrailMode==1) o=1.0-(1.0-col)*(1.0-prev);
+    else o=min(vec3(1.0),col+prev);
+  }
+  gl_FragColor=vec4(o,1.0);
+}`;
+const BLIT = `precision highp float; varying vec2 vUv; uniform sampler2D uTex;
+void main(){ gl_FragColor=texture2D(uTex,vUv); }`;
+
+function sh(type,src){ const s=gl.createShader(type); gl.shaderSource(s,src); gl.compileShader(s);
+  if(!gl.getShaderParameter(s,gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s)); return s; }
+function prog(vs,fs){ const p=gl.createProgram(); gl.attachShader(p,sh(gl.VERTEX_SHADER,vs)); gl.attachShader(p,sh(gl.FRAGMENT_SHADER,fs));
+  gl.linkProgram(p); if(!gl.getProgramParameter(p,gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(p)); return p; }
+
+const pFx = prog(VERT,FRAG), pBlit = prog(VERT,BLIT);
+const quad = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER,quad);
+gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1, 1,-1, -1,1, 1,1]),gl.STATIC_DRAW);
+function bindQuad(p){ const l=gl.getAttribLocation(p,'p'); gl.enableVertexAttribArray(l); gl.bindBuffer(gl.ARRAY_BUFFER,quad); gl.vertexAttribPointer(l,2,gl.FLOAT,false,0,0); }
+
+function makeTex(){ const t=gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D,t);
+  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE); return t; }
+
+let W=854,H=480, srcTex, fboA, fboB, texA, texB;
+function makeFBO(w,h){ const tex=makeTex(); gl.bindTexture(gl.TEXTURE_2D,tex);
+  gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,w,h,0,gl.RGBA,gl.UNSIGNED_BYTE,null);
+  const fbo=gl.createFramebuffer(); gl.bindFramebuffer(gl.FRAMEBUFFER,fbo);
+  gl.framebufferTexture2D(gl.FRAMEBUFFER,gl.COLOR_ATTACHMENT0,gl.TEXTURE_2D,tex,0);
+  gl.bindFramebuffer(gl.FRAMEBUFFER,null); return {fbo,tex}; }
+function setupTargets(w,h){
+  W=w;H=h; canvas.width=w; canvas.height=h;
+  srcTex=makeTex();
+  const a=makeFBO(w,h), b=makeFBO(w,h);
+  fboA=a.fbo;texA=a.tex; fboB=b.fbo;texB=b.tex;
+}
+setupTargets(854,480);
+
+// source: test canvas
+const test=document.createElement('canvas'); test.width=854; test.height=480;
+const tx=test.getContext('2d');
+function drawTest(t){
+  const w=test.width,h=test.height;
+  tx.fillStyle='#070709'; tx.fillRect(0,0,w,h);
+  tx.strokeStyle='rgba(240,237,230,.05)'; tx.lineWidth=1;
+  for(let i=0;i<14;i++){ tx.beginPath(); tx.moveTo(i*64,0); tx.lineTo(i*64,h); tx.stroke(); }
+  const cols=['#b8ff00','#ff2d55','#3ad0ff','#ffcc33','#f0ede6'];
+  for(let i=0;i<5;i++){ const dir=i%2?1:-1; const x=(((t*70*dir)+i*180)%(w+160)+w+160)%(w+160)-80;
+    tx.fillStyle=cols[i]; tx.fillRect(x, 70+i*64, 80, 26); }
+  tx.save(); tx.translate(w/2,h/2); tx.rotate(Math.sin(t*1.2)*0.04);
+  tx.fillStyle='#f0ede6'; tx.font='bold 150px "Bebas Neue",sans-serif'; tx.textAlign='center'; tx.textBaseline='middle';
+  tx.fillText('GLITCH', 0, 0); tx.restore();
+  tx.beginPath(); tx.arc(w/2+Math.cos(t*1.3)*250, h/2+Math.sin(t*1.1)*120, 30,0,7); tx.fillStyle='#b8ff00'; tx.fill();
+}
+
+const video=$('srcVideo');
+function uploadSource(){
+  const el = (S.source==='video' && video.readyState>=2) ? video : test;
+  gl.bindTexture(gl.TEXTURE_2D,srcTex);
+  gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,true);
+  try{ gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,el); }catch(e){}
+}
+
+let clock=0, pingIsA=true;
+function u(p,n){ return gl.getUniformLocation(p,n); }
+function render(){
+  // FX pass -> dst fbo, reading prev fbo
+  const dst = pingIsA?fboA:fboB, dstTex=pingIsA?texA:texB;
+  const prevTex = pingIsA?texB:texA;
+  gl.bindFramebuffer(gl.FRAMEBUFFER,dst); gl.viewport(0,0,W,H);
+  gl.useProgram(pFx); bindQuad(pFx);
+  gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D,srcTex); gl.uniform1i(u(pFx,'uSrc'),0);
+  gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D,prevTex); gl.uniform1i(u(pFx,'uPrev'),1);
+  gl.uniform2f(u(pFx,'uRes'),W,H); gl.uniform1f(u(pFx,'uTime'),clock); gl.uniform1f(u(pFx,'uI'),S.intensity);
+  gl.uniform1f(u(pFx,'uTrails'), S.trails.on?S.trails.decay:0); gl.uniform1i(u(pFx,'uTrailMode'),S.trails.mode);
+  gl.uniform1f(u(pFx,'uStrobe'), S.strobe.on?S.strobe.amt:0); gl.uniform1f(u(pFx,'uStrobeRate'),S.strobe.rate); gl.uniform1i(u(pFx,'uStrobeMode'),S.strobe.mode);
+  gl.uniform1f(u(pFx,'uGlitch'), S.glitch.on?S.glitch.amt:0); gl.uniform1f(u(pFx,'uBlock'),S.glitch.block); gl.uniform1f(u(pFx,'uRgb'),S.glitch.rgb);
+  gl.uniform1f(u(pFx,'uShake'), S.shake.on?S.shake.amt:0); gl.uniform1f(u(pFx,'uScan'), S.scan.on?S.scan.amt:0);
+  gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
+  // blit dst -> screen
+  gl.bindFramebuffer(gl.FRAMEBUFFER,null); gl.viewport(0,0,W,H);
+  gl.useProgram(pBlit); bindQuad(pBlit);
+  gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D,dstTex); gl.uniform1i(u(pBlit,'uTex'),0);
+  gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
+  pingIsA=!pingIsA;
+}
+
+let last=performance.now();
+function loop(now){
+  requestAnimationFrame(loop);
+  const dt=Math.min((now-last)/1000,0.05); last=now; clock+=dt;
+  if(S.source==='test') drawTest(clock);
+  uploadSource();
+  render();
+}
+requestAnimationFrame(loop);
+
+// ================= UI =================
+function syncFxUI(){
+  for(const k of ['trails','strobe','glitch','shake','scan']){
+    const card=document.querySelector('.fx[data-fx="'+k+'"]'); card.classList.toggle('on',S[k].on);
+  }
+  document.querySelectorAll('input[data-p]').forEach(inp=>{
+    const map=pmap[inp.dataset.p]; const val=map.get();
+    inp.value = Math.round(val*map.scale);
+    const lab=document.querySelector('[data-v="'+inp.dataset.p+'"]'); if(lab) lab.textContent=Math.round(val*map.scale);
+  });
+  document.querySelectorAll('[data-segp]').forEach(seg=>{
+    const cur=segGet[seg.dataset.segp]();
+    [...seg.children].forEach(b=>b.classList.toggle('on', +b.dataset.val===cur));
+  });
+  $('intensity').value=Math.round(S.intensity*100); $('vIntensity').textContent=Math.round(S.intensity*100);
+}
+// param map: slider id -> get/set on S, scale (display = value*scale)
+const pmap = {
+  trailsDecay:{scale:100, get:()=>S.trails.decay, set:v=>S.trails.decay=v/100},
+  strobeAmt:{scale:100, get:()=>S.strobe.amt, set:v=>S.strobe.amt=v/100},
+  strobeRate:{scale:1, get:()=>S.strobe.rate, set:v=>S.strobe.rate=v},
+  glitchAmt:{scale:100, get:()=>S.glitch.amt, set:v=>S.glitch.amt=v/100},
+  glitchBlock:{scale:100, get:()=>S.glitch.block, set:v=>S.glitch.block=v/100},
+  glitchRgb:{scale:100, get:()=>S.glitch.rgb, set:v=>S.glitch.rgb=v/100},
+  shakeAmt:{scale:100, get:()=>S.shake.amt, set:v=>S.shake.amt=v/100},
+  scanAmt:{scale:100, get:()=>S.scan.amt, set:v=>S.scan.amt=v/100},
+};
+const segGet = { trailsMode:()=>S.trails.mode, strobeMode:()=>S.strobe.mode };
+const segSet = { trailsMode:v=>S.trails.mode=v, strobeMode:v=>S.strobe.mode=v };
+
+document.querySelectorAll('input[data-p]').forEach(inp=>{
+  inp.addEventListener('input',()=>{
+    const map=pmap[inp.dataset.p]; map.set(+inp.value);
+    const lab=document.querySelector('[data-v="'+inp.dataset.p+'"]'); if(lab) lab.textContent=inp.value;
+  });
+});
+document.querySelectorAll('[data-segp]').forEach(seg=>{
+  seg.addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b)return;
+    segSet[seg.dataset.segp](+b.dataset.val);
+    [...seg.children].forEach(x=>x.classList.toggle('on',x===b)); });
+});
+document.querySelectorAll('.fx .fxhead').forEach(hd=>{
+  hd.addEventListener('click',()=>{ const k=hd.closest('.fx').dataset.fx; S[k].on=!S[k].on; hd.closest('.fx').classList.toggle('on',S[k].on); });
+});
+$('intensity').addEventListener('input',e=>{ S.intensity=+e.target.value/100; $('vIntensity').textContent=e.target.value; });
+
+// source switch + upload
+$('srcSeg').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b)return;
+  S.source=b.dataset.src; [...$('srcSeg').children].forEach(x=>x.classList.toggle('on',x===b));
+  if(S.source==='video') video.play().catch(()=>{}); });
+function loadVideo(file){
+  const url=URL.createObjectURL(file); video.src=url;
+  video.onloadeddata=()=>{
+    let w=video.videoWidth,h=video.videoHeight; const cap=960;
+    if(w>cap){ h=Math.round(h*cap/w); w=cap; }
+    setupTargets(w,h); clock=0;
+    S.source='video'; [...$('srcSeg').children].forEach(x=>x.classList.toggle('on',x.dataset.src==='video'));
+    video.play().catch(()=>{});
+  };
+}
+$('fileInput').addEventListener('change',e=>{ const f=e.target.files[0]; if(f) loadVideo(f); });
+const dz=$('dz');
+['dragenter','dragover'].forEach(ev=>$('stage').addEventListener(ev,e=>{e.preventDefault();dz.classList.add('on');}));
+['dragleave','drop'].forEach(ev=>$('stage').addEventListener(ev,e=>{e.preventDefault();dz.classList.remove('on');}));
+$('stage').addEventListener('drop',e=>{ const f=e.dataTransfer.files[0]; if(f&&/video/.test(f.type)) loadVideo(f); });
+
+// ============== PRESETS ==============
+const PRESETS = {
+  'GLITCHDOWN':{intensity:1, glitch:{on:true,amt:0.8,block:0.7,rgb:0.7}, shake:{on:true,amt:0.55}, strobe:{on:true,amt:0.35,rate:11,mode:1}, trails:{on:false}, scan:{on:false}},
+  'TRAILS':{intensity:1, trails:{on:true,decay:0.9,mode:1}, glitch:{on:false}, strobe:{on:false}, shake:{on:false}, scan:{on:false}},
+  'GHOST':{intensity:.9, trails:{on:true,decay:0.95,mode:0}, glitch:{on:true,amt:0.25,block:0.3,rgb:0.4}, strobe:{on:false}, shake:{on:false}, scan:{on:false}},
+  'STROBO':{intensity:1, strobe:{on:true,amt:0.8,rate:10,mode:0}, glitch:{on:false}, trails:{on:false}, shake:{on:false}, scan:{on:false}},
+  'DATAMOSH':{intensity:1, glitch:{on:true,amt:0.95,block:0.85,rgb:0.6}, trails:{on:true,decay:0.8,mode:2}, strobe:{on:false}, shake:{on:false}, scan:{on:false}},
+  'VHS':{intensity:.9, scan:{on:true,amt:0.7}, glitch:{on:true,amt:0.3,block:0.4,rgb:0.55}, trails:{on:false}, strobe:{on:false}, shake:{on:false}},
+  'SHAKE':{intensity:1, shake:{on:true,amt:0.7}, glitch:{on:true,amt:0.35,block:0.5,rgb:0.4}, trails:{on:false}, strobe:{on:false}, scan:{on:false}},
+  'LIMPIO':{intensity:1, trails:{on:false}, strobe:{on:false}, glitch:{on:false}, shake:{on:false}, scan:{on:false}},
+};
+function applyPreset(obj){
+  if(obj.intensity!=null) S.intensity=clamp(obj.intensity,0,1);
+  for(const k of ['trails','strobe','glitch','shake','scan']){
+    if(obj[k]){ Object.assign(S[k], obj[k]); if(obj[k].on===undefined) S[k].on=true; }
+  }
+  syncFxUI();
+}
+const chipBox=$('presetChips');
+Object.keys(PRESETS).forEach(name=>{ const b=document.createElement('div'); b.className='preset'; b.textContent=name;
+  b.onclick=()=>applyPreset(JSON.parse(JSON.stringify(PRESETS[name]))); chipBox.appendChild(b); });
+
+// ============== IA (patrón AETHER 2.0) ==============
+const MODEL_OPTIONS={ gemini:['gemini-2.5-flash-lite','gemini-2.0-flash'], claude:['claude-sonnet-4-6','claude-haiku-4-5-20251001'], grok:['grok-4','grok-3'] };
+const PROVNAME={ gemini:'Gemini', claude:'Claude', grok:'Grok' };
+const KEYURL={ gemini:'https://aistudio.google.com/apikey', claude:'https://console.anthropic.com/settings/keys', grok:'https://console.x.ai/' };
+const provSel=()=>$('provider').value;
+const getModel=()=>MODEL_OPTIONS[provSel()][0];
+const keyLS=p=>'glitchdown_key_'+(p||provSel());
+const getKey=()=>localStorage.getItem(keyLS())||'';
+const setKey=k=>localStorage.setItem(keyLS(),k);
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+function retryDelaySec(txt){ const m=/"retryDelay"\s*:\s*"(\d+(?:\.\d+)?)s"/.exec(txt||''); return m?Math.ceil(parseFloat(m[1])):null; }
+async function fetchRetry(url,opts,label){ let lastErr=label+': error de red';
+  for(let a=0;a<3;a++){ let res; try{ res=await fetch(url,opts); }catch(e){ lastErr='Red: '+e.message; if(a<2){await sleep(1500);continue;} throw new Error(lastErr); }
+    if(res.ok) return res; const txt=await res.text(); lastErr=label+' '+res.status+': '+txt.slice(0,160);
+    if(res.status===429&&a<2){ await sleep(Math.min(retryDelaySec(txt)||4*(a+1),20)*1000); continue; } throw new Error(lastErr);
+  } throw new Error(lastErr); }
+const SYSTEM=`Sos un generador de presets de efectos de video glitch para edición (estilo Premiere). Respondé SOLO con un objeto JSON válido, sin texto ni markdown, con esta forma EXACTA y rangos:
+{"intensity":0..1,"trails":{"on":bool,"decay":0.2..0.97,"mode":"max"|"screen"|"add"},"strobe":{"on":bool,"amt":0..1,"rate":1..20,"mode":"black"|"invert"},"glitch":{"on":bool,"amt":0..1,"block":0..1,"rgb":0..1},"shake":{"on":bool,"amt":0..1},"scan":{"on":bool,"amt":0..1}}
+Activá on:true SOLO en los efectos pertinentes al pedido. "glitchdown"/"drop" = glitch alto + shake + un toque de strobe invert. "trails"/"estela"/"fantasma" = trails. "vhs"/"retro" = scan + algo de glitch. Sé agresivo si piden "fuerte/intenso", sutil si piden "leve/suave".`;
+async function callLLM(prompt){
+  const p=provSel(), key=getKey();
+  if(p==='claude'){ const r=await fetchRetry('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'content-type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:getModel(),max_tokens:600,system:SYSTEM,messages:[{role:'user',content:prompt}]})},'Claude');
+    const j=await r.json(); const b=(j.content||[]).find(x=>x.type==='text'); return b?b.text:''; }
+  if(p==='grok'){ const r=await fetchRetry('https://api.x.ai/v1/chat/completions',{method:'POST',headers:{'content-type':'application/json','authorization':'Bearer '+key},body:JSON.stringify({model:getModel(),messages:[{role:'system',content:SYSTEM},{role:'user',content:prompt}]})},'Grok');
+    const j=await r.json(); return j.choices?.[0]?.message?.content||''; }
+  const r=await fetchRetry('https://generativelanguage.googleapis.com/v1beta/models/'+getModel()+':generateContent?key='+encodeURIComponent(key),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({systemInstruction:{parts:[{text:SYSTEM}]},contents:[{role:'user',parts:[{text:prompt}]}]})},'Gemini');
+  const j=await r.json(); return j.candidates?.[0]?.content?.parts?.[0]?.text||'';
+}
+function parseAI(txt){ const m=txt.match(/\{[\s\S]*\}/); if(!m) throw new Error('sin JSON'); const o=JSON.parse(m[0]);
+  const mm={max:0,screen:1,add:2}, sm={black:0,invert:1};
+  if(o.trails&&typeof o.trails.mode==='string') o.trails.mode=mm[o.trails.mode]??1;
+  if(o.strobe&&typeof o.strobe.mode==='string') o.strobe.mode=sm[o.strobe.mode]??0;
+  return o; }
+// PROCEDURAL (sin key): parser por keywords
+function proceduralFromText(t){
+  t=(t||'').toLowerCase();
+  const strong=/fuerte|intens|agresiv|brutal|heavy|máx|max|caos|roto/.test(t);
+  const soft=/suave|leve|sutil|ligero|soft|tenue/.test(t);
+  const I=strong?1:soft?0.45:0.8;
+  const o={intensity:I, trails:{on:false}, strobe:{on:false}, glitch:{on:false}, shake:{on:false}, scan:{on:false}};
+  let hit=false;
+  if(/glitchdown|drop|baj[óo]n|ca[íi]da|impacto/.test(t)){ Object.assign(o,JSON.parse(JSON.stringify(PRESETS.GLITCHDOWN))); o.intensity=I; hit=true; }
+  if(/trail|estela|eco|echo|rastro|motion ?blur/.test(t)){ o.trails={on:true,decay:soft?0.8:0.92,mode:1}; hit=true; }
+  if(/fantasma|ghost|espectr/.test(t)){ o.trails={on:true,decay:0.95,mode:0}; hit=true; }
+  if(/strob|estrob|flash|parpade|destell/.test(t)){ o.strobe={on:true,amt:strong?0.85:0.6,rate:/r[áa]pid|fast/.test(t)?14:8,mode:/invert|negativo/.test(t)?1:0}; hit=true; }
+  if(/glitch|datamosh|rgb|corrup|error|digital|pixel/.test(t)){ o.glitch={on:true,amt:strong?0.9:0.55,block:0.6,rgb:0.6}; hit=true; }
+  if(/vhs|retro|analog|cinta|scan|tv|crt/.test(t)){ o.scan={on:true,amt:strong?0.8:0.6}; o.glitch={on:true,amt:0.3,block:0.4,rgb:0.55}; hit=true; }
+  if(/shake|tembl|sacud|c[áa]mara|cam|vibra/.test(t)){ o.shake={on:true,amt:strong?0.8:0.55}; hit=true; }
+  if(!hit){ o.glitch={on:true,amt:0.5,block:0.5,rgb:0.5}; }
+  return o;
+}
+$('genBtn').addEventListener('click',async()=>{
+  const prompt=$('prompt').value.trim(); if(!prompt) return;
+  const btn=$('genBtn'); btn.disabled=true; const old=btn.textContent;
+  try{
+    if(getKey()){ btn.textContent='⚡ generando…'; const raw=await callLLM(prompt); applyPreset(parseAI(raw)); }
+    else { applyPreset(proceduralFromText(prompt)); }
+  }catch(e){ btn.textContent='⚠ '+e.message.slice(0,30); applyPreset(proceduralFromText(prompt)); await sleep(1400); }
+  finally{ btn.disabled=false; btn.textContent=old; }
+});
+$('prompt').addEventListener('keydown',e=>{ if(e.key==='Enter') $('genBtn').click(); });
+$('keySave').addEventListener('click',()=>{ setKey($('apikey').value.trim()); syncKeyUI(); });
+$('keyClear').addEventListener('click',()=>{ setKey(''); $('apikey').value=''; syncKeyUI(); });
+$('provider').addEventListener('change',syncKeyUI);
+function syncKeyUI(){ const p=provSel(), nm=PROVNAME[p];
+  $('apikey').value=getKey(); $('apikey').placeholder='API key de '+nm+' (opcional)';
+  $('keylink').href=KEYURL[p]; $('keylink').textContent='→ conseguir una key de '+nm;
+  const live=!!getKey(); $('aiMode').textContent=live?('IA · '+nm):'PROCEDURAL (sin key)'; $('aiMode').classList.toggle('live',live);
+}
+syncKeyUI();
+
+// ============== EXPORT ==============
+$('dur').addEventListener('input',e=>$('vDur').textContent=e.target.value);
+function download(blob,name){ const u=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=u; a.download=name; a.click(); setTimeout(()=>URL.revokeObjectURL(u),2000); }
+$('pngBtn').addEventListener('click',()=>{ canvas.toBlob(b=>download(b,'glitchdown-frame.png'),'image/png'); });
+
+let recording=false;
+function pickMime(){ for(const m of ['video/webm;codecs=vp9','video/webm;codecs=vp8','video/webm']) if(MediaRecorder.isTypeSupported(m)) return m; return 'video/webm'; }
+$('recBtn').addEventListener('click',()=>{
+  if(recording) return;
+  const dur=+$('dur').value;
+  const stream=canvas.captureStream(30);
+  let rec; try{ rec=new MediaRecorder(stream,{mimeType:pickMime(),videoBitsPerSecond:14000000}); }
+  catch(e){ alert('No se pudo iniciar la grabación: '+e.message); return; }
+  const chunks=[]; rec.ondataavailable=e=>{ if(e.data.size) chunks.push(e.data); };
+  rec.onstop=()=>{ download(new Blob(chunks,{type:rec.mimeType}),'glitchdown-overlay.webm'); recording=false;
+    $('recBtn').classList.remove('on'); $('recBtn').textContent='● Grabar overlay .webm'; $('recdot').classList.remove('on'); };
+  if(S.source==='video'){ try{ video.currentTime=0; }catch(e){} }
+  rec.start();
+  recording=true; $('recBtn').classList.add('on'); $('recBtn').textContent='■ grabando…'; $('recdot').classList.add('on');
+  const t0=performance.now();
+  (function watch(){ const el=(performance.now()-t0)/1000; $('recTime').textContent=el.toFixed(1)+'s';
+    if(el>=dur){ try{rec.stop()}catch(e){} } else requestAnimationFrame(watch); })();
+});
+
+// ---- recipe ----
+const PCT=v=>Math.round(v*100)+'%';
+function buildRecipe(){
+  const L=[]; L.push('GLITCHDOWN — receta para Premiere Pro');
+  L.push('(efectos nativos equivalentes; el match EXACTO es el overlay .webm)');
+  L.push(''); L.push('Intensidad general: '+PCT(S.intensity)); L.push('');
+  if(S.trails.on){ const mode={0:'Máximo',1:'Pantalla (Screen)',2:'Sumar (Add)'}[S.trails.mode];
+    const n=Math.round(2+S.trails.decay*9);
+    L.push('[TRAILS] → efecto "Eco" (Echo)');
+    L.push('  · Tiempo de eco: -0.040 s');
+    L.push('  · Nº de ecos: '+n);
+    L.push('  · Intensidad inicial: 1.0   · Decaimiento: '+S.trails.decay.toFixed(2));
+    L.push('  · Operador de eco: '+mode); L.push(''); }
+  if(S.strobe.on){ const per=(1/S.strobe.rate).toFixed(3);
+    L.push('[ESTROBO] → efecto "Luz estroboscópica" (Strobe Light)');
+    L.push('  · Período de estrobo: '+per+' s   · Duración: '+(per*S.strobe.amt*0.5).toFixed(3)+' s');
+    L.push('  · '+(S.strobe.mode===1?'Operador: "Invertir"':'Estrobo: "Solo color" = negro'));
+    L.push('  · Mezclar con original: 0%'); L.push(''); }
+  if(S.glitch.on){
+    L.push('[GLITCH/DATAMOSH] → efecto "VR Digital Glitch" (Video inmersivo)');
+    L.push('  · Master / cantidad: '+PCT(S.glitch.amt)+'   · Bloques: '+PCT(S.glitch.block));
+    L.push('  · RGB split ('+PCT(S.glitch.rgb)+'): mejor con el overlay; en nativo, duplicá el clip');
+    L.push('    y desplazá canales R/B con "Aritmética/Channel Mixer".'); L.push(''); }
+  if(S.shake.on){
+    L.push('[SHAKE] → efecto "Transformar" (Transform)');
+    L.push('  · Posición: keyframes aleatorios cada 1–2 frames, amplitud ±'+Math.round(S.shake.amt*40)+' px');
+    L.push('  · Desactivá "Usar obturador de composición" para que sea instantáneo.'); L.push(''); }
+  if(S.scan.on){
+    L.push('[SCANLINES/VHS] → "VR Digital Glitch" + "Ruido" (Noise) + bajar nitidez en Lumetri');
+    L.push('  · Fuerza scanlines: '+PCT(S.scan.amt)+'  (el overlay lo clava mejor)'); L.push(''); }
+  if(!S.trails.on&&!S.strobe.on&&!S.glitch.on&&!S.shake.on&&!S.scan.on) L.push('(no hay efectos activos)');
+  L.push('────────────────────────');
+  L.push('TIP: el .webm exportado YA tiene todo aplicado. Ponelo en una pista');
+  L.push('superior con modo de fusión "Trama (Screen)" o "Aclarar (Lighten)"');
+  L.push('sobre tu clip, y ajustá opacidad a gusto.');
+  return L.join('\n');
+}
+$('recipeBtn').addEventListener('click',()=>{
+  const txt=buildRecipe(); const box=$('recipeBox'); box.textContent=txt; box.style.display='block';
+  navigator.clipboard&&navigator.clipboard.writeText(txt).catch(()=>{});
+  download(new Blob([txt],{type:'text/plain'}),'glitchdown-receta-premiere.txt');
+});
+
+// stats
+setInterval(()=>{ $('stats').innerHTML=W+'×'+H+'<br>'+(S.source==='video'?'video':'footage prueba'); }, 500);
+syncFxUI();
+</script>
+</body>
+</html>

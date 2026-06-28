@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EXTRUDE — Human Glitche · logos vector a 3D, tapas y export OBJ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#050505; --surface-0:#0a0a0a; --surface-1:#0c0c0c; --surface-2:#131313;
+  --border:rgba(240,237,230,.12); --border-strong:rgba(240,237,230,.25);
+  --ink:#f0ede6; --t2:rgba(240,237,230,.6); --t3:rgba(240,237,230,.4);
+  --acid:#b8ff00; --acid-bg:rgba(184,255,0,.12); --acid-br:rgba(184,255,0,.35);
+  --cyan:#3ad0ff; --red:#ff2d55; --orange:#ffcc33;
+  --radius:6px; --font:'Space Mono',monospace; --disp:'Bebas Neue',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);overflow:hidden;position:relative;}
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");z-index:0;pointer-events:none;opacity:.4;}
+
+.app{position:relative;z-index:1;display:flex;flex-direction:column;height:100vh;}
+.header{display:flex;align-items:center;justify-content:space-between;padding:11px 18px;background:var(--surface-0);border-bottom:1px solid var(--border);flex:0 0 auto;}
+.brand{font-family:var(--disp);font-size:30px;letter-spacing:.04em;line-height:.8;}
+.brand b{color:var(--acid);font-weight:400;}
+.brand span{font-size:9px;letter-spacing:.22em;color:var(--t3);display:block;font-family:var(--font);margin-top:3px;}
+.header a{font-size:10px;letter-spacing:.2em;color:var(--t3);text-decoration:none;}
+.header a:hover{color:var(--acid);}
+
+.main{flex:1 1 auto;display:flex;min-height:0;}
+.panel{flex:0 0 320px;background:var(--surface-1);border-right:1px solid var(--border);overflow-y:auto;padding:14px 0 60px;}
+.stage{flex:1 1 auto;position:relative;background:radial-gradient(120% 120% at 50% 30%,#101012 0%,#050505 70%);min-width:0;}
+.stage canvas{display:block;width:100%;height:100%;}
+.drop-hint{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;color:var(--t3);font-size:11px;letter-spacing:.15em;text-transform:uppercase;flex-direction:column;gap:8px;}
+.drop-hint.on{background:rgba(184,255,0,.06);outline:2px dashed var(--acid-br);outline-offset:-12px;color:var(--acid);pointer-events:none;}
+.stagebar{position:absolute;left:12px;bottom:12px;display:flex;gap:6px;flex-wrap:wrap;}
+.chip{font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--t2);background:var(--surface-0);border:1px solid var(--border);border-radius:20px;padding:5px 11px;cursor:pointer;user-select:none;}
+.chip:hover{border-color:var(--acid-br);color:var(--ink);}
+.chip.on{border-color:var(--acid-br);color:var(--acid);background:var(--acid-bg);}
+.stats{position:absolute;right:12px;top:12px;font-size:9px;letter-spacing:.1em;color:var(--t3);text-align:right;line-height:1.6;}
+
+.sec{border-bottom:1px solid var(--border);}
+.sec>summary{list-style:none;cursor:pointer;padding:13px 18px;display:flex;align-items:center;justify-content:space-between;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--t2);}
+.sec>summary::-webkit-details-marker{display:none;}
+.sec>summary:hover{color:var(--ink);}
+.sec>summary .mk{color:var(--acid);font-size:13px;transition:.2s;}
+.sec[open]>summary .mk{transform:rotate(45deg);}
+.sec .body{padding:4px 18px 16px;}
+
+.row{margin:13px 0;}
+.row label{display:flex;justify-content:space-between;font-size:10px;letter-spacing:.06em;color:var(--t2);margin-bottom:6px;}
+.row label b{color:var(--acid);font-weight:400;}
+input[type=range]{-webkit-appearance:none;width:100%;height:3px;background:var(--border-strong);border-radius:3px;outline:none;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--acid);cursor:pointer;border:2px solid var(--bg);}
+input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:var(--acid);cursor:pointer;border:2px solid var(--bg);}
+
+.seg{display:grid;grid-auto-flow:column;gap:5px;}
+.seg button{flex:1;font-family:var(--font);font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;padding:8px 4px;background:var(--surface-2);color:var(--t2);border:1px solid var(--border);border-radius:5px;cursor:pointer;}
+.seg button:hover{color:var(--ink);border-color:var(--border-strong);}
+.seg button.on{color:var(--acid);border-color:var(--acid-br);background:var(--acid-bg);}
+
+.toggle{display:flex;align-items:center;justify-content:space-between;font-size:10px;letter-spacing:.06em;color:var(--t2);cursor:pointer;padding:4px 0;}
+.toggle .sw{width:34px;height:18px;border-radius:20px;background:var(--surface-2);border:1px solid var(--border);position:relative;transition:.2s;flex:0 0 auto;}
+.toggle .sw::after{content:'';position:absolute;top:1px;left:1px;width:14px;height:14px;border-radius:50%;background:var(--t3);transition:.2s;}
+.toggle.on .sw{background:var(--acid-bg);border-color:var(--acid-br);}
+.toggle.on .sw::after{left:17px;background:var(--acid);}
+
+.colorrow{display:flex;align-items:center;gap:10px;}
+.colorrow input[type=color]{width:40px;height:28px;border:1px solid var(--border);border-radius:5px;background:none;cursor:pointer;padding:0;}
+.swatches{display:flex;gap:6px;}
+.swatches i{width:20px;height:20px;border-radius:4px;cursor:pointer;border:1px solid var(--border);display:block;}
+
+.btnrow{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px;}
+.btn{font-family:var(--font);font-size:10px;letter-spacing:.1em;text-transform:uppercase;padding:11px 8px;border-radius:6px;border:1px solid var(--border);background:var(--surface-2);color:var(--ink);cursor:pointer;text-align:center;}
+.btn:hover{border-color:var(--border-strong);}
+.btn.primary{grid-column:1/-1;background:var(--acid);color:#0a0a0a;border-color:var(--acid);font-weight:700;}
+.btn.primary:hover{filter:brightness(1.08);}
+.hint{font-size:9px;color:var(--t3);line-height:1.6;margin-top:8px;letter-spacing:.03em;}
+.upload{display:block;border:1px dashed var(--border-strong);border-radius:6px;padding:16px;text-align:center;font-size:10px;letter-spacing:.1em;color:var(--t2);text-transform:uppercase;cursor:pointer;}
+.upload:hover{border-color:var(--acid-br);color:var(--acid);}
+.upload b{color:var(--acid);font-weight:400;}
+input[type=file]{display:none;}
+.err{color:var(--red);font-size:9.5px;margin-top:8px;line-height:1.5;display:none;}
+.panel::-webkit-scrollbar{width:8px;}
+.panel::-webkit-scrollbar-thumb{background:var(--border-strong);border-radius:8px;}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <div class="brand"><b>EXTRUDE</b><span>VECTOR → 3D · OBJ</span></div>
+    <a href="/labs/">← LABS</a>
+  </div>
+  <div class="main">
+    <div class="panel">
+
+      <details class="sec" open><summary>FUENTE <span class="mk">+</span></summary>
+        <div class="body">
+          <label class="upload" id="dropZone">
+            <input type="file" id="fileInput" accept=".svg,image/svg+xml">
+            Soltá o <b>elegí un .SVG</b><br>(logo de un solo color ideal)
+          </label>
+          <div class="hint">El SVG se procesa en tu navegador. Soporta múltiples trazos y huecos (contadores de letras, anillos). Si no cargás nada, ves la estrella de ejemplo.</div>
+          <div class="err" id="errBox"></div>
+        </div>
+      </details>
+
+      <details class="sec" open><summary>EXTRUSIÓN <span class="mk">+</span></summary>
+        <div class="body">
+          <div class="row"><label>PROFUNDIDAD <b id="vDepth">40</b></label><input type="range" id="depth" min="2" max="200" value="40" step="1"></div>
+          <div class="row"><label>RESOLUCIÓN DE CURVA <b id="vCurve">12</b></label><input type="range" id="curve" min="2" max="48" value="12" step="1"></div>
+          <div class="row"><label>SEGMENTOS A LO LARGO <b id="vSteps">2</b></label><input type="range" id="steps" min="1" max="120" value="2" step="1"></div>
+          <div class="hint">Subí los segmentos a lo largo si vas a usar deformaciones (twist/bend necesitan malla densa).</div>
+        </div>
+      </details>
+
+      <details class="sec" open><summary>TAPAS <span class="mk">+</span></summary>
+        <div class="body">
+          <div class="row">
+            <label>TIPO DE TAPA</label>
+            <div class="seg" id="capType">
+              <button data-cap="flat" class="on">Plana</button>
+              <button data-cap="bevel">Bisel</button>
+              <button data-cap="round">Redonda</button>
+            </div>
+          </div>
+          <div class="row" id="capSizeRow"><label>TAMAÑO DE TAPA <b id="vCapSize">3</b></label><input type="range" id="capSize" min="0.2" max="20" value="3" step="0.1"></div>
+          <div class="row" id="capThickRow"><label>GROSOR DE TAPA <b id="vCapThick">3</b></label><input type="range" id="capThick" min="0.2" max="20" value="3" step="0.1"></div>
+          <div class="toggle" id="plateTog"><span>PLACA TRASERA</span><div class="sw"></div></div>
+          <div class="row" id="platePadRow" style="display:none"><label>MARGEN PLACA <b id="vPlatePad">8</b></label><input type="range" id="platePad" min="0" max="60" value="8" step="1"></div>
+          <div class="row" id="plateDepthRow" style="display:none"><label>GROSOR PLACA <b id="vPlateDepth">12</b></label><input type="range" id="plateDepth" min="2" max="120" value="12" step="1"></div>
+        </div>
+      </details>
+
+      <details class="sec" open><summary>DEFORMAR MALLA <span class="mk">+</span></summary>
+        <div class="body">
+          <div class="row"><label>TWIST (torsión) <b id="vTwist">0</b>°</label><input type="range" id="twist" min="-360" max="360" value="0" step="1"></div>
+          <div class="row"><label>TAPER (cono) <b id="vTaper">0</b></label><input type="range" id="taper" min="-100" max="100" value="0" step="1"></div>
+          <div class="row"><label>BEND (curvar) <b id="vBend">0</b></label><input type="range" id="bend" min="-100" max="100" value="0" step="1"></div>
+          <div class="row"><label>INFLAR <b id="vInflate">0</b></label><input type="range" id="inflate" min="-100" max="100" value="0" step="1"></div>
+          <div class="row"><label>SHEAR (inclinar) <b id="vShear">0</b></label><input type="range" id="shear" min="-100" max="100" value="0" step="1"></div>
+          <hr style="border:none;border-top:1px solid var(--border);margin:12px 0">
+          <div class="row"><label>RUIDO / GLITCH <b id="vNoise">0</b></label><input type="range" id="noise" min="0" max="100" value="0" step="1"></div>
+          <div class="row"><label>ESCALA DE RUIDO <b id="vNoiseScale">30</b></label><input type="range" id="noiseScale" min="2" max="100" value="30" step="1"></div>
+          <button class="btn" id="resetDeform" style="width:100%;margin-top:6px">Reset deformaciones</button>
+        </div>
+      </details>
+
+      <details class="sec"><summary>ESTILO <span class="mk">+</span></summary>
+        <div class="body">
+          <div class="row colorrow">
+            <input type="color" id="color" value="#b8ff00">
+            <div class="swatches" id="swatches"></div>
+          </div>
+          <div class="row"><label>METAL <b id="vMetal">0.30</b></label><input type="range" id="metal" min="0" max="1" value="0.3" step="0.01"></div>
+          <div class="row"><label>RUGOSIDAD <b id="vRough">0.40</b></label><input type="range" id="rough" min="0" max="1" value="0.4" step="0.01"></div>
+          <div class="toggle on" id="smoothTog"><span>SOMBREADO SUAVE</span><div class="sw"></div></div>
+          <div class="toggle" id="wireTog"><span>WIREFRAME</span><div class="sw"></div></div>
+          <div class="row" style="margin-top:14px">
+            <label>ENTORNO</label>
+            <div class="seg" id="envType">
+              <button data-env="studio" class="on">Studio</button>
+              <button data-env="dark">Oscuro</button>
+              <button data-env="neon">Neón</button>
+            </div>
+          </div>
+        </div>
+      </details>
+
+      <details class="sec" open><summary>EXPORTAR <span class="mk">+</span></summary>
+        <div class="body">
+          <button class="btn primary" id="exObj">↓ Descargar OBJ</button>
+          <div class="btnrow">
+            <button class="btn" id="exStl">STL</button>
+            <button class="btn" id="exGlb">GLB</button>
+          </div>
+          <button class="btn" id="exPng" style="width:100%;margin-top:6px">↓ Render PNG</button>
+          <div class="hint">OBJ/STL para impresión 3D o importar a Blender/C4D. GLB conserva color y material (web/AR). El render se exporta a la resolución del visor.</div>
+        </div>
+      </details>
+
+    </div>
+    <div class="stage" id="stage">
+      <div class="drop-hint" id="dropHint"></div>
+      <div class="stats" id="stats"></div>
+      <div class="stagebar">
+        <div class="chip on" id="cRotate">AUTO-ROTAR</div>
+        <div class="chip" id="cGrid">GRILLA</div>
+        <div class="chip" id="cReset">RECENTRAR</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.161.0/examples/jsm/"
+}}
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { SVGLoader } from 'three/addons/loaders/SVGLoader.js';
+import { OBJExporter } from 'three/addons/exporters/OBJExporter.js';
+import { STLExporter } from 'three/addons/exporters/STLExporter.js';
+import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js';
+
+const DEFAULT_SVG = `<svg viewBox="0 0 100 100"><path d="M50 3 L61.8 38.2 L98.5 38.2 L68.8 60 L80.5 95.1 L50 73.2 L19.5 95.1 L31.2 60 L1.5 38.2 L38.2 38.2 Z"/></svg>`;
+
+const $ = id => document.getElementById(id);
+const stage = $('stage');
+
+// ---------- THREE setup ----------
+const renderer = new THREE.WebGLRenderer({ antialias:true, alpha:true, preserveDrawingBuffer:true });
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.05;
+stage.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 8000);
+camera.position.set(0, 0, 320);
+
+const pmrem = new THREE.PMREMGenerator(renderer);
+const envMap = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+scene.environment = envMap;
+
+const key = new THREE.DirectionalLight(0xffffff, 2.2); key.position.set(1,1.5,2); scene.add(key);
+const fill = new THREE.DirectionalLight(0x88aaff, 0.7); fill.position.set(-2,-1,-1); scene.add(fill);
+scene.add(new THREE.AmbientLight(0xffffff, 0.25));
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true; controls.dampingFactor = 0.08;
+
+const grid = new THREE.GridHelper(2000, 40, 0x222222, 0x161616);
+grid.position.y = -120; grid.visible = false; scene.add(grid);
+
+const group = new THREE.Group(); scene.add(group);
+
+const material = new THREE.MeshStandardMaterial({ color:0xb8ff00, metalness:0.3, roughness:0.4, side:THREE.DoubleSide });
+const plateMat = material.clone(); plateMat.color = new THREE.Color(0xb8ff00);
+
+let logoMesh=null, plateMesh=null;
+let baseGeo=null, basePos=null, baseNrm=null, baseBounds=null;   // pre-deform (centered) data
+let shapes2D=null;                                               // parsed shapes for re-extrude
+
+// ---------- state ----------
+const S = {
+  depth:40, curve:12, steps:2,
+  cap:'flat', capSize:3, capThick:3,
+  plate:false, platePad:8, plateDepth:12,
+  twist:0, taper:0, bend:0, inflate:0, shear:0, noise:0, noiseScale:30,
+  metal:0.3, rough:0.4, smooth:true, wire:false, env:'studio',
+  color:'#b8ff00', rotate:true
+};
+
+// ---------- SVG -> shapes ----------
+function loadSVG(text){
+  $('errBox').style.display='none';
+  let data;
+  try { data = new SVGLoader().parse(text); }
+  catch(e){ return showErr('No pude leer el SVG: '+e.message); }
+  const shapes=[];
+  for(const path of data.paths){
+    const ss = SVGLoader.createShapes(path);
+    for(const s of ss) shapes.push(s);
+  }
+  if(!shapes.length) return showErr('El SVG no tiene trazos rellenos (paths con fill). Probá con un logo sólido, no solo líneas.');
+  shapes2D = shapes;
+  rebuild();
+}
+function showErr(m){ const e=$('errBox'); e.textContent=m; e.style.display='block'; }
+
+// ---------- build extruded geometry ----------
+function rebuild(){
+  if(!shapes2D) return;
+  const bevelEnabled = S.cap!=='flat';
+  const opts = {
+    depth: S.depth, curveSegments: S.curve, steps: S.steps,
+    bevelEnabled,
+    bevelThickness: S.capThick, bevelSize: S.capSize, bevelOffset:0,
+    bevelSegments: S.cap==='round' ? 5 : 1
+  };
+  const geos = shapes2D.map(s => new THREE.ExtrudeGeometry(s, opts));
+  let merged = geos.length===1 ? geos[0] : BufferGeometryUtils.mergeGeometries(geos, false);
+  // SVG Y is down -> flip, then center
+  merged.scale(1,-1,1);
+  merged.computeBoundingBox();
+  const bb = merged.boundingBox, c = new THREE.Vector3();
+  bb.getCenter(c);
+  merged.translate(-c.x,-c.y,-c.z);
+  // normalize size so any logo fits the camera nicely
+  const size = new THREE.Vector3(); bb.getSize(size);
+  const maxDim = Math.max(size.x,size.y) || 1;
+  const fit = 160/maxDim;
+  merged.scale(fit,fit,fit);
+  merged.computeVertexNormals();
+
+  baseGeo = merged;
+  basePos = merged.attributes.position.array.slice();
+  baseNrm = merged.attributes.normal.array.slice();
+  merged.computeBoundingBox();
+  baseBounds = merged.boundingBox.clone();
+
+  // (re)create logo mesh
+  if(logoMesh){ logoMesh.geometry.dispose(); group.remove(logoMesh); }
+  logoMesh = new THREE.Mesh(baseGeo, material);
+  group.add(logoMesh);
+
+  buildPlate();
+  applyDeform();
+  updateStats();
+}
+
+function buildPlate(){
+  if(plateMesh){ plateMesh.geometry.dispose(); group.remove(plateMesh); plateMesh=null; }
+  if(!S.plate || !baseBounds) return;
+  const sz = new THREE.Vector3(); baseBounds.getSize(sz);
+  const w = sz.x + S.platePad*2, h = sz.y + S.platePad*2, d = S.plateDepth;
+  const g = new THREE.BoxGeometry(w,h,d);
+  // place behind the logo (logo depth is centered at 0; back face ~ -sz.z/2)
+  plateMesh = new THREE.Mesh(g, plateMat);
+  plateMesh.position.z = -sz.z/2 - d/2;
+  group.add(plateMesh);
+}
+
+// ---------- deformation (non-destructive, from base data) ----------
+function hash(x,y,z){ // cheap value noise
+  let n = Math.sin(x*12.9898 + y*78.233 + z*37.719)*43758.5453;
+  return (n-Math.floor(n));
+}
+function vnoise(x,y,z){
+  const xi=Math.floor(x),yi=Math.floor(y),zi=Math.floor(z);
+  const xf=x-xi,yf=y-yi,zf=z-zi;
+  const u=xf*xf*(3-2*xf),v=yf*yf*(3-2*yf),w=zf*zf*(3-2*zf);
+  const l=(a,b,t)=>a+(b-a)*t;
+  const c=(dx,dy,dz)=>hash(xi+dx,yi+dy,zi+dz);
+  return l(l(l(c(0,0,0),c(1,0,0),u),l(c(0,1,0),c(1,1,0),u),v),
+           l(l(c(0,0,1),c(1,0,1),u),l(c(0,1,1),c(1,1,1),u),v),w)*2-1;
+}
+
+function applyDeform(){
+  if(!baseGeo) return;
+  const pos = baseGeo.attributes.position.array;
+  const n = pos.length/3;
+  const bb = baseBounds, sz=new THREE.Vector3(); bb.getSize(sz);
+  const zmin=bb.min.z, zspan=(sz.z||1);
+  const xmin=bb.min.x, xspan=(sz.x||1);
+  const twist=THREE.MathUtils.degToRad(S.twist);
+  const taper=S.taper/100, bend=S.bend/100, inflate=S.inflate/100*40, shear=S.shear/100;
+  const noiseAmt=S.noise/100*30, nsc=1/S.noiseScale;
+
+  for(let i=0;i<n;i++){
+    let x=basePos[i*3], y=basePos[i*3+1], z=basePos[i*3+2];
+    const nx=baseNrm[i*3], ny=baseNrm[i*3+1], nz=baseNrm[i*3+2];
+    const tz=(z-zmin)/zspan;          // 0..1 along depth
+    const tzc=tz-0.5;                  // -0.5..0.5
+
+    // inflate along normal
+    if(inflate){ x+=nx*inflate; y+=ny*inflate; z+=nz*inflate; }
+    // taper: scale xy by depth
+    if(taper){ const s=1+taper*tzc*2; x*=s; y*=s; }
+    // twist around z by depth
+    if(twist){ const a=twist*tzc; const cs=Math.cos(a),sn=Math.sin(a); const ox=x; x=ox*cs-y*sn; y=ox*sn+y*cs; }
+    // shear: skew x by y
+    if(shear){ x+= shear*y; }
+    // bend: curve the bar along x -> push y
+    if(bend){ const tx=(x-xmin)/xspan-0.5; y+= -bend*xspan*0.9*(tx*tx); }
+    // noise displacement along normal
+    if(noiseAmt){ const d=vnoise(x*nsc,y*nsc,z*nsc); x+=nx*d*noiseAmt; y+=ny*d*noiseAmt; z+=nz*d*noiseAmt; }
+
+    pos[i*3]=x; pos[i*3+1]=y; pos[i*3+2]=z;
+  }
+  baseGeo.attributes.position.needsUpdate=true;
+  baseGeo.computeVertexNormals();
+  baseGeo.computeBoundingBox();
+}
+
+// ---------- material / env ----------
+function applyStyle(){
+  material.metalness=plateMat.metalness=S.metal;
+  material.roughness=plateMat.roughness=S.rough;
+  material.flatShading=plateMat.flatShading=!S.smooth;
+  material.wireframe=plateMat.wireframe=S.wire;
+  material.color.set(S.color);
+  material.needsUpdate=true; plateMat.needsUpdate=true;
+}
+function applyEnv(){
+  if(S.env==='studio'){ scene.background=null; renderer.toneMappingExposure=1.05; key.intensity=2.2; fill.color.set(0x88aaff); }
+  else if(S.env==='dark'){ scene.background=new THREE.Color(0x050505); renderer.toneMappingExposure=0.85; key.intensity=2.6; fill.color.set(0x445566); }
+  else { scene.background=new THREE.Color(0x080010); renderer.toneMappingExposure=1.2; key.intensity=1.4; fill.color.set(0xff2d55); }
+}
+
+function updateStats(){
+  let tris=0;
+  group.traverse(o=>{ if(o.isMesh){ const g=o.geometry; tris += (g.index?g.index.count:g.attributes.position.count)/3; }});
+  $('stats').innerHTML = `${Math.round(tris).toLocaleString()} tris<br>${shapes2D?shapes2D.length:0} trazos`;
+}
+
+// ---------- camera fit ----------
+function fitCamera(){
+  const box=new THREE.Box3().setFromObject(group);
+  if(box.isEmpty()) return;
+  const sz=box.getSize(new THREE.Vector3()), c=box.getCenter(new THREE.Vector3());
+  const maxd=Math.max(sz.x,sz.y,sz.z);
+  const dist=maxd/(2*Math.tan(THREE.MathUtils.degToRad(camera.fov/2)))*1.6;
+  controls.target.copy(c);
+  camera.position.set(c.x, c.y+sz.y*0.15, c.z+dist);
+  camera.updateProjectionMatrix();
+}
+
+// ---------- resize ----------
+function resize(){
+  const w=stage.clientWidth,h=stage.clientHeight;
+  renderer.setSize(w,h,false);
+  camera.aspect=w/h; camera.updateProjectionMatrix();
+}
+new ResizeObserver(resize).observe(stage);
+
+// ---------- render loop ----------
+function tick(){
+  requestAnimationFrame(tick);
+  if(S.rotate) group.rotation.y += 0.005;
+  controls.update();
+  renderer.render(scene,camera);
+}
+
+// ================= UI WIRING =================
+function bindRange(id,key,fmt,after){
+  const el=$(id), lab=$('v'+id.charAt(0).toUpperCase()+id.slice(1));
+  const upd=()=>{ S[key]=parseFloat(el.value); if(lab) lab.textContent=fmt?fmt(S[key]):el.value; after&&after(); };
+  el.addEventListener('input',upd); upd();
+}
+// extrusion (full rebuild)
+bindRange('depth','depth',null,rebuild);
+bindRange('curve','curve',null,rebuild);
+bindRange('steps','steps',null,rebuild);
+// caps (rebuild)
+bindRange('capSize','capSize',v=>v.toFixed(1),rebuild);
+bindRange('capThick','capThick',v=>v.toFixed(1),rebuild);
+bindRange('platePad','platePad',null,()=>{buildPlate();applyDeform();updateStats();});
+bindRange('plateDepth','plateDepth',null,()=>{buildPlate();updateStats();});
+// deform (cheap, no rebuild)
+['twist','taper','bend','inflate','shear','noise','noiseScale'].forEach(k=>bindRange(k,k,null,applyDeform));
+// style
+bindRange('metal','metal',v=>v.toFixed(2),applyStyle);
+bindRange('rough','rough',v=>v.toFixed(2),applyStyle);
+
+// cap type segmented
+$('capType').addEventListener('click',e=>{
+  const b=e.target.closest('button'); if(!b)return;
+  [...$('capType').children].forEach(x=>x.classList.toggle('on',x===b));
+  S.cap=b.dataset.cap;
+  const flat=S.cap==='flat';
+  $('capSizeRow').style.opacity=flat?.35:1; $('capThickRow').style.opacity=flat?.35:1;
+  rebuild();
+});
+// env segmented
+$('envType').addEventListener('click',e=>{
+  const b=e.target.closest('button'); if(!b)return;
+  [...$('envType').children].forEach(x=>x.classList.toggle('on',x===b));
+  S.env=b.dataset.env; applyEnv();
+});
+// plate toggle
+$('plateTog').addEventListener('click',()=>{
+  S.plate=!S.plate; $('plateTog').classList.toggle('on',S.plate);
+  $('platePadRow').style.display=S.plate?'block':'none';
+  $('plateDepthRow').style.display=S.plate?'block':'none';
+  buildPlate(); updateStats();
+});
+// smooth / wire toggles
+$('smoothTog').addEventListener('click',()=>{ S.smooth=!S.smooth; $('smoothTog').classList.toggle('on',S.smooth); applyStyle(); });
+$('wireTog').addEventListener('click',()=>{ S.wire=!S.wire; $('wireTog').classList.toggle('on',S.wire); applyStyle(); });
+// color
+$('color').addEventListener('input',e=>{ S.color=e.target.value; applyStyle(); });
+const SW=['#b8ff00','#ff2d55','#3ad0ff','#ffcc33','#f0ede6','#ff6b00','#9b5cff','#0a0a0a'];
+const swBox=$('swatches');
+SW.forEach(c=>{ const i=document.createElement('i'); i.style.background=c; i.onclick=()=>{ S.color=c; $('color').value=c; applyStyle(); }; swBox.appendChild(i); });
+// reset deform
+$('resetDeform').addEventListener('click',()=>{
+  ['twist','taper','bend','inflate','shear','noise'].forEach(k=>{ S[k]=0; const el=$(k); el.value=0; el.dispatchEvent(new Event('input')); });
+});
+// stage chips
+$('cRotate').addEventListener('click',()=>{ S.rotate=!S.rotate; $('cRotate').classList.toggle('on',S.rotate); });
+$('cGrid').addEventListener('click',()=>{ grid.visible=!grid.visible; $('cGrid').classList.toggle('on',grid.visible); });
+$('cReset').addEventListener('click',()=>{ group.rotation.set(0,0,0); fitCamera(); });
+
+// file input + drag/drop
+$('fileInput').addEventListener('change',e=>{ const f=e.target.files[0]; if(f) readFile(f); });
+function readFile(f){
+  if(!/svg/i.test(f.type) && !/\.svg$/i.test(f.name)) return showErr('Tiene que ser un archivo .SVG');
+  const r=new FileReader(); r.onload=()=>{ loadSVG(r.result); fitCamera(); }; r.readAsText(f);
+}
+const dz=$('dropHint');
+['dragenter','dragover'].forEach(ev=>stage.addEventListener(ev,e=>{e.preventDefault();dz.classList.add('on');dz.textContent='SOLTÁ EL SVG';}));
+['dragleave','drop'].forEach(ev=>stage.addEventListener(ev,e=>{e.preventDefault();dz.classList.remove('on');dz.textContent='';}));
+stage.addEventListener('drop',e=>{ const f=e.dataTransfer.files[0]; if(f) readFile(f); });
+
+// ---------- export ----------
+function download(blob,name){ const u=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=u; a.download=name; a.click(); setTimeout(()=>URL.revokeObjectURL(u),1500); }
+$('exObj').addEventListener('click',()=>{
+  const txt=new OBJExporter().parse(group);
+  download(new Blob([txt],{type:'text/plain'}),'logo-extrude.obj');
+});
+$('exStl').addEventListener('click',()=>{
+  const txt=new STLExporter().parse(group);
+  download(new Blob([txt],{type:'text/plain'}),'logo-extrude.stl');
+});
+$('exGlb').addEventListener('click',()=>{
+  new GLTFExporter().parse(group,res=>{ download(new Blob([res],{type:'model/gltf-binary'}),'logo-extrude.glb'); },()=>showErr('Falló el export GLB'),{binary:true});
+});
+$('exPng').addEventListener('click',()=>{
+  renderer.render(scene,camera);
+  renderer.domElement.toBlob(b=>download(b,'logo-extrude.png'),'image/png');
+});
+
+// ---------- go ----------
+applyStyle(); applyEnv(); resize();
+loadSVG(DEFAULT_SVG); fitCamera();
+tick();
+</script>
+</body>
+</html>
