@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LETRAS — Human Glitche · lettering, graffiti y caligrafía para logos de palabra</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#050505; --surface-0:#0a0a0a; --surface-1:#0c0c0c; --surface-2:#131313;
+  --border:rgba(240,237,230,.12); --border-strong:rgba(240,237,230,.25);
+  --ink:#f0ede6; --t2:rgba(240,237,230,.6); --t3:rgba(240,237,230,.4);
+  --acid:#b8ff00; --acid-bg:rgba(184,255,0,.12); --acid-br:rgba(184,255,0,.35);
+  --cyan:#3ad0ff; --red:#ff2d55; --gold:#ffcc33;
+  --radius:6px; --font:'Space Mono',monospace; --disp:'Bebas Neue',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);overflow:hidden;position:relative;}
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");z-index:0;pointer-events:none;opacity:.4;}
+
+.app{position:relative;z-index:1;display:flex;flex-direction:column;height:100vh;}
+.header{display:flex;align-items:center;justify-content:space-between;padding:11px 18px;background:var(--surface-0);border-bottom:1px solid var(--border);flex:0 0 auto;}
+.brand{font-family:var(--disp);font-size:30px;letter-spacing:.04em;line-height:.8;}
+.brand b{color:var(--acid);font-weight:400;}
+.brand span{font-size:9px;letter-spacing:.2em;color:var(--t3);display:block;font-family:var(--font);margin-top:3px;}
+.header a{font-size:10px;letter-spacing:.2em;color:var(--t3);text-decoration:none;}
+.header a:hover{color:var(--acid);}
+
+.main{flex:1 1 auto;display:flex;min-height:0;}
+.panel{flex:0 0 340px;background:var(--surface-1);border-right:1px solid var(--border);overflow-y:auto;padding:0 0 70px;}
+.stage{flex:1 1 auto;position:relative;display:flex;flex-direction:column;min-width:0;}
+.stagebar{display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid var(--border);background:var(--surface-0);flex-wrap:wrap;}
+.canvaswrap{flex:1 1 auto;overflow:auto;display:flex;align-items:center;justify-content:center;padding:30px;
+  background:
+   repeating-conic-gradient(#161618 0% 25%, #0e0e10 0% 50%) 50% / 22px 22px;}
+.canvaswrap.solid{background:var(--cvbg,#0e0e10);}
+#cv{max-width:100%;max-height:100%;}
+
+.sec{border-bottom:1px solid var(--border);}
+.sec>summary{list-style:none;cursor:pointer;padding:12px 18px;display:flex;align-items:center;justify-content:space-between;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--t2);}
+.sec>summary::-webkit-details-marker{display:none;}
+.sec>summary:hover{color:var(--ink);}
+.sec>summary .mk{color:var(--acid);font-size:13px;transition:.2s;}
+.sec[open]>summary .mk{transform:rotate(45deg);}
+.sec .body{padding:6px 18px 16px;}
+
+textarea#text{width:100%;font-family:var(--disp);font-size:26px;letter-spacing:.02em;padding:11px 12px;background:var(--surface-0);border:1px solid var(--border);border-radius:6px;color:var(--ink);resize:vertical;min-height:54px;line-height:1.1;}
+textarea#text:focus{outline:none;border-color:var(--acid-br);}
+
+.seg{display:grid;grid-auto-flow:column;gap:5px;}
+.seg button{font-family:var(--font);font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;padding:8px 3px;background:var(--surface-2);color:var(--t2);border:1px solid var(--border);border-radius:5px;cursor:pointer;}
+.seg button:hover{color:var(--ink);} .seg button.on{color:var(--acid);border-color:var(--acid-br);background:var(--acid-bg);}
+.chips{display:flex;flex-wrap:wrap;gap:5px;}
+.preset{font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--t2);background:var(--surface-2);border:1px solid var(--border);border-radius:20px;padding:6px 11px;cursor:pointer;}
+.preset:hover{border-color:var(--acid-br);color:var(--acid);}
+
+.fontbtn{width:100%;text-align:left;background:var(--surface-0);border:1px solid var(--border);border-radius:6px;padding:10px 12px;cursor:pointer;color:var(--ink);}
+.fontbtn:hover{border-color:var(--border-strong);}
+.fontbtn .fn{font-size:18px;} .fontbtn .fm{font-size:8.5px;letter-spacing:.08em;color:var(--t3);margin-top:3px;text-transform:uppercase;}
+.list{position:fixed;display:none;background:var(--surface-2);border:1px solid var(--border-strong);border-radius:8px;max-height:330px;overflow-y:auto;z-index:50;box-shadow:0 16px 40px rgba(0,0,0,.6);}
+.list.open{display:block;}
+.list .opt{padding:9px 12px;cursor:pointer;border-bottom:1px solid var(--border);}
+.list .opt:hover{background:var(--acid-bg);}
+.list .opt .on{font-size:19px;color:var(--ink);} .list .opt .om{font-size:8px;letter-spacing:.07em;color:var(--t3);text-transform:uppercase;margin-top:2px;}
+
+.row{margin:11px 0;}
+.row label{display:flex;justify-content:space-between;font-size:10px;letter-spacing:.05em;color:var(--t2);margin-bottom:6px;}
+.row label b{color:var(--acid);font-weight:400;}
+input[type=range]{-webkit-appearance:none;width:100%;height:3px;background:var(--border-strong);border-radius:3px;outline:none;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--acid);cursor:pointer;border:2px solid var(--bg);}
+input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:var(--acid);cursor:pointer;border:2px solid var(--bg);}
+.crow{display:flex;align-items:center;gap:8px;margin:9px 0;font-size:10px;color:var(--t2);letter-spacing:.04em;}
+.crow input[type=color]{width:34px;height:26px;border:1px solid var(--border);border-radius:5px;background:none;cursor:pointer;padding:0;flex:0 0 auto;}
+.crow .lbl{flex:1;}
+.toggle{display:flex;align-items:center;justify-content:space-between;font-size:10px;letter-spacing:.05em;color:var(--t2);cursor:pointer;padding:4px 0;}
+.sw{width:34px;height:18px;border-radius:20px;background:var(--surface-2);border:1px solid var(--border);position:relative;transition:.2s;flex:0 0 auto;}
+.sw::after{content:'';position:absolute;top:1px;left:1px;width:14px;height:14px;border-radius:50%;background:var(--t3);transition:.2s;}
+.toggle.on .sw{background:var(--acid-bg);border-color:var(--acid-br);} .toggle.on .sw::after{left:17px;background:var(--acid);}
+
+.btn{font-family:var(--font);font-size:10px;letter-spacing:.1em;text-transform:uppercase;padding:11px 8px;border-radius:6px;border:1px solid var(--border);background:var(--surface-2);color:var(--ink);cursor:pointer;text-align:center;width:100%;}
+.btn:hover{border-color:var(--border-strong);}
+.btn.primary{background:var(--acid);color:#0a0a0a;border-color:var(--acid);font-weight:700;}
+.btnrow{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px;}
+.gen{font-family:var(--disp);font-size:22px;letter-spacing:.04em;padding:9px 22px;background:var(--acid);color:#0a0a0a;border:none;border-radius:6px;cursor:pointer;}
+.gen:hover{filter:brightness(1.08);}
+.curfont{font-size:10px;color:var(--t2);letter-spacing:.04em;} .curfont b{color:var(--ink);font-weight:400;}
+.hint{font-size:9px;color:var(--t3);line-height:1.6;margin-top:8px;letter-spacing:.02em;}
+.panel::-webkit-scrollbar{width:8px;} .panel::-webkit-scrollbar-thumb{background:var(--border-strong);border-radius:8px;}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <div class="brand"><b>LETRAS</b><span>LETTERING · GRAFFITI · LOGOS DE PALABRA</span></div>
+    <a href="/labs/">← LABS</a>
+  </div>
+  <div class="main">
+    <div class="panel">
+
+      <details class="sec" open><summary>PALABRA <span class="mk">+</span></summary>
+        <div class="body">
+          <textarea id="text" spellcheck="false">GLITCHE</textarea>
+          <div class="hint">Una o dos líneas (Enter para saltar). Mayúsculas suelen pegar más para logos.</div>
+        </div>
+      </details>
+
+      <details class="sec" open><summary>FUENTE <span class="mk">+</span></summary>
+        <div class="body">
+          <button class="fontbtn" id="fontBtn"><div class="fn" id="fnName">—</div><div class="fm" id="fnMeta"></div></button>
+          <div class="hint" style="margin-top:6px">Banco curado de fuentes de lettering (graffiti, display pesadas, script/caligrafía).</div>
+        </div>
+      </details>
+
+      <details class="sec" open><summary>ESTILOS <span class="mk">+</span></summary>
+        <div class="body"><div class="chips" id="presetChips"></div></div>
+      </details>
+
+      <details class="sec" open><summary>RELLENO <span class="mk">+</span></summary>
+        <div class="body">
+          <div class="seg" id="fillSeg" style="margin-bottom:8px">
+            <button data-f="solid" class="on">Sólido</button>
+            <button data-f="gradient">Degradé</button>
+            <button data-f="chrome">Cromo</button>
+            <button data-f="none">Sin</button>
+          </div>
+          <div class="crow"><input type="color" id="c1" value="#b8ff00"><span class="lbl">Color principal</span></div>
+          <div class="crow" id="c2row"><input type="color" id="c2" value="#3ad0ff"><span class="lbl">Color 2 (degradé/cromo)</span></div>
+        </div>
+      </details>
+
+      <details class="sec" open><summary>CONTORNO & 3D <span class="mk">+</span></summary>
+        <div class="body">
+          <div class="toggle on" id="o1tog"><span>CONTORNO INTERIOR</span><div class="sw"></div></div>
+          <div class="crow"><input type="color" id="o1c" value="#0a0a0a"><span class="lbl">color</span><input type="range" id="o1w" min="1" max="30" value="8" style="flex:2"></div>
+          <div class="toggle" id="o2tog"><span>CONTORNO EXTERIOR (keyline)</span><div class="sw"></div></div>
+          <div class="crow"><input type="color" id="o2c" value="#ffffff"><span class="lbl">color</span><input type="range" id="o2w" min="1" max="40" value="18" style="flex:2"></div>
+          <hr style="border:none;border-top:1px solid var(--border);margin:12px 0">
+          <div class="row"><label>PROFUNDIDAD 3D <b id="vDepth">0</b></label><input type="range" id="depth" min="0" max="40" value="0"></div>
+          <div class="row"><label>ÁNGULO 3D <b id="vAngle">45</b>°</label><input type="range" id="angle" min="0" max="359" value="45"></div>
+          <div class="crow"><input type="color" id="depthc" value="#16140f"><span class="lbl">color del bloque 3D</span></div>
+        </div>
+      </details>
+
+      <details class="sec"><summary>FORMA & GLOW <span class="mk">+</span></summary>
+        <div class="body">
+          <div class="row"><label>TAMAÑO <b id="vSize">150</b></label><input type="range" id="size" min="60" max="320" value="150"></div>
+          <div class="row"><label>TRACKING <b id="vTrk">0</b></label><input type="range" id="trk" min="-30" max="60" value="0"></div>
+          <div class="row"><label>CURVA / ARCO <b id="vCurve">0</b></label><input type="range" id="curve" min="-100" max="100" value="0"></div>
+          <div class="row"><label>INCLINACIÓN <b id="vSkew">0</b>°</label><input type="range" id="skew" min="-35" max="35" value="0"></div>
+          <hr style="border:none;border-top:1px solid var(--border);margin:12px 0">
+          <div class="row"><label>GLOW / NEÓN <b id="vGlow">0</b></label><input type="range" id="glow" min="0" max="60" value="0"></div>
+          <div class="crow"><input type="color" id="glowc" value="#b8ff00"><span class="lbl">color del glow</span></div>
+        </div>
+      </details>
+
+      <details class="sec"><summary>TEXTURA <span class="mk">+</span></summary>
+        <div class="body">
+          <div class="seg" id="texSeg" style="margin-bottom:8px">
+            <button data-t="none" class="on">Ninguna</button>
+            <button data-t="spray">Spray</button>
+            <button data-t="grain">Grano</button>
+          </div>
+          <div class="row"><label>INTENSIDAD <b id="vTex">40</b></label><input type="range" id="tex" min="0" max="100" value="40"></div>
+        </div>
+      </details>
+
+      <details class="sec" open><summary>EXPORTAR <span class="mk">+</span></summary>
+        <div class="body">
+          <div class="seg" id="scaleSeg" style="margin-bottom:8px">
+            <button data-s="1">1×</button><button data-s="2" class="on">2×</button><button data-s="4">4×</button>
+          </div>
+          <button class="btn primary" id="pngBtn">↓ PNG transparente</button>
+          <div class="btnrow">
+            <button class="btn" id="pngBgBtn">PNG con fondo</button>
+            <button class="btn" id="copyBtn">Copiar</button>
+          </div>
+          <div class="hint">PNG transparente = logo listo para pegar en cualquier lado. Para fondo sólido usá el color de abajo.</div>
+        </div>
+      </details>
+
+    </div>
+    <div class="stage">
+      <div class="stagebar">
+        <button class="gen" id="genBtn">⚄ GENERAR</button>
+        <div class="curfont" id="curFont"></div>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
+          <div class="seg" id="bgSeg"><button data-bg="checker" class="on">Trama</button><button data-bg="solid">Fondo</button></div>
+          <input type="color" id="cvbg" value="#0e0e10" style="width:30px;height:26px;border:1px solid var(--border);border-radius:5px;background:none;cursor:pointer;padding:0">
+        </div>
+      </div>
+      <div class="canvaswrap" id="cvwrap"><canvas id="cv"></canvas></div>
+    </div>
+  </div>
+</div>
+<div class="list" id="fontList"></div>
+
+<script>
+const $=id=>document.getElementById(id);
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const rand=a=>a[Math.floor(Math.random()*a.length)];
+
+// ---------- font bank (lettering-friendly Google Fonts) ----------
+// [name, vibe]; all rendered at weight 400 (display/script are single-weight)
+const FONTS=[
+ ['Bungee','graffiti'],['Bungee Inline','graffiti'],['Rubik Spray Paint','graffiti'],['Rubik Wet Paint','graffiti'],
+ ['Rubik Distressed','graffiti'],['Rubik Glitch','graffiti'],['Rubik Burned','graffiti'],['Rubik Marker Hatch','graffiti'],
+ ['Rubik Puddles','graffiti'],['Rubik Iso','graffiti'],['Rubik Vinyl','graffiti'],['Rubik Maze','graffiti'],
+ ['Rubik Microbe','graffiti'],['Rubik Dirt','graffiti'],['Rubik Beastly','graffiti'],['Rubik Mono One','graffiti'],
+ ['Permanent Marker','marker'],['Bangers','marker'],['Luckiest Guy','marker'],['Sigmar One','display'],['Sigmar','display'],
+ ['Titan One','display'],['Bowlby One','display'],['Bowlby One SC','display'],['Lilita One','display'],['Shrikhand','display'],
+ ['Anton','display'],['Archivo Black','display'],['Passion One','display'],['Alfa Slab One','display'],['Ultra','display'],
+ ['Bevan','display'],['Rye','display'],['Ewert','display'],['Monoton','display'],['Faster One','display'],['Wallpoet','display'],
+ ['Black Ops One','display'],['Iceland','display'],['Pirata One','display'],['Metal Mania','display'],['New Rocker','display'],
+ ['Train One','display'],['Vast Shadow','display'],['Diplomata SC','display'],['Fascinate','display'],['Frijole','display'],
+ ['Creepster','display'],['Nosifer','display'],['Eater','display'],['Saira Stencil One','stencil'],['Stardos Stencil','stencil'],
+ ['Special Elite','stencil'],['Graduate','stencil'],
+ ['Lobster','script'],['Pacifico','script'],['Kaushan Script','script'],['Yellowtail','script'],['Satisfy','script'],
+ ['Great Vibes','script'],['Sacramento','script'],['Allura','script'],['Alex Brush','script'],['Tangerine','script'],
+ ['Cookie','script'],['Damion','script'],['Marck Script','script'],['Style Script','script'],['Parisienne','script'],
+ ['Caveat Brush','script'],['Rock Salt','script'],['Homemade Apple','script'],
+].map(([name,vibe])=>({name,vibe}));
+const byName=n=>FONTS.find(f=>f.name===n);
+
+const loaded=new Set();
+function loadFont(name){ if(loaded.has(name))return Promise.resolve(); loaded.add(name);
+  const l=document.createElement('link'); l.rel='stylesheet'; l.href='https://fonts.googleapis.com/css2?family='+name.replace(/ /g,'+')+'&display=swap'; document.head.appendChild(l);
+  return new Promise(res=>{ let n=0; const t=setInterval(()=>{ n++; if(document.fonts.check('400 80px "'+name+'"')||n>40){clearInterval(t);res();} },50); }); }
+
+// ---------- palettes for GENERAR ----------
+const PALS=[['#b8ff00','#3ad0ff','#0a0a0a'],['#ff2d55','#ffcc33','#0a0a0a'],['#3ad0ff','#ffffff','#0a0a0a'],
+ ['#ffcc33','#ff2d55','#1a0a00'],['#ff6b00','#ffe600','#0a0a0a'],['#9b5cff','#3ad0ff','#0a0a0a'],
+ ['#ffffff','#b8ff00','#0a0a0a'],['#ff2d55','#ffffff','#0a0a0a'],['#00e0a4','#ffffff','#06231c'],
+ ['#ffd1e8','#ff2d55','#2a0010'],['#c0c0c0','#ffffff','#101012'],['#ffcc33','#ffffff','#3a2a00']];
+
+// ---------- state ----------
+const S={ text:'GLITCHE', font:'Bungee', fill:'solid', c1:'#b8ff00', c2:'#3ad0ff',
+  o1:true,o1c:'#0a0a0a',o1w:8, o2:false,o2c:'#ffffff',o2w:18,
+  depth:0, angle:45, depthc:'#16140f',
+  size:150, trk:0, curve:0, skew:0, glow:0, glowc:'#b8ff00',
+  tex:'none', texAmt:0.4, scale:2, bg:'checker', cvbg:'#0e0e10' };
+
+const cv=$('cv'), ctx=cv.getContext('2d');
+
+// ---------- noise texture ----------
+function makeNoise(kind){ const n=document.createElement('canvas'); n.width=n.height=160; const c=n.getContext('2d');
+  const img=c.createImageData(160,160), d=img.data;
+  for(let i=0;i<d.length;i+=4){ let a;
+    if(kind==='spray'){ a=Math.random()<0.5? 0 : (Math.random()*255); }
+    else { a=Math.random()*255; }
+    d[i]=d[i+1]=d[i+2]=0; d[i+3]=a; }
+  c.putImageData(img,0,0); return n; }
+let noiseSpray=null,noiseGrain=null;
+
+// ---------- layout (per-glyph, supports arc) ----------
+function buildLayout(fontPx){
+  ctx.font='400 '+fontPx+'px "'+S.font+'", sans-serif';
+  const lines=S.text.split('\n').map(l=>l.length?l:' ');
+  const lineH=fontPx*1.16, trk=S.trk/100*fontPx;
+  const out=[]; let minX=1e9,maxX=-1e9,minY=1e9,maxY=-1e9;
+  const arc=(lines.length===1)?S.curve/100:0;
+  lines.forEach((line,li)=>{
+    const chars=[...line]; const adv=chars.map(c=>ctx.measureText(c).width+trk);
+    const total=adv.reduce((a,b)=>a+b,0)-trk;
+    const baseY=(li-(lines.length-1)/2)*lineH;
+    if(Math.abs(arc)<0.001){
+      let x=-total/2;
+      chars.forEach((ch,i)=>{ const cx=x+adv[i]/2-trk/2; out.push({ch,x:cx,y:baseY,rot:0});
+        minX=Math.min(minX,cx-adv[i]/2);maxX=Math.max(maxX,cx+adv[i]/2);
+        minY=Math.min(minY,baseY-fontPx*0.82);maxY=Math.max(maxY,baseY+fontPx*0.34); x+=adv[i]; });
+    } else {
+      const R=total/Math.abs(arc)/1.6 + fontPx; const dir=arc>0?1:-1;
+      let acc=-total/2;
+      chars.forEach((ch,i)=>{ const mid=acc+adv[i]/2-trk/2; const ang=mid/R;
+        const cx=Math.sin(ang)*R; const cy=dir*(R-Math.cos(ang)*R)+baseY;
+        out.push({ch,x:cx,y:cy,rot:ang*dir});
+        minX=Math.min(minX,cx-fontPx*0.6);maxX=Math.max(maxX,cx+fontPx*0.6);
+        minY=Math.min(minY,cy-fontPx*0.9);maxY=Math.max(maxY,cy+fontPx*0.5); acc+=adv[i]; });
+    }
+  });
+  return {glyphs:out,minX,maxX,minY,maxY,lineH};
+}
+
+// ---------- main render ---------- (preview delegates to the shared renderer)
+function render(targetCtx,scale,withBg){ renderExport(targetCtx,scale,withBg); }
+// paint into an arbitrary ctx
+function paintInto(c,g,op,ox,oy){
+  c.save();
+  if(S.skew) c.transform(1,0,Math.tan(-S.skew*Math.PI/180),1,0,0);
+  g.glyphs.forEach(gl=>{ c.save(); c.translate(gl.x+(ox||0),gl.y+(oy||0)); if(gl.rot)c.rotate(gl.rot);
+    if(op==='fill') c.fillText(gl.ch,0,0); else c.strokeText(gl.ch,0,0); c.restore(); });
+  c.restore();
+}
+function fillStyle(c,g){
+  if(S.fill==='solid') return S.c1;
+  const y0=g.minY, y1=g.maxY; const grad=c.createLinearGradient(0,y0,0,y1);
+  if(S.fill==='gradient'){ grad.addColorStop(0,S.c1); grad.addColorStop(1,S.c2); }
+  else { // chrome
+    grad.addColorStop(0,S.c2); grad.addColorStop(.42,'#ffffff'); grad.addColorStop(.5,S.c1);
+    grad.addColorStop(.52,S.c1); grad.addColorStop(.62,'#1a1a1a'); grad.addColorStop(1,S.c2); }
+  return grad;
+}
+
+// ---------- draw (loads font then renders) ----------
+let pending=false;
+async function draw(){
+  $('curFont').innerHTML='fuente: <b>'+S.font+'</b>';
+  await loadFont(S.font);
+  render(ctx,window.devicePixelRatio>1?2:1.5,false);
+  // fit CSS size
+  cv.style.width=Math.min(cv.width,1400)/ (window.devicePixelRatio>1?2:1.5) +'px';
+}
+function quickDraw(){ render(ctx,window.devicePixelRatio>1?2:1.5,false); cv.style.width=Math.min(cv.width,1400)/(window.devicePixelRatio>1?2:1.5)+'px'; }
+
+// ---------- presets ----------
+const PRESETS={
+ 'WILDSTYLE':{font:'Bungee',fill:'solid',c1:'#b8ff00',o1:true,o1c:'#0a0a0a',o1w:9,o2:true,o2c:'#ff2d55',o2w:20,depth:10,angle:48,depthc:'#10100a',glow:0,curve:0,skew:-8,tex:'none'},
+ 'BUBBLE':{font:'Lilita One',fill:'gradient',c1:'#3ad0ff',c2:'#9b5cff',o1:true,o1c:'#0a0a0a',o1w:11,o2:false,depth:0,glow:0,skew:0,curve:8,tex:'none'},
+ 'CHROME':{font:'Bungee Inline',fill:'chrome',c1:'#5a6470',c2:'#cfe0ff',o1:true,o1c:'#0a0a0a',o1w:7,o2:false,depth:6,angle:90,depthc:'#0a0a0a',glow:0,skew:0,tex:'none'},
+ 'NEÓN':{font:'Monoton',fill:'solid',c1:'#ff2d55',o1:false,o2:false,depth:0,glow:34,glowc:'#ff2d55',skew:0,curve:0,tex:'none'},
+ 'THROW-UP':{font:'Permanent Marker',fill:'solid',c1:'#ffcc33',o1:true,o1c:'#0a0a0a',o1w:8,o2:false,depth:0,glow:0,skew:-6,tex:'none'},
+ 'BLOQUE 3D':{font:'Anton',fill:'solid',c1:'#ff2d55',o1:true,o1c:'#0a0a0a',o1w:5,o2:false,depth:22,angle:45,depthc:'#5a0014',glow:0,skew:0,tex:'none'},
+ 'SPRAY':{font:'Rubik Spray Paint',fill:'solid',c1:'#b8ff00',o1:false,o2:false,depth:0,glow:0,skew:0,tex:'spray',texAmt:0.5},
+ 'STENCIL':{font:'Saira Stencil One',fill:'solid',c1:'#f0ede6',o1:false,o2:false,depth:0,glow:0,skew:0,tex:'grain',texAmt:0.3},
+ 'SCRIPT GOLD':{font:'Kaushan Script',fill:'chrome',c1:'#7a5a10',c2:'#ffe9a0',o1:true,o1c:'#3a2a00',o1w:3,o2:false,depth:3,angle:90,depthc:'#3a2a00',glow:0,skew:0,curve:6,tex:'none'},
+ 'STICKER':{font:'Bangers',fill:'solid',c1:'#ff2d55',o1:true,o1c:'#ffffff',o1w:14,o2:true,o2c:'#0a0a0a',o2w:22,depth:0,glow:0,skew:0,tex:'none'},
+ 'RETRO POP':{font:'Bowlby One',fill:'gradient',c1:'#ffcc33',c2:'#ff6b00',o1:true,o1c:'#0a0a0a',o1w:8,o2:false,depth:14,angle:120,depthc:'#7a1500',glow:0,skew:0,curve:-6,tex:'none'},
+ 'HORROR':{font:'Creepster',fill:'gradient',c1:'#b8ff00',c2:'#3a7a00',o1:true,o1c:'#0a0a0a',o1w:5,o2:false,depth:0,glow:10,glowc:'#1aff00',skew:0,tex:'grain',texAmt:0.35},
+ 'TAG':{font:'Permanent Marker',fill:'none',c1:'#0a0a0a',o1:true,o1c:'#0a0a0a',o1w:6,o2:false,depth:0,glow:0,skew:-10,curve:0,tex:'none'},
+ 'INLINE':{font:'Bungee Inline',fill:'solid',c1:'#0a0a0a',o1:false,o2:false,depth:0,glow:0,skew:0,tex:'none'},
+};
+function applyPreset(p){ Object.assign(S,JSON.parse(JSON.stringify(p))); syncUI(); draw(); }
+const chipBox=$('presetChips'); Object.keys(PRESETS).forEach(n=>{ const b=document.createElement('div'); b.className='preset'; b.textContent=n; b.onclick=()=>applyPreset(PRESETS[n]); chipBox.appendChild(b); });
+
+// ---------- GENERAR ----------
+function generate(){
+  const f=rand(FONTS); S.font=f.name;
+  const pal=rand(PALS); S.c1=pal[0]; S.c2=pal[1];
+  S.fill=rand(['solid','solid','gradient','chrome']);
+  S.o1=Math.random()<0.7; S.o1c=pal[2]; S.o1w=4+Math.floor(Math.random()*12);
+  S.o2=Math.random()<0.35; S.o2c=rand([pal[1],'#ffffff',pal[0]]); S.o2w=S.o1w+8+Math.floor(Math.random()*16);
+  S.depth=Math.random()<0.45?6+Math.floor(Math.random()*22):0; S.angle=Math.floor(Math.random()*360); S.depthc=pal[2];
+  S.glow=Math.random()<0.25?15+Math.floor(Math.random()*30):0; S.glowc=pal[0];
+  S.skew=Math.random()<0.5?-12+Math.floor(Math.random()*24):0;
+  S.curve=Math.random()<0.3?-20+Math.floor(Math.random()*40):0;
+  S.tex=rand(['none','none','spray','grain']); S.texAmt=0.35+Math.random()*0.3;
+  if(f.vibe==='script'){ S.skew=0; S.o2=false; S.depth=Math.min(S.depth,4); }
+  syncUI(); draw();
+}
+
+// ---------- font picker ----------
+const listEl=$('fontList');
+$('fontBtn').addEventListener('click',e=>{ e.stopPropagation(); openPicker(); });
+function openPicker(){
+  listEl.innerHTML='';
+  const si=document.createElement('input'); si.placeholder='buscar fuente…'; si.style.cssText='width:calc(100% - 16px);margin:8px;font-family:var(--font);font-size:12px;padding:8px 10px;background:#0a0a0a;border:1px solid var(--border);border-radius:5px;color:var(--ink)';
+  listEl.appendChild(si); const holder=document.createElement('div'); listEl.appendChild(holder);
+  function rnd(q){ holder.innerHTML=''; q=(q||'').toLowerCase();
+    FONTS.filter(f=>!q||f.name.toLowerCase().includes(q)||f.vibe.includes(q)).forEach(f=>{
+      const o=document.createElement('div'); o.className='opt'; o.innerHTML='<div class="on">'+f.name+'</div><div class="om">'+f.vibe+'</div>';
+      o.querySelector('.on').style.fontFamily="'"+f.name+"'"; loadFont(f.name);
+      o.onclick=()=>{ S.font=f.name; syncUI(); draw(); closePicker(); }; holder.appendChild(o); }); }
+  rnd(''); si.addEventListener('input',()=>rnd(si.value));
+  const r=$('fontBtn').getBoundingClientRect(); listEl.style.left=r.left+'px'; listEl.style.top=(r.bottom+4)+'px'; listEl.style.width=r.width+'px';
+  listEl.classList.add('open'); setTimeout(()=>si.focus(),30);
+}
+function closePicker(){ listEl.classList.remove('open'); }
+document.addEventListener('click',e=>{ if(!listEl.contains(e.target)&&e.target.id!=='fontBtn'&&!$('fontBtn').contains(e.target)) closePicker(); });
+
+// ---------- UI sync ----------
+function syncUI(){
+  $('text').value=S.text; $('fnName').textContent=S.font; $('fnName').style.fontFamily="'"+S.font+"'";
+  $('fnMeta').textContent=(byName(S.font)||{vibe:''}).vibe;
+  [['fillSeg','f','fill'],['texSeg','t','tex'],['scaleSeg','s','scale'],['bgSeg','bg','bg']].forEach(([id,attr,key])=>{
+    [...$(id).children].forEach(b=>b.classList.toggle('on', String(b.dataset[attr])===String(S[key]))); });
+  $('c1').value=S.c1; $('c2').value=S.c2; $('o1c').value=S.o1c; $('o1w').value=S.o1w; $('o2c').value=S.o2c; $('o2w').value=S.o2w;
+  $('depthc').value=S.depthc; $('glowc').value=S.glowc; $('cvbg').value=S.cvbg;
+  $('o1tog').classList.toggle('on',S.o1); $('o2tog').classList.toggle('on',S.o2);
+  const setR=(id,v)=>{ const e=$(id); if(e)e.value=v; };
+  setR('depth',S.depth);setR('angle',S.angle);setR('size',S.size);setR('trk',S.trk);setR('curve',S.curve);setR('skew',S.skew);setR('glow',S.glow);setR('tex',Math.round(S.texAmt*100));
+  $('vDepth').textContent=S.depth;$('vAngle').textContent=S.angle;$('vSize').textContent=S.size;$('vTrk').textContent=S.trk;$('vCurve').textContent=S.curve;$('vSkew').textContent=S.skew;$('vGlow').textContent=S.glow;$('vTex').textContent=Math.round(S.texAmt*100);
+  $('c2row').style.opacity=(S.fill==='solid'||S.fill==='none')?.4:1;
+}
+
+// ---------- controls ----------
+$('text').addEventListener('input',e=>{ S.text=e.target.value||' '; quickDraw(); });
+$('genBtn').addEventListener('click',generate);
+$('fillSeg').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b)return; S.fill=b.dataset.f; syncUI(); quickDraw(); });
+$('texSeg').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b)return; S.tex=b.dataset.t; syncUI(); quickDraw(); });
+$('scaleSeg').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b)return; S.scale=+b.dataset.s; syncUI(); });
+$('bgSeg').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b)return; S.bg=b.dataset.bg; syncUI(); $('cvwrap').classList.toggle('solid',S.bg==='solid'); });
+$('cvbg').addEventListener('input',e=>{ S.cvbg=e.target.value; $('cvwrap').style.setProperty('--cvbg',S.cvbg); });
+$('o1tog').addEventListener('click',()=>{ S.o1=!S.o1; syncUI(); quickDraw(); });
+$('o2tog').addEventListener('click',()=>{ S.o2=!S.o2; syncUI(); quickDraw(); });
+[['c1','c1'],['c2','c2'],['o1c','o1c'],['o2c','o2c'],['depthc','depthc'],['glowc','glowc']].forEach(([id,k])=>$(id).addEventListener('input',e=>{ S[k]=e.target.value; quickDraw(); }));
+[['o1w','o1w'],['o2w','o2w'],['depth','depth','vDepth'],['angle','angle','vAngle'],['size','size','vSize'],['trk','trk','vTrk'],['curve','curve','vCurve'],['skew','skew','vSkew'],['glow','glow','vGlow']].forEach(([id,k,lab])=>$(id).addEventListener('input',e=>{ S[k]=+e.target.value; if(lab)$(lab).textContent=e.target.value; quickDraw(); }));
+$('tex').addEventListener('input',e=>{ S.texAmt=+e.target.value/100; $('vTex').textContent=e.target.value; quickDraw(); });
+
+// ---------- export ----------
+function exportCanvas(withBg){ const ex=document.createElement('canvas'); const exc=ex.getContext('2d');
+  // render into export ctx by temporarily pointing paintInto via render() — render uses passed ctx
+  renderExport(exc,S.scale,withBg); return ex; }
+function renderExport(c,scale,withBg){ // mirror of render but into target c
+  const fontPx=S.size*scale; const g=buildLayout(fontPx);
+  const o1w=(S.o1?S.o1w:0)*scale,o2w=(S.o2?S.o2w:0)*scale,maxOut=Math.max(o1w,o2w);
+  const depthPx=S.depth*scale,a=S.angle*Math.PI/180,ddx=Math.cos(a),ddy=Math.sin(a);
+  const skewPad=Math.abs(Math.tan(S.skew*Math.PI/180))*(g.maxY-g.minY);
+  const pad=maxOut+S.glow*scale+depthPx+24*scale+skewPad;
+  const W=Math.ceil((g.maxX-g.minX)+pad*2),H=Math.ceil((g.maxY-g.minY)+pad*2);
+  c.canvas.width=W;c.canvas.height=H; c.clearRect(0,0,W,H);
+  if(withBg){c.fillStyle=S.cvbg;c.fillRect(0,0,W,H);}
+  c.translate(pad-g.minX,pad-g.minY); c.textAlign='center';c.textBaseline='alphabetic';
+  c.font='400 '+fontPx+'px "'+S.font+'", sans-serif'; c.lineJoin='round';c.lineCap='round';
+  if(depthPx>0){c.fillStyle=S.depthc; for(let i=depthPx;i>=1;i--)paintInto(c,g,'fill',ddx*i,ddy*i);}
+  if(S.glow>0){c.shadowColor=S.glowc;c.shadowBlur=S.glow*scale;}
+  if(o2w>0){c.strokeStyle=S.o2c;c.lineWidth=o2w*2;paintInto(c,g,'stroke',0,0);c.shadowBlur=0;c.shadowColor='transparent';}
+  if(o1w>0){c.strokeStyle=S.o1c;c.lineWidth=o1w*2;paintInto(c,g,'stroke',0,0);c.shadowBlur=0;c.shadowColor='transparent';}
+  if(S.fill!=='none'){ if(S.glow>0&&o1w<=0&&o2w<=0){c.shadowColor=S.glowc;c.shadowBlur=S.glow*scale;} c.fillStyle=fillStyle(c,g); paintInto(c,g,'fill',0,0); c.shadowBlur=0;c.shadowColor='transparent'; }
+  if(S.tex!=='none'&&S.texAmt>0){ const nz=S.tex==='spray'?(noiseSpray||(noiseSpray=makeNoise('spray'))):(noiseGrain||(noiseGrain=makeNoise('grain')));
+    c.setTransform(1,0,0,1,0,0);c.globalCompositeOperation='source-atop';c.globalAlpha=S.texAmt;
+    c.fillStyle=c.createPattern(nz,'repeat');c.fillRect(0,0,W,H);c.globalAlpha=1;c.globalCompositeOperation='source-over'; }
+  c.setTransform(1,0,0,1,0,0);
+}
+function dl(blob,name){ const u=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=u;a.download=name;a.click(); setTimeout(()=>URL.revokeObjectURL(u),1500); }
+function slug(){ return (S.text.replace(/\s+/g,'-').replace(/[^\w\-]/g,'').toLowerCase()||'letras'); }
+$('pngBtn').addEventListener('click',()=>exportCanvas(false).toBlob(b=>dl(b,'letras-'+slug()+'.png'),'image/png'));
+$('pngBgBtn').addEventListener('click',()=>exportCanvas(true).toBlob(b=>dl(b,'letras-'+slug()+'-bg.png'),'image/png'));
+$('copyBtn').addEventListener('click',()=>{ exportCanvas(false).toBlob(b=>{ if(navigator.clipboard&&window.ClipboardItem){ navigator.clipboard.write([new ClipboardItem({'image/png':b})]).then(()=>{const x=$('copyBtn');const t=x.textContent;x.textContent='✓ copiado';setTimeout(()=>x.textContent=t,1200);}).catch(()=>dl(b,'letras-'+slug()+'.png')); } else dl(b,'letras-'+slug()+'.png'); },'image/png'); });
+
+// ---------- go ----------
+syncUI(); draw();
+window.addEventListener('resize',()=>{ cv.style.width=Math.min(cv.width,1400)/(window.devicePixelRatio>1?2:1.5)+'px'; });
+</script>
+</body>
+</html>
