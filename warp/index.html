@@ -103,12 +103,13 @@
   <div class="meter"><i id="audMeter"></i></div>
   <div class="ctrl"><label>sensibilidad <b data-v="audgain"></b></label><input type="range" id="audgain" min="0" max="3" step="0.01"></div>
   <h2>IA — generar efecto ✨</h2>
-  <input type="password" id="aiKey" class="ai-in" placeholder="tu API key de Anthropic (sk-ant-…)">
-  <div class="ai-note">La key queda solo en este navegador (localStorage) y va directo a api.anthropic.com — no se sube a ningún lado. La pagás vos por uso.</div>
-  <select id="aiModel" class="ai-in">
-    <option value="claude-sonnet-4-6" selected>Sonnet 4.6 — rápido y barato</option>
-    <option value="claude-opus-4-8">Opus 4.8 — mejor, más caro</option>
-  </select>
+  <div class="aud" id="aiProv" style="grid-template-columns:1fr 1fr">
+    <button id="provGem" class="on">GEMINI · free</button>
+    <button id="provAnt">ANTHROPIC</button>
+  </div>
+  <input type="password" id="aiKey" class="ai-in" placeholder="">
+  <div class="ai-note" id="aiNote"></div>
+  <select id="aiModel" class="ai-in"></select>
   <textarea id="aiPrompt" class="ai-in" rows="3" placeholder="describí el efecto: 'cristal líquido que late con el bass, tonos fríos y estelas'…"></textarea>
   <button id="aiGen">✨ GENERAR EFECTO</button>
   <div id="aiStatus" class="ai-status"></div>
@@ -432,13 +433,49 @@ async function callClaude(key, model, messages){
   if(!r.ok) throw new Error((data.error && data.error.message) || ('HTTP '+r.status));
   return (data.content && data.content[0] && data.content[0].text) || '';
 }
+async function callGemini(key, model, messages){
+  // Gemini usa role 'model' (no 'assistant') y contents/parts. La key va por
+  // header x-goog-api-key (NO en la URL).
+  const contents = messages.map(m=>({ role: m.role==='assistant'?'model':'user', parts:[{ text:m.content }] }));
+  const r = await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+model+':generateContent', {
+    method:'POST',
+    headers:{ 'content-type':'application/json', 'x-goog-api-key':key },
+    body: JSON.stringify({ system_instruction:{ parts:[{ text:AI_SYSTEM }] }, contents, generationConfig:{ maxOutputTokens:4096, temperature:1 } })
+  });
+  const data = await r.json().catch(()=>({}));
+  if(!r.ok) throw new Error((data.error && data.error.message) || ('HTTP '+r.status));
+  const c = data.candidates && data.candidates[0];
+  if(!c || !c.content) throw new Error('Gemini no devolvió contenido' + (c && c.finishReason ? ' (finishReason: '+c.finishReason+')' : ''));
+  return (c.content.parts || []).map(p=>p.text||'').join('') || '';
+}
+const PROVIDERS = {
+  gemini: { keyName:'warp_gemini_key',
+    keyHint:'tu API key de Google AI Studio (AIza…)',
+    note:'Gemini tiene capa GRATUITA. Sacá tu key gratis en aistudio.google.com → "Get API key". Queda solo en este navegador, va directo a Google.',
+    models:[['gemini-2.0-flash','Gemini 2.0 Flash — gratis, rápido'],['gemini-2.5-flash','Gemini 2.5 Flash — mejor, gratis']] },
+  anthropic: { keyName:'warp_anthropic_key',
+    keyHint:'tu API key de Anthropic (sk-ant-…)',
+    note:'Anthropic es PAGO (sin capa gratuita). La key queda solo en este navegador y va directo a api.anthropic.com — la pagás vos por uso.',
+    models:[['claude-sonnet-4-6','Claude Sonnet 4.6 — rápido'],['claude-opus-4-8','Claude Opus 4.8 — mejor']] }
+};
+let aiProvider = 'gemini';
+function callAI(provider, key, model, messages){ return provider==='gemini' ? callGemini(key, model, messages) : callClaude(key, model, messages); }
+function applyProvider(){
+  const p = PROVIDERS[aiProvider];
+  $('aiKey').placeholder = p.keyHint;
+  $('aiKey').value = localStorage.getItem(p.keyName) || '';
+  $('aiNote').textContent = p.note;
+  $('aiModel').innerHTML = p.models.map(([v,l],i)=>`<option value="${v}"${i===0?' selected':''}>${l}</option>`).join('');
+  $('provGem').classList.toggle('on', aiProvider==='gemini');
+  $('provAnt').classList.toggle('on', aiProvider==='anthropic');
+}
 
 async function generateEffect(){
   const key = $('aiKey').value.trim();
   const prompt = $('aiPrompt').value.trim();
-  if(!key){ setAiStatus('Pegá tu API key de Anthropic primero.', true); return; }
+  if(!key){ setAiStatus('Pegá tu API key primero.', true); return; }
   if(!prompt){ setAiStatus('Escribí qué efecto querés.', true); return; }
-  localStorage.setItem('warp_anthropic_key', key);
+  localStorage.setItem(PROVIDERS[aiProvider].keyName, key);
   const model = $('aiModel').value;
   $('aiGen').disabled = true;
   const messages = [{ role:'user', content:'Creá un efecto para este pedido: '+prompt }];
@@ -446,7 +483,7 @@ async function generateEffect(){
   for(let attempt=1; attempt<=4; attempt++){
     setAiStatus(attempt===1 ? 'Pensando el shader…' : 'Arreglando errores de compilación (intento '+attempt+'/4)…');
     let text;
-    try{ text = await callClaude(key, model, messages); }
+    try{ text = await callAI(aiProvider, key, model, messages); }
     catch(e){ setAiStatus('Error de API: '+e.message, true); $('aiGen').disabled=false; return; }
     const glsl = extractGLSL(text);
     try{
@@ -659,8 +696,10 @@ $('exportScene').onclick = exportScene;
 $('recBtn').onclick = toggleRecord;
 $('glslBtn').onclick = ()=>{ navigator.clipboard?.writeText(toSynGLSL()).then(()=>toast('GLSL de Synesthesia copiado.'), ()=>toast('No se pudo copiar.')); };
 $('aiGen').onclick = generateEffect;
-$('aiKey').value = localStorage.getItem('warp_anthropic_key') || '';
-$('aiKey').onchange = ()=> localStorage.setItem('warp_anthropic_key', $('aiKey').value.trim());
+$('provGem').onclick = ()=>{ aiProvider='gemini'; applyProvider(); };
+$('provAnt').onclick = ()=>{ aiProvider='anthropic'; applyProvider(); };
+$('aiKey').onchange = ()=> localStorage.setItem(PROVIDERS[aiProvider].keyName, $('aiKey').value.trim());
+applyProvider();
 addEventListener('keydown', e=>{
   if(e.target.tagName==='INPUT' || e.target.tagName==='TEXTAREA') return;
   const k=e.key.toLowerCase();
