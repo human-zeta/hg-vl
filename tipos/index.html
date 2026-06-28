@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TIPOS — Human Glitche · combinaciones tipográficas con export a tu web</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#050505; --surface-0:#0a0a0a; --surface-1:#0c0c0c; --surface-2:#131313;
+  --border:rgba(240,237,230,.12); --border-strong:rgba(240,237,230,.25);
+  --ink:#f0ede6; --t2:rgba(240,237,230,.6); --t3:rgba(240,237,230,.4);
+  --acid:#b8ff00; --acid-bg:rgba(184,255,0,.12); --acid-br:rgba(184,255,0,.35);
+  --cyan:#3ad0ff; --red:#ff2d55; --gold:#ffcc33;
+  --radius:6px; --font:'Space Mono',monospace; --disp:'Bebas Neue',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);overflow:hidden;position:relative;}
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");z-index:0;pointer-events:none;opacity:.4;}
+
+.app{position:relative;z-index:1;display:flex;flex-direction:column;height:100vh;}
+.header{display:flex;align-items:center;justify-content:space-between;padding:11px 18px;background:var(--surface-0);border-bottom:1px solid var(--border);flex:0 0 auto;}
+.brand{font-family:var(--disp);font-size:30px;letter-spacing:.04em;line-height:.8;}
+.brand b{color:var(--acid);font-weight:400;}
+.brand span{font-size:9px;letter-spacing:.2em;color:var(--t3);display:block;font-family:var(--font);margin-top:3px;}
+.header .right{display:flex;align-items:center;gap:14px;}
+.header a{font-size:10px;letter-spacing:.2em;color:var(--t3);text-decoration:none;}
+.header a:hover{color:var(--acid);}
+.bankcount{font-size:9px;letter-spacing:.12em;color:var(--t3);}
+.bankcount b{color:var(--acid);font-weight:400;}
+
+.main{flex:1 1 auto;display:flex;min-height:0;}
+.panel{flex:0 0 340px;background:var(--surface-1);border-right:1px solid var(--border);overflow-y:auto;padding:0 0 60px;}
+.stage{flex:1 1 auto;position:relative;display:flex;flex-direction:column;min-width:0;}
+.stagebar{display:flex;align-items:center;gap:8px;padding:10px 16px;border-bottom:1px solid var(--border);background:var(--surface-0);flex-wrap:wrap;}
+.previewwrap{flex:1 1 auto;overflow:auto;padding:30px;display:flex;justify-content:center;background:#0d0d0f;}
+.card{width:100%;max-width:760px;background:#faf8f3;color:#16140f;border-radius:10px;padding:54px 56px;box-shadow:0 20px 60px rgba(0,0,0,.5);transition:background .2s,color .2s;align-self:flex-start;}
+.card.dark{background:#0e0e10;color:#f3f1ea;}
+.card .eyebrow{font-size:12px;letter-spacing:.28em;text-transform:uppercase;opacity:.55;margin-bottom:20px;}
+.card h1{font-size:62px;line-height:1.02;margin-bottom:18px;font-weight:700;outline:none;}
+.card .deck{font-size:21px;line-height:1.45;opacity:.8;margin-bottom:26px;outline:none;}
+.card p{font-size:16px;line-height:1.72;margin-bottom:16px;outline:none;}
+.card .meta{font-size:12.5px;letter-spacing:.04em;opacity:.5;margin-top:26px;padding-top:18px;border-top:1px solid rgba(128,128,128,.25);}
+.card .cta{display:inline-block;margin-top:6px;padding:12px 22px;background:#16140f;color:#faf8f3;border-radius:6px;font-size:14px;font-weight:700;}
+.card.dark .cta{background:#f3f1ea;color:#0e0e10;}
+
+.sec{border-bottom:1px solid var(--border);}
+.sec>summary{list-style:none;cursor:pointer;padding:13px 18px;display:flex;align-items:center;justify-content:space-between;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--t2);}
+.sec>summary::-webkit-details-marker{display:none;}
+.sec>summary:hover{color:var(--ink);}
+.sec>summary .mk{color:var(--acid);font-size:13px;transition:.2s;}
+.sec[open]>summary .mk{transform:rotate(45deg);}
+.sec .body{padding:6px 18px 18px;}
+
+.seg{display:grid;grid-auto-flow:column;gap:5px;}
+.seg button{font-family:var(--font);font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;padding:8px 4px;background:var(--surface-2);color:var(--t2);border:1px solid var(--border);border-radius:5px;cursor:pointer;}
+.seg button:hover{color:var(--ink);}
+.seg button.on{color:var(--acid);border-color:var(--acid-br);background:var(--acid-bg);}
+.chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:9px;}
+.chip{font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:var(--t2);background:var(--surface-2);border:1px solid var(--border);border-radius:20px;padding:5px 10px;cursor:pointer;}
+.chip:hover{color:var(--ink);} .chip.on{color:var(--acid);border-color:var(--acid-br);background:var(--acid-bg);}
+
+.search{width:100%;font-family:var(--font);font-size:12px;padding:9px 11px;background:var(--surface-0);border:1px solid var(--border);border-radius:5px;color:var(--ink);margin-bottom:8px;}
+.search:focus{outline:none;border-color:var(--acid-br);}
+
+.role{margin:12px 0;}
+.role .rh{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+.role .rh span{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--t2);}
+.role .rh .lock{font-size:11px;color:var(--t3);cursor:pointer;border:1px solid var(--border);border-radius:5px;padding:3px 7px;user-select:none;}
+.role .rh .lock.on{color:var(--acid);border-color:var(--acid-br);}
+.fontbtn{width:100%;text-align:left;background:var(--surface-0);border:1px solid var(--border);border-radius:6px;padding:11px 12px;cursor:pointer;color:var(--ink);}
+.fontbtn:hover{border-color:var(--border-strong);}
+.fontbtn .fn{font-size:18px;line-height:1.1;}
+.fontbtn .fm{font-size:9px;letter-spacing:.08em;color:var(--t3);margin-top:4px;text-transform:uppercase;display:flex;gap:7px;align-items:center;}
+.badge{font-size:8px;padding:1px 5px;border-radius:10px;letter-spacing:.08em;}
+.badge.free{background:rgba(184,255,0,.15);color:var(--acid);}
+.badge.paid{background:rgba(255,204,51,.15);color:var(--gold);}
+
+.list{position:fixed;display:none;background:var(--surface-2);border:1px solid var(--border-strong);border-radius:8px;max-height:340px;overflow-y:auto;z-index:50;box-shadow:0 16px 40px rgba(0,0,0,.6);}
+.list.open{display:block;}
+.list .opt{padding:9px 12px;cursor:pointer;border-bottom:1px solid var(--border);}
+.list .opt:hover,.list .opt.hl{background:var(--acid-bg);}
+.list .opt .on{font-size:17px;line-height:1.15;color:var(--ink);}
+.list .opt .om{font-size:8.5px;letter-spacing:.07em;color:var(--t3);text-transform:uppercase;margin-top:2px;display:flex;gap:6px;align-items:center;}
+
+.row{margin:11px 0;}
+.row label{display:flex;justify-content:space-between;font-size:10px;letter-spacing:.05em;color:var(--t2);margin-bottom:6px;}
+.row label b{color:var(--acid);font-weight:400;}
+input[type=range]{-webkit-appearance:none;width:100%;height:3px;background:var(--border-strong);border-radius:3px;outline:none;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--acid);cursor:pointer;border:2px solid var(--bg);}
+input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:var(--acid);cursor:pointer;border:2px solid var(--bg);}
+select.wsel{width:100%;font-family:var(--font);font-size:11px;padding:7px 9px;background:var(--surface-0);border:1px solid var(--border);border-radius:5px;color:var(--ink);}
+
+.btn{font-family:var(--font);font-size:10px;letter-spacing:.1em;text-transform:uppercase;padding:11px 8px;border-radius:6px;border:1px solid var(--border);background:var(--surface-2);color:var(--ink);cursor:pointer;text-align:center;}
+.btn:hover{border-color:var(--border-strong);}
+.btn.primary{background:var(--acid);color:#0a0a0a;border-color:var(--acid);font-weight:700;}
+.btn.primary:hover{filter:brightness(1.08);}
+.gen{font-family:var(--disp);font-size:22px;letter-spacing:.04em;padding:9px 20px;background:var(--acid);color:#0a0a0a;border:none;border-radius:6px;cursor:pointer;}
+.gen:hover{filter:brightness(1.08);}
+.pairinfo{font-size:10px;color:var(--t2);letter-spacing:.04em;display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+.pairinfo b{color:var(--ink);font-weight:400;}
+.pairinfo a{color:var(--gold);text-decoration:none;} .pairinfo a:hover{text-decoration:underline;}
+
+.export{white-space:pre;font-size:10.5px;line-height:1.5;color:var(--ink);background:var(--surface-0);border:1px solid var(--border);border-radius:6px;padding:12px;max-height:280px;overflow:auto;font-family:var(--font);}
+.btnrow{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px;}
+.hint{font-size:9px;color:var(--t3);line-height:1.6;margin-top:8px;letter-spacing:.02em;}
+.paidnote{font-size:9.5px;color:var(--gold);background:rgba(255,204,51,.08);border:1px solid rgba(255,204,51,.25);border-radius:6px;padding:8px 10px;margin-top:8px;line-height:1.5;display:none;}
+.paidnote.on{display:block;}
+.panel::-webkit-scrollbar,.previewwrap::-webkit-scrollbar,.export::-webkit-scrollbar{width:8px;height:8px;}
+.panel::-webkit-scrollbar-thumb,.previewwrap::-webkit-scrollbar-thumb,.export::-webkit-scrollbar-thumb{background:var(--border-strong);border-radius:8px;}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <div class="brand"><b>TIPOS</b><span>PARES TIPOGRÁFICOS · EXPORT WEB</span></div>
+    <div class="right"><span class="bankcount" id="bankcount">banco: <b>…</b> fuentes</span><a href="/labs/">← LABS</a></div>
+  </div>
+  <div class="main">
+    <div class="panel">
+
+      <details class="sec" open><summary>FILTRO <span class="mk">+</span></summary>
+        <div class="body">
+          <div class="seg" id="priceSeg">
+            <button data-p="all" class="on">Todas</button>
+            <button data-p="free">Gratis</button>
+            <button data-p="paid">Pagas $</button>
+          </div>
+          <div class="chips" id="catChips"></div>
+          <div class="hint">Gratis = Google Fonts (preview real + export directo). Pagas = catálogo curado con link de compra y su alternativa gratis para previsualizar.</div>
+        </div>
+      </details>
+
+      <details class="sec" open><summary>COMBINACIÓN <span class="mk">+</span></summary>
+        <div class="body">
+          <div class="role" data-role="heading">
+            <div class="rh"><span>TÍTULO (heading)</span><span class="lock" data-lock="heading">🔓 fijar</span></div>
+            <button class="fontbtn" data-pick="heading"><div class="fn" id="hName">—</div><div class="fm" id="hMeta"></div></button>
+            <div class="row" style="margin-top:8px"><label>PESO</label><select class="wsel" id="hWeight"></select></div>
+          </div>
+          <div class="role" data-role="body">
+            <div class="rh"><span>CUERPO (body)</span><span class="lock" data-lock="body">🔓 fijar</span></div>
+            <button class="fontbtn" data-pick="body"><div class="fn" id="bName">—</div><div class="fm" id="bMeta"></div></button>
+            <div class="row" style="margin-top:8px"><label>PESO</label><select class="wsel" id="bWeight"></select></div>
+          </div>
+          <div class="paidnote" id="paidNote"></div>
+        </div>
+      </details>
+
+      <details class="sec" open><summary>AJUSTES DE PREVIEW <span class="mk">+</span></summary>
+        <div class="body">
+          <div class="row"><label>ESCALA TÍTULO <b id="vHSize">62</b>px</label><input type="range" id="hSize" min="28" max="110" value="62"></div>
+          <div class="row"><label>ESCALA CUERPO <b id="vBSize">16</b>px</label><input type="range" id="bSize" min="12" max="24" value="16"></div>
+          <div class="row"><label>INTERLINEADO CUERPO <b id="vLh">1.72</b></label><input type="range" id="lh" min="120" max="210" value="172"></div>
+          <div class="row"><label>TRACKING TÍTULO <b id="vTrk">0</b></label><input type="range" id="trk" min="-50" max="50" value="0"></div>
+        </div>
+      </details>
+
+      <details class="sec" open><summary>EXPORTAR A TU WEB <span class="mk">+</span></summary>
+        <div class="body">
+          <div class="seg" id="exSeg" style="margin-bottom:10px">
+            <button data-ex="link" class="on">&lt;link&gt;</button>
+            <button data-ex="import">@import</button>
+            <button data-ex="full">HTML demo</button>
+          </div>
+          <div class="export" id="exportBox">…</div>
+          <div class="btnrow">
+            <button class="btn primary" id="copyBtn">Copiar</button>
+            <button class="btn" id="dlBtn">Descargar</button>
+          </div>
+          <div class="hint">Pegá el &lt;link&gt; en el &lt;head&gt; y las variables CSS en tu hoja de estilos. <b>HTML demo</b> baja una página completa lista para abrir.</div>
+        </div>
+      </details>
+
+    </div>
+    <div class="stage">
+      <div class="stagebar">
+        <button class="gen" id="genBtn">⚄ GENERAR</button>
+        <div class="pairinfo" id="pairInfo"></div>
+        <div style="margin-left:auto"><div class="seg" id="bgSeg"><button data-bg="light" class="on">Claro</button><button data-bg="dark">Oscuro</button></div></div>
+      </div>
+      <div class="previewwrap">
+        <div class="card" id="card">
+          <div class="eyebrow" id="pEyebrow">Human Glitche · Visual Lab</div>
+          <h1 id="pH1" contenteditable="true" spellcheck="false">Diseñá con tipografía que se siente</h1>
+          <div class="deck" id="pDeck" contenteditable="true" spellcheck="false">Una combinación de título y cuerpo bien elegida ordena la jerarquía y le da voz a tu marca antes de leer una sola palabra.</div>
+          <p id="pBody1" contenteditable="true" spellcheck="false">Probá pares infinitos con el botón GENERAR, fijá el que te gusta con el candado y ajustá escala, interlineado y tracking hasta que respire. Cuando esté, lo exportás listo para pegar en tu web.</p>
+          <p id="pBody2" contenteditable="true" spellcheck="false">El banco trae todo Google Fonts (gratis, con preview real) más un catálogo de fuentes pagas con su alternativa libre más parecida. Filtrá por gratis, pagas o todas, y por categoría.</p>
+          <div class="cta" id="pCta">Empezar ahora</div>
+          <div class="meta" id="pMeta">Título · Cuerpo</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="list" id="fontList"></div>
+
+<script>
+const $=id=>document.getElementById(id);
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+
+// ---------- DATA: seed (fallback) of popular Google Fonts ----------
+// [name, category, [weights]]
+const CAT={S:'serif',N:'sans-serif',D:'display',M:'monospace',H:'handwriting'};
+const SEED=[
+ ['Inter','N',[400,500,600,700,800]],['Roboto','N',[300,400,500,700]],['Open Sans','N',[400,600,700,800]],
+ ['Lato','N',[300,400,700,900]],['Montserrat','N',[400,500,600,700,800]],['Poppins','N',[400,500,600,700]],
+ ['Raleway','N',[400,500,600,700]],['Work Sans','N',[400,500,600,700]],['Nunito','N',[400,600,700,800]],
+ ['Nunito Sans','N',[400,600,700]],['Source Sans 3','N',[400,600,700]],['Rubik','N',[400,500,600,700]],
+ ['Mulish','N',[400,600,700,800]],['Manrope','N',[400,500,600,700,800]],['DM Sans','N',[400,500,700]],
+ ['Karla','N',[400,600,700]],['Barlow','N',[400,500,600,700]],['Archivo','N',[400,500,600,700]],
+ ['Space Grotesk','N',[400,500,600,700]],['Sora','N',[400,600,700]],['Outfit','N',[400,500,600,700]],
+ ['Plus Jakarta Sans','N',[400,500,600,700]],['Figtree','N',[400,500,600,700]],['Hanken Grotesk','N',[400,500,600,700]],
+ ['Albert Sans','N',[400,500,600,700]],['Be Vietnam Pro','N',[400,500,600,700]],['Red Hat Display','N',[400,500,700]],
+ ['Public Sans','N',[400,600,700]],['Libre Franklin','N',[400,600,700]],['IBM Plex Sans','N',[400,500,600,700]],
+ ['PT Sans','N',[400,700]],['Fira Sans','N',[400,500,700]],['Assistant','N',[400,600,700]],['Heebo','N',[400,500,700]],
+ ['Jost','N',[400,500,600,700]],['Lexend','N',[400,500,600,700]],['Schibsted Grotesk','N',[400,500,700]],
+ ['Onest','N',[400,500,600,700]],['Cabin','N',[400,500,600,700]],['Questrial','N',[400]],['Chivo','N',[400,700]],
+ ['Playfair Display','S',[400,500,600,700,800]],['Merriweather','S',[400,700]],['Lora','S',[400,500,600,700]],
+ ['PT Serif','S',[400,700]],['Noto Serif','S',[400,700]],['Source Serif 4','S',[400,600,700]],
+ ['Libre Baskerville','S',[400,700]],['EB Garamond','S',[400,500,600,700]],['Cormorant','S',[400,500,600,700]],
+ ['Cormorant Garamond','S',[400,500,600,700]],['Crimson Pro','S',[400,500,600,700]],['Spectral','S',[400,500,600,700]],
+ ['Bitter','S',[400,500,600,700]],['Domine','S',[400,500,600,700]],['Frank Ruhl Libre','S',[400,500,700]],
+ ['Zilla Slab','S',[400,500,700]],['IBM Plex Serif','S',[400,500,600,700]],['Roboto Slab','S',[400,500,700]],
+ ['Bodoni Moda','S',[400,500,600,700]],['DM Serif Display','S',[400]],['DM Serif Text','S',[400]],
+ ['Fraunces','S',[400,500,600,700]],['Newsreader','S',[400,500,600,700]],['Lustria','S',[400]],
+ ['Cardo','S',[400,700]],['Marcellus','S',[400]],['Vollkorn','S',[400,500,600,700]],['Alegreya','S',[400,500,700]],
+ ['Petrona','S',[400,500,700]],['Gentium Book Plus','S',[400,700]],
+ ['Bebas Neue','D',[400]],['Oswald','D',[400,500,600,700]],['Anton','D',[400]],['Archivo Black','D',[400]],
+ ['Abril Fatface','D',[400]],['Righteous','D',[400]],['Comfortaa','D',[400,500,700]],['Fredoka','D',[400,500,600,700]],
+ ['Bungee','D',[400]],['Staatliches','D',[400]],['Teko','D',[400,500,600,700]],['Unbounded','D',[400,600,700,800]],
+ ['Syne','D',[400,600,700,800]],['Big Shoulders Display','D',[400,600,700]],['Monoton','D',[400]],
+ ['Orbitron','D',[400,600,700,900]],['Russo One','D',[400]],['Bricolage Grotesque','D',[400,600,700,800]],
+ ['Pathway Gothic One','D',[400]],['Sansita','D',[400,700]],['Alfa Slab One','D',[400]],['Titan One','D',[400]],
+ ['JetBrains Mono','M',[400,500,700]],['Fira Code','M',[400,500,700]],['IBM Plex Mono','M',[400,500,600,700]],
+ ['Source Code Pro','M',[400,500,700]],['Roboto Mono','M',[400,500,700]],['Inconsolata','M',[400,600,700]],
+ ['DM Mono','M',[400,500]],['Overpass Mono','M',[400,600,700]],['Ubuntu Mono','M',[400,700]],['Courier Prime','M',[400,700]],
+ ['Caveat','H',[400,600,700]],['Dancing Script','H',[400,600,700]],['Pacifico','H',[400]],['Sacramento','H',[400]],
+ ['Satisfy','H',[400]],['Permanent Marker','H',[400]],['Shadows Into Light','H',[400]],['Kalam','H',[400,700]],
+ ['Patrick Hand','H',[400]],['Caveat Brush','H',[400]],['Gloria Hallelujah','H',[400]],['Amatic SC','H',[400,700]],
+].map(([name,c,w])=>({name,cat:CAT[c],weights:w,paid:false}));
+
+// ---------- DATA: paid catalog (curated) with free alternative ----------
+const PAID=[
+ ['Söhne','sans-serif','Klim','Inter'],['Helvetica Now','sans-serif','Monotype','Inter'],
+ ['Neue Haas Grotesk','sans-serif','Linotype','Inter'],['GT America','sans-serif','Grilli Type','Archivo'],
+ ['Circular','sans-serif','Lineto','Manrope'],['Founders Grotesk','sans-serif','Klim','Space Grotesk'],
+ ['Apercu','sans-serif','Colophon','Work Sans'],['Graphik','sans-serif','Commercial Type','Public Sans'],
+ ['Neue Montreal','sans-serif','Pangram Pangram','Space Grotesk'],['Gilroy','sans-serif','Radomir Tinkov','Outfit'],
+ ['Proxima Nova','sans-serif','Mark Simonson','Montserrat'],['Avenir Next','sans-serif','Linotype','Nunito Sans'],
+ ['Futura','sans-serif','Paratype','Jost'],['Gotham','sans-serif','H&Co','Montserrat'],
+ ['DIN Next','sans-serif','Linotype','Barlow'],['Brandon Grotesque','sans-serif','HVD','Outfit'],
+ ['Sofia Pro','sans-serif','Mostardesign','Poppins'],['Cera Pro','sans-serif','Type Mates','DM Sans'],
+ ['Aktiv Grotesk','sans-serif','Dalton Maag','Inter'],['TT Norms Pro','sans-serif','TypeType','Mulish'],
+ ['Tiempos Text','serif','Klim','Lora'],['Canela','serif','Commercial Type','Cormorant'],
+ ['GT Sectra','serif','Grilli Type','Fraunces'],['Reckless','serif','Displaay','Fraunces'],
+ ['Ogg','serif','Sharp Type','Playfair Display'],['Domaine Display','serif','Klim','Bodoni Moda'],
+ ['Freight Text','serif','Phil’s Fonts','Spectral'],['Publico','serif','Commercial Type','Source Serif 4'],
+ ['Recoleta','serif','Latinotype','DM Serif Display'],['Larken','serif','Made by Wildtype','Cormorant'],
+ ['GT Walsheim','sans-serif','Grilli Type','Hanken Grotesk'],['Untitled Sans','sans-serif','Klim','Inter'],
+].map(([name,cat,foundry,alt])=>({name,cat,paid:true,foundry,alt,buy:'https://www.myfonts.com/search/?query='+encodeURIComponent(name)}));
+
+let BANK=SEED.concat(PAID);
+const byName=n=>BANK.find(f=>f.name===n);
+
+// ---------- font loading ----------
+const loaded=new Set();
+function gfUrl(family,weights){
+  const w=(weights&&weights.length)?':wght@'+[...new Set(weights)].sort((a,b)=>a-b).join(';'):'';
+  return 'https://fonts.googleapis.com/css2?family='+family.replace(/ /g,'+')+w+'&display=swap';
+}
+function loadFont(family,weights){
+  const key=family+'|'+(weights||[]).join(',');
+  if(loaded.has(key)) return; loaded.add(key);
+  const l=document.createElement('link'); l.rel='stylesheet'; l.href=gfUrl(family,weights);
+  l.onerror=()=>{ const l2=document.createElement('link'); l2.rel='stylesheet'; l2.href=gfUrl(family,null); document.head.appendChild(l2); };
+  document.head.appendChild(l);
+}
+// resolve the family to actually render (paid -> free alternative)
+function renderFamily(f){ return f.paid ? f.alt : f.name; }
+function renderWeights(f){ if(f.paid){ const a=byName(f.alt); return a?a.weights:[400,700]; } return f.weights; }
+function cssStack(f){ const base=renderFamily(f); const fb=({serif:'Georgia, serif','sans-serif':'system-ui, sans-serif',display:'system-ui, sans-serif',monospace:'ui-monospace, monospace',handwriting:'cursive'})[f.cat]||'sans-serif';
+  return f.paid ? `'${f.name}', '${base}', ${fb}` : `'${base}', ${fb}`; }
+
+// ---------- state ----------
+const S={ price:'all', cats:new Set(), heading:byName('Playfair Display'), body:byName('Inter'),
+  hWeight:700, bWeight:400, hSize:62, bSize:16, lh:1.72, trk:0, locks:{heading:false,body:false}, bg:'light', ex:'link' };
+
+// ---------- filtering ----------
+function pool(){
+  return BANK.filter(f=>{
+    if(S.price==='free'&&f.paid) return false;
+    if(S.price==='paid'&&!f.paid) return false;
+    if(S.cats.size && !S.cats.has(f.cat)) return false;
+    return true;
+  });
+}
+
+// ---------- pairing generator ----------
+function rand(a){ return a[Math.floor(Math.random()*a.length)]; }
+function pickFor(role, p){
+  // choose a font appropriate for role from pool p, biased by strategy & the other role
+  const other = role==='heading'? S.body : S.heading;
+  let cand=p.slice();
+  if(role==='heading'){
+    // headings: prefer display/serif/sans with character; avoid mono/handwriting unless pool forces it
+    const pref=cand.filter(f=>['display','serif','sans-serif'].includes(f.cat));
+    if(pref.length) cand=pref;
+    // contrast vs body: if body is sans, lean serif/display; if body serif, lean sans/display
+    if(other){ const want = other.cat==='sans-serif'?['serif','display']:['sans-serif','display'];
+      const c2=cand.filter(f=>want.includes(f.cat)); if(c2.length&&Math.random()<0.7) cand=c2; }
+  } else {
+    // body: must be readable -> serif or sans only
+    const pref=cand.filter(f=>['serif','sans-serif'].includes(f.cat));
+    if(pref.length) cand=pref;
+    if(other){ const want = other.cat==='serif'?['sans-serif']:['serif','sans-serif'];
+      const c2=cand.filter(f=>want.includes(f.cat)); if(c2.length&&Math.random()<0.6) cand=c2; }
+  }
+  // avoid identical to the other role
+  cand=cand.filter(f=>!other||f.name!==other.name);
+  return cand.length?rand(cand):rand(p);
+}
+function generate(){
+  const p=pool(); if(!p.length) return;
+  // superfamily harmony: small chance, both from same family root
+  if(!S.locks.heading && !S.locks.body && Math.random()<0.16){
+    const roots={}; p.forEach(f=>{ const r=f.name.replace(/ (Sans|Serif|Slab|Mono|Display|Text|Condensed|Grotesk).*$/,''); (roots[r]=roots[r]||[]).push(f); });
+    const fams=Object.values(roots).filter(a=>a.length>=2);
+    if(fams.length){ const fam=rand(fams); const h=fam.find(f=>f.cat==='serif')||fam[0]; const b=fam.find(f=>f.cat==='sans-serif'&&f!==h)||fam.find(f=>f!==h)||fam[0];
+      S.heading=h; S.body=b; afterPair(); return; }
+  }
+  if(!S.locks.heading) S.heading=pickFor('heading',p);
+  if(!S.locks.body) S.body=pickFor('body',p);
+  if(S.heading&&S.body&&S.heading.name===S.body.name && !S.locks.body){ S.body=pickFor('body',p); }
+  afterPair();
+}
+function pickDefaultWeight(f,big){ const w=renderWeights(f); if(big){ return w.includes(700)?700:w[w.length-1]; } return w.includes(400)?400:w[0]; }
+function afterPair(){ S.hWeight=pickDefaultWeight(S.heading,true); S.bWeight=pickDefaultWeight(S.body,false); applyPair(); }
+
+// ---------- apply / render ----------
+function fillWeights(sel,f,cur){ const w=renderWeights(f); sel.innerHTML=''; w.forEach(x=>{ const o=document.createElement('option'); o.value=x; o.textContent=x+({300:' Light',400:' Regular',500:' Medium',600:' SemiBold',700:' Bold',800:' ExtraBold',900:' Black'}[x]||''); if(x===cur)o.selected=true; sel.appendChild(o); }); }
+function badgeHtml(f){ return f.paid?'<span class="badge paid">$ PAGA</span>':'<span class="badge free">GRATIS</span>'; }
+function metaText(f){ return f.cat.toUpperCase(); }
+function applyPair(){
+  const h=S.heading,b=S.body;
+  loadFont(renderFamily(h),renderWeights(h)); loadFont(renderFamily(b),renderWeights(b));
+  // labels
+  $('hName').textContent=h.name; $('hName').style.fontFamily=cssStack(h);
+  $('bName').textContent=b.name; $('bName').style.fontFamily=cssStack(b);
+  $('hMeta').innerHTML=metaText(h)+' '+badgeHtml(h);
+  $('bMeta').innerHTML=metaText(b)+' '+badgeHtml(b);
+  fillWeights($('hWeight'),h,S.hWeight); fillWeights($('bWeight'),b,S.bWeight);
+  // preview
+  const card=$('card');
+  card.style.setProperty('--fh',cssStack(h)); card.style.setProperty('--fb',cssStack(b));
+  $('pH1').style.fontFamily=cssStack(h); $('pH1').style.fontWeight=S.hWeight; $('pH1').style.fontSize=S.hSize+'px'; $('pH1').style.letterSpacing=(S.trk/100)+'em';
+  $('pDeck').style.fontFamily=cssStack(b); $('pDeck').style.fontWeight=Math.min(S.bWeight+100,700);
+  [$('pBody1'),$('pBody2')].forEach(el=>{ el.style.fontFamily=cssStack(b); el.style.fontWeight=S.bWeight; el.style.fontSize=S.bSize+'px'; el.style.lineHeight=S.lh; });
+  $('pEyebrow').style.fontFamily=cssStack(b); $('pCta').style.fontFamily=cssStack(b); $('pCta').style.fontWeight=700;
+  $('pDeck').style.fontSize=Math.round(S.bSize*1.32)+'px';
+  $('pMeta').style.fontFamily=cssStack(b);
+  $('pMeta').textContent=h.name+' · '+b.name;
+  // pair info bar
+  const info=$('pairInfo'); info.innerHTML='<b>'+h.name+'</b> + <b>'+b.name+'</b>';
+  // paid note
+  const pn=$('paidNote'); const paidOnes=[h,b].filter(f=>f.paid);
+  if(paidOnes.length){ pn.classList.add('on'); pn.innerHTML=paidOnes.map(f=>'<b>'+f.name+'</b> ('+f.foundry+') es paga — preview con su alternativa gratis <b>'+f.alt+'</b>. <a href="'+f.buy+'" target="_blank" rel="noopener" style="color:var(--gold)">comprar ↗</a>').join('<br>'); }
+  else pn.classList.remove('on');
+  buildExport();
+}
+
+// ---------- font picker dropdown ----------
+let pickRole=null;
+const listEl=$('fontList'); let io=null;
+function openPicker(role,anchor){
+  pickRole=role; const p=pool();
+  listEl.innerHTML='';
+  // search header
+  const si=document.createElement('input'); si.className='search'; si.placeholder='buscar fuente…'; si.style.margin='8px'; si.style.width='calc(100% - 16px)';
+  listEl.appendChild(si);
+  const holder=document.createElement('div'); listEl.appendChild(holder);
+  function render(q){
+    holder.innerHTML=''; q=(q||'').toLowerCase();
+    const res=p.filter(f=>!q||f.name.toLowerCase().includes(q)||f.cat.includes(q)).slice(0,80);
+    res.forEach(f=>{ const o=document.createElement('div'); o.className='opt';
+      o.innerHTML='<div class="on">'+f.name+'</div><div class="om">'+metaText(f)+' '+badgeHtml(f)+(f.paid?' · alt: '+f.alt:'')+'</div>';
+      o.querySelector('.on').style.fontFamily=cssStack(f);
+      o.onclick=()=>{ selectFont(role,f); closePicker(); };
+      o.dataset.fam=renderFamily(f); holder.appendChild(o);
+    });
+    // lazy-load fonts as they appear
+    if(io)io.disconnect();
+    io=new IntersectionObserver(es=>es.forEach(e=>{ if(e.isIntersecting){ loadFont(e.target.dataset.fam,[400]); io.unobserve(e.target);} }),{root:listEl});
+    holder.querySelectorAll('.opt').forEach(el=>io.observe(el));
+  }
+  render('');
+  si.addEventListener('input',()=>render(si.value));
+  const r=anchor.getBoundingClientRect();
+  listEl.style.left=r.left+'px'; listEl.style.top=(r.bottom+4)+'px'; listEl.style.width=Math.max(r.width,260)+'px';
+  listEl.classList.add('open'); setTimeout(()=>si.focus(),30);
+}
+function closePicker(){ listEl.classList.remove('open'); if(io)io.disconnect(); }
+function selectFont(role,f){ if(role==='heading'){S.heading=f;S.hWeight=pickDefaultWeight(f,true);} else {S.body=f;S.bWeight=pickDefaultWeight(f,false);} applyPair(); }
+document.querySelectorAll('[data-pick]').forEach(b=>b.addEventListener('click',e=>{ e.stopPropagation(); openPicker(b.dataset.pick,b); }));
+document.addEventListener('click',e=>{ if(!listEl.contains(e.target)&&!e.target.closest('[data-pick]')) closePicker(); });
+
+// ---------- export ----------
+function buildExport(){
+  const h=S.heading,b=S.body;
+  const hf=renderFamily(h), bf=renderFamily(b);
+  const same=hf===bf;
+  const fams = same ? [{f:hf,w:[...new Set([S.hWeight,S.bWeight])]}] : [{f:hf,w:[S.hWeight]},{f:bf,w:[S.bWeight]}];
+  const famParam=fams.map(x=>'family='+x.f.replace(/ /g,'+')+':wght@'+x.w.sort((a,b)=>a-b).join(';')).join('&');
+  const url='https://fonts.googleapis.com/css2?'+famParam+'&display=swap';
+  const cssVars=`:root{\n  --font-heading: ${cssStack(h)};\n  --font-body: ${cssStack(b)};\n}\nh1,h2,h3,h4,h5,h6{ font-family: var(--font-heading); font-weight:${S.hWeight}; }\nbody{ font-family: var(--font-body); font-weight:${S.bWeight}; line-height:${S.lh}; }`;
+  const paidc=[h,b].filter(f=>f.paid).map(f=>`/* ${f.name} (${f.foundry}) es paga: ${f.buy} — abajo va la alternativa gratis ${f.alt} */`).join('\n');
+  let out='';
+  if(S.ex==='link'){
+    out=(paidc?paidc+'\n':'')+`<!-- en tu <head> -->\n<link rel="preconnect" href="https://fonts.googleapis.com">\n<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n<link href="${url}" rel="stylesheet">\n\n<!-- en tu CSS -->\n<style>\n${cssVars}\n</style>`;
+  } else if(S.ex==='import'){
+    out=(paidc?paidc+'\n':'')+`/* arriba de todo en tu CSS */\n@import url('${url}');\n\n${cssVars}`;
+  } else {
+    out=`<!doctype html>\n<html lang="es"><head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width,initial-scale=1">\n<title>Pareja tipográfica — ${h.name} + ${b.name}</title>\n<link rel="preconnect" href="https://fonts.googleapis.com">\n<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n<link href="${url}" rel="stylesheet">\n<style>\n${cssVars}\n  body{max-width:760px;margin:60px auto;padding:0 24px;color:#16140f;background:#faf8f3;}\n  h1{font-size:${S.hSize}px;line-height:1.05;letter-spacing:${(S.trk/100)}em;margin:0 0 18px;}\n  p{font-size:${S.bSize}px;margin:0 0 16px;}\n</style></head>\n<body>\n  <h1>${$('pH1').textContent}</h1>\n  <p style="font-size:${Math.round(S.bSize*1.3)}px;opacity:.8">${$('pDeck').textContent}</p>\n  <p>${$('pBody1').textContent}</p>\n  <p>${$('pBody2').textContent}</p>\n</body></html>`;
+  }
+  $('exportBox').textContent=out;
+}
+$('copyBtn').addEventListener('click',()=>{ navigator.clipboard&&navigator.clipboard.writeText($('exportBox').textContent); const b=$('copyBtn'); const t=b.textContent; b.textContent='✓ copiado'; setTimeout(()=>b.textContent=t,1200); });
+$('dlBtn').addEventListener('click',()=>{ const ext=S.ex==='full'?'html':'css'; const blob=new Blob([$('exportBox').textContent],{type:'text/plain'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='tipos-'+S.heading.name.replace(/ /g,'-').toLowerCase()+'.'+ext; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),1500); });
+
+// ---------- controls wiring ----------
+$('genBtn').addEventListener('click',generate);
+$('priceSeg').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b)return; S.price=b.dataset.p; [...$('priceSeg').children].forEach(x=>x.classList.toggle('on',x===b)); });
+const CATS=[['sans-serif','Sans'],['serif','Serif'],['display','Display'],['monospace','Mono'],['handwriting','Script']];
+const catBox=$('catChips'); CATS.forEach(([k,l])=>{ const c=document.createElement('div'); c.className='chip'; c.textContent=l;
+  c.onclick=()=>{ if(S.cats.has(k))S.cats.delete(k); else S.cats.add(k); c.classList.toggle('on'); }; catBox.appendChild(c); });
+document.querySelectorAll('[data-lock]').forEach(el=>el.addEventListener('click',()=>{ const r=el.dataset.lock; S.locks[r]=!S.locks[r]; el.classList.toggle('on',S.locks[r]); el.textContent=(S.locks[r]?'🔒':'🔓')+' fijar'; }));
+$('hWeight').addEventListener('change',e=>{ S.hWeight=+e.target.value; loadFont(renderFamily(S.heading),renderWeights(S.heading)); applyPair(); });
+$('bWeight').addEventListener('change',e=>{ S.bWeight=+e.target.value; applyPair(); });
+function bindR(id,key,fmt,scale){ const el=$(id),lab=$('v'+id.charAt(0).toUpperCase()+id.slice(1)); const f=()=>{ S[key]=el.value/(scale||1); if(lab)lab.textContent=fmt?fmt(S[key]):el.value; applyPair(); }; el.addEventListener('input',f); }
+bindR('hSize','hSize'); bindR('bSize','bSize'); bindR('lh','lh',v=>v.toFixed(2),100); bindR('trk','trk');
+$('exSeg').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b)return; S.ex=b.dataset.ex; [...$('exSeg').children].forEach(x=>x.classList.toggle('on',x===b)); buildExport(); });
+$('bgSeg').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b)return; S.bg=b.dataset.bg; [...$('bgSeg').children].forEach(x=>x.classList.toggle('on',x===b)); $('card').classList.toggle('dark',S.bg==='dark'); });
+
+// ---------- try to load full Google Fonts catalog (banco grande) ----------
+async function loadFullCatalog(){
+  try{
+    const r=await fetch('https://fonts.google.com/metadata/fonts');
+    let t=await r.text(); t=t.replace(/^[^{[]*/,''); // strip )]}' prefix
+    const j=JSON.parse(t); const list=j.familyMetadataList||[];
+    const map={'Sans Serif':'sans-serif','Serif':'serif','Display':'display','Handwriting':'handwriting','Monospace':'monospace'};
+    const seedNames=new Set(SEED.map(f=>f.name));
+    const extra=list.filter(m=>!seedNames.has(m.family)).map(m=>{
+      const weights=Object.keys(m.fonts||{}).map(k=>parseInt(k,10)).filter(n=>!isNaN(n)&&n>=100&&n<=900);
+      return { name:m.family, cat:map[m.category]||'sans-serif', weights:weights.length?[...new Set(weights)]:[400], paid:false, pop:m.popularity||9999 };
+    });
+    // sort extras by popularity, keep seed (curated) first
+    extra.sort((a,b)=>a.pop-b.pop);
+    BANK=SEED.concat(extra).concat(PAID);
+    $('bankcount').innerHTML='banco: <b>'+(SEED.length+extra.length)+'</b> fuentes + '+PAID.length+' pagas';
+  }catch(e){
+    $('bankcount').innerHTML='banco: <b>'+SEED.length+'</b> fuentes + '+PAID.length+' pagas <span style="color:var(--t3)">(catálogo offline)</span>';
+  }
+}
+
+// ---------- go ----------
+loadFullCatalog();
+applyPair();
+$('bankcount').innerHTML='banco: <b>'+SEED.length+'</b> fuentes + '+PAID.length+' pagas';
+</script>
+</body>
+</html>
