@@ -1,0 +1,248 @@
+<!doctype html><html lang="es"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FACTURA AR — armador + QR AFIP · Human Glitche Labs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{ --acid:#b8ff00; --glitch:#ff2d55; --cyan:#3ad0ff; --ok:#3aff8c; --ink:#f0ede6; --line:rgba(240,237,230,.12); --bg:#050505; --panel:rgba(184,255,0,.02); }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{min-height:100%;background:var(--bg);color:var(--ink);font-family:'Space Mono',monospace;}
+  body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");z-index:0;pointer-events:none;opacity:.4;}
+  .wrap{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:28px 22px 90px;}
+  header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;}
+  .brand{font-family:'Bebas Neue',sans-serif;font-size:48px;letter-spacing:.03em;line-height:.82;}
+  .brand b{color:var(--acid);font-weight:400;}
+  header a{font-size:10px;letter-spacing:.2em;color:rgba(240,237,230,.4);text-decoration:none;} header a:hover{color:var(--acid);}
+  .intro{font-size:12px;color:rgba(240,237,230,.55);line-height:1.8;max-width:74ch;margin-bottom:8px;}
+  .intro b{color:var(--acid);font-weight:400;}
+  .warn{font-size:10.5px;letter-spacing:.04em;color:var(--cyan);border:1px solid rgba(58,208,255,.3);background:rgba(58,208,255,.05);border-radius:6px;padding:9px 12px;margin:14px 0 26px;line-height:1.6;}
+  .cols{display:grid;grid-template-columns:1.35fr .9fr;gap:22px;}
+  @media(max-width:820px){.cols{grid-template-columns:1fr;}}
+  .panel{border:1px solid var(--line);border-radius:8px;padding:18px 18px 20px;background:var(--panel);}
+  .panel h2{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:.05em;color:var(--acid);margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+  .panel h2 span{font-size:9px;letter-spacing:.16em;color:rgba(240,237,230,.35);font-family:'Space Mono';}
+  label{display:block;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:rgba(240,237,230,.5);margin:0 0 5px;}
+  input,select{width:100%;background:#0c0c0c;border:1px solid var(--line);border-radius:5px;color:var(--ink);font-family:'Space Mono';font-size:12.5px;padding:8px 9px;}
+  input:focus,select:focus{outline:none;border-color:var(--acid);}
+  .row{display:grid;gap:10px;margin-bottom:12px;}
+  .r2{grid-template-columns:1fr 1fr;} .r3{grid-template-columns:1fr 1fr 1fr;} .r4{grid-template-columns:1.4fr 1fr 1fr 1fr;}
+  @media(max-width:560px){.r2,.r3,.r4{grid-template-columns:1fr;}}
+  .cuit-wrap{position:relative;}
+  .cuit-flag{position:absolute;right:9px;top:29px;font-size:13px;}
+  .items table{width:100%;border-collapse:collapse;font-size:11.5px;}
+  .items th{font-size:8.5px;letter-spacing:.12em;text-transform:uppercase;color:rgba(240,237,230,.4);text-align:left;padding:0 6px 7px;font-weight:400;}
+  .items td{padding:3px 4px;}
+  .items input,.items select{padding:6px 7px;font-size:11.5px;}
+  .items td input{text-align:right;} .items td:first-child input{text-align:left;}
+  .items .del{cursor:pointer;color:rgba(240,237,230,.3);font-size:16px;text-align:center;width:26px;}
+  .items .del:hover{color:var(--glitch);}
+  .addrow{margin-top:10px;background:transparent;border:1px dashed var(--line);color:var(--acid);border-radius:5px;padding:8px;width:100%;cursor:pointer;font-family:'Space Mono';font-size:10px;letter-spacing:.14em;}
+  .addrow:hover{border-color:var(--acid);background:rgba(184,255,0,.04);}
+  .totals{margin-top:18px;border-top:1px solid var(--line);padding-top:14px;font-size:12px;}
+  .totals .t{display:flex;justify-content:space-between;padding:3px 0;color:rgba(240,237,230,.7);}
+  .totals .t.big{font-size:17px;color:var(--acid);font-weight:700;border-top:1px solid var(--line);margin-top:8px;padding-top:10px;}
+  .totals .iva{color:rgba(240,237,230,.5);font-size:10.5px;padding-left:12px;}
+  .qrbox{display:flex;flex-direction:column;align-items:center;gap:14px;}
+  #qr{background:#fff;border-radius:8px;padding:12px;width:236px;height:236px;display:flex;align-items:center;justify-content:center;}
+  #qr canvas{width:100%!important;height:100%!important;image-rendering:pixelated;}
+  .qr-empty{color:#777;font-size:10px;letter-spacing:.1em;text-align:center;}
+  .btns{display:flex;gap:8px;width:100%;}
+  .btn{flex:1;background:var(--acid);color:#050505;border:none;border-radius:5px;padding:10px;cursor:pointer;font-family:'Space Mono';font-weight:700;font-size:10px;letter-spacing:.14em;}
+  .btn:hover{filter:brightness(1.1);} .btn.ghost{background:transparent;color:var(--acid);border:1px solid var(--line);}
+  .btn.ghost:hover{border-color:var(--acid);}
+  .json{width:100%;background:#0c0c0c;border:1px solid var(--line);border-radius:5px;padding:10px;font-size:10px;line-height:1.6;color:var(--cyan);white-space:pre-wrap;word-break:break-all;max-height:160px;overflow:auto;}
+  .url{font-size:9.5px;color:rgba(240,237,230,.4);word-break:break-all;line-height:1.5;}
+  .url a{color:var(--cyan);}
+  .hint{font-size:9.5px;color:rgba(240,237,230,.35);line-height:1.6;margin-top:6px;}
+  .foot{font-size:10px;color:rgba(240,237,230,.35);letter-spacing:.1em;margin-top:38px;text-align:center;}
+</style></head><body>
+<div class="wrap">
+  <header><div class="brand"><b>FACTURA</b> AR</div><a href="/labs/">← LABS</a></header>
+  <p class="intro">Armá un comprobante argentino (<b>A · B · C</b>), calculá <b>IVA discriminado</b>, validá <b>CUIT</b> y generá el <b>QR oficial de AFIP/ARCA</b> — el mismo que va impreso en toda factura electrónica. Todo en tu navegador, nada se sube a ningún lado.</p>
+  <div class="warn">⚠️ <b>Esto NO se conecta a ARCA ni pide el CAE.</b> Es una herramienta de armado, cálculo y visualización. El CAE y su vencimiento los obtenés del web service de ARCA (o tu facturador) y los pegás acá para construir el QR. Para uso fiscal real, el comprobante debe estar autorizado por ARCA.</div>
+
+  <div class="cols">
+    <div>
+      <div class="panel">
+        <h2>① Comprobante</h2>
+        <div class="row r3">
+          <div><label>Tipo</label><select id="tipoCmp">
+            <optgroup label="Factura A — responsable inscripto"><option value="1">01 · Factura A</option><option value="2">02 · Nota Débito A</option><option value="3">03 · Nota Crédito A</option></optgroup>
+            <optgroup label="Factura B — consumidor / exento"><option value="6" selected>06 · Factura B</option><option value="7">07 · Nota Débito B</option><option value="8">08 · Nota Crédito B</option></optgroup>
+            <optgroup label="Factura C — monotributo"><option value="11">11 · Factura C</option><option value="12">12 · Nota Débito C</option><option value="13">13 · Nota Crédito C</option></optgroup>
+          </select></div>
+          <div><label>Punto de venta</label><input id="ptoVta" type="number" min="1" value="1"></div>
+          <div><label>Número</label><input id="nroCmp" type="number" min="1" value="1"></div>
+        </div>
+        <div class="row r3">
+          <div><label>Fecha emisión</label><input id="fecha" type="date"></div>
+          <div><label>Moneda</label><select id="moneda"><option value="PES" selected>PES · Pesos</option><option value="DOL">DOL · Dólar</option></select></div>
+          <div><label>Cotización</label><input id="ctz" type="number" min="1" step="0.01" value="1"></div>
+        </div>
+      </div>
+
+      <div class="panel" style="margin-top:16px;">
+        <h2>② Partes</h2>
+        <div class="row r2 cuit-wrap">
+          <div><label>CUIT emisor</label><input id="cuitEmisor" inputmode="numeric" placeholder="30-12345678-9"><span class="cuit-flag" id="flagEmisor"></span></div>
+          <div><label>Razón social emisor (ref.)</label><input id="razonEmisor" placeholder="opcional"></div>
+        </div>
+        <div class="row r3">
+          <div><label>Tipo doc receptor</label><select id="tipoDocRec"><option value="80">80 · CUIT</option><option value="86">86 · CUIL</option><option value="96">96 · DNI</option><option value="99" selected>99 · Consumidor final</option></select></div>
+          <div class="cuit-wrap" style="grid-column:span 2;"><label>Nº documento receptor</label><input id="nroDocRec" inputmode="numeric" placeholder="0"><span class="cuit-flag" id="flagRec"></span></div>
+        </div>
+      </div>
+
+      <div class="panel items" style="margin-top:16px;">
+        <h2>③ Detalle <span>neto · sin IVA</span></h2>
+        <table><thead><tr><th>Descripción</th><th style="width:64px">Cant.</th><th style="width:96px">P. unit.</th><th style="width:78px">IVA %</th><th style="width:96px">Subtotal</th><th></th></tr></thead><tbody id="items"></tbody></table>
+        <button class="addrow" id="addRow">+ AGREGAR ÍTEM</button>
+        <div class="row r2" style="margin-top:14px;">
+          <div><label>Otros tributos / percepciones</label><input id="otros" type="number" min="0" step="0.01" value="0"></div>
+          <div><label>CAE (de ARCA)</label><input id="cae" inputmode="numeric" placeholder="14 dígitos"></div>
+        </div>
+        <div class="totals" id="totals"></div>
+      </div>
+    </div>
+
+    <div>
+      <div class="panel" style="position:sticky;top:18px;">
+        <h2>④ QR AFIP/ARCA</h2>
+        <div class="qrbox">
+          <div id="qr"><span class="qr-empty">Completá los datos<br>y generá el QR</span></div>
+          <div class="btns">
+            <button class="btn" id="gen">GENERAR QR</button>
+            <button class="btn ghost" id="dl">PNG</button>
+          </div>
+          <div class="btns"><button class="btn ghost" id="copyJson" style="flex:1">COPIAR JSON</button><button class="btn ghost" id="copyUrl" style="flex:1">COPIAR URL</button></div>
+          <div class="json" id="jsonOut">// el payload del QR aparece acá</div>
+          <div class="url" id="urlOut"></div>
+          <div class="hint">El QR codifica un JSON (versión 1 del formato AFIP) en base64 dentro de <code>afip.gob.ar/fe/qr/</code>. Escaneándolo, ARCA muestra los datos del comprobante. <b>Importe</b> = total final.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="foot">HUMAN GLITCHE · VISUAL LAB · corre 100% en tu navegador · no se conecta a ARCA</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const fmt = n => n.toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2});
+const ALICUOTAS = [21,10.5,27,5,2.5,0];
+
+// --- fecha default = hoy ---
+(()=>{const d=new Date();const p=x=>String(x).padStart(2,'0');$('fecha').value=`${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`;})();
+
+// --- validación CUIT (dígito verificador oficial) ---
+function validarCUIT(v){
+  const c=(v||'').replace(/\D/g,'');
+  if(c.length!==11) return null;
+  const m=[5,4,3,2,7,6,5,4,3,2];
+  let s=0; for(let i=0;i<10;i++) s+=parseInt(c[i])*m[i];
+  let d=11-(s%11); if(d===11) d=0; if(d===10) d=9;
+  return d===parseInt(c[10]);
+}
+function flag(inputId,flagId){
+  const raw=$(inputId).value.replace(/\D/g,'');
+  const el=$(flagId);
+  if(raw.length===0){el.textContent='';return;}
+  if(raw.length!==11){el.textContent='…';el.style.color='rgba(240,237,230,.3)';return;}
+  const ok=validarCUIT(raw);
+  el.textContent=ok?'✓':'✗'; el.style.color=ok?'var(--ok)':'var(--glitch)';
+}
+$('cuitEmisor').addEventListener('input',()=>flag('cuitEmisor','flagEmisor'));
+$('nroDocRec').addEventListener('input',()=>{ if($('tipoDocRec').value==='80'||$('tipoDocRec').value==='86') flag('nroDocRec','flagRec'); else $('flagRec').textContent=''; });
+$('tipoDocRec').addEventListener('change',()=>{ $('flagRec').textContent=''; if($('tipoDocRec').value==='99'){$('nroDocRec').value='0';} });
+
+// --- ítems ---
+function addRow(desc='',cant=1,pu=0,iva=21){
+  const tr=document.createElement('tr');
+  tr.innerHTML=`<td><input class="d" value="${desc}" placeholder="Producto / servicio"></td>
+    <td><input class="c" type="number" min="0" step="1" value="${cant}"></td>
+    <td><input class="p" type="number" min="0" step="0.01" value="${pu}"></td>
+    <td><select class="i">${ALICUOTAS.map(a=>`<option value="${a}" ${a===iva?'selected':''}>${a}%</option>`).join('')}</select></td>
+    <td class="sub" style="text-align:right;padding-right:8px;color:rgba(240,237,230,.65)">0,00</td>
+    <td class="del">×</td>`;
+  tr.querySelector('.del').onclick=()=>{tr.remove();calc();};
+  tr.querySelectorAll('input,select').forEach(e=>e.addEventListener('input',calc));
+  $('items').appendChild(tr);
+  calc();
+}
+$('addRow').onclick=()=>addRow();
+
+// --- cálculo de totales ---
+let last=null;
+function calc(){
+  let neto=0; const ivaPorTasa={};
+  $('items').querySelectorAll('tr').forEach(tr=>{
+    const c=parseFloat(tr.querySelector('.c').value)||0;
+    const p=parseFloat(tr.querySelector('.p').value)||0;
+    const a=parseFloat(tr.querySelector('.i').value)||0;
+    const sub=c*p; neto+=sub;
+    ivaPorTasa[a]=(ivaPorTasa[a]||0)+sub*a/100;
+    tr.querySelector('.sub').textContent=fmt(sub);
+  });
+  const otros=parseFloat($('otros').value)||0;
+  const ivaTotal=Object.values(ivaPorTasa).reduce((x,y)=>x+y,0);
+  const total=neto+ivaTotal+otros;
+  let html=`<div class="t"><span>Neto gravado</span><b>${fmt(neto)}</b></div>`;
+  Object.keys(ivaPorTasa).sort((a,b)=>b-a).forEach(a=>{ if(ivaPorTasa[a]>0||a!=='0') html+=`<div class="t iva"><span>IVA ${a}%</span><span>${fmt(ivaPorTasa[a])}</span></div>`; });
+  if(otros>0) html+=`<div class="t"><span>Otros tributos</span><span>${fmt(otros)}</span></div>`;
+  html+=`<div class="t big"><span>TOTAL</span><span>$ ${fmt(total)}</span></div>`;
+  $('totals').innerHTML=html;
+  last={neto,ivaTotal,otros,total};
+  return last;
+}
+$('otros').addEventListener('input',calc);
+
+// --- payload + QR ---
+function buildPayload(){
+  const t=calc();
+  const tipoDoc=parseInt($('tipoDocRec').value);
+  const nroDoc=(tipoDoc===99)?0:parseInt(($('nroDocRec').value||'0').replace(/\D/g,''))||0;
+  return {
+    ver:1,
+    fecha:$('fecha').value,
+    cuit:parseInt(($('cuitEmisor').value||'0').replace(/\D/g,''))||0,
+    ptoVta:parseInt($('ptoVta').value)||0,
+    tipoCmp:parseInt($('tipoCmp').value)||0,
+    nroCmp:parseInt($('nroCmp').value)||0,
+    importe:Math.round(t.total*100)/100,
+    moneda:$('moneda').value,
+    ctz:parseFloat($('ctz').value)||1,
+    tipoDocRec:tipoDoc,
+    nroDocRec:nroDoc,
+    tipoCodAut:"E",
+    codAut:parseInt(($('cae').value||'0').replace(/\D/g,''))||0
+  };
+}
+function b64(obj){ return btoa(unescape(encodeURIComponent(JSON.stringify(obj)))); }
+let lastUrl='', lastJson='';
+function generate(){
+  const p=buildPayload();
+  lastJson=JSON.stringify(p,null,2);
+  lastUrl='https://www.afip.gob.ar/fe/qr/?p='+b64(p);
+  $('jsonOut').textContent=lastJson;
+  $('urlOut').innerHTML=`<a href="${lastUrl}" target="_blank" rel="noopener">${lastUrl}</a>`;
+  const box=$('qr');
+  try{
+    const qr=qrcode(0,'L'); qr.addData(lastUrl); qr.make();
+    const n=qr.getModuleCount(), cell=Math.max(2,Math.floor(212/n)), dim=cell*n;
+    const cv=document.createElement('canvas'); cv.width=dim; cv.height=dim;
+    const ctx=cv.getContext('2d');
+    ctx.fillStyle='#ffffff'; ctx.fillRect(0,0,dim,dim);
+    ctx.fillStyle='#050505';
+    for(let r=0;r<n;r++) for(let c=0;c<n;c++) if(qr.isDark(r,c)) ctx.fillRect(c*cell,r*cell,cell,cell);
+    box.innerHTML=''; box.appendChild(cv);
+  }catch(e){ box.innerHTML='<span class="qr-empty" style="color:#c00">QR no disponible<br>(¿librería sin cargar?)</span>'; }
+}
+$('gen').onclick=generate;
+$('dl').onclick=()=>{ const cv=$('qr').querySelector('canvas'); if(!cv){alert('Generá el QR primero.');return;} const a=document.createElement('a'); const p=buildPayload(); a.download=`qr-${p.tipoCmp}-${String(p.ptoVta).padStart(4,'0')}-${String(p.nroCmp).padStart(8,'0')}.png`; a.href=cv.toDataURL('image/png'); a.click(); };
+$('copyJson').onclick=()=>{ if(!lastJson){alert('Generá el QR primero.');return;} navigator.clipboard.writeText(lastJson); $('copyJson').textContent='✓ COPIADO'; setTimeout(()=>$('copyJson').textContent='COPIAR JSON',1200); };
+$('copyUrl').onclick=()=>{ if(!lastUrl){alert('Generá el QR primero.');return;} navigator.clipboard.writeText(lastUrl); $('copyUrl').textContent='✓ COPIADA'; setTimeout(()=>$('copyUrl').textContent='COPIAR URL',1200); };
+
+// seed
+addRow('Servicio de diseño',1,10000,21);
+</script>
+</body></html>

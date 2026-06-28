@@ -1,0 +1,499 @@
+<!doctype html><html lang="es"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PIPELINES — Human Glitche · qué automatización vender a cada negocio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{ --acid:#b8ff00; --glitch:#ff2d55; --cyan:#3ad0ff; --ink:#f0ede6; --line:rgba(240,237,230,.12); --bg:#050505; --pan:rgba(184,255,0,.015); }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{min-height:100%;background:var(--bg);color:var(--ink);font-family:'Space Mono',monospace;}
+  body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");z-index:0;pointer-events:none;opacity:.4;}
+  .wrap{position:relative;z-index:1;max-width:1180px;margin:0 auto;padding:30px 22px 90px;}
+  header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;gap:16px;flex-wrap:wrap;}
+  .brand{font-family:'Bebas Neue',sans-serif;font-size:54px;letter-spacing:.03em;line-height:.82;}
+  .brand b{color:var(--acid);font-weight:400;}
+  .brand span{display:block;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.28em;color:rgba(240,237,230,.4);margin-top:8px;}
+  header nav a{font-size:10px;letter-spacing:.2em;color:rgba(240,237,230,.4);text-decoration:none;margin-left:16px;} header nav a:hover{color:var(--acid);}
+  .intro{font-size:12px;color:rgba(240,237,230,.55);line-height:1.8;max-width:74ch;margin:14px 0 26px;}
+  .intro b{color:var(--acid);font-weight:400;}
+
+  /* barra de control */
+  .bar{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;border:1px solid var(--line);border-radius:10px;padding:16px 16px;background:var(--pan);margin-bottom:22px;}
+  .field{display:flex;flex-direction:column;gap:5px;}
+  .field label{font-size:8.5px;letter-spacing:.18em;text-transform:uppercase;color:rgba(240,237,230,.4);}
+  select,input[type=text]{background:#0b0b0b;border:1px solid var(--line);color:var(--ink);font-family:'Space Mono',monospace;font-size:12px;padding:8px 10px;border-radius:6px;min-width:170px;}
+  select:focus,input:focus{outline:none;border-color:var(--acid);}
+  .btn{cursor:pointer;background:transparent;border:1px solid var(--line);color:var(--ink);font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.14em;padding:9px 13px;border-radius:6px;transition:.18s;text-transform:uppercase;}
+  .btn:hover{border-color:var(--acid);color:var(--acid);}
+  .btn.on{border-color:var(--acid);color:var(--acid);background:rgba(184,255,0,.07);}
+  .bar .grow{flex:1;}
+
+  /* ficha del negocio */
+  .biz{border:1px solid var(--line);border-radius:10px;padding:18px 18px;background:var(--pan);margin-bottom:22px;}
+  .biz.empty{color:rgba(240,237,230,.5);font-size:12px;line-height:1.7;}
+  .biz .top{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px;}
+  .biz h2{font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:.02em;color:var(--ink);line-height:.95;}
+  .biz .meta{font-size:11px;color:rgba(240,237,230,.55);margin-top:3px;}
+  .biz .meta b{color:var(--cyan);font-weight:400;}
+  .chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;}
+  .chip{font-size:10px;letter-spacing:.08em;padding:5px 9px;border-radius:5px;border:1px solid var(--line);display:flex;gap:6px;align-items:center;}
+  .chip .dot{width:7px;height:7px;border-radius:50%;}
+  .chip.has{color:var(--acid);border-color:rgba(184,255,0,.35);} .chip.has .dot{background:var(--acid);}
+  .chip.no{color:var(--glitch);border-color:rgba(255,45,85,.35);} .chip.no .dot{background:var(--glitch);}
+  .biz .diag{font-size:11px;color:rgba(240,237,230,.6);line-height:1.7;margin-top:14px;border-top:1px solid var(--line);padding-top:12px;}
+  .biz .diag b{color:var(--acid);font-weight:400;}
+
+  .seclabel{font-size:9px;letter-spacing:.24em;text-transform:uppercase;color:rgba(240,237,230,.4);margin:6px 0 14px;display:flex;align-items:center;gap:10px;}
+  .seclabel::after{content:'';flex:1;height:1px;background:var(--line);}
+
+  /* layout principal + presupuesto */
+  .cols{display:grid;grid-template-columns:1fr 320px;gap:22px;align-items:start;}
+  @media(max-width:880px){ .cols{grid-template-columns:1fr;} }
+
+  .cards{display:flex;flex-direction:column;gap:14px;}
+  .card{border:1px solid var(--line);border-radius:10px;background:var(--pan);overflow:hidden;transition:.18s;}
+  .card.rec{border-color:rgba(184,255,0,.4);background:rgba(184,255,0,.04);}
+  .card.added{border-color:var(--cyan);}
+  .card .head{display:flex;gap:13px;align-items:flex-start;padding:16px 16px 12px;cursor:pointer;}
+  .card .ico{font-size:22px;line-height:1;}
+  .card .ttl{flex:1;}
+  .card h3{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:.03em;color:var(--acid);line-height:.9;}
+  .card .tag{font-size:8px;letter-spacing:.16em;text-transform:uppercase;color:rgba(240,237,230,.4);margin-top:4px;}
+  .card .why{display:inline-block;font-size:9px;letter-spacing:.06em;color:#050505;background:var(--acid);padding:3px 7px;border-radius:4px;margin-top:7px;font-weight:700;}
+  .card .why.soft{background:transparent;color:rgba(240,237,230,.45);border:1px solid var(--line);font-weight:400;}
+  .card p.desc{font-size:11px;color:rgba(240,237,230,.6);line-height:1.7;padding:0 16px 12px;}
+  .card .priceline{display:flex;gap:18px;flex-wrap:wrap;padding:0 16px 14px;font-size:11px;align-items:center;}
+  .card .priceline .pc{color:rgba(240,237,230,.55);} .card .priceline .pc b{color:var(--ink);font-weight:700;}
+  .card .priceline .pv{color:rgba(240,237,230,.55);} .card .priceline .pv b{color:var(--acid);font-weight:700;}
+  .card .priceline .mg{color:var(--cyan);font-size:10px;margin-left:auto;}
+  .card .act{display:flex;gap:8px;padding:0 16px 16px;}
+
+  /* flujo de nodos */
+  .flow{display:flex;flex-wrap:wrap;align-items:stretch;gap:0;padding:4px 16px 16px;}
+  .node{display:flex;align-items:center;}
+  .node .box{border:1px solid var(--line);border-radius:6px;padding:7px 10px;font-size:10px;letter-spacing:.03em;color:rgba(240,237,230,.82);background:#0a0a0a;white-space:nowrap;}
+  .card.rec .node .box{border-color:rgba(184,255,0,.22);}
+  .node .arr{color:var(--acid);font-size:13px;margin:0 7px;opacity:.7;}
+  .node:last-child .arr{display:none;}
+
+  .priceedit{background:#0b0b0b;border:1px solid var(--acid);color:var(--acid);font-family:'Space Mono',monospace;font-size:11px;width:64px;padding:3px 5px;border-radius:4px;}
+
+  /* presupuesto */
+  .quote{border:1px solid var(--line);border-radius:10px;background:var(--pan);padding:16px 16px 18px;position:sticky;top:18px;}
+  .quote h3{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:.03em;color:var(--acid);line-height:.9;margin-bottom:3px;}
+  .quote .for{font-size:10px;color:rgba(240,237,230,.5);margin-bottom:14px;}
+  .quote .for b{color:var(--cyan);font-weight:400;}
+  .qitem{display:flex;justify-content:space-between;gap:8px;font-size:11px;padding:9px 0;border-bottom:1px solid var(--line);align-items:flex-start;}
+  .qitem .n{color:rgba(240,237,230,.82);}
+  .qitem .n small{display:block;color:rgba(240,237,230,.4);font-size:9px;letter-spacing:.05em;margin-top:2px;}
+  .qitem .v{text-align:right;white-space:nowrap;}
+  .qitem .v b{color:var(--acid);font-weight:700;}
+  .qitem .x{cursor:pointer;color:rgba(240,237,230,.35);font-size:13px;margin-left:6px;}
+  .qitem .x:hover{color:var(--glitch);}
+  .qempty{font-size:11px;color:rgba(240,237,230,.45);line-height:1.7;padding:8px 0 4px;}
+  .totals{margin-top:14px;border-top:1px dashed var(--line);padding-top:12px;font-size:11px;display:flex;flex-direction:column;gap:7px;}
+  .totals .row{display:flex;justify-content:space-between;}
+  .totals .row span{color:rgba(240,237,230,.55);}
+  .totals .row b{font-weight:700;}
+  .totals .grand{font-size:13px;margin-top:4px;}
+  .totals .grand b{color:var(--acid);}
+  .totals .cost b{color:rgba(240,237,230,.85);}
+  .totals .marg b{color:var(--cyan);}
+  .qact{display:flex;gap:8px;margin-top:14px;}
+  .moneda{display:flex;gap:6px;align-items:center;margin-top:12px;font-size:9px;letter-spacing:.14em;color:rgba(240,237,230,.4);text-transform:uppercase;}
+  .moneda select{min-width:0;font-size:11px;padding:5px 7px;}
+  .note{font-size:9px;color:rgba(240,237,230,.35);line-height:1.7;margin-top:14px;}
+
+  .foot{font-size:10px;color:rgba(240,237,230,.35);letter-spacing:.1em;margin-top:44px;text-align:center;}
+  .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--acid);color:#050505;font-size:11px;font-weight:700;letter-spacing:.08em;padding:10px 18px;border-radius:6px;opacity:0;pointer-events:none;transition:.25s;z-index:9;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+</style></head><body>
+<div class="wrap">
+  <header>
+    <div class="brand"><b>PIPELINES</b><span>automatización vendible por negocio</span></div>
+    <nav><a href="/labs/">← LABS</a><a href="/auditoria.html">AUDITORÍA</a></nav>
+  </header>
+  <p class="intro">Elegí un comercio de los que <b>auditamos</b> y la app detecta qué le falta (web, WhatsApp Business, redes, pedidos, turnos…) y arma el <b>pipeline de automatización</b> que le podés vender — paso a paso, con <b>tu costo</b> y el <b>presupuesto</b> al cliente. Recomienda por hueco de canal <i>y</i> por rubro. Todo corre en tu navegador; los precios los editás y se guardan acá.</p>
+
+  <!-- CONTROL -->
+  <div class="bar">
+    <div class="field"><label>Ciudad</label><select id="fCity"><option value="">Todas</option></select></div>
+    <div class="field grow"><label>Negocio auditado</label><select id="fBiz"><option value="">— Modo libre (sin negocio) —</option></select></div>
+    <button class="btn" id="editBtn" title="Editar costos y precios de cada pipeline">✎ Editar precios</button>
+    <button class="btn" id="resetBtn" title="Volver a precios por defecto">↺ Reset</button>
+  </div>
+
+  <!-- FICHA NEGOCIO -->
+  <div id="bizPanel"></div>
+
+  <div class="cols">
+    <div>
+      <div class="seclabel" id="recLabel">Pipelines</div>
+      <div class="cards" id="cards"></div>
+    </div>
+
+    <!-- PRESUPUESTO -->
+    <aside>
+      <div class="quote">
+        <h3>PRESUPUESTO</h3>
+        <div class="for" id="qFor">Modo libre</div>
+        <div id="qItems"></div>
+        <div class="totals" id="qTotals"></div>
+        <div class="qact">
+          <button class="btn grow" id="copyBtn" style="flex:1">📋 Copiar</button>
+          <button class="btn" id="clearBtn">Vaciar</button>
+        </div>
+        <div class="moneda">Moneda
+          <select id="moneda">
+            <option value="US$">US$</option>
+            <option value="AR$">AR$</option>
+            <option value="€">€</option>
+            <option value="$">$</option>
+          </select>
+        </div>
+        <p class="note">Los números son editables (✎). "Setup" = pago único de armado; "Mensual" = mantenimiento/operación recurrente. El margen es referencial — ajustá a tu realidad antes de pasar el presupuesto.</p>
+      </div>
+    </aside>
+  </div>
+
+  <div class="foot">HUMAN GLITCHE · VISUAL LAB · diagnóstico + presupuesto client-side, conectado a la Auditoría</div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+'use strict';
+const $=id=>document.getElementById(id);
+
+// ── Catálogo de pipelines de automatización ──────────────────────────────
+// gap: canales que, si el negocio NO los tiene, hacen recomendable el pipeline.
+// tipos: rubros donde el pipeline es extra relevante (match por substring).
+// setup = pago único (armado) · mensual = recurrente (operación/mantenimiento).
+const PIPELINES = [
+  { id:'web', ico:'🌐', name:'PRESENCIA WEB', tag:'sitio · landing',
+    desc:'Que el negocio exista en internet: un sitio simple que carga rápido y aparece en Google. La base de todo lo demás.',
+    gap:['web'], tipos:[],
+    nodes:['Dominio','Plantilla HG','Contenido + fotos','Deploy (Pages)','SEO básico','Ficha Google'],
+    setup:{costo:40, precio:200}, mensual:{costo:6, precio:30} },
+
+  { id:'wa', ico:'💬', name:'WHATSAPP BIZ AUTOPILOT', tag:'whatsapp · bot',
+    desc:'WhatsApp Business con catálogo, respuestas automáticas a las preguntas de siempre, etiquetas y recordatorios. El canal donde realmente compran.',
+    gap:['wa'], tipos:[],
+    nodes:['WhatsApp Business','Catálogo','Bot de FAQ','Etiquetas / CRM','Recordatorios','Aviso al dueño'],
+    setup:{costo:25, precio:150}, mensual:{costo:14, precio:70} },
+
+  { id:'social', ico:'📲', name:'REDES EN PILOTO', tag:'instagram · tiktok',
+    desc:'Contenido programado, respuestas automáticas a DM y un reporte mensual claro. Presencia constante sin vivir pegado al teléfono.',
+    gap:['ig','tt'], tipos:[],
+    nodes:['Calendario','Contenido (motor-media)','Programación','Auto-DM','Hashtags','Reporte'],
+    setup:{costo:30, precio:160}, mensual:{costo:45, precio:200} },
+
+  { id:'menu', ico:'🍽️', name:'MENÚ + PEDIDOS WHATSAPP', tag:'gastro · retail',
+    desc:'Carta digital con QR en la mesa/vidriera: el cliente arma el pedido y cae directo a tu WhatsApp con seña opcional. Menos idas y vueltas, más tickets.',
+    gap:[], tipos:['Restaurante','Cafetería','Bar','Panadería','Carnicería','Supermercado','Rotisería','Heladería','Pizzería','Tienda','Florería'],
+    nodes:['Menú/QR','Carrito','Pedido a WhatsApp','Confirmación','Seña / cobro','Aviso a cocina'],
+    setup:{costo:35, precio:180}, mensual:{costo:16, precio:80} },
+
+  { id:'leads', ico:'🧲', name:'CAPTURA DE LEADS', tag:'formulario · crm',
+    desc:'Un formulario que captura interesados y dispara seguimiento automático por mail/WhatsApp. Convierte visitas en contactos reales.',
+    gap:[], reqWeb:true, tipos:['Inmobiliaria','Agencia de viajes','Hotel','Contabilidad','Gimnasio'],
+    nodes:['Formulario','Sheet / CRM','Email/WA automático','Seguimiento','Aviso al dueño'],
+    setup:{costo:22, precio:120}, mensual:{costo:9, precio:50} },
+
+  { id:'resenas', ico:'⭐', name:'REPUTACIÓN', tag:'reseñas · google',
+    desc:'Pide reseñas a los clientes contentos y te avisa de las negativas antes de que escalen. Sube la nota y la confianza.',
+    gap:[], tipos:['Restaurante','Hotel','Mecánica','Cafetería','Odontología','Veterinaria'],
+    nodes:['Post-venta','Mensaje WA/Email','Link a reseña','Filtro NPS','Alerta negativas'],
+    setup:{costo:16, precio:90}, mensual:{costo:7, precio:45} },
+
+  { id:'turnos', ico:'📆', name:'AGENDA / TURNOS', tag:'reservas · recordatorios',
+    desc:'Link de reserva con confirmación y recordatorio automático 24h antes. Menos turnos perdidos, agenda ordenada.',
+    gap:[], tipos:['Peluquería','Barbería','Estética','Spa','Consultorio','Estudio','Taller','Profesional','Veterinaria','Odontología','Kinesiología','Gimnasio','Óptica','Mecánica'],
+    nodes:['Link de reserva','Calendario','Confirmación WA','Recordatorio 24h','Reprogramación'],
+    setup:{costo:22, precio:130}, mensual:{costo:10, precio:55} },
+
+  { id:'factura', ico:'🧾', name:'FACTURACIÓN AUTO', tag:'fiscal · arca',
+    desc:'De la venta al comprobante sin fricción: arma la factura AR (A/B/C), la envía por mail/WhatsApp y la registra. Cierra el círculo administrativo.',
+    gap:[], tipos:['Mecánica','Contabilidad','Inmobiliaria','Profesional','Electrónica','Ropa'],
+    nodes:['Venta','Datos cliente','Factura AR','Envío email/WA','Registro'],
+    setup:{costo:26, precio:140}, mensual:{costo:11, precio:60} },
+];
+
+const CHANNELS = [
+  {k:'web', t:'Web'}, {k:'ig', t:'Instagram'}, {k:'fb', t:'Facebook'}, {k:'wa', t:'WhatsApp'}, {k:'tt', t:'TikTok'}
+];
+
+// ── Dataset de respaldo (si no se puede leer el seed de la auditoría) ──────
+const FALLBACK = {
+  seed_a:{name:'Panadería La Tradición', type:'Panadería', city:'La Plata', web:false, ig:false, fb:true, wa:false, tt:false, rating:4.7, reviews:312},
+  seed_b:{name:'Barbería Norte', type:'Barbería', city:'Quilmes', web:false, ig:true, fb:false, wa:false, tt:false, rating:4.4, reviews:88},
+  seed_c:{name:'Estudio Contable Méndez', type:'Profesional', city:'Mar del Plata', web:true, ig:false, fb:false, wa:true, tt:false, rating:4.9, reviews:21},
+  seed_d:{name:'Veterinaria Patitas', type:'Veterinaria', city:'Tandil', web:false, ig:true, fb:true, wa:true, tt:false, rating:4.6, reviews:140},
+};
+
+// ── Estado ────────────────────────────────────────────────────────────────
+let BIZ = {};                 // negocios cargados
+let priceOv = {};             // overrides de precios {id:{setup:{},mensual:{}}}
+let quote = [];               // ids en presupuesto
+let editMode = false;
+let moneda = 'US$';
+let curBizId = '';
+let expanded = {};            // tarjetas con flujo expandido
+
+const LS_PRICE='hg_pipelines_precios', LS_MON='hg_pipelines_moneda';
+
+// precios efectivos (defaults + override)
+function P(p){
+  const o = priceOv[p.id]||{};
+  return {
+    setup:{ costo:num(o.setup&&o.setup.costo, p.setup.costo), precio:num(o.setup&&o.setup.precio, p.setup.precio) },
+    mensual:{ costo:num(o.mensual&&o.mensual.costo, p.mensual.costo), precio:num(o.mensual&&o.mensual.precio, p.mensual.precio) }
+  };
+}
+function num(v,d){ return (typeof v==='number'&&!isNaN(v))?v:d; }
+function money(n){ return moneda+' '+Math.round(n).toLocaleString('es-AR'); }
+
+// ── Persistencia ───────────────────────────────────────────────────────────
+function load(){
+  try{ priceOv = JSON.parse(localStorage.getItem(LS_PRICE)||'{}')||{}; }catch(e){ priceOv={}; }
+  try{ moneda = localStorage.getItem(LS_MON)||'US$'; }catch(e){}
+  $('moneda').value = moneda;
+}
+function savePrice(){ try{ localStorage.setItem(LS_PRICE, JSON.stringify(priceOv)); }catch(e){} }
+
+// ── Carga de negocios desde la Auditoría (con fallback) ──────────────────────
+async function loadBiz(){
+  // Rutas candidatas del seed: cubre staging (web/auditoria/) y el sitio vivo
+  // (hg-vl es plano: auditoria.html en raíz + seed en raíz). Primera que responda gana.
+  const SEED_PATHS = ['/seed_comercios_pba.json','/auditoria/seed_comercios_pba.json','../auditoria/seed_comercios_pba.json','seed_comercios_pba.json'];
+  let loaded=false;
+  for(const path of SEED_PATHS){
+    try{
+      const r = await fetch(path, {cache:'no-store'});
+      if(!r.ok) continue;
+      const d = await r.json();
+      const obj = (d && typeof d==='object' && !Array.isArray(d)) ? d : {};
+      if(!Object.keys(obj).length) continue;
+      BIZ = obj; loaded=true; break;
+    }catch(e){ /* siguiente ruta */ }
+  }
+  if(!loaded) BIZ = FALLBACK;   // demo si no hay seed publicado
+  buildSelectors();
+}
+
+function buildSelectors(){
+  const cities = [...new Set(Object.values(BIZ).map(b=>b.city).filter(Boolean))].sort();
+  const fCity = $('fCity');
+  fCity.innerHTML = '<option value="">Todas las ciudades</option>' + cities.map(c=>`<option>${esc(c)}</option>`).join('');
+  fillBizSelect();
+}
+function fillBizSelect(){
+  const city = $('fCity').value;
+  const entries = Object.entries(BIZ)
+    .filter(([id,b])=> !city || b.city===city)
+    .sort((a,b)=> (a[1].name||'').localeCompare(b[1].name||''));
+  $('fBiz').innerHTML = '<option value="">— Modo libre (sin negocio) —</option>' +
+    entries.map(([id,b])=>`<option value="${id}">${esc(b.name||id)}${b.city?' · '+esc(b.city):''}</option>`).join('');
+}
+
+// ── Diagnóstico / recomendación ──────────────────────────────────────────────
+function recoFor(p, b){
+  if(!b) return {rec:false, reason:''};
+  const r = reason => ({rec:true, reason});
+  const type = (b.type||'').toLowerCase();
+  const typeMatch = p.tipos && p.tipos.some(t=> type.includes(t.toLowerCase()));
+  switch(p.id){
+    case 'web':   if(b.web===false) return r('No tiene web'); break;
+    case 'wa':    if(b.wa===false)  return r('Sin WhatsApp Business'); break;
+    case 'social':
+      if(b.ig===false && b.tt===false) return r('Casi sin redes');
+      if(b.ig===false) return r('Sin Instagram');
+      if(b.tt===false) return r('Sin TikTok');
+      break;
+    case 'menu':  if(typeMatch) return r('Vende comida/productos'); break;
+    case 'leads': if(typeMatch) return r('Vive de consultas'); if(b.web===true) return r('Ya tiene web: captá leads'); break;
+    case 'resenas':
+      if(typeof b.rating==='number' && b.rating<4.0) return r('Calificación baja (★'+b.rating+')');
+      if(typeof b.reviews==='number' && b.reviews<50) return r('Pocas reseñas');
+      if(typeMatch) return r('La reputación le vende');
+      break;
+    case 'turnos':  if(typeMatch) return r('Trabaja con turnos'); break;
+    case 'factura': if(typeMatch) return r('Factura seguido'); break;
+  }
+  // fallback genérico por rubro
+  if(typeMatch) return r('Ideal para '+(b.type||'el rubro'));
+  return {rec:false, reason:''};
+}
+
+// ── Render ficha negocio ─────────────────────────────────────────────────────
+function renderBiz(){
+  const b = BIZ[curBizId];
+  const panel = $('bizPanel');
+  if(!b){
+    panel.innerHTML = `<div class="biz empty">Sin negocio seleccionado — <b style="color:var(--acid)">modo libre</b>. Elegí un comercio auditado arriba para ver qué le falta y qué automatización venderle, o armá un presupuesto genérico abajo.</div>`;
+    $('qFor').textContent='Modo libre';
+    return;
+  }
+  const chips = CHANNELS.map(c=>{
+    const has = b[c.k]===true;
+    return `<span class="chip ${has?'has':'no'}"><span class="dot"></span>${c.t} ${has?'✓':'✗'}</span>`;
+  }).join('');
+  const missing = CHANNELS.filter(c=> b[c.k]===false).map(c=>c.t);
+  const recs = PIPELINES.filter(p=>recoFor(p,b).rec).length;
+  let diag = missing.length
+    ? `Le faltan <b>${missing.length}</b> canal(es): ${missing.join(', ')}. `
+    : `Tiene todos los canales básicos. `;
+  diag += `Detectamos <b>${recs}</b> pipeline(s) recomendable(s) abajo.`;
+  panel.innerHTML = `<div class="biz">
+    <div class="top">
+      <div>
+        <h2>${esc(b.name||curBizId)}</h2>
+        <div class="meta"><b>${esc(b.type||'—')}</b>${b.city?' · '+esc(b.city):''}${(typeof b.rating==='number')?` · ★ ${b.rating}${b.reviews?' ('+b.reviews+')':''}`:''}</div>
+      </div>
+    </div>
+    <div class="chips">${chips}</div>
+    <div class="diag">${diag}</div>
+  </div>`;
+  $('qFor').innerHTML = 'Para: <b>'+esc(b.name||curBizId)+'</b>';
+}
+
+// ── Render tarjetas de pipelines ─────────────────────────────────────────────
+function renderCards(){
+  const b = BIZ[curBizId];
+  const list = PIPELINES.map(p=>({p, ...recoFor(p,b)}));
+  // recomendados primero
+  list.sort((a,c)=> (c.rec?1:0)-(a.rec?1:0));
+  $('recLabel').textContent = b ? 'Pipelines · recomendados primero' : 'Pipelines · catálogo';
+  $('cards').innerHTML = list.map(({p,rec,reason})=>{
+    const pr = P(p);
+    const inq = quote.includes(p.id);
+    const open = !!expanded[p.id];
+    const why = rec ? `<span class="why">▲ ${esc(reason)}</span>`
+                    : (b? `<span class="why soft">opcional</span>`:'');
+    const flow = p.nodes.map(n=>`<div class="node"><div class="box">${esc(n)}</div><span class="arr">→</span></div>`).join('');
+    const mg = pr.setup.precio+pr.mensual.precio>0
+      ? Math.round(((pr.setup.precio-pr.setup.costo)+(pr.mensual.precio-pr.mensual.costo))/((pr.setup.precio+pr.mensual.precio))*100) : 0;
+    const priceBlock = editMode
+      ? `<div class="priceline" data-id="${p.id}">
+          <span class="pc">Setup costo <input class="priceedit" data-f="setup.costo" type="number" value="${pr.setup.costo}"></span>
+          <span class="pv">Setup precio <input class="priceedit" data-f="setup.precio" type="number" value="${pr.setup.precio}"></span>
+          <span class="pc">Mes costo <input class="priceedit" data-f="mensual.costo" type="number" value="${pr.mensual.costo}"></span>
+          <span class="pv">Mes precio <input class="priceedit" data-f="mensual.precio" type="number" value="${pr.mensual.precio}"></span>
+         </div>`
+      : `<div class="priceline">
+          <span class="pc">Setup: <b>${money(pr.setup.precio)}</b> <small>(costo ${money(pr.setup.costo)})</small></span>
+          <span class="pv">Mensual: <b>${money(pr.mensual.precio)}</b> <small>(costo ${money(pr.mensual.costo)})</small></span>
+          <span class="mg">margen ~${mg}%</span>
+         </div>`;
+    return `<div class="card ${rec?'rec':''} ${inq?'added':''}" data-card="${p.id}">
+      <div class="head" data-toggle="${p.id}">
+        <div class="ico">${p.ico}</div>
+        <div class="ttl"><h3>${esc(p.name)}</h3><div class="tag">${esc(p.tag)}</div>${why}</div>
+      </div>
+      <p class="desc">${esc(p.desc)}</p>
+      ${open?`<div class="flow">${flow}</div>`:''}
+      ${priceBlock}
+      <div class="act">
+        <button class="btn" data-toggle="${p.id}">${open?'▾ Ocultar flujo':'▸ Ver flujo'}</button>
+        <button class="btn ${inq?'on':''}" data-add="${p.id}">${inq?'✓ En presupuesto':'+ Agregar'}</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── Render presupuesto ───────────────────────────────────────────────────────
+function renderQuote(){
+  const items = quote.map(id=>PIPELINES.find(p=>p.id===id)).filter(Boolean);
+  if(!items.length){
+    $('qItems').innerHTML = `<div class="qempty">Vacío. Agregá pipelines desde las tarjetas para armar el presupuesto.</div>`;
+    $('qTotals').innerHTML='';
+    return;
+  }
+  $('qItems').innerHTML = items.map(p=>{
+    const pr=P(p);
+    return `<div class="qitem">
+      <div class="n">${p.ico} ${esc(p.name)}<small>setup ${money(pr.setup.precio)} · ${money(pr.mensual.precio)}/mes</small></div>
+      <div class="v"><b>${money(pr.setup.precio)}</b><span class="x" data-rem="${p.id}">✕</span></div>
+    </div>`;
+  }).join('');
+  let sc=0,sp=0,mc=0,mp=0;
+  items.forEach(p=>{ const pr=P(p); sc+=pr.setup.costo; sp+=pr.setup.precio; mc+=pr.mensual.costo; mp+=pr.mensual.precio; });
+  const totCost=sc+mc, totPrice=sp+mp, marg=totPrice-totCost;
+  const margPct = totPrice>0?Math.round(marg/totPrice*100):0;
+  $('qTotals').innerHTML = `
+    <div class="row"><span>Inversión inicial (setup)</span><b>${money(sp)}</b></div>
+    <div class="row"><span>Mensual recurrente</span><b>${money(mp)}</b></div>
+    <div class="row grand"><span>1er pago (setup + 1 mes)</span><b>${money(sp+mp)}</b></div>
+    <div class="row cost"><span>Tu costo total</span><b>${money(totCost)}</b></div>
+    <div class="row marg"><span>Margen (${margPct}%)</span><b>${money(marg)}</b></div>`;
+}
+
+// ── Exportar presupuesto a texto ─────────────────────────────────────────────
+function quoteText(){
+  const b=BIZ[curBizId];
+  const items = quote.map(id=>PIPELINES.find(p=>p.id===id)).filter(Boolean);
+  if(!items.length) return '';
+  let sp=0,mp=0;
+  const lines = items.map(p=>{ const pr=P(p); sp+=pr.setup.precio; mp+=pr.mensual.precio;
+    return `• ${p.name}\n   Armado: ${money(pr.setup.precio)} · Mensual: ${money(pr.mensual.precio)}\n   Flujo: ${p.nodes.join(' → ')}`; });
+  return [
+    `PRESUPUESTO — AUTOMATIZACIÓN`,
+    b?`Para: ${b.name}${b.city?' ('+b.city+')':''}`:'Presupuesto genérico',
+    ``,
+    ...lines,
+    ``,
+    `Inversión inicial (setup): ${money(sp)}`,
+    `Mensual recurrente: ${money(mp)}`,
+    `Primer pago (setup + 1 mes): ${money(sp+mp)}`,
+    ``,
+    `— Human Glitche`
+  ].join('\n');
+}
+
+// ── Eventos ──────────────────────────────────────────────────────────────────
+function toast(t){ const el=$('toast'); el.textContent=t; el.classList.add('show'); setTimeout(()=>el.classList.remove('show'),1600); }
+
+$('fCity').addEventListener('change', ()=>{ fillBizSelect(); curBizId=''; $('fBiz').value=''; renderBiz(); renderCards(); });
+$('fBiz').addEventListener('change', e=>{ curBizId=e.target.value; renderBiz(); renderCards(); });
+
+$('cards').addEventListener('click', e=>{
+  const tg=e.target.closest('[data-toggle]'); const ad=e.target.closest('[data-add]');
+  if(ad){ const id=ad.getAttribute('data-add'); const i=quote.indexOf(id);
+    if(i>=0) quote.splice(i,1); else quote.push(id);
+    renderCards(); renderQuote(); return; }
+  if(tg){ const id=tg.getAttribute('data-toggle'); expanded[id]=!expanded[id]; renderCards(); }
+});
+// editar precios inline
+$('cards').addEventListener('input', e=>{
+  const inp=e.target.closest('.priceedit'); if(!inp) return;
+  const id=inp.closest('.priceline').getAttribute('data-id');
+  const [grp,f]=inp.getAttribute('data-f').split('.');
+  const v=parseFloat(inp.value); if(isNaN(v)) return;
+  priceOv[id]=priceOv[id]||{}; priceOv[id][grp]=priceOv[id][grp]||{}; priceOv[id][grp][f]=v;
+  savePrice(); renderQuote();
+});
+
+$('qItems').addEventListener('click', e=>{
+  const r=e.target.closest('[data-rem]'); if(!r) return;
+  const id=r.getAttribute('data-rem'); const i=quote.indexOf(id); if(i>=0) quote.splice(i,1);
+  renderCards(); renderQuote();
+});
+
+$('editBtn').addEventListener('click', ()=>{ editMode=!editMode; $('editBtn').classList.toggle('on',editMode); renderCards(); });
+$('resetBtn').addEventListener('click', ()=>{ if(!confirm('¿Volver a los precios por defecto?'))return; priceOv={}; savePrice(); renderCards(); renderQuote(); toast('Precios reseteados'); });
+$('moneda').addEventListener('change', e=>{ moneda=e.target.value; try{localStorage.setItem(LS_MON,moneda);}catch(_){}; renderCards(); renderQuote(); });
+$('clearBtn').addEventListener('click', ()=>{ quote=[]; renderCards(); renderQuote(); });
+$('copyBtn').addEventListener('click', ()=>{
+  const t=quoteText(); if(!t){ toast('Presupuesto vacío'); return; }
+  navigator.clipboard?.writeText(t).then(()=>toast('Presupuesto copiado'),()=>{ prompt('Copiá el presupuesto:', t); });
+});
+
+function esc(s){ return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+// ── Init ─────────────────────────────────────────────────────────────────────
+load();
+renderBiz(); renderCards(); renderQuote();
+loadBiz().then(()=>{ renderBiz(); renderCards(); });
+})();
+</script>
+</body></html>
