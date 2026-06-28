@@ -136,6 +136,7 @@ const $ = id => document.getElementById(id);
 const cv = $('gl'), vid = $('vid');
 const gl = cv.getContext('webgl2', { preserveDrawingBuffer:true, antialias:false });
 if(!gl){ document.body.innerHTML = '<p style="padding:40px;font-family:monospace;color:#b8ff00">WARP necesita WebGL2 — probá en un navegador actualizado.</p>'; throw new Error('no webgl2'); }
+const hasFloatBuf = !!gl.getExtension('EXT_color_buffer_float');  // buffers FLOAT de scenes SSF
 
 const MODES = ['WARP','RGB SPLIT','KALEIDO','RIPPLE','SLITSCAN','MIRROR','MOSAICO','LENTE','SACUDÓN'];
 
@@ -271,14 +272,17 @@ gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new
 
 // ping-pong FBOs para el feedback
 let fbos = [], texs = [], W=0, H=0;
-function makeTarget(w,h){
+function makeTarget(w,h,opts){
+  opts = opts||{};
+  const wrap = opts.wrap ? gl.REPEAT : gl.CLAMP_TO_EDGE;
   const tex = gl.createTexture();
   gl.bindTexture(gl.TEXTURE_2D, tex);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, wrap);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, wrap);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, w, h, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+  if(opts.float && hasFloatBuf){ gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA16F, w, h, 0, gl.RGBA, gl.HALF_FLOAT, null); }
+  else { gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, w, h, 0, gl.RGBA, gl.UNSIGNED_BYTE, null); }
   const fb = gl.createFramebuffer();
   gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
   gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex, 0);
@@ -705,6 +709,13 @@ uniform int _hasMedia, _flipX;
 #define _uv (gl_FragCoord.xy / RENDERSIZE)
 vec2 _getUvc(){ vec2 u = gl_FragCoord.xy/RENDERSIZE - 0.5; u.x *= RENDERSIZE.x/RENDERSIZE.y; return u; }
 #define _uvc _getUvc()
+#define _xy (gl_FragCoord.xy)
+#define FRAMECOUNT syn_Frame
+float _noise(float x){ float i=floor(x), f=fract(x); f=f*f*(3.0-2.0*f); return mix(fract(sin(i*12.9898)*43758.5453), fract(sin((i+1.0)*12.9898)*43758.5453), f); }
+float _noise(vec2 p){ vec2 i=floor(p),f=fract(p); f=f*f*(3.0-2.0*f); vec2 k=vec2(12.9898,78.233);
+  float a=fract(sin(dot(i,k))*43758.5453), b=fract(sin(dot(i+vec2(1,0),k))*43758.5453), c=fract(sin(dot(i+vec2(0,1),k))*43758.5453), d=fract(sin(dot(i+vec2(1,1),k))*43758.5453);
+  return mix(mix(a,b,f.x),mix(c,d,f.x),f.y); }
+float _noise(vec3 p){ return _noise(p.xy + p.z*vec2(37.0,17.0)); }
 uniform float syn_Time, syn_Level, syn_BassLevel, syn_MidLevel, syn_HighLevel;
 uniform float syn_BassHits, syn_MidHits, syn_HighHits, syn_Hits;
 uniform float syn_BassTime, syn_MidTime, syn_HighTime;
@@ -735,39 +746,81 @@ let ssf = null;  // runtime de la scene importada (null si no hay)
 
 function parseScene(jsonText){
   const j = JSON.parse(jsonText);
-  const controls = (j.CONTROLS||[]).filter(c=>c && c.NAME && (c.TYPE==='knob'||c.TYPE==='slider'||c.TYPE===undefined)).map(c=>({
-    name:c.NAME, min:(c.MIN!=null?+c.MIN:0), max:(c.MAX!=null?+c.MAX:1), value:(c.DEFAULT!=null?+c.DEFAULT:0.5)
-  }));
-  const passes = (j.PASSES||[{}]).map(p=>({ target:p.TARGET||null, persistent:!!p.PERSISTENT }));
-  if(!passes.length) passes.push({target:null,persistent:false});
+  // todos los tipos de control: xy → vec2; knob/slider/toggle/bang/bang smooth → float
+  const controls = (j.CONTROLS||[]).filter(c=>c && c.NAME).map(c=>{
+    const isXY = c.TYPE==='xy' || Array.isArray(c.DEFAULT);
+    if(isXY){ const d=c.DEFAULT||[0,0], mn=c.MIN||[0,0], mx=c.MAX||[1,1];
+      return { name:c.NAME, xy:true, value:[+d[0]||0,+d[1]||0], min:[+mn[0]||0,+mn[1]||0], max:[(mx[0]!=null?+mx[0]:1),(mx[1]!=null?+mx[1]:1)] }; }
+    return { name:c.NAME, xy:false, value:(c.DEFAULT!=null?+c.DEFAULT:0), min:(c.MIN!=null?+c.MIN:0), max:(c.MAX!=null?+c.MAX:1) };
+  });
+  const passes = (j.PASSES||[{}]).map(p=>({ target:p.TARGET||null, float:!!p.FLOAT, wrap:(p.WRAP==='repeat') }));
+  // si ninguna pasada va a pantalla (todas tienen TARGET), agregamos la final implícita
+  if(!passes.some(p=>!p.target)) passes.push({ target:null, float:false, wrap:false });
   const images = (j.IMAGES||[]).map(im=> typeof im==='string'?im:(im.NAME||im.PATH)).filter(Boolean);
   return { controls, passes, images, credit:j.CREDIT||'', desc:j.DESCRIPTION||'' };
 }
 
-function buildSSFFragment(userGLSL, scene){
-  // declara buffers nombrados, imágenes y los syn_ desconocidos (como float=0)
+// WebGL2/ES no permite inicializar variables GLOBALES con expresiones no
+// constantes (uniforms). Synesthesia/desktop sí. Separamos esas: declaramos la
+// global sin init y la asignamos en _initGlobals(), que main() llama primero.
+function liftGlobalInits(src){
+  let out='', cur='', depth=0, init='';
+  const TYPE = /^(?:(?:highp|mediump|lowp)\s+)?(float|int|uint|bool|vec2|vec3|vec4|ivec2|ivec3|ivec4|uvec2|uvec3|uvec4|mat2|mat3|mat4)\s+([A-Za-z_]\w*)\s*=\s*([\s\S]+);\s*$/;
+  const flush = ()=>{
+    let lead='', s=cur;
+    while(true){
+      const ws = s.match(/^\s+/); if(ws){ lead+=ws[0]; s=s.slice(ws[0].length); continue; }
+      if(s.startsWith('//')){ let nl=s.indexOf('\n'); nl = nl<0?s.length:nl+1; lead+=s.slice(0,nl); s=s.slice(nl); continue; }
+      if(s.startsWith('/*')){ const e=s.indexOf('*/'); const cut=e<0?s.length:e+2; lead+=s.slice(0,cut); s=s.slice(cut); continue; }
+      break;
+    }
+    const m = s.match(TYPE);
+    if(m && !/^const\b/.test(s)){ out += lead + m[1]+' '+m[2]+';'; init += m[2]+' = '+m[3]+';\n'; }
+    else out += cur;
+    cur='';
+  };
+  for(let k=0;k<src.length;k++){
+    const c=src[k]; cur+=c;
+    if(c==='{') depth++;
+    else if(c==='}'){ depth--; if(depth===0){ out+=cur; cur=''; } }
+    else if(c===';' && depth===0){ flush(); }
+  }
+  out += cur;
+  return { code: out, init };
+}
+
+function buildSSFFragment(userGLSL, scene, extra){
+  // declara buffers nombrados, imágenes, controles, syn_ desconocidos y los
+  // uniforms 'extra' que el loop de compilación detectó como no declarados.
   const bufNames = [...new Set(scene.passes.map(p=>p.target).filter(Boolean))];
   let decl = '';
   bufNames.forEach(n=> decl += `uniform sampler2D ${n};\n`);
   scene.images.forEach(n=> decl += `uniform sampler2D ${n};\n`);
-  scene.controls.forEach(c=> decl += `uniform float ${c.name};\n`);
+  scene.controls.forEach(c=> decl += `uniform ${c.xy?'vec2':'float'} ${c.name};\n`);
   const used = new Set(userGLSL.match(/syn_[A-Za-z0-9_]+/g)||[]);
   used.forEach(n=>{ if(!SSF_DEFINED.has(n)) decl += `uniform float ${n};\n`; });  // long-tail audio → 0
+  (extra||[]).forEach(n=> decl += `uniform float ${n};\n`);
   scene._unknownSyn = [...used].filter(n=>!SSF_DEFINED.has(n));
   scene._buffers = bufNames;
-  return SSF_PREAMBLE + '\n' + decl + '\n' + userGLSL + '\n\nvoid main(){ _outColor = renderMain(); }';
+  const lifted = liftGlobalInits(userGLSL);
+  return SSF_PREAMBLE + '\n' + decl + '\n' + lifted.code +
+    '\nvoid _initGlobals(){\n' + lifted.init + '}\nvoid main(){ _initGlobals(); _outColor = renderMain(); }';
 }
 
 // crea un par de targets para un buffer (ping-pong)
-function makePingPong(w,h){ return { t:[makeTarget(w,h), makeTarget(w,h)], cur:0 }; }
+function makePingPong(w,h,opts){ return { t:[makeTarget(w,h,opts), makeTarget(w,h,opts)], cur:0 }; }
 function buildSSFBuffers(){
   if(!ssf) return;
   // limpiar viejos
   if(ssf.bufs) Object.values(ssf.bufs).forEach(b=>b.t.forEach(x=>{ gl.deleteTexture(x.tex); gl.deleteFramebuffer(x.fb); }));
   if(ssf.screen){ gl.deleteTexture(ssf.screen.tex); gl.deleteFramebuffer(ssf.screen.fb); }
+  // opts (float/wrap) por buffer, leídos de la PASS que lo escribe
+  const opt = {};
+  ssf.scene.passes.forEach(p=>{ if(p.target) opt[p.target] = { float:p.float, wrap:p.wrap }; });
   ssf.bufs = {};
-  ssf.scene._buffers.forEach(n=> ssf.bufs[n] = makePingPong(W,H));
+  ssf.scene._buffers.forEach(n=> ssf.bufs[n] = makePingPong(W,H,opt[n]||{}));
   ssf.screen = makeTarget(W,H);
+  gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 }
 
 async function loadSceneFiles(glslText, jsonText){
@@ -777,19 +830,26 @@ async function loadSceneFiles(glslText, jsonText){
   catch(e){ setAiStatus('scene.json inválido: '+e.message, true); return; }
   try{ resolved = await resolveLygia(glslText); }
   catch(e){ setAiStatus('Falló bajar lygia: '+e.message+' (¿sin conexión?)', true); return; }
-  const frag = buildSSFFragment(resolved, scene);
-  let prog;
-  try{ prog = program(frag); }
-  catch(e){
-    setAiStatus('La scene no compiló en WARP (etapa 1). Pasame el error y lo cubro: '+truncate(e.message,260), true);
-    console.warn('SSF compile error:\n'+e.message);
-    return;
+  // loop de compilación: si faltan identificadores (uniforms de script.js como
+  // spectrum_*/BPMTri*), los auto-declaramos como float y reintentamos.
+  let extra = [], prog=null, lastErr='';
+  for(let round=0; round<10; round++){
+    try{ prog = program(buildSSFFragment(resolved, scene, extra)); break; }
+    catch(e){
+      lastErr = e.message;
+      const ids = [...new Set((e.message.match(/'([A-Za-z_][A-Za-z0-9_]*)'\s*:\s*undeclared identifier/g)||[]).map(s=>(s.match(/'([^']+)'/)||[])[1]).filter(Boolean))];
+      const fresh = ids.filter(n=> n && !extra.includes(n) && !scene.controls.some(c=>c.name===n) && !(scene._buffers||[]).includes(n));
+      if(!fresh.length){ console.warn('SSF compile error:\n'+e.message); setAiStatus('No compiló (etapa actual). Pasame esto: '+truncate(e.message,300), true); return; }
+      extra.push(...fresh);
+    }
   }
+  if(!prog){ setAiStatus('No compiló tras varios intentos: '+truncate(lastErr,260), true); return; }
+  scene._extra = extra;
   // locs de todos los uniforms relevantes
   const L = { RENDERSIZE:gl.getUniformLocation(prog,'RENDERSIZE'), TIME:gl.getUniformLocation(prog,'TIME'),
     PASSINDEX:gl.getUniformLocation(prog,'PASSINDEX'), _mediaTex:gl.getUniformLocation(prog,'_mediaTex'),
     syn_Spectrum:gl.getUniformLocation(prog,'syn_Spectrum'), _hasMedia:gl.getUniformLocation(prog,'_hasMedia'),
-    _flipX:gl.getUniformLocation(prog,'_flipX'), syn:{}, ctrl:{}, buf:{} };
+    _flipX:gl.getUniformLocation(prog,'_flipX'), syn:{}, ctrl:{}, buf:{}, extra:{} };
   ['syn_Time','syn_Level','syn_BassLevel','syn_MidLevel','syn_HighLevel','syn_BassHits','syn_MidHits','syn_HighHits','syn_Hits',
    'syn_BassTime','syn_MidTime','syn_HighTime','syn_Presence','syn_BassPresence','syn_MidPresence','syn_HighPresence',
    'syn_BPM','syn_BPMConfidence','syn_BPMSin','syn_BPMSin2','syn_BPMSin4','syn_BPMTri','syn_BPMTri2','syn_BPMTri4','syn_BPMSqr',
@@ -797,12 +857,14 @@ async function loadSceneFiles(glslText, jsonText){
    .concat(scene._unknownSyn).forEach(n=> L.syn[n]=gl.getUniformLocation(prog,n));
   scene.controls.forEach(c=> L.ctrl[c.name]=gl.getUniformLocation(prog,c.name));
   scene._buffers.forEach(n=> L.buf[n]=gl.getUniformLocation(prog,n));
+  scene._extra.forEach(n=> L.extra[n]=gl.getUniformLocation(prog,n));
   if(ssf && ssf.prog) gl.deleteProgram(ssf.prog);
   ssf = { prog, locs:L, scene, bufs:null, screen:null, frame:0 };
   buildSSFBuffers();
   buildSSFControlsUI();
   P.mode = 'ssf'; markSSFActive();
-  setAiStatus('✓ Scene importada y corriendo'+(scene._unknownSyn.length?(' ('+scene._unknownSyn.length+' uniforms syn_ no estándar puestos en 0)'):'')+'. Asigná cámara/video como media.');
+  const stubbed = scene._extra.length;
+  setAiStatus('✓ Scene importada y corriendo ('+(ssf.scene.passes.length)+' pasadas'+(stubbed?(', '+stubbed+' uniforms de script.js aproximados/en 0'):'')+'). Asigná cámara/video como media.');
 }
 
 function synValues(){
@@ -820,13 +882,20 @@ function synValues(){
     syn_BeatTime:t, syn_CurvedTime:t, syn_Frame:ssf?ssf.frame:0, syn_MediaType:hasInput?2:0
   };
 }
+function extraValue(name){
+  const m1 = name.match(/^spectrum_(\d+)$/);
+  if(m1){ const bands=[audio.bass, audio.mid, (audio.mid+audio.high)*0.5, audio.high]; const v=bands[+m1[1]]; return v!=null?v:0; }
+  const m2 = name.match(/^BPMTri(\d+)/);
+  if(m2){ const speed=1/(+m2[1]||1); const ph=((curT*speed*0.5)%1+1)%1; return ph<0.5?ph*2:2-ph*2; }
+  return 0;
+}
 function runSSF(){
   const L = ssf.locs, sc = ssf.scene, vals = synValues();
   let lastTex = null;
   for(let i=0;i<sc.passes.length;i++){
     const pass = sc.passes[i];
-    const tgtFb = pass.target ? ssf.bufs[pass.target].t[ssf.bufs[pass.target].cur].fb : ssf.screen.fb;
-    gl.bindFramebuffer(gl.FRAMEBUFFER, tgtFb); gl.viewport(0,0,W,H);
+    const tgt = pass.target ? ssf.bufs[pass.target] : null;
+    gl.bindFramebuffer(gl.FRAMEBUFFER, tgt ? tgt.t[tgt.cur].fb : ssf.screen.fb); gl.viewport(0,0,W,H);
     gl.useProgram(ssf.prog);
     if(L.RENDERSIZE) gl.uniform2f(L.RENDERSIZE, W, H);
     if(L.TIME) gl.uniform1f(L.TIME, curT);
@@ -834,7 +903,8 @@ function runSSF(){
     if(L._hasMedia) gl.uniform1i(L._hasMedia, hasInput);
     if(L._flipX) gl.uniform1i(L._flipX, flipX);
     for(const n in vals){ if(L.syn[n]) gl.uniform1f(L.syn[n], vals[n]); }
-    sc.controls.forEach(c=>{ if(L.ctrl[c.name]) gl.uniform1f(L.ctrl[c.name], c.value); });
+    sc.controls.forEach(c=>{ const loc=L.ctrl[c.name]; if(!loc) return; if(c.xy) gl.uniform2f(loc, c.value[0], c.value[1]); else gl.uniform1f(loc, c.value); });
+    sc._extra.forEach(n=>{ if(L.extra[n]) gl.uniform1f(L.extra[n], extraValue(n)); });
     // texturas: media=0, spectrum=1, buffers=2..
     let unit=0;
     gl.activeTexture(gl.TEXTURE0+unit); gl.bindTexture(gl.TEXTURE_2D, inputTex); if(L._mediaTex) gl.uniform1i(L._mediaTex, unit); unit++;
@@ -842,7 +912,7 @@ function runSSF(){
     sc._buffers.forEach(n=>{ const b=ssf.bufs[n]; const rd=b.t[b.cur^1].tex;
       gl.activeTexture(gl.TEXTURE0+unit); gl.bindTexture(gl.TEXTURE_2D, rd); if(L.buf[n]) gl.uniform1i(L.buf[n], unit); unit++; });
     gl.drawArrays(gl.TRIANGLES, 0, 3);
-    if(pass.target){ const b=ssf.bufs[pass.target]; lastTex = b.t[b.cur].tex; if(pass.persistent) b.cur^=1; }
+    if(tgt){ lastTex = tgt.t[tgt.cur].tex; tgt.cur ^= 1; }  // siempre ping-pong: swap tras escribir
     else lastTex = ssf.screen.tex;
   }
   // present
@@ -856,9 +926,19 @@ function runSSF(){
 function buildSSFControlsUI(){
   const box = $('ssfControls'); if(!box) return;
   if(!ssf || !ssf.scene.controls.length){ box.innerHTML=''; return; }
-  box.innerHTML = '<h2>Controles de la scene</h2>' + ssf.scene.controls.map((c,i)=>
-    `<div class="ctrl"><label>${c.name} <b id="ssfv${i}">${c.value.toFixed(2)}</b></label><input type="range" min="${c.min}" max="${c.max}" step="0.001" value="${c.value}" data-i="${i}" class="ssf-slider"></div>`).join('');
-  box.querySelectorAll('.ssf-slider').forEach(s=> s.oninput=()=>{ const i=+s.dataset.i; ssf.scene.controls[i].value=+s.value; $('ssfv'+i).textContent=(+s.value).toFixed(2); });
+  box.innerHTML = '<h2>Controles de la scene</h2>' + ssf.scene.controls.map((c,i)=>{
+    if(c.xy){
+      return `<div class="ctrl"><label>${c.name} (xy)</label>
+        <input type="range" min="${c.min[0]}" max="${c.max[0]}" step="0.001" value="${c.value[0]}" data-i="${i}" data-ax="0" class="ssf-slider">
+        <input type="range" min="${c.min[1]}" max="${c.max[1]}" step="0.001" value="${c.value[1]}" data-i="${i}" data-ax="1" class="ssf-slider"></div>`;
+    }
+    return `<div class="ctrl"><label>${c.name} <b id="ssfv${i}">${(+c.value).toFixed(2)}</b></label><input type="range" min="${c.min}" max="${c.max}" step="0.001" value="${c.value}" data-i="${i}" class="ssf-slider"></div>`;
+  }).join('');
+  box.querySelectorAll('.ssf-slider').forEach(s=> s.oninput=()=>{
+    const i=+s.dataset.i, c=ssf.scene.controls[i];
+    if(c.xy){ c.value[+s.dataset.ax]=+s.value; }
+    else { c.value=+s.value; const b=$('ssfv'+i); if(b) b.textContent=(+s.value).toFixed(2); }
+  });
 }
 function markSSFActive(){ const b=$('famSSF'); if(b){ $('fams').querySelectorAll('.fam').forEach(x=>x.classList.remove('on')); b.classList.add('on'); } }
 
