@@ -354,7 +354,7 @@ function generate(){
   S.skew=Math.random()<0.5?-12+Math.floor(Math.random()*24):0;
   S.curve=Math.random()<0.3?-20+Math.floor(Math.random()*40):0;
   S.tex=rand(['none','none','spray','grain']); S.texAmt=0.35+Math.random()*0.3;
-  if(f.vibe==='script'){ S.skew=0; S.o2=false; S.depth=Math.min(S.depth,4); }
+  if(f.vibe==='pluma'||f.vibe==='serif'){ S.skew=0; S.o2=false; S.depth=Math.min(S.depth,4); S.curve=Math.min(Math.abs(S.curve),12)*(S.curve<0?-1:1); }
   syncUI(); draw();
 }
 
