@@ -18,6 +18,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <script defer src="courses-content.js"></script>
+<script defer src="courses-vdmx6.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 :root{
@@ -209,6 +210,31 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
   color:var(--acid);text-transform:uppercase;
   margin-bottom:0.7rem;display:block;
 }
+
+/* FIGURAS / DIAGRAMAS de las clases */
+.modal-body figure.fig{
+  margin:1.7rem 0;padding:0;
+  border:1px solid rgba(184,255,0,0.14);border-radius:4px;
+  background:rgba(184,255,0,0.025);overflow:hidden;
+}
+.modal-body figure.fig svg,
+.modal-body figure.fig img{display:block;width:100%;height:auto;}
+.modal-body figure.fig figcaption{
+  font-family:var(--mono);font-size:8.5px;letter-spacing:0.12em;
+  color:rgba(240,237,230,0.42);text-transform:uppercase;line-height:1.7;
+  padding:0.7rem 1rem;border-top:1px solid rgba(184,255,0,0.1);
+}
+.modal-body figure.fig figcaption b{color:rgba(184,255,0,0.7);font-weight:400;}
+/* tablas de referencia dentro de las clases */
+.modal-body table.ref{width:100%;border-collapse:collapse;margin:1.3rem 0;font-size:12.5px;}
+.modal-body table.ref th,.modal-body table.ref td{
+  text-align:left;padding:0.5rem 0.7rem;border-bottom:1px solid rgba(240,237,230,0.08);vertical-align:top;
+}
+.modal-body table.ref th{
+  font-family:var(--mono);font-size:8.5px;letter-spacing:0.15em;
+  color:rgba(184,255,0,0.7);text-transform:uppercase;font-weight:400;
+}
+.modal-body table.ref td:first-child{color:rgba(240,237,230,0.9);white-space:nowrap;}
 
 /* MANUAL DE AUTOEVALUACIÓN — contenido del modal */
 .autoeval-intro p{font-size:13px;}
@@ -523,12 +549,20 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
     { title: 'Sincronización con audio y MIDI/OSC', hasContent: true },
     { title: 'Armado de un set para show en vivo', hasContent: true }
   ]},
-    { mark:'VDMX', name:'VDMX', cat:'Visuales en vivo', topics:[
-      { title: 'Arquitectura modular y patches', hasContent: true },
-      { title: 'Mezcla de capas y crossfading', hasContent: true },
-      { title: 'Inputs externos — cámara, audio, datos', hasContent: true },
-      { title: 'Control en vivo — MIDI, teclado, OSC', hasContent: true },
-      { title: 'Construcción de una interfaz de performance', hasContent: true }
+    { mark:'VDMX', name:'VDMX6', cat:'Visuales en vivo', topics:[
+      { title: 'VDMX6 y el modelo modular', hasContent: true },
+      { title: 'El workspace y la anatomía de la interfaz', hasContent: true },
+      { title: 'Layers, blend modes y el Layer Compositor', hasContent: true },
+      { title: 'Fuentes de video — Media Bin, generadores, cámara, Syphon/NDI', hasContent: true },
+      { title: 'FX Chains, ISF y máscaras', hasContent: true },
+      { title: 'Data-sources y mapeo — el sistema nervioso', hasContent: true },
+      { title: 'Audio Analysis y reactividad musical', hasContent: true },
+      { title: 'Automatización temporal — Clock, LFO, Step Sequencer, Data Looper', hasContent: true },
+      { title: 'Control en vivo — MIDI, HID, teclado, Wiimote', hasContent: true },
+      { title: 'OSC, OSCQuery y Control Surface', hasContent: true },
+      { title: 'Performance estructurada — Cue List y Timecode', hasContent: true },
+      { title: 'Outputs — Syphon/NDI, Blackmagic, Video-to-DMX y grabación', hasContent: true },
+      { title: 'Armado del instrumento de performance', hasContent: true }
     ] },
     { mark:'TD', name:'TouchDesigner', cat:'Visuales en vivo', topics:[
     { title: 'Lógica de nodos — TOPs, CHOPs, SOPs, DATs', hasContent: true },
