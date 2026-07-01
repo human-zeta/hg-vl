@@ -718,6 +718,19 @@ body.visual-mode #exit-visual{z-index:9000!important;}
 .exp-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:3.5rem;}
 .exp-chip{font-family:var(--mono);font-size:9px;letter-spacing:0.14em;color:rgba(240,237,230,0.55);border:1px solid rgba(240,237,230,0.14);border-radius:999px;padding:8px 14px;text-decoration:none;transition:all 0.2s;}
 .exp-chip:hover{color:var(--acid);border-color:rgba(184,255,0,0.5);}
+/* MAPA / ACCESOS DIRECTOS */
+#mapa{flex-direction:column;padding:10vh 8vw;}
+.mapa-group{font-family:var(--mono);font-size:10px;letter-spacing:0.24em;color:rgba(240,237,230,0.4);margin:2.4rem 0 0.9rem;}
+.mapa-group b{color:var(--acid);font-weight:400;}
+.access-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;width:100%;}
+.acc{display:flex;flex-direction:column;gap:7px;border:1px solid rgba(240,237,230,0.12);border-radius:8px;padding:16px 15px;text-decoration:none;background:rgba(184,255,0,0.015);transition:all 0.2s;min-height:104px;}
+.acc:hover{border-color:rgba(184,255,0,0.5);background:rgba(184,255,0,0.05);transform:translateY(-3px);}
+.acc .ai{font-size:16px;color:var(--acid);}
+.acc h4{font-family:var(--display);font-size:20px;letter-spacing:0.03em;color:var(--acid);line-height:0.9;font-weight:400;}
+.acc p{font-family:var(--mono);font-size:9px;letter-spacing:0.04em;color:rgba(240,237,230,0.5);line-height:1.7;}
+.acc.vl .ai,.acc.vl h4{color:#3ad0ff;}
+.acc.vl:hover{border-color:rgba(58,208,255,0.55);background:rgba(58,208,255,0.05);}
+@media(max-width:768px){.access-grid{grid-template-columns:repeat(2,1fr);}}
 
 /* STACK — herramientas detrás de los servicios */
 .stack-intro{font-family:var(--mono);font-size:10px;letter-spacing:0.2em;color:rgba(240,237,230,0.3);margin-top:4.5rem;margin-bottom:1.5rem;text-transform:uppercase;}
@@ -848,7 +861,7 @@ body.visual-mode #exit-visual{z-index:9000!important;}
   .hero-glass{display:none;}
 
   /* SECCIONES */
-  #aether-sec,#blog,#catalogo,#comunidad,#live,#footer{padding-left:5vw;padding-right:5vw;}
+  #aether-sec,#mapa,#blog,#comunidad,#live,#footer{padding-left:5vw;padding-right:5vw;}
 
   /* MANIFESTO — evitar textos cortados */
   .mfine{font-size:12px;line-height:1.9;}
@@ -1197,6 +1210,7 @@ body.visual-mode #exit-visual{z-index:9000!important;}
   <span class="nav-logo">HG — VL / 2026</span>
   <div class="nav-links">
     <a href="#manifiesto">SISTEMA</a>
+    <a href="#mapa">MAPA</a>
     <a href="#aether-sec">SHADERS</a>
     <a href="#blog">BLOG</a>
     <a href="#comunidad">COMUNIDAD</a>
@@ -1236,6 +1250,44 @@ body.visual-mode #exit-visual{z-index:9000!important;}
       <div class="mline"><span>SE VUELVE VISIBLE.</span></div>
       <div class="mline"><span style="color:rgba(240,237,230,0.9);font-size:clamp(1.4rem,2.8vw,3rem);">— Y QUIEN LA VE, INEVITABLEMENTE LA REDISEÑA.</span></div>
       <p class="mfine rev">El dinero, el éxito, el trabajo de 8 horas, el título como medida de valor: todo eso fue diseñado — por alguien, en algún momento, con una intención. No es la realidad. Es <em>una</em> versión de la realidad.<br><br>Ver eso no se puede desactivar. Ver, crear y compartir dejan de ser mandatos morales — son el síntoma de que el glitch ya ocurrió. Tres pilares sostienen el ciclo: <strong>Conciencia ☉</strong> para observar, <strong>Creación ✦</strong> para construir, <strong>Compartir ⌘</strong> para multiplicar. Human Glitche es el ecosistema de quienes ya no pueden dejar de rediseñar la interfaz.</p>
+    </div>
+  </section>
+
+  <span class="sep">— — — — — — — — —</span>
+
+  <!-- MAPA / ACCESOS DIRECTOS -->
+  <section id="mapa">
+    <div style="width:100%;">
+      <div class="sec-hdr rev">
+        <h2 class="sec-title">MAPA</h2>
+        <span style="font-family:var(--mono);font-size:10px;color:rgba(240,237,230,0.4);letter-spacing:0.15em;">TODO LO QUE HAY EN LA WEB</span>
+      </div>
+
+      <div class="mapa-group rev"><b>⌘ OBSERVAR</b> — leer y entender</div>
+      <div class="access-grid">
+        <a class="acc rev" href="#manifiesto"><span class="ai">◆</span><h4>MANIFIESTO</h4><p>La filosofía: el glitch, la interfaz, los tres pilares.</p></a>
+        <a class="acc rev" href="test/"><span class="ai">⌁</span><h4>TEST DEL GLITCH</h4><p>12 preguntas para saber si ya viste la interfaz.</p></a>
+        <a class="acc rev" href="diario.html"><span class="ai">✎</span><h4>DIARIO</h4><p>Publicación diaria: tecnología sin jerga, para todos.</p></a>
+        <a class="acc rev" href="diario.html#biblioteca"><span class="ai">▤</span><h4>BIBLIOTECA</h4><p>El archivo cultural: Martín Fierro, Facundo, Quiroga…</p></a>
+      </div>
+
+      <div class="mapa-group rev"><b>✦ CREAR</b> — herramientas y formación</div>
+      <div class="access-grid">
+        <a class="acc rev" href="labs/"><span class="ai">⚗</span><h4>LABS</h4><p>El taller completo: 23 herramientas que corren en tu navegador.</p></a>
+        <a class="acc rev" href="forge/"><span class="ai">⚡</span><h4>THE FORGE</h4><p>Generador procedural de shaders — infinitas variantes.</p></a>
+        <a class="acc rev" href="aether-2/"><span class="ai">✦</span><h4>AETHER 2.0</h4><p>Shaders por IA: los describís y se compilan solos.</p></a>
+        <a class="acc rev" href="academia.html"><span class="ai">✦</span><h4>ACADEMIA</h4><p>Cursos gamificados con XP, niveles y parches.</p></a>
+      </div>
+
+      <div class="mapa-group rev"><b>☉ EXPANDIR</b> — la red</div>
+      <div class="access-grid">
+        <a class="acc rev" href="lobbies.html"><span class="ai">⌂</span><h4>SALAS</h4><p>Los lobbies en vivo de la comunidad.</p></a>
+        <a class="acc rev" href="glitch-night/"><span class="ai">☾</span><h4>GLITCH NIGHT</h4><p>La experiencia nocturna de la comunidad.</p></a>
+        <a class="acc rev" href="perfil.html"><span class="ai">⌬</span><h4>PERFIL</h4><p>Tu cuenta: parches, XP y redes.</p></a>
+        <a class="acc rev" href="starter-kits.html"><span class="ai">⛭</span><h4>STARTER KIT</h4><p>Por dónde empezar: equipo, software y ruta.</p></a>
+        <a class="acc rev" href="equipos.html"><span class="ai">⚙</span><h4>EQUIPOS</h4><p>El hardware que usamos y recomendamos.</p></a>
+        <a class="acc vl rev" href="/vl/"><span class="ai">◫</span><h4>VISUAL LAB</h4><p>El estudio: galería + servicios. La rama comercial de HG.</p></a>
+      </div>
     </div>
   </section>
 
@@ -3149,7 +3201,7 @@ document.querySelectorAll('.bcard').forEach(c=>{
 </script>
 
 <script defer src="chat-widget.js"></script>
-  <script src="/glass/glass.js" defer data-target="#nav, #manifiesto, #aether-sec, #blog, #comunidad, #live, #footer"></script>
+  <script src="/glass/glass.js" defer data-target="#nav, #manifiesto, #mapa, #aether-sec, #blog, #comunidad, #live, #footer"></script>
 <script>
 /* Nav: los accesos a contenido de comunidad (LABS·NIGHT·AETHER·TEST) se muestran
    sólo a sesiones de comunidad — espeja /gate/gate.js (accountType !== 'cliente').
