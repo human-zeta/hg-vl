@@ -202,7 +202,7 @@ body.ctrl-collapsed #ctrl-toggle{bottom:2rem;}
 
 /* REPOSITORIO GLOBAL */
 #global-repo{
-  position:fixed;left:2rem;bottom:2rem;z-index:500;width:260px;
+  position:fixed;right:2rem;bottom:2rem;z-index:500;width:260px;
   font-family:var(--mono);font-size:9px;
   background:rgba(5,5,5,0.94);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
   border:1px solid rgba(184,255,0,0.16);border-radius:3px;
@@ -433,12 +433,13 @@ body.ctrl-collapsed #ctrl-toggle{bottom:2rem;}
 #repo-empty{padding:1.5rem;text-align:center;color:rgba(240,237,230,0.1);font-size:8px;line-height:2;}
 
 /* Toggle repo — arriba del toggle galería local */
+#hud-row{display:flex;gap:4px;margin-top:8px;}
 #repo-toggle{
-  position:fixed;left:2rem;bottom:2rem;z-index:498;font-family:var(--mono);
-  font-size:9px;letter-spacing:0.2em;background:rgba(5,5,5,0.9);
+  flex:1;font-family:var(--mono);
+  font-size:8px;letter-spacing:0.14em;background:rgba(255,255,255,0.03);
   border:1px solid rgba(184,255,0,0.14);color:rgba(184,255,0,0.4);
-  padding:8px 14px;border-radius:3px;cursor:none;transition:all 0.2s;
-  backdrop-filter:blur(12px);display:flex;align-items:center;gap:6px;
+  padding:6px 0;border-radius:2px;cursor:none;transition:all 0.2s;
+  display:flex;align-items:center;justify-content:center;gap:5px;
 }
 #repo-toggle:hover{border-color:rgba(184,255,0,0.35);color:rgba(184,255,0,0.7);}
 #repo-toggle .rled{width:5px;height:5px;border-radius:50%;background:rgba(184,255,0,0.4);animation:pulse-led 2s ease-in-out infinite;}
@@ -584,7 +585,7 @@ body.visual-mode #exit-visual{display:flex;}
 
 /* GALERÍA DE SHADERS */
 #shader-gallery{
-  position:fixed;left:2rem;bottom:2rem;z-index:500;width:230px;
+  position:fixed;right:2rem;bottom:2rem;z-index:500;width:230px;
   font-family:var(--mono);font-size:9px;
   background:rgba(5,5,5,0.93);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
   border:1px solid rgba(184,255,0,0.14);border-radius:3px;
@@ -623,11 +624,11 @@ body.visual-mode #exit-visual{display:flex;}
 
 /* TOGGLE GALERÍA — arriba del repo toggle */
 #gallery-toggle{
-  position:fixed;left:2rem;bottom:calc(2rem + 42px);z-index:499;font-family:var(--mono);
-  font-size:9px;letter-spacing:0.2em;background:rgba(5,5,5,0.9);
-  border:1px dashed rgba(240,237,230,0.1);color:rgba(240,237,230,0.22);
-  padding:8px 14px;border-radius:3px;cursor:none;transition:all 0.2s;
-  backdrop-filter:blur(12px);display:flex;align-items:center;gap:6px;
+  flex:1;font-family:var(--mono);
+  font-size:8px;letter-spacing:0.14em;background:rgba(255,255,255,0.03);
+  border:1px dashed rgba(240,237,230,0.12);color:rgba(240,237,230,0.3);
+  padding:6px 0;border-radius:2px;cursor:none;transition:all 0.2s;
+  display:flex;align-items:center;justify-content:center;gap:5px;
 }
 #gallery-toggle:hover{border-color:rgba(184,255,0,0.25);color:rgba(184,255,0,0.6);}
 #gallery-toggle.has-items{border-color:rgba(184,255,0,0.18);color:rgba(184,255,0,0.45);}
@@ -683,6 +684,11 @@ body.visual-mode #exit-visual{z-index:9000!important;}
 .catalogo-intro{font-family:var(--mono);font-size:11px;color:rgba(240,237,230,0.4);line-height:2;max-width:640px;margin-top:1.5rem;}
 .catalogo-intro a{color:var(--acid);text-decoration:none;border-bottom:1px solid rgba(184,255,0,0.4);transition:color 1.5s,border-color 1.5s;}
 .catalogo-intro a:hover{opacity:0.8;}
+/* EXPERIENCIAS (comunidad) */
+.exp-intro{font-family:var(--mono);font-size:10px;letter-spacing:0.2em;color:rgba(184,255,0,0.55);margin:3.5rem 0 1rem;}
+.exp-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:3.5rem;}
+.exp-chip{font-family:var(--mono);font-size:9px;letter-spacing:0.14em;color:rgba(240,237,230,0.55);border:1px solid rgba(240,237,230,0.14);border-radius:999px;padding:8px 14px;text-decoration:none;transition:all 0.2s;}
+.exp-chip:hover{color:var(--acid);border-color:rgba(184,255,0,0.5);}
 
 /* STACK — herramientas detrás de los servicios */
 .stack-intro{font-family:var(--mono);font-size:10px;letter-spacing:0.2em;color:rgba(240,237,230,0.3);margin-top:4.5rem;margin-bottom:1.5rem;text-transform:uppercase;}
@@ -957,7 +963,6 @@ body.visual-mode #exit-visual{z-index:9000!important;}
 <button id="exit-visual">✕ SALIR VISUAL</button>
 
 <!-- REPOSITORIO GLOBAL -->
-<button id="repo-toggle"><span class="rled"></span>REPO GLOBAL</button>
 <div id="global-repo">
   <div id="repo-header">
     <span id="repo-title">SHADER REPO GLOBAL</span>
@@ -1073,7 +1078,6 @@ body.visual-mode #exit-visual{z-index:9000!important;}
 </div>
 
 <!-- GALERÍA TOGGLE -->
-<button id="gallery-toggle">⬡ SHADERS <span id="gtoggle-count"></span></button>
 
 <!-- GALERÍA PANEL -->
 <div id="shader-gallery">
@@ -1102,6 +1106,10 @@ body.visual-mode #exit-visual{z-index:9000!important;}
       Arrastrá un <code style="color:var(--acid);font-size:9px">.fs</code> de tu app acá
     </div>
     <input type="file" id="drop-file" accept=".fs,.glsl,.frag">
+    <div id="hud-row">
+      <button id="gallery-toggle">⬡ SHADERS <span id="gtoggle-count"></span></button>
+      <button id="repo-toggle"><span class="rled"></span>REPO</button>
+    </div>
     <div id="pal-row">
       <div class="psw" id="sw0"></div><div class="psw" id="sw1"></div>
       <div class="psw" id="sw2"></div><div class="psw" id="sw3"></div>
@@ -1126,16 +1134,13 @@ body.visual-mode #exit-visual{z-index:9000!important;}
   <span class="nav-logo">HG — VL / 2026</span>
   <div class="nav-links">
     <a href="#manifiesto">SISTEMA</a>
-    <a href="test/" class="nav-gated">TEST</a>
-    <a href="glitch-night/" class="nav-gated">NIGHT</a>
-    <a href="aether-2/" class="nav-gated">AETHER</a>
-    <a href="labs/" class="nav-gated">⚗ LABS</a>
+    <a href="#aether-sec">SHADERS</a>
     <a href="#blog">BLOG</a>
     <a href="#comunidad">COMUNIDAD</a>
-    <a href="/vl/" class="nav-gated">◫ VISUAL LAB</a>
-    <a href="starter-kits.html">STARTER KIT</a>
-    <a href="equipos.html">EQUIPOS</a>
-    <a href="contacto.html">CONTACTO</a>
+    <a href="labs/" class="nav-gated">⚗ LABS</a>
+    <a href="test/" class="nav-gated">TEST</a>
+    <a href="glitch-night/" class="nav-gated">NIGHT</a>
+    <a href="/vl/">◫ VISUAL LAB</a>
     <a href="#" id="nav-repo-mobile" class="nav-auth-btn nav-mobile-only" data-hud-tog="repo-toggle">⛒ REPO</a>
     <a href="#" id="nav-profile-mobile" class="nav-auth-btn nav-mobile-only auth-hidden" data-hud-tog="profile-toggle" data-needs-auth="1">⌬ PERFIL</a>
     <a href="#" id="nav-auth-btn" class="nav-auth-btn">INGRESAR / REGISTRO</a>
@@ -1214,27 +1219,6 @@ body.visual-mode #exit-visual{z-index:9000!important;}
 
   <span class="sep">— — — — — — — — —</span>
 
-  <section id="catalogo">
-    <div class="sec-hdr rev" style="width:100%;">
-      <h2 class="sec-title">SERVICIOS</h2>
-      <a href="servicios.html" class="sec-link">VER SERVICIOS →</a>
-    </div>
-    <p class="catalogo-intro rev">Identidad con alma, producción con IA — para dos mundos: <b>managers y artistas</b> (shows, giras, visuales en vivo) y <b>marcas</b> (branding, motion, dirección visual). Desde una asesoría puntual hasta la dirección completa, con precios claros en USD y pago local en pesos. <a href="servicios.html">Conocé el detalle y los precios →</a></p>
-
-    <div class="stack-intro rev">→ El stack detrás de cada servicio</div>
-    <div class="stack-grid">
-      <div class="stack-item rev"><h4>VISUALES EN VIVO</h4><p>Resolume / VDMX / TouchDesigner. VJing, mapping y composición en tiempo real para shows, giras y eventos.</p></div>
-      <div class="stack-item rev rd1"><h4>SHADERS & CÓDIGO VISUAL</h4><p>ISF / GLSL. Shaders a medida, generadores procedurales y herramientas propias — como el motor de este sitio.</p></div>
-      <div class="stack-item rev rd2"><h4>IA GENERATIVA APLICADA</h4><p>Gemini y modelos generativos. Pipelines que aceleran la creación de visuales, código y contenido sin perder la mirada humana.</p></div>
-      <div class="stack-item rev"><h4>DISEÑO 3D & RENDER</h4><p>Cinema 4D + Octane + Insydium + Greyscale Gorilla. Motion graphics, branding tridimensional y renders fotorrealistas.</p></div>
-      <div class="stack-item rev rd1"><h4>POST & EDICIÓN</h4><p>Suite Adobe completa — Premiere, After Effects, Photoshop, Illustrator. Edición, color, compositing y diseño de punta a punta.</p></div>
-      <div class="stack-item rev rd2"><h4>CONTENIDO PARA REDES</h4><p>Piezas, calendarios y estrategia visual para que tu marca o proyecto se sienta vivo en cada plataforma.</p></div>
-      <div class="stack-item rev"><h4>WEB PARA ARTISTAS Y COMERCIOS</h4><p>Sitios a medida — como este — para artistas que necesitan mostrar su trabajo y comercios que necesitan vender mejor.</p></div>
-    </div>
-  </section>
-
-  <span class="sep">— — — — — — — — —</span>
-
   <section id="comunidad">
     <div class="sec-hdr rev" style="width:100%;">
       <h2 class="sec-title">COMUNIDAD</h2>
@@ -1267,6 +1251,18 @@ body.visual-mode #exit-visual{z-index:9000!important;}
         <span class="sc-desc">Publicamos shaders, manuales y procesos no por buena onda — es la jugada más inteligente.</span>
         <span class="sc-arrow">LEER →</span>
       </a>
+    </div>
+
+    <div class="exp-intro rev">✦ EXPERIENCIAS Y RECURSOS — todo lo que se abre al sumarte</div>
+    <div class="exp-row rev">
+      <a class="exp-chip" href="test/">⌁ TEST DEL GLITCH</a>
+      <a class="exp-chip" href="glitch-night/">☾ GLITCH NIGHT</a>
+      <a class="exp-chip" href="labs/">⚗ LABS</a>
+      <a class="exp-chip" href="academia.html">✦ ACADEMIA</a>
+      <a class="exp-chip" href="lobbies.html">⌂ SALAS</a>
+      <a class="exp-chip" href="perfil.html">⌬ PERFIL</a>
+      <a class="exp-chip" href="starter-kits.html">⛭ STARTER KIT</a>
+      <a class="exp-chip" href="equipos.html">⚙ EQUIPOS</a>
     </div>
 
     <div class="plans">
@@ -1312,7 +1308,14 @@ body.visual-mode #exit-visual{z-index:9000!important;}
         <a href="https://kick.com/visuallab" target="_blank">KICK</a>
         <a href="https://discord.gg/CgmxdSecHY" target="_blank">DISCORD</a>
         <a href="https://github.com/human-zeta" target="_blank">GITHUB</a>
-        <a href="https://linkedin.com" target="_blank">LINKEDIN</a>
+        <a href="labs/">LABS</a>
+        <a href="academia.html">ACADEMIA</a>
+        <a href="starter-kits.html">STARTER KIT</a>
+        <a href="equipos.html">EQUIPOS</a>
+        <a href="contacto.html">CONTACTO</a>
+        <a href="/vl/">VISUAL LAB</a>
+        <a href="/privacidad.html">PRIVACIDAD</a>
+        <a href="/terminos.html">TÉRMINOS</a>
       </div>
     </div>
     <div class="fbot">
@@ -3083,7 +3086,7 @@ document.querySelectorAll('.bcard').forEach(c=>{
 </script>
 
 <script defer src="chat-widget.js"></script>
-  <script src="/glass/glass.js" defer data-target="#nav, #manifiesto, #aether-sec, #blog, #catalogo, #comunidad, #live, #footer"></script>
+  <script src="/glass/glass.js" defer data-target="#nav, #manifiesto, #aether-sec, #blog, #comunidad, #live, #footer"></script>
 <script>
 /* Nav: los accesos a contenido de comunidad (LABS·NIGHT·AETHER·TEST) se muestran
    sólo a sesiones de comunidad — espeja /gate/gate.js (accountType !== 'cliente').
