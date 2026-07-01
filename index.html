@@ -16,31 +16,29 @@
     --mono:'Space Mono',monospace; --display:'Bebas Neue',sans-serif;
   }
   *{margin:0;padding:0;box-sizing:border-box;}
-  html{scroll-behavior:smooth;}
-  html,body{min-height:100%;background:var(--black);color:var(--white);font-family:var(--mono);overflow-x:hidden;}
+  html,body{height:100%;background:var(--black);color:var(--white);font-family:var(--mono);overflow:hidden;}
   body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.4;
     background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");}
   a{color:inherit;text-decoration:none;}
 
-  /* ===== PORTAL: dos puertas ===== */
-  #portal{position:relative;z-index:2;min-height:100vh;display:flex;flex-direction:column;}
-  .topbar{display:flex;justify-content:space-between;align-items:center;padding:20px 26px;}
+  #portal{position:relative;z-index:2;height:100vh;display:flex;flex-direction:column;}
+  .topbar{display:flex;justify-content:space-between;align-items:center;padding:20px 26px;flex:0 0 auto;}
   .logo{font-family:var(--display);font-size:26px;letter-spacing:.04em;}
   .logo b{color:var(--acid);font-weight:400;}
   .topbar .q{font-size:10px;letter-spacing:.2em;color:rgba(240,237,230,.45);}
   .topbar .q:hover{color:var(--acid);}
 
-  .doors{flex:1;display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);}
+  .doors{flex:1 1 auto;display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);min-height:0;}
   .door{position:relative;background:var(--black);display:flex;flex-direction:column;justify-content:center;
-    padding:8vh 6vw;transition:background .3s;overflow:hidden;min-height:70vh;}
+    padding:6vh 6vw;transition:background .3s;overflow:hidden;}
   .door:hover{background:#0a0a0a;}
-  .door .kick{font-size:10px;letter-spacing:.28em;text-transform:uppercase;color:rgba(240,237,230,.4);margin-bottom:18px;}
-  .door h1{font-family:var(--display);font-size:clamp(60px,9vw,128px);line-height:.82;letter-spacing:.02em;}
+  .door .kick{font-size:10px;letter-spacing:.28em;text-transform:uppercase;color:rgba(240,237,230,.4);margin-bottom:16px;}
+  .door h1{font-family:var(--display);font-size:clamp(54px,8vw,118px);line-height:.82;letter-spacing:.02em;}
   .door.hg h1{color:var(--acid);}
   .door.vl h1{color:var(--white);}
   .door .name{font-size:12px;letter-spacing:.24em;text-transform:uppercase;color:rgba(240,237,230,.6);margin-top:10px;}
-  .door p{font-size:13px;line-height:1.85;color:rgba(240,237,230,.62);max-width:34ch;margin-top:22px;}
-  .door .enter{margin-top:34px;font-size:11px;letter-spacing:.24em;color:var(--acid);display:inline-flex;align-items:center;gap:10px;}
+  .door p{font-size:13px;line-height:1.8;color:rgba(240,237,230,.62);max-width:34ch;margin-top:20px;}
+  .door .enter{margin-top:30px;font-size:11px;letter-spacing:.24em;color:var(--acid);display:inline-flex;align-items:center;gap:10px;}
   .door.vl .enter{color:var(--cyan);}
   .door .enter .arw{transition:transform .25s;}
   .door:hover .enter .arw{transform:translateX(6px);}
@@ -48,147 +46,48 @@
   .door.hg::after{background:radial-gradient(120% 90% at 20% 90%,rgba(184,255,0,.10),transparent 60%);}
   .door.vl::after{background:radial-gradient(120% 90% at 80% 10%,rgba(58,208,255,.10),transparent 60%);}
   .door:hover::after{opacity:1;}
-  .door .tags{margin-top:26px;display:flex;flex-wrap:wrap;gap:8px;}
+  .door .tags{margin-top:24px;display:flex;flex-wrap:wrap;gap:8px;}
   .door .tags span{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:rgba(240,237,230,.42);
     border:1px solid var(--line);border-radius:999px;padding:5px 11px;}
 
-  .portalfoot{text-align:center;padding:16px;font-size:9.5px;letter-spacing:.16em;color:rgba(240,237,230,.3);}
-
-  /* ===== Zonas (hubs) ===== */
-  .zone{position:relative;z-index:2;max-width:1040px;margin:0 auto;padding:70px 22px 90px;scroll-margin-top:20px;}
-  .zone header{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:12px;border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:8px;}
-  .zone .zt{font-family:var(--display);font-size:46px;letter-spacing:.03em;}
-  .zone.hgzone .zt b{color:var(--acid);font-weight:400;}
-  .zone.vlzone .zt b{color:var(--cyan);font-weight:400;}
-  .zone header nav{font-size:10px;letter-spacing:.18em;display:flex;gap:18px;}
-  .zone header nav a{color:rgba(240,237,230,.5);}
-  .zone header nav a:hover{color:var(--acid);}
-  .zone .intro{font-size:12.5px;line-height:1.85;color:rgba(240,237,230,.58);max-width:64ch;margin:22px 0 8px;}
-  .zone .intro b{color:var(--acid);font-weight:400;}
-  .vlzone .intro b{color:var(--cyan);}
-
-  .grouplabel{font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:rgba(240,237,230,.38);margin:34px 0 12px;}
-  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(232px,1fr));gap:12px;}
-  .card{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:8px;padding:18px 17px;background:rgba(184,255,0,.015);transition:.2s;min-height:118px;}
-  .card:hover{border-color:var(--acid);background:rgba(184,255,0,.06);transform:translateY(-3px);}
-  .vlzone .card:hover{border-color:var(--cyan);background:rgba(58,208,255,.06);}
-  .card .ico{font-size:19px;margin-bottom:9px;}
-  .card h3{font-family:var(--display);font-size:23px;letter-spacing:.03em;color:var(--acid);line-height:.92;}
-  .vlzone .card h3{color:var(--cyan);}
-  .card .tag{font-size:8px;letter-spacing:.14em;text-transform:uppercase;color:rgba(240,237,230,.4);margin:5px 0 9px;}
-  .card p{font-size:10.5px;color:rgba(240,237,230,.58);line-height:1.65;}
-  .big{grid-column:span 2;}
-  @media(max-width:560px){.doors{grid-template-columns:1fr;}.big{grid-column:span 1;}}
-  .backtop{display:inline-block;margin-top:40px;font-size:10px;letter-spacing:.2em;color:rgba(240,237,230,.4);}
-  .backtop:hover{color:var(--acid);}
+  .portalfoot{flex:0 0 auto;text-align:center;padding:14px;font-size:9.5px;letter-spacing:.14em;color:rgba(240,237,230,.32);}
+  .portalfoot a{color:inherit;}
+  .portalfoot a:hover{color:var(--acid);}
+  @media(max-width:620px){
+    html,body{overflow:auto;}
+    #portal{height:auto;min-height:100vh;}
+    .doors{grid-template-columns:1fr;}
+    .door{min-height:52vh;}
+  }
 </style></head><body>
 
-<!-- ══════════ PORTAL ══════════ -->
 <div id="portal">
   <div class="topbar">
     <div class="logo"><b>HG</b>·VL</div>
-    <a class="q" href="#hg">¿QUÉ ES ESTO? ↓</a>
+    <a class="q" href="/home.html#manifiesto">¿QUÉ ES ESTO?</a>
   </div>
 
   <div class="doors">
-    <a class="door hg" href="#hg">
+    <a class="door hg" href="/home.html">
       <div class="kick">La casa madre</div>
       <h1>HUMAN<br>GLITCHE</h1>
       <div class="name">filosofía · comunidad · herramientas</div>
-      <p>El ecosistema completo: el manifiesto, el diario, la biblioteca, la academia, la comunidad y <b style="color:var(--acid)">todas las herramientas de creación</b> que hacemos para crear.</p>
-      <span class="enter">ENTRAR AL ECOSISTEMA <span class="arw">→</span></span>
+      <p>El ecosistema: manifiesto, diario, academia, comunidad y <b style="color:var(--acid)">todas las herramientas de creación</b>.</p>
+      <span class="enter">ENTRAR A LA COMUNIDAD <span class="arw">→</span></span>
       <div class="tags"><span>Manifiesto</span><span>Diario</span><span>Labs</span><span>Academia</span><span>Comunidad</span></div>
     </a>
 
-    <a class="door vl" href="#vl">
+    <a class="door vl" href="/vl/">
       <div class="kick">La vidriera</div>
       <h1>VISUAL<br>LAB</h1>
       <div class="name">galería · servicios</div>
-      <p>La rama comercial de HG. Mirá lo que hacemos y contratanos: el <b style="color:var(--cyan)">portfolio del estudio</b> y la oferta de servicios, en un solo lugar.</p>
-      <span class="enter">VER EL ESTUDIO <span class="arw">→</span></span>
+      <p>La rama comercial. El <b style="color:var(--cyan)">trabajo del estudio</b> y la oferta de servicios, en un solo lugar.</p>
+      <span class="enter">ENTRAR AL ESTUDIO <span class="arw">→</span></span>
       <div class="tags"><span>Galería</span><span>Servicios</span><span>Contacto</span></div>
     </a>
   </div>
-  <div class="portalfoot">HUMAN GLITCHE · VISUAL LAB — un dominio, dos puertas · desde Buenos Aires &nbsp;·&nbsp; <a href="/studio/" style="color:rgba(58,208,255,.7);text-decoration:none;">▶ intro cinematic</a> &nbsp;·&nbsp; <a href="/privacidad.html" style="color:inherit;text-decoration:underline;">Privacidad</a> &nbsp;·&nbsp; <a href="/terminos.html" style="color:inherit;text-decoration:underline;">Términos</a></div>
+
+  <div class="portalfoot">HUMAN GLITCHE · VISUAL LAB — un dominio, dos puertas &nbsp;·&nbsp; <a href="/studio/">▶ intro cinematic</a> &nbsp;·&nbsp; <a href="/privacidad.html">Privacidad</a> &nbsp;·&nbsp; <a href="/terminos.html">Términos</a></div>
 </div>
 
-<!-- ══════════ ZONA HG ══════════ -->
-<section class="zone hgzone" id="hg">
-  <header>
-    <div class="zt"><b>HUMAN GLITCHE</b></div>
-    <nav>
-      <a href="#top">↑ PORTAL</a>
-      <a href="#vl">VISUAL LAB →</a>
-    </nav>
-  </header>
-  <p class="intro">La casa madre. Todo lo que <b>no</b> es la vidriera vive acá: la conciencia (⌘ Observar), el hacer (✦ Crear) y la red (☉ Expandir). Incluye <b>todas las apps de Labs</b> — corren en tu navegador, gratis y privadas.</p>
-
-  <div class="grouplabel">⌘ Observar — conciencia (gratis)</div>
-  <div class="grid">
-    <a class="card" href="/home.html#manifiesto"><div class="ico">◆</div><h3>MANIFIESTO</h3><div class="tag">filosofía · 3 pilares</div><p>El núcleo: qué es el glitch, la grieta, los tres pilares. La identidad del proyecto.</p></a>
-    <a class="card" href="/diario.html"><div class="ico">✎</div><h3>DIARIO</h3><div class="tag">media · blog</div><p>Contenido gratis: filosofía, manuales, glosario. El hub de lectura y la newsletter.</p></a>
-    <a class="card" href="/libros/"><div class="ico">▤</div><h3>BIBLIOTECA</h3><div class="tag">archivo · obras</div><p>Archivo cultural: literatura y obras. La memoria larga de HG.</p></a>
-  </div>
-
-  <div class="grouplabel">✦ Crear — formación</div>
-  <div class="grid">
-    <a class="card" href="/academia.html"><div class="ico">✦</div><h3>ACADEMIA</h3><div class="tag">cursos · gratis + taller</div><p>Cursos gamificados gratis (XP, niveles, patches) + el Taller pago (transformación acompañada).</p></a>
-  </div>
-
-  <div class="grouplabel">✦ Labs — todas las herramientas (client-side)</div>
-  <div class="grid">
-    <a class="card" href="/forge/"><div class="ico">⚡</div><h3>THE FORGE</h3><div class="tag">shaders · procedural</div><p>Generador de shaders, 18 familias. Export .fs para VDMX.</p></a>
-    <a class="card" href="/aether-2/"><div class="ico">✦</div><h3>AETHER 2.0</h3><div class="tag">shaders · IA</div><p>Describís un shader y la IA lo genera, compila y autocorrige.</p></a>
-    <a class="card" href="/gif/"><div class="ico">🎞️</div><h3>VIDEO → GIF</h3><div class="tag">video · conversión</div><p>Clips a GIF: recorte, fps, ancho. 100% local.</p></a>
-    <a class="card" href="/loop/"><div class="ico">∞</div><h3>LOOP</h3><div class="tag">video · seamless</div><p>Loops sin salto: boomerang o crossfade. GIF/WebM.</p></a>
-    <a class="card" href="/frames/"><div class="ico">▦</div><h3>FRAMES</h3><div class="tag">video · fotogramas</div><p>Extraé N fotogramas o un contact sheet.</p></a>
-    <a class="card" href="/glitchdown/"><div class="ico">▓</div><h3>GLITCHDOWN</h3><div class="tag">video · fx</div><p>Trails, estrobo, glitch, shake, VHS en vivo. Overlay .webm + receta Premiere.</p></a>
-    <a class="card" href="/mapeo/"><div class="ico">⛶</div><h3>MAPEO</h3><div class="tag">video mapping · warp</div><p>Warp de perspectiva y mesh, calibración, fullscreen para Resolume/VDMX.</p></a>
-    <a class="card" href="/resize/"><div class="ico">⤢</div><h3>RESIZE</h3><div class="tag">imagen · recorte</div><p>Recorte a relación y redimensión. PNG/JPG/WebP.</p></a>
-    <a class="card" href="/paleta/"><div class="ico">◐</div><h3>PALETA</h3><div class="tag">imagen · color</div><p>Paleta dominante de una imagen. Copiás CSS o array.</p></a>
-    <a class="card" href="/extrude/"><div class="ico">⬣</div><h3>EXTRUDE</h3><div class="tag">vector · 3d</div><p>SVG a 3D: extrusión, bisel, deformaciones. OBJ/STL/GLB.</p></a>
-    <a class="card" href="/marcadores/"><div class="ico">⟐</div><h3>MARCADORES</h3><div class="tag">audio · bpm/drops</div><p>BPM, drops, breaks y acentos. Export CSV para Premiere.</p></a>
-    <a class="card" href="/compas/"><div class="ico">⏱</div><h3>COMPÁS</h3><div class="tag">audio · loop exacto</div><p>Duración exacta de loop por BPM/fps/compases. Detecta drift.</p></a>
-    <a class="card" href="/pulso/"><div class="ico">◴</div><h3>PULSO</h3><div class="tag">audio reactivo</div><p>Audio/mic a un shader ISF en vivo: graves/medios/agudos a parámetros.</p></a>
-    <a class="card" href="/stems/"><div class="ico">◫</div><h3>STEMS</h3><div class="tag">audio · separación ML</div><p>Voz, batería, bajo y resto con Demucs, local. Export WAV.</p></a>
-    <a class="card" href="/lut/"><div class="ico">◩</div><h3>LUT MAKER</h3><div class="tag">color · .cube</div><p>Diseñá o capturá un look. Export .cube para Resolve/Premiere/VDMX.</p></a>
-    <a class="card" href="/tipos/"><div class="ico">Aa</div><h3>TIPOS</h3><div class="tag">tipografía · pares</div><p>Pares tipográficos infinitos con reglas de contraste. Export a tu web.</p></a>
-    <a class="card" href="/letras/"><div class="ico">Ⓐ</div><h3>LETRAS</h3><div class="tag">lettering · logos</div><p>Logos de palabra: brutalista, graffiti, cromo, neón. PNG alta 2×/4×.</p></a>
-    <a class="card" href="/control/"><div class="ico">◉</div><h3>CONTROL</h3><div class="tag">midi · osc</div><p>Control surface web → MIDI a VDMX/Resolume/Ableton. OSC por WebSocket.</p></a>
-    <a class="card" href="/smpte/"><div class="ico">▤</div><h3>SMPTE</h3><div class="tag">timecode · LTC</div><p>Generador y checker de timecode LTC. WAV de test y verificación de lock.</p></a>
-    <a class="card" href="/packgen/"><div class="ico">📦</div><h3>PACKGEN</h3><div class="tag">packaging · troquel</div><p>Plantillas de packaging: 2D, vista 3D, armado y export SVG para troquel.</p></a>
-    <a class="card" href="/auditoria/"><div class="ico">⌖</div><h3>AUDITORÍA</h3><div class="tag">datos · leads</div><p>Tablero de comercios relevados: quién tiene web/redes y quién no. Mapa + moderación.</p></a>
-    <a class="card" href="/pipelines/"><div class="ico">🔀</div><h3>PIPELINES</h3><div class="tag">automatización · ventas</div><p>Detecta qué le falta a un comercio y arma el pipeline que le podés vender.</p></a>
-    <a class="card" href="/factura-ar/"><div class="ico">🧾</div><h3>FACTURA AR</h3><div class="tag">fiscal · qr/iva</div><p>Comprobantes A/B/C, IVA, CUIT y QR AFIP/ARCA. 100% local.</p></a>
-  </div>
-
-  <div class="grouplabel">☉ Expandir — la red</div>
-  <div class="grid">
-    <a class="card" href="/lobbies.html"><div class="ico">◎</div><h3>COMUNIDAD</h3><div class="tag">salas · perfil · discord</div><p>La red: salas en vivo, tu perfil y el Discord. Una sola puerta a lo social.</p></a>
-  </div>
-
-  <a class="backtop" href="#top">↑ volver al portal</a>
-</section>
-
-<!-- ══════════ ZONA VL ══════════ -->
-<section class="zone vlzone" id="vl">
-  <header>
-    <div class="zt"><b>VISUAL LAB</b></div>
-    <nav>
-      <a href="#top">↑ PORTAL</a>
-      <a href="#hg">← HUMAN GLITCHE</a>
-    </nav>
-  </header>
-  <p class="intro">La vidriera comercial de HG. Solo dos cosas: <b>mirá</b> lo que hacemos y <b>contratanos</b>. Sin ruido — el resto del universo vive en Human Glitche.</p>
-
-  <div class="grid">
-    <a class="card big" href="/galeria/"><div class="ico">▦</div><h3>GALERÍA</h3><div class="tag">portfolio · prueba social</div><p>El trabajo del estudio: mapping, VFX, 3D, IA, visuales en vivo. La vidriera que muestra de qué somos capaces antes de que preguntes.</p></a>
-    <a class="card big" href="/servicios.html"><div class="ico">◆</div><h3>SERVICIOS</h3><div class="tag">la oferta · doble carril</div><p>Dos mundos: managers/artistas y marcas. Diseñamos la experiencia que tu público va a vivir. Del brief al render final.</p></a>
-    <a class="card" href="/contacto.html"><div class="ico">→</div><h3>CONTACTO</h3><div class="tag">reservá llamada</div><p>Contanos qué necesitás y armamos el brief. El primer paso.</p></a>
-  </div>
-
-  <a class="backtop" href="#top">↑ volver al portal</a>
-</section>
-
-<span id="top" style="position:absolute;top:0;"></span>
 </body></html>

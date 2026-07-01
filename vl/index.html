@@ -62,6 +62,31 @@
   .pill:hover .go .arw{transform:translateX(6px);}
   @media(max-width:640px){.pillars{grid-template-columns:1fr;}}
 
+  /* ===== GALERÍA + SERVICIOS (mixto) ===== */
+  .mix-sec{padding:1vh 0 5vh;}
+  .mix-hdr{margin-bottom:26px;}
+  .mix-title{font-family:var(--display);font-size:clamp(38px,6vw,66px);letter-spacing:.03em;line-height:.9;}
+  .mix-title span{color:var(--cyan);}
+  .mix-lede{font-size:14px;line-height:1.8;color:rgba(240,237,230,.66);max-width:58ch;margin-top:14px;font-weight:300;}
+  .mix-links{display:flex;flex-wrap:wrap;gap:22px;margin-top:16px;font-family:var(--mono);font-size:10px;letter-spacing:.16em;}
+  .mix-links a{color:var(--cyan);}
+  .mix-links a:hover{color:var(--white);}
+  .mix-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;}
+  .mixcard{position:relative;display:flex;flex-direction:column;border:1px solid var(--line);border-radius:12px;padding:26px 24px;background:rgba(58,208,255,.02);transition:.22s;overflow:hidden;}
+  .mixcard:hover{border-color:var(--cyan);background:rgba(58,208,255,.06);transform:translateY(-4px);}
+  .mixcard.star{border-color:rgba(184,255,0,.3);background:rgba(184,255,0,.02);}
+  .mc-tag{font-family:var(--mono);font-size:8.5px;letter-spacing:.16em;text-transform:uppercase;color:rgba(240,237,230,.45);}
+  .mixcard h3{font-family:var(--display);font-size:30px;letter-spacing:.03em;color:var(--cyan);line-height:.9;margin:9px 0 12px;}
+  .mixcard.star h3{color:var(--acid);}
+  .mc-work{font-family:var(--mono);font-size:10px;letter-spacing:.03em;color:rgba(240,237,230,.5);line-height:1.75;padding:9px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);}
+  .mc-desc{font-size:12.5px;line-height:1.75;color:rgba(240,237,230,.64);margin-top:12px;font-weight:300;}
+  .mc-cta{margin-top:auto;padding-top:18px;display:flex;gap:14px;align-items:center;font-family:var(--mono);font-size:10px;letter-spacing:.14em;}
+  .mc-cta a{color:rgba(240,237,230,.55);}
+  .mc-cta a:hover{color:var(--cyan);}
+  .mc-cta a.hire{margin-left:auto;color:var(--cyan);border:1px solid var(--cyan);padding:8px 14px;border-radius:3px;}
+  .mixcard.star .mc-cta a.hire{color:var(--acid);border-color:var(--acid);}
+  .mc-cta a.hire:hover{background:rgba(58,208,255,.12);}
+
   /* ===== FRANJA PROCESO / CTA ===== */
   .strip{border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:5vh 0;display:flex;flex-wrap:wrap;gap:26px;justify-content:space-between;align-items:center;}
   .strip .txt h3{font-family:var(--display);font-size:34px;letter-spacing:.03em;}
@@ -100,21 +125,63 @@
     <p class="from">parte del ecosistema <a href="/home.html">Human Glitche →</a> · el resto del universo (filosofía, comunidad, herramientas) vive en HG</p>
   </section>
 
-  <section class="pillars">
-    <a class="pill" id="galeria" href="/galeria/">
-      <div class="n">01 · prueba</div>
-      <h2>GALERÍA</h2>
-      <div class="sub">portfolio · trayectoria</div>
-      <p>No es un grid de trabajos: es un recorrido. De crear por gusto a crear el contenido de más alta calidad para artistas masivos — Proyecto Marea, Luck Ra, Malena Narvay, Martín Cirio. La vidriera que muestra de qué somos capaces.</p>
-      <span class="go">VER EL ARCHIVO <span class="arw">→</span></span>
-    </a>
-    <a class="pill" id="servicios" href="/servicios.html">
-      <div class="n">02 · oferta</div>
-      <h2>SERVICIOS</h2>
-      <div class="sub">la oferta · doble carril</div>
-      <p>Dos mundos, un estudio: <b style="color:var(--cyan)">artistas/managers</b> y <b style="color:var(--cyan)">marcas</b>. Del brief al render final. Diseñamos la experiencia completa — no una pieza suelta, sino lo que tu público va a sentir.</p>
-      <span class="go">VER LA OFERTA <span class="arw">→</span></span>
-    </a>
+  <section class="mix-sec" id="galeria">
+    <div class="mix-hdr">
+      <h2 class="mix-title">GALERÍA <span>+</span> SERVICIOS</h2>
+      <p class="mix-lede">Cada pieza es un servicio. Mirá lo que hicimos y contratá el que necesitás — del show en vivo a la identidad de marca. Del brief al render final.</p>
+      <div class="mix-links"><a href="/galeria/">↗ galería completa</a><a href="/servicios.html">↗ todos los servicios y precios</a></div>
+    </div>
+    <div class="mix-grid">
+
+      <article class="mixcard">
+        <div class="mc-tag">visuales en vivo & mapping</div>
+        <h3>LIVE REALITY</h3>
+        <p class="mc-work">Proyecto Marea · mapping 80×200 m &nbsp;·&nbsp; Tomorrowland — Malena Narvay 2025</p>
+        <p class="mc-desc">Dirección visual en vivo, mapping y show para giras y festivales. El diferenciador: stack de tiempo real (VDMX6 + TouchDesigner + 3D propio).</p>
+        <div class="mc-cta"><a href="/galeria/">ver trabajo</a><a class="hire" href="/contacto.html">cotizar →</a></div>
+      </article>
+
+      <article class="mixcard">
+        <div class="mc-tag">videoclip · contenido de gira / marca</div>
+        <h3>REALITY REEL</h3>
+        <p class="mc-work">Lollapalooza — Luck Ra · Lil Cake · Oscu</p>
+        <p class="mc-desc">Piezas de motion y contenido visual de lanzamiento: videoclip, reel de gira, motion de marca. La pieza que tu público comparte.</p>
+        <div class="mc-cta"><a href="/galeria/">ver trabajo</a><a class="hire" href="/contacto.html">cotizar →</a></div>
+      </article>
+
+      <article class="mixcard">
+        <div class="mc-tag">identidad escénica / de marca</div>
+        <h3>IDENTIDAD</h3>
+        <p class="mc-work">Archivo del estudio · artistas y marcas</p>
+        <p class="mc-desc">La identidad completa: escénica para el artista, de marca para el negocio. No un logo suelto — el sistema visual que sostiene todo lo demás.</p>
+        <div class="mc-cta"><a href="/galeria/">ver trabajo</a><a class="hire" href="/contacto.html">cotizar →</a></div>
+      </article>
+
+      <article class="mixcard">
+        <div class="mc-tag">entrada accesible · 72 h</div>
+        <h3>AI VISUAL SPRINT</h3>
+        <p class="mc-work">Puerta de entrada · artistas y marcas emergentes</p>
+        <p class="mc-desc">Paleta + tipografía + ~10 piezas + guía, en 72 h. La forma rápida y accesible de arrancar con el estudio y ver cómo trabajamos.</p>
+        <div class="mc-cta"><a href="/servicios.html">ver detalle</a><a class="hire" href="/contacto.html">cotizar →</a></div>
+      </article>
+
+      <article class="mixcard">
+        <div class="mc-tag">retainer · recurrente</div>
+        <h3>BRAND PARTNERSHIP</h3>
+        <p class="mc-work">Para marcas que ya pasaron por la identidad</p>
+        <p class="mc-desc">El estudio como socio visual mes a mes: producción continua de contenido con IA y tiempo real. Ingreso recurrente, relación larga.</p>
+        <div class="mc-cta"><a href="/servicios.html">ver detalle</a><a class="hire" href="/contacto.html">cotizar →</a></div>
+      </article>
+
+      <article class="mixcard star">
+        <div class="mc-tag">★ estrategia · punta de lanza</div>
+        <h3>BRAND PHILOSOPHY AUDIT</h3>
+        <p class="mc-work">El servicio ancla · a valor, caso a caso</p>
+        <p class="mc-desc">Antes del diseño, la claridad: auditamos la filosofía de tu marca o proyecto y definimos qué tiene que comunicar. Se cotiza por la claridad que entrega, no por horas.</p>
+        <div class="mc-cta"><a href="/servicios.html">ver detalle</a><a class="hire" href="/contacto.html">cotizar →</a></div>
+      </article>
+
+    </div>
   </section>
 
   <section class="strip">
