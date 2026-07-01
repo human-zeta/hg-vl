@@ -1,0 +1,143 @@
+<!doctype html><html lang="es"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>VISUAL LAB — la vidriera del estudio · Human Glitche</title>
+<meta name="description" content="Visual Lab: la rama comercial de Human Glitche. La galería del estudio (portfolio) y los servicios. Mapping, VFX, 3D e IA para artistas y marcas.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Human Glitche">
+<meta property="og:title" content="VISUAL LAB — la vidriera del estudio">
+<meta property="og:description" content="La rama comercial de Human Glitche: galería del estudio + servicios. Mirá el trabajo y contratanos.">
+<meta property="og:url" content="https://www.hg-vl.com/vl/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --black:#050505; --white:#f0ede6; --acid:#b8ff00; --glitch:#ff2d55; --cyan:#3ad0ff;
+    --line:rgba(240,237,230,.12);
+    --mono:'Space Mono',monospace; --display:'Bebas Neue',sans-serif; --body:'DM Sans',sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  html,body{min-height:100%;background:var(--black);color:var(--white);font-family:var(--body);overflow-x:hidden;}
+  body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.4;
+    background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");}
+  a{color:inherit;text-decoration:none;}
+  .shell{position:relative;z-index:2;max-width:1080px;margin:0 auto;padding:0 22px;}
+
+  /* ===== NAV VL (mínima) ===== */
+  nav.vlnav{display:flex;justify-content:space-between;align-items:center;padding:20px 0;border-bottom:1px solid var(--line);position:sticky;top:0;background:rgba(5,5,5,.82);backdrop-filter:blur(12px);z-index:5;}
+  .vlnav .logo{font-family:var(--display);font-size:24px;letter-spacing:.04em;}
+  .vlnav .logo b{color:var(--cyan);font-weight:400;}
+  .vlnav .links{display:flex;align-items:center;gap:22px;font-family:var(--mono);font-size:10px;letter-spacing:.18em;}
+  .vlnav .links a{color:rgba(240,237,230,.55);}
+  .vlnav .links a:hover{color:var(--cyan);}
+  .vlnav .links a.hg:hover{color:var(--acid);}
+  .vlnav .links a.cta{color:var(--black);background:var(--cyan);padding:9px 15px;border-radius:3px;letter-spacing:.16em;}
+  .vlnav .links a.cta:hover{background:#5fd8ff;color:var(--black);}
+  @media(max-width:620px){.vlnav .links a.deep{display:none;}}
+
+  /* ===== HERO ===== */
+  .hero{padding:9vh 0 6vh;}
+  .hero .kick{font-family:var(--mono);font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:var(--cyan);margin-bottom:20px;}
+  .hero h1{font-family:var(--display);font-size:clamp(58px,11vw,150px);line-height:.82;letter-spacing:.02em;}
+  .hero h1 .lab{color:var(--cyan);}
+  .hero .lede{font-size:15px;line-height:1.85;color:rgba(240,237,230,.66);max-width:52ch;margin-top:26px;font-weight:300;}
+  .hero .lede b{color:var(--cyan);font-weight:400;}
+  .hero .from{font-family:var(--mono);font-size:10px;letter-spacing:.16em;color:rgba(240,237,230,.4);margin-top:18px;}
+  .hero .from a{color:rgba(240,237,230,.6);border-bottom:1px solid var(--line);}
+  .hero .from a:hover{color:var(--acid);}
+
+  /* ===== DOS PILARES ===== */
+  .pillars{display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:2vh 0 6vh;}
+  .pill{position:relative;display:flex;flex-direction:column;border:1px solid var(--line);border-radius:12px;padding:34px 30px;min-height:300px;overflow:hidden;transition:.22s;background:rgba(58,208,255,.02);}
+  .pill:hover{border-color:var(--cyan);background:rgba(58,208,255,.06);transform:translateY(-4px);}
+  .pill::after{content:'';position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .3s;background:radial-gradient(120% 80% at 80% 100%,rgba(58,208,255,.12),transparent 60%);}
+  .pill:hover::after{opacity:1;}
+  .pill .n{font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:rgba(240,237,230,.4);}
+  .pill h2{font-family:var(--display);font-size:52px;letter-spacing:.03em;color:var(--cyan);line-height:.9;margin:12px 0 6px;}
+  .pill .sub{font-family:var(--mono);font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:rgba(240,237,230,.45);}
+  .pill p{font-size:13.5px;line-height:1.8;color:rgba(240,237,230,.66);margin-top:18px;font-weight:300;}
+  .pill .go{margin-top:auto;padding-top:22px;font-family:var(--mono);font-size:11px;letter-spacing:.2em;color:var(--cyan);display:inline-flex;gap:10px;align-items:center;}
+  .pill .go .arw{transition:transform .25s;}
+  .pill:hover .go .arw{transform:translateX(6px);}
+  @media(max-width:640px){.pillars{grid-template-columns:1fr;}}
+
+  /* ===== FRANJA PROCESO / CTA ===== */
+  .strip{border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:5vh 0;display:flex;flex-wrap:wrap;gap:26px;justify-content:space-between;align-items:center;}
+  .strip .txt h3{font-family:var(--display);font-size:34px;letter-spacing:.03em;}
+  .strip .txt p{font-size:13px;color:rgba(240,237,230,.6);margin-top:8px;max-width:46ch;font-weight:300;}
+  .strip .cta{font-family:var(--mono);font-size:11px;letter-spacing:.18em;color:var(--black);background:var(--cyan);padding:15px 26px;border-radius:4px;white-space:nowrap;}
+  .strip .cta:hover{background:#5fd8ff;}
+
+  /* ===== FOOT ===== */
+  footer{padding:6vh 0 8vh;font-family:var(--mono);font-size:10px;letter-spacing:.12em;color:rgba(240,237,230,.4);line-height:2;}
+  footer .row{display:flex;flex-wrap:wrap;gap:18px;justify-content:space-between;}
+  footer a{color:rgba(240,237,230,.55);}
+  footer a:hover{color:var(--cyan);}
+  footer a.hg:hover{color:var(--acid);}
+  footer .fine{margin-top:22px;color:rgba(240,237,230,.28);}
+</style></head><body>
+<div class="shell">
+
+  <nav class="vlnav">
+    <a class="logo" href="/home.html"><span>HG·</span><b>VL</b></a>
+    <div class="links">
+      <a class="deep" href="#galeria">GALERÍA</a>
+      <a class="deep" href="#servicios">SERVICIOS</a>
+      <a class="hg" href="/home.html">← HG</a>
+      <a class="cta" href="/contacto.html">CONTACTO →</a>
+    </div>
+  </nav>
+
+  <section class="hero">
+    <div class="kick">La vidriera del estudio</div>
+    <h1>VISUAL <span class="lab">LAB</span></h1>
+    <p class="lede">La rama comercial de Human Glitche. Acá hacemos <b>dos cosas</b>: te mostramos el trabajo del estudio y te lo entregamos. Mapping, VFX, 3D e IA para artistas y marcas — la experiencia que tu público va a vivir.</p>
+    <p class="from">parte del ecosistema <a href="/home.html">Human Glitche →</a> · el resto del universo (filosofía, comunidad, herramientas) vive en HG</p>
+  </section>
+
+  <section class="pillars">
+    <a class="pill" id="galeria" href="/galeria/">
+      <div class="n">01 · prueba</div>
+      <h2>GALERÍA</h2>
+      <div class="sub">portfolio · trayectoria</div>
+      <p>No es un grid de trabajos: es un recorrido. De crear por gusto a crear el contenido de más alta calidad para artistas masivos — Proyecto Marea, Luck Ra, Malena Narvay, Martín Cirio. La vidriera que muestra de qué somos capaces.</p>
+      <span class="go">VER EL ARCHIVO <span class="arw">→</span></span>
+    </a>
+    <a class="pill" id="servicios" href="/servicios.html">
+      <div class="n">02 · oferta</div>
+      <h2>SERVICIOS</h2>
+      <div class="sub">la oferta · doble carril</div>
+      <p>Dos mundos, un estudio: <b style="color:var(--cyan)">artistas/managers</b> y <b style="color:var(--cyan)">marcas</b>. Del brief al render final. Diseñamos la experiencia completa — no una pieza suelta, sino lo que tu público va a sentir.</p>
+      <span class="go">VER LA OFERTA <span class="arw">→</span></span>
+    </a>
+  </section>
+
+  <section class="strip">
+    <div class="txt">
+      <h3>¿Tenés un proyecto?</h3>
+      <p>Contanos qué necesitás y armamos el brief. Sin vueltas: hablamos, definimos alcance y arrancamos.</p>
+    </div>
+    <a class="cta" href="/contacto.html">RESERVÁ UNA LLAMADA →</a>
+  </section>
+
+  <footer>
+    <div class="row">
+      <div>
+        <div><b style="color:var(--cyan)">VISUAL LAB</b> — la vidriera de Human Glitche</div>
+        <div style="margin-top:10px;">
+          <a href="/galeria/">Galería</a> · <a href="/servicios.html">Servicios</a> · <a href="/contacto.html">Contacto</a>
+        </div>
+      </div>
+      <div style="text-align:right;">
+        <div><a class="hg" href="/home.html">← Human Glitche</a> · <a class="hg" href="/labs/">Labs</a></div>
+        <div style="margin-top:10px;">
+          <a href="https://www.youtube.com/@Human.Glitche">YouTube</a> · <a href="https://kick.com/visuallab">Kick</a> · <a href="https://x.com/HGlitche">X</a>
+        </div>
+      </div>
+    </div>
+    <div class="fine">HUMAN GLITCHE · VISUAL LAB — un dominio, dos puertas · Buenos Aires</div>
+  </footer>
+
+</div>
+</body></html>

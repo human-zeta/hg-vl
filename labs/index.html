@@ -1,6 +1,7 @@
 <!doctype html><html lang="es"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>LABS — Human Glitche · herramientas Visual Lab</title>
+<title>LABS — el taller de Human Glitche</title>
+<meta name="description" content="El taller de Human Glitche: todas las herramientas de creación (shaders, video, audio, imagen, tipografía, color, negocio). Corren en tu navegador, gratis y privadas.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
@@ -9,12 +10,18 @@
   html,body{min-height:100%;background:var(--bg);color:var(--ink);font-family:'Space Mono',monospace;}
   body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");z-index:0;pointer-events:none;opacity:.4;}
   .wrap{position:relative;z-index:1;max-width:1000px;margin:0 auto;padding:30px 22px 80px;}
-  header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;}
-  .brand{font-family:'Bebas Neue',sans-serif;font-size:54px;letter-spacing:.03em;line-height:.82;}
-  .brand b{color:var(--acid);font-weight:400;}
-  header a{font-size:10px;letter-spacing:.2em;color:rgba(240,237,230,.4);text-decoration:none;} header a:hover{color:var(--acid);}
-  .intro{font-size:12px;color:rgba(240,237,230,.55);line-height:1.8;max-width:62ch;margin-bottom:34px;}
+  header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;gap:12px;}
+  .brandbox .brand{font-family:'Bebas Neue',sans-serif;font-size:54px;letter-spacing:.03em;line-height:.82;}
+  .brandbox .brand b{color:var(--acid);font-weight:400;}
+  .brandbox .sub{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:rgba(240,237,230,.45);margin-top:6px;}
+  .brandbox .sub b{color:var(--acid);font-weight:400;}
+  .navlinks{display:flex;flex-direction:column;align-items:flex-end;gap:8px;padding-top:6px;}
+  .navlinks a{font-size:10px;letter-spacing:.2em;color:rgba(240,237,230,.4);text-decoration:none;} .navlinks a:hover{color:var(--acid);}
+  .navlinks a.vl:hover{color:var(--cyan);}
+  .intro{font-size:12px;color:rgba(240,237,230,.55);line-height:1.8;max-width:64ch;margin-bottom:14px;}
   .intro b{color:var(--acid);font-weight:400;}
+  .grouplabel{font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:rgba(240,237,230,.4);margin:30px 0 12px;padding-bottom:7px;border-bottom:1px solid var(--line);}
+  .grouplabel b{color:var(--acid);font-weight:400;}
   .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px;}
   .card{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:8px;padding:22px 20px;text-decoration:none;color:var(--ink);background:rgba(184,255,0,.015);transition:.2s;min-height:158px;}
   .card:hover{border-color:var(--acid);background:rgba(184,255,0,.06);transform:translateY(-3px);}
@@ -23,37 +30,81 @@
   .card .tag{font-size:8.5px;letter-spacing:.16em;text-transform:uppercase;color:rgba(240,237,230,.4);margin:5px 0 11px;}
   .card p{font-size:11px;color:rgba(240,237,230,.6);line-height:1.7;}
   .card .go{margin-top:auto;padding-top:12px;font-size:10px;letter-spacing:.2em;color:var(--acid);}
-  .foot{font-size:10px;color:rgba(240,237,230,.35);letter-spacing:.1em;margin-top:38px;text-align:center;}
-</style></head><body><script src="/gate/gate.js"></script>
+  .foot{font-size:10px;color:rgba(240,237,230,.35);letter-spacing:.1em;margin-top:44px;text-align:center;line-height:1.9;}
+  .foot a{color:rgba(240,237,230,.5);text-decoration:none;} .foot a:hover{color:var(--acid);}
+</style></head><body>
 <div class="wrap">
-  <header><div class="brand"><b>LABS</b></div><a href="/home.html">← HOME</a></header>
-  <p class="intro">El taller de <b>Human Glitche</b>. Herramientas que creamos para crear — generadores de shaders y utilidades de video/imagen. Todo corre <b>en tu navegador</b>: gratis, privado, sin subir nada a ningún lado.</p>
+  <header>
+    <div class="brandbox">
+      <div class="brand"><b>LABS</b></div>
+      <div class="sub">el taller de <b>Human Glitche</b></div>
+    </div>
+    <div class="navlinks">
+      <a href="/home.html">← HUMAN GLITCHE</a>
+      <a class="vl" href="/servicios.html">VISUAL LAB · el estudio →</a>
+    </div>
+  </header>
+  <p class="intro">Todas las herramientas que <b>Human Glitche</b> crea para crear — shaders, video, audio, imagen, tipografía, color y negocio. Todo corre <b>en tu navegador</b>: gratis, privado, sin subir nada a ningún lado. Son parte de HG, la casa madre; <b>Visual Lab</b> es la vidriera donde ves el trabajo del estudio y lo contratás.</p>
+
+  <div class="grouplabel"><b>⚡ Shaders</b> · generativos</div>
   <div class="grid">
     <a class="card" href="/forge/"><div class="ico">⚡</div><h3>THE FORGE</h3><div class="tag">shaders · procedural</div><p>Generador de shaders con 18 familias (kaleido, fractal, raymarch, voronoi…). GENERAR re-rollea infinitas variantes. Export .fs para VDMX.</p><div class="go">ABRIR →</div></a>
     <a class="card" href="/aether-2/"><div class="ico">✦</div><h3>AETHER 2.0</h3><div class="tag">shaders · IA</div><p>El forge con IA: describís un shader y un modelo (Gemini/Claude/Grok) lo genera, compila y se autocorrige hasta renderear. Más laboratorio de controles.</p><div class="go">ABRIR →</div></a>
+  </div>
+
+  <div class="grouplabel"><b>🎞️ Video</b> · edición y fx</div>
+  <div class="grid">
     <a class="card" href="/gif/"><div class="ico">🎞️</div><h3>VIDEO → GIF</h3><div class="tag">video · conversión</div><p>Convertí clips a GIF para web. Recortás, elegís fps y ancho, y descargás. 100% local.</p><div class="go">ABRIR →</div></a>
     <a class="card" href="/loop/"><div class="ico">∞</div><h3>LOOP</h3><div class="tag">video · seamless</div><p>Loops sin salto de clips cortos: boomerang (ida y vuelta) o crossfade. Output GIF o WebM.</p><div class="go">ABRIR →</div></a>
-    <a class="card" href="/resize/"><div class="ico">⤢</div><h3>RESIZE</h3><div class="tag">imagen · recorte</div><p>Recortá a relación (1:1, 9:16, 16:9…) y redimensioná imágenes. Export PNG/JPG/WebP.</p><div class="go">ABRIR →</div></a>
     <a class="card" href="/frames/"><div class="ico">▦</div><h3>FRAMES</h3><div class="tag">video · fotogramas</div><p>Extraé N fotogramas de un video. Descargá cada uno o un contact sheet con todos.</p><div class="go">ABRIR →</div></a>
+    <a class="card" href="/glitchdown/"><div class="ico">▓</div><h3>GLITCHDOWN</h3><div class="tag">video · fx/premiere</div><p>Creador de efectos de video: trails/eco, estrobo, glitch/datamosh, shake y VHS — en vivo sobre tu clip. IA híbrida (sin key por keywords, con key generás el efecto desde un prompt). Exportás el overlay .webm listo para la timeline + la receta de efectos nativos para Premiere.</p><div class="go">ABRIR →</div></a>
+    <a class="card" href="/mapeo/"><div class="ico">⛶</div><h3>MAPEO</h3><div class="tag">video mapping · warp</div><p>Mapeá video/imagen sobre superficies: slices con warp de perspectiva (quad) o grilla deformable (mesh), grilla de calibración y pantalla completa lista para capturar como fuente en Resolume/VDMX/OBS. Guardá y cargá tu proyecto en JSON.</p><div class="go">ABRIR →</div></a>
+  </div>
+
+  <div class="grouplabel"><b>◐ Imagen</b> · vector</div>
+  <div class="grid">
+    <a class="card" href="/resize/"><div class="ico">⤢</div><h3>RESIZE</h3><div class="tag">imagen · recorte</div><p>Recortá a relación (1:1, 9:16, 16:9…) y redimensioná imágenes. Export PNG/JPG/WebP.</p><div class="go">ABRIR →</div></a>
     <a class="card" href="/paleta/"><div class="ico">◐</div><h3>PALETA</h3><div class="tag">imagen · color</div><p>Sacá la paleta de color dominante de una imagen. Swatches con hex, copiás CSS o array.</p><div class="go">ABRIR →</div></a>
+    <a class="card" href="/extrude/"><div class="ico">⬣</div><h3>EXTRUDE</h3><div class="tag">vector · 3d/obj</div><p>Convertí un logo SVG en 3D: extrusión con profundidad, tapas (plana, bisel, redonda) y placa trasera, deformaciones de malla (twist, taper, bend, inflar, ruido/glitch) y estilo (metal, entorno). Export OBJ, STL, GLB o render PNG. 100% local.</p><div class="go">ABRIR →</div></a>
+  </div>
+
+  <div class="grouplabel"><b>◴ Audio</b> · ritmo y separación</div>
+  <div class="grid">
     <a class="card" href="/marcadores/"><div class="ico">⟐</div><h3>MARCADORES</h3><div class="tag">audio · bpm/drops</div><p>Dropeás un tema o show: detecta BPM, drops, breaks y acentos. Exportás los marcadores (CSV) por grupo o juntos, para Premiere o cualquier editor.</p><div class="go">ABRIR →</div></a>
-    <a class="card" href="/control/"><div class="ico">◉</div><h3>CONTROL</h3><div class="tag">midi · osc</div><p>Control surface web (faders, knobs, pads, XY) que dispara MIDI a VDMX/Resolume/Ableton vía puerto virtual — sin controladora. Configurable y guardable. OSC por WebSocket.</p><div class="go">ABRIR →</div></a>
     <a class="card" href="/compas/"><div class="ico">⏱</div><h3>COMPÁS</h3><div class="tag">audio · loop frame-accurate</div><p>Calculá la duración exacta de un loop a partir de BPM, fps y compases. Te dice si hay drift y te sugiere el BPM ideal para que el loop cierre sin salto.</p><div class="go">ABRIR →</div></a>
     <a class="card" href="/pulso/"><div class="ico">◴</div><h3>PULSO</h3><div class="tag">audio reactivo · shader</div><p>Conectá un audio o el micrófono a un shader ISF en vivo: mapeá graves/medios/agudos y pulso a los parámetros del shader y reaccioná en tiempo real.</p><div class="go">ABRIR →</div></a>
     <a class="card" href="/stems/"><div class="ico">◫</div><h3>STEMS</h3><div class="tag">audio · separación ML</div><p>Separá un tema en voz, batería, bajo y resto con IA (Demucs), 100% en tu navegador. Escuchá cada stem solo/muteado y descargalos en WAV.</p><div class="go">ABRIR →</div></a>
+  </div>
+
+  <div class="grouplabel"><b>◩ Color</b> · grading</div>
+  <div class="grid">
     <a class="card" href="/lut/"><div class="ico">◩</div><h3>LUT MAKER</h3><div class="tag">color · grading · .cube</div><p>Diseñá un look con sliders (temperatura, contraste, split-tone…) o capturá cualquier filtro externo con Hald CLUT: descargás una identidad, le aplicás el filtro afuera y extraemos el LUT exacto. Exportás .cube para Resolve, Premiere, VDMX o Resolume.</p><div class="go">ABRIR →</div></a>
-    <a class="card" href="/mapeo/"><div class="ico">⛶</div><h3>MAPEO</h3><div class="tag">video mapping · warp</div><p>Mapeá video/imagen sobre superficies: slices con warp de perspectiva (quad) o grilla deformable (mesh), grilla de calibración y pantalla completa lista para capturar como fuente en Resolume/VDMX/OBS. Guardá y cargá tu proyecto en JSON.</p><div class="go">ABRIR →</div></a>
-    <a class="card" href="/smpte/"><div class="ico">▤</div><h3>SMPTE</h3><div class="tag">timecode · LTC · sync</div><p>Generador y checker de timecode LTC: creá un tono de test (24/25/30/29.97df) y descargalo en WAV, o escuchá tu instalación real por mic/línea para verificar lock, fps y errores. Incluye guía de cómo armar el circuito de audio de un show.</p><div class="go">ABRIR →</div></a>
-    <a class="card" href="/auditoria.html"><div class="ico">⌖</div><h3>AUDITORÍA</h3><div class="tag">datos · leads</div><p>Tablero de comercios reales relevados a mano: quién tiene web, Instagram, Facebook, WhatsApp Business o TikTok y quién no. Mapa con Google Maps, alta y corrección sugeridas por la comunidad y moderadas antes de publicarse.</p><div class="go">ABRIR →</div></a>
-    <a class="card" href="/packgen/"><div class="ico">📦</div><h3>PACKGEN</h3><div class="tag">packaging · troquel</div><p>Generá plantillas de packaging (caja recta, tuck-end, hexagonal, pillow, pirámide, sleeve): plantilla 2D con cortes/pliegues, vista 3D, secuencia de armado paso a paso con tips de producción y export SVG listo para troquel.</p><div class="go">ABRIR →</div></a>
-    <a class="card" href="/warp/"><div class="ico">🌀</div><h3>WARP</h3><div class="tag">distorsión · audio-reactivo · Synesthesia</div><p>Distorsioná cámara en vivo o un video con 9 efectos (warp, RGB split, kaleido, ripple, slitscan, mosaico, lente, sacudón) reactivos al audio, con feedback/trails. Grabá un clip WebM o exportá la escena lista para Synesthesia (.synScene).</p><div class="go">ABRIR →</div></a>
-    <a class="card" href="/pipelines/"><div class="ico">🔀</div><h3>PIPELINES</h3><div class="tag">automatización · ventas</div><p>Elegís un comercio de los que relevamos en AUDITORÍA y la app detecta qué le falta (web, WhatsApp Business, redes) y arma el pipeline de automatización que le podés vender — paso a paso, con tu costo y el presupuesto al cliente.</p><div class="go">ABRIR →</div></a>
-    <a class="card" href="/factura-ar/"><div class="ico">🧾</div><h3>FACTURA AR</h3><div class="tag">fiscal · qr/iva</div><p>Armá comprobantes argentinos (A/B/C), calculá IVA discriminado, validá CUIT y generá el QR oficial de AFIP/ARCA. No se conecta a ARCA: arma, calcula y visualiza. 100% local.</p><div class="go">ABRIR →</div></a>
-    <a class="card" href="/extrude/"><div class="ico">⬣</div><h3>EXTRUDE</h3><div class="tag">vector · 3d/obj</div><p>Convertí un logo SVG en 3D: extrusión con profundidad, tapas (plana, bisel, redonda) y placa trasera, deformaciones de malla (twist, taper, bend, inflar, ruido/glitch) y estilo (metal, entorno). Export OBJ, STL, GLB o render PNG. 100% local.</p><div class="go">ABRIR →</div></a>
-    <a class="card" href="/glitchdown/"><div class="ico">▓</div><h3>GLITCHDOWN</h3><div class="tag">video · fx/premiere</div><p>Creador de efectos de video: trails/eco, estrobo, glitch/datamosh, shake y VHS — en vivo sobre tu clip. IA híbrida (sin key por keywords, con key generás el efecto desde un prompt). Exportás el overlay .webm listo para la timeline + la receta de efectos nativos para Premiere.</p><div class="go">ABRIR →</div></a>
+  </div>
+
+  <div class="grouplabel"><b>Aa Tipografía</b> · lettering</div>
+  <div class="grid">
     <a class="card" href="/tipos/"><div class="ico">Aa</div><h3>TIPOS</h3><div class="tag">tipografía · pares · export web</div><p>Combinaciones tipográficas infinitas: GENERAR re-rollea pares (título + cuerpo) con reglas de contraste, fijás el que te gusta con candado y ajustás escala/interlineado/tracking. Banco grande (todo Google Fonts) con filtro gratis/pagas y, para las pagas, su alternativa gratis. Export directo a tu web: &lt;link&gt;/@import + CSS listo o HTML demo.</p><div class="go">ABRIR →</div></a>
     <a class="card" href="/letras/"><div class="ico">Ⓐ</div><h3>LETRAS</h3><div class="tag">lettering · graffiti · logos</div><p>Hacé logos de palabra con muchos estilos: escribís el texto y elegís fuente (brutalista, display, caligrafía de pluma, graffiti) + efectos — contornos múltiples, profundidad 3D, cromo, degradé, glow neón, curva/arco, inclinación y textura spray. GENERAR re-rollea estilos infinitos; presets WILDSTYLE, BUBBLE, CHROME, NEÓN, SCRIPT GOLD… Export PNG transparente en alta (2×/4×).</p><div class="go">ABRIR →</div></a>
   </div>
-  <div class="foot">HUMAN GLITCHE · VISUAL LAB · todas las herramientas corren client-side</div>
+
+  <div class="grouplabel"><b>◉ Show / control</b> · señal y sync</div>
+  <div class="grid">
+    <a class="card" href="/control/"><div class="ico">◉</div><h3>CONTROL</h3><div class="tag">midi · osc</div><p>Control surface web (faders, knobs, pads, XY) que dispara MIDI a VDMX/Resolume/Ableton vía puerto virtual — sin controladora. Configurable y guardable. OSC por WebSocket.</p><div class="go">ABRIR →</div></a>
+    <a class="card" href="/smpte/"><div class="ico">▤</div><h3>SMPTE</h3><div class="tag">timecode · LTC · sync</div><p>Generador y checker de timecode LTC: creá un tono de test (24/25/30/29.97df) y descargalo en WAV, o escuchá tu instalación real por mic/línea para verificar lock, fps y errores. Incluye guía de cómo armar el circuito de audio de un show.</p><div class="go">ABRIR →</div></a>
+  </div>
+
+  <div class="grouplabel"><b>📦 Packaging</b> · troquel</div>
+  <div class="grid">
+    <a class="card" href="/packgen/"><div class="ico">📦</div><h3>PACKGEN</h3><div class="tag">packaging · troquel</div><p>Generá plantillas de packaging (caja recta, tuck-end, hexagonal, pillow, pirámide, sleeve): plantilla 2D con cortes/pliegues, vista 3D, secuencia de armado paso a paso con tips de producción y export SVG listo para troquel.</p><div class="go">ABRIR →</div></a>
+  </div>
+
+  <div class="grouplabel"><b>⌖ Negocio</b> · leads, ventas, fiscal</div>
+  <div class="grid">
+    <a class="card" href="/auditoria/"><div class="ico">⌖</div><h3>AUDITORÍA</h3><div class="tag">datos · leads</div><p>Tablero de comercios reales relevados a mano: quién tiene web, Instagram, Facebook, WhatsApp Business o TikTok y quién no. Mapa con Google Maps, alta y corrección sugeridas por la comunidad y moderadas antes de publicarse.</p><div class="go">ABRIR →</div></a>
+    <a class="card" href="/pipelines/"><div class="ico">🔀</div><h3>PIPELINES</h3><div class="tag">automatización · ventas</div><p>Elegís un comercio de los que relevamos en AUDITORÍA y la app detecta qué le falta (web, WhatsApp Business, redes) y arma el pipeline de automatización que le podés vender — paso a paso, con tu costo y el presupuesto al cliente.</p><div class="go">ABRIR →</div></a>
+    <a class="card" href="/factura-ar/"><div class="ico">🧾</div><h3>FACTURA AR</h3><div class="tag">fiscal · qr/iva</div><p>Armá comprobantes argentinos (A/B/C), calculá IVA discriminado, validá CUIT y generá el QR oficial de AFIP/ARCA. No se conecta a ARCA: arma, calcula y visualiza. 100% local.</p><div class="go">ABRIR →</div></a>
+  </div>
+
+  <div class="foot">HUMAN GLITCHE · el taller · todas las herramientas corren client-side<br><a href="/home.html">← volver a HG</a> &nbsp;·&nbsp; <a href="/servicios.html">Visual Lab · el estudio →</a></div>
 </div>
 </body></html>
