@@ -111,6 +111,14 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
         <div class="body">
           <button class="fontbtn" id="fontBtn"><div class="fn" id="fnName">—</div><div class="fm" id="fnMeta"></div></button>
           <div class="hint" style="margin-top:6px">Banco curado de fuentes de lettering (graffiti, display pesadas, script/caligrafía).</div>
+          <input type="file" id="fontFile" accept=".ttf,.otf,.woff,.woff2,font/*" multiple hidden>
+          <input type="file" id="fontDir" webkitdirectory directory multiple hidden>
+          <div class="btnrow" style="margin-top:10px">
+            <button class="btn" id="fontUpload">↑ Archivos</button>
+            <button class="btn" id="fontDirBtn">↑ Carpeta entera</button>
+          </div>
+          <div class="hint" id="fontUploadHint">Tus archivos se usan <b>solo en tu navegador</b> — no se suben a ningún servidor. Quedan guardados acá entre sesiones.</div>
+          <div class="hint" style="margin-top:4px"><a href="#" id="fontClear" style="color:var(--t3);text-decoration:underline">borrar fuentes propias guardadas</a></div>
         </div>
       </details>
 
@@ -228,11 +236,34 @@ const FONTS=[
  ['Yellowtail','pluma'],['Kaushan Script','pluma'],['Dancing Script','pluma'],['Cookie','pluma'],
  // marcador / mano
  ['Permanent Marker','marcador'],['Bangers','marcador'],['Caveat','marcador'],['Reenie Beanie','marcador'],
+ // graffiti / spray / distressed
+ ['Rubik Spray Paint','graffiti'],['Rubik Distressed','graffiti'],['Rubik Marker Hatch','graffiti'],
+ ['Rubik Glitch','graffiti'],['Rubik Burned','graffiti'],['Rubik Iso','graffiti'],['Rubik Wet Paint','graffiti'],
+ ['Londrina Solid','graffiti'],['Londrina Outline','graffiti'],['Londrina Shadow','graffiti'],['Londrina Sketch','graffiti'],
+ // display pesadas con carácter (extra)
+ ['Lilita One','display'],['Creepster','display'],['Shrikhand','display'],['Modak','display'],['Bagel Fat One','display'],
+ ['Sigmar','display'],['Frijole','display'],['Faster One','display'],['Fascinate','display'],['Fascinate Inline','display'],
+ ['Henny Penny','display'],['Kavoon','display'],['Luckiest Guy','display'],['Chango','display'],['Ranchers','display'],
+ ['Bevan','display'],['Ultra','display'],['Alfa Slab One','display'],['Rammetto One','display'],['Squada One','display'],
+ ['Passion One','display'],['Paytone One','display'],['Patua One','display'],['Bungee Shade','display'],['Bungee Outline','display'],
+ // caligrafía / script (extra)
+ ['Monsieur La Doulaise','pluma'],['Mea Culpa','pluma'],['Princess Sofia','pluma'],['Lovers Quarrel','pluma'],['Updock','pluma'],
+ ['Engagement','pluma'],['Cherish','pluma'],['Estonia','pluma'],['Babylonica','pluma'],['Felipa','pluma'],['Clicker Script','pluma'],
+ ['League Script','pluma'],['Pacifico','pluma'],['Satisfy','pluma'],['Courgette','pluma'],['Damion','pluma'],['Niconne','pluma'],
+ ['Norican','pluma'],['Pattaya','pluma'],
+ // marcador / mano (extra)
+ ['Shadows Into Light','marcador'],['Gloria Hallelujah','marcador'],['Rock Salt','marcador'],['Cabin Sketch','marcador'],
+ ['Nanum Pen Script','marcador'],['Patrick Hand','marcador'],['Gochi Hand','marcador'],['Architects Daughter','marcador'],
+ ['Covered By Your Grace','marcador'],['Walter Turncoat','marcador'],['Sriracha','marcador'],['Just Another Hand','marcador'],['Mansalva','marcador'],
 ].map(([name,vibe])=>({name,vibe}));
 const byName=n=>FONTS.find(f=>f.name===n);
+const nameSet=new Set(FONTS.map(f=>f.name));   // índice O(1) de nombres (banco + propias)
 
 const loaded=new Set();
-function loadFont(name){ if(loaded.has(name))return Promise.resolve(); loaded.add(name);
+const customNames=new Set();   // fuentes propias cargadas en el navegador (no pasan por el CDN)
+let lastAdded=null;
+function loadFont(name){ if(customNames.has(name)) return ensureCustomLoaded(name);
+  if(loaded.has(name))return Promise.resolve(); loaded.add(name);
   const l=document.createElement('link'); l.rel='stylesheet'; l.href='https://fonts.googleapis.com/css2?family='+name.replace(/ /g,'+')+'&display=swap'; document.head.appendChild(l);
   return new Promise(res=>{ let n=0; const t=setInterval(()=>{ n++; if(document.fonts.check('400 80px "'+name+'"')||n>40){clearInterval(t);res();} },50); }); }
 
@@ -365,11 +396,17 @@ function openPicker(){
   listEl.innerHTML='';
   const si=document.createElement('input'); si.placeholder='buscar fuente…'; si.style.cssText='width:calc(100% - 16px);margin:8px;font-family:var(--font);font-size:12px;padding:8px 10px;background:#0a0a0a;border:1px solid var(--border);border-radius:5px;color:var(--ink)';
   listEl.appendChild(si); const holder=document.createElement('div'); listEl.appendChild(holder);
+  const CAP=80;
   function rnd(q){ holder.innerHTML=''; q=(q||'').toLowerCase();
-    FONTS.filter(f=>!q||f.name.toLowerCase().includes(q)||f.vibe.includes(q)).forEach(f=>{
-      const o=document.createElement('div'); o.className='opt'; o.innerHTML='<div class="on">'+f.name+'</div><div class="om">'+f.vibe+'</div>';
-      o.querySelector('.on').style.fontFamily="'"+f.name+"'"; loadFont(f.name);
-      o.onclick=()=>{ S.font=f.name; syncUI(); draw(); closePicker(); }; holder.appendChild(o); }); }
+    const matches=FONTS.filter(f=>!q||f.name.toLowerCase().includes(q)||f.vibe.includes(q));
+    matches.slice(0,CAP).forEach(f=>{
+      const o=document.createElement('div'); o.className='opt';
+      const on=document.createElement('div'); on.className='on'; on.textContent=f.name; on.style.fontFamily="'"+f.name.replace(/'/g,'')+"'";
+      const om=document.createElement('div'); om.className='om'; om.textContent=f.vibe;
+      o.append(on,om); loadFont(f.name);
+      o.onclick=()=>{ S.font=f.name; syncUI(); draw(); closePicker(); }; holder.appendChild(o); });
+    if(matches.length>CAP){ const more=document.createElement('div'); more.className='opt'; more.style.cssText='color:var(--t3);cursor:default;text-align:center';
+      more.textContent='+'+(matches.length-CAP)+' más — refiná la búsqueda'; holder.appendChild(more); } }
   rnd(''); si.addEventListener('input',()=>rnd(si.value));
   const r=$('fontBtn').getBoundingClientRect(); listEl.style.left=r.left+'px'; listEl.style.top=(r.bottom+4)+'px'; listEl.style.width=r.width+'px';
   listEl.classList.add('open'); setTimeout(()=>si.focus(),30);
@@ -437,8 +474,69 @@ $('pngBtn').addEventListener('click',()=>exportCanvas(false).toBlob(b=>dl(b,'let
 $('pngBgBtn').addEventListener('click',()=>exportCanvas(true).toBlob(b=>dl(b,'letras-'+slug()+'-bg.png'),'image/png'));
 $('copyBtn').addEventListener('click',()=>{ exportCanvas(false).toBlob(b=>{ if(navigator.clipboard&&window.ClipboardItem){ navigator.clipboard.write([new ClipboardItem({'image/png':b})]).then(()=>{const x=$('copyBtn');const t=x.textContent;x.textContent='✓ copiado';setTimeout(()=>x.textContent=t,1200);}).catch(()=>dl(b,'letras-'+slug()+'.png')); } else dl(b,'letras-'+slug()+'.png'); },'image/png'); });
 
+// ---------- fuentes propias (FontFace API + IndexedDB · NUNCA se suben al servidor) ----------
+// Guardadas localmente en el navegador; se registran lazy (solo la que mirás/usás) para
+// que miles de fuentes no ahoguen la página.
+const FDB={ db:null,
+  open(){ return this.db?Promise.resolve(this.db):new Promise((res,rej)=>{ const r=indexedDB.open('letras-fonts',1);
+    r.onupgradeneeded=()=>r.result.createObjectStore('fonts',{keyPath:'name'});
+    r.onsuccess=()=>{ this.db=r.result; res(this.db); }; r.onerror=()=>rej(r.error); }); },
+  async put(name,buf){ const db=await this.open(); return new Promise((res,rej)=>{ const tx=db.transaction('fonts','readwrite'); tx.objectStore('fonts').put({name,buf}); tx.oncomplete=()=>res(); tx.onerror=()=>rej(tx.error); }); },
+  async get(name){ const db=await this.open(); return new Promise((res,rej)=>{ const rq=db.transaction('fonts','readonly').objectStore('fonts').get(name); rq.onsuccess=()=>res(rq.result?rq.result.buf:null); rq.onerror=()=>rej(rq.error); }); },
+  async keys(){ const db=await this.open(); return new Promise((res,rej)=>{ const rq=db.transaction('fonts','readonly').objectStore('fonts').getAllKeys(); rq.onsuccess=()=>res(rq.result||[]); rq.onerror=()=>rej(rq.error); }); },
+  async clear(){ const db=await this.open(); return new Promise((res,rej)=>{ const tx=db.transaction('fonts','readwrite'); tx.objectStore('fonts').clear(); tx.oncomplete=()=>res(); tx.onerror=()=>rej(tx.error); }); } };
+
+const registered=new Set();
+function ensureCustomLoaded(name){
+  if(registered.has(name)) return Promise.resolve();
+  registered.add(name);
+  return FDB.get(name).then(buf=>{ if(!buf){registered.delete(name);return;} const ff=new FontFace(name,buf); return ff.load().then(f=>document.fonts.add(f)); })
+    .catch(e=>{ registered.delete(name); console.warn('No se pudo cargar fuente propia:',name,e); });
+}
+const FONT_RE=/\.(ttf|otf|woff2?)$/i;
+async function addFontFiles(files){
+  const fontFiles=[...files].filter(f=>FONT_RE.test(f.name)); const hint=$('fontUploadHint'); let added=0;
+  for(let k=0;k<fontFiles.length;k++){ const file=fontFiles[k];
+    try{
+      let name=(file.name.replace(/\.[^.]+$/,'').replace(/[_\-]+/g,' ').replace(/["']/g,'').trim())||'Fuente';
+      if(nameSet.has(name)) continue;                 // ya en banco o ya cargada → no duplicar
+      const buf=await file.arrayBuffer();
+      await FDB.put(name,buf);
+      nameSet.add(name); customNames.add(name); FONTS.push({name,vibe:'propia',custom:true}); lastAdded=name; added++;
+    }catch(err){ console.warn('Fuente no válida:',file.name,err); }
+    if(hint && k%40===0) hint.textContent='Cargando… '+(k+1)+'/'+fontFiles.length;
+  }
+  return added;
+}
+async function handlePicked(files){
+  const arr=[...files]; if(!arr.length)return; const hint=$('fontUploadHint'); hint.textContent='Cargando…';
+  const added=await addFontFiles(arr);
+  if(added){ S.font=lastAdded; syncUI(); draw(); }
+  hint.innerHTML = added
+    ? added+' fuente'+(added>1?'s':'')+' agregada'+(added>1?'s':'')+' · guardada'+(added>1?'s':'')+' en tu navegador (persisten). Eleg'+(added>1?'ilas':'ila')+' en el selector.'
+    : 'No se encontró ninguna fuente válida (.ttf / .otf / .woff) — o ya estaban cargadas.';
+}
+$('fontUpload').addEventListener('click',()=>$('fontFile').click());
+$('fontDirBtn').addEventListener('click',()=>$('fontDir').click());
+$('fontFile').addEventListener('change',e=>{ const f=[...e.target.files]; e.target.value=''; handlePicked(f); });
+$('fontDir').addEventListener('change',e=>{ const f=[...e.target.files]; e.target.value=''; handlePicked(f); });
+$('fontClear').addEventListener('click',async e=>{ e.preventDefault();
+  if(!confirm('¿Borrar todas las fuentes propias guardadas en este navegador?')) return;
+  await FDB.clear();
+  for(let i=FONTS.length-1;i>=0;i--){ if(FONTS[i].custom){ nameSet.delete(FONTS[i].name); customNames.delete(FONTS[i].name); FONTS.splice(i,1);} }
+  registered.clear();
+  if(!byName(S.font)){ S.font='Bungee'; }
+  syncUI(); draw(); $('fontUploadHint').textContent='Fuentes propias borradas.';
+});
+async function restoreCustomFonts(){
+  try{ const keys=await FDB.keys();
+    keys.forEach(name=>{ if(!nameSet.has(name)){ nameSet.add(name); customNames.add(name); FONTS.push({name,vibe:'propia',custom:true}); } });
+    if(keys.length){ const h=$('fontUploadHint'); if(h) h.innerHTML=keys.length+' fuente'+(keys.length>1?'s':'')+' propia'+(keys.length>1?'s':'')+' en memoria local · list'+(keys.length>1?'as':'a')+' en el selector.'; }
+  }catch(err){ console.warn('No se pudieron restaurar fuentes propias:',err); }
+}
+
 // ---------- go ----------
-syncUI(); draw();
+syncUI(); draw(); restoreCustomFonts();
 window.addEventListener('resize',()=>{ cv.style.width=Math.min(cv.width,1400)/(window.devicePixelRatio>1?2:1.5)+'px'; });
 </script>
 </body>
