@@ -66,8 +66,12 @@
   .strip{border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:5vh 0;display:flex;flex-wrap:wrap;gap:26px;justify-content:space-between;align-items:center;}
   .strip .txt h3{font-family:var(--display);font-size:34px;letter-spacing:.03em;}
   .strip .txt p{font-size:13px;color:rgba(240,237,230,.6);margin-top:8px;max-width:46ch;font-weight:300;}
-  .strip .cta{font-family:var(--mono);font-size:11px;letter-spacing:.18em;color:var(--black);background:var(--cyan);padding:15px 26px;border-radius:4px;white-space:nowrap;}
+  .strip .cta{font-family:var(--mono);font-size:11px;letter-spacing:.18em;color:var(--black);background:var(--cyan);padding:15px 26px;border-radius:4px;white-space:nowrap;text-align:center;}
   .strip .cta:hover{background:#5fd8ff;}
+  .strip .strip-cta{display:flex;flex-direction:column;gap:10px;align-items:stretch;}
+  .strip .cta.ghost{background:transparent;color:var(--cyan);border:1px solid var(--cyan);}
+  .strip .cta.ghost:hover{background:rgba(58,208,255,.12);color:var(--cyan);}
+  .strip .sena-note{font-family:var(--mono);font-size:9px;letter-spacing:.06em;color:rgba(240,237,230,.45);max-width:34ch;text-align:center;line-height:1.7;}
 
   /* ===== FOOT ===== */
   footer{padding:6vh 0 8vh;font-family:var(--mono);font-size:10px;letter-spacing:.12em;color:rgba(240,237,230,.4);line-height:2;}
@@ -118,7 +122,11 @@
       <h3>¿Tenés un proyecto?</h3>
       <p>Contanos qué necesitás y armamos el brief. Sin vueltas: hablamos, definimos alcance y arrancamos.</p>
     </div>
-    <a class="cta" href="/contacto.html">RESERVÁ UNA LLAMADA →</a>
+    <div class="strip-cta">
+      <a class="cta" href="/contacto.html">RESERVÁ UNA LLAMADA →</a>
+      <a class="cta ghost" href="https://link.mercadopago.com.ar/visuallab" target="_blank" rel="noopener">PAGÁ TU SEÑA →</a>
+      <div class="sena-note">¿Ya acordamos tu proyecto? Ingresás el monto de la seña acordada · MercadoPago</div>
+    </div>
   </section>
 
   <footer>
