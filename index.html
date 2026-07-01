@@ -1,280 +1,194 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>HUMAN GLITCHE — STUDIO</title>
-<meta name="description" content="Estudio de contenido visual de altísima calidad. Mapping, VFX, 3D e IA para marcas y artistas. Diseñamos la experiencia que tu público va a vivir.">
-<!--
-  ANTESALA CINE v1 — entrada scroll-cinematic estilo exebenus.com, orientada a CLIENTES.
-  Mecánica: una secuencia de fotogramas (frames/f_NNN.jpg) se "scrubea" con el scroll
-  (canvas fijo, técnica tipo Apple). Loader que precarga → beats narrativos sincronizados
-  al progreso → clímax en luz ácida con ENTRAR. Hero TEMPORAL: render neón 3D (placeholder);
-  el final se reemplaza por un cinematic bespoke (Higgsfield) sin tocar el motor.
-  Estética Visual Lab: --black #050505 · --acid #b8ff00 · --glitch #ff2d55 · Bebas + Space Mono.
-  Fallbacks: prefers-reduced-motion / sin-canvas → primer frame estático + ENTRAR inmediato.
--->
+<!doctype html><html lang="es"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>HUMAN GLITCHE · VISUAL LAB — entrada</title>
+<meta name="description" content="Human Glitche: filosofía, comunidad y herramientas de creación. Visual Lab: la vidriera del estudio — galería y servicios.">
+<link rel="canonical" href="https://www.hg-vl.com/">
+<meta property="og:title" content="HUMAN GLITCHE · VISUAL LAB">
+<meta property="og:description" content="Un dominio, dos puertas: Human Glitche (misión) y Visual Lab (el estudio).">
+<meta property="og:url" content="https://www.hg-vl.com/">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Bebas+Neue&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
-*{margin:0;padding:0;box-sizing:border-box;}
-:root{
-  --black:#050505; --white:#f0ede6; --acid:#b8ff00; --glitch:#ff2d55;
-  --mono:'Space Mono',monospace; --display:'Bebas Neue',sans-serif;
-}
-html,body{background:var(--black);color:var(--white);font-family:var(--mono);overflow-x:hidden;}
+  :root{
+    --black:#050505; --white:#f0ede6; --acid:#b8ff00; --glitch:#ff2d55; --cyan:#3ad0ff;
+    --line:rgba(240,237,230,.12);
+    --mono:'Space Mono',monospace; --display:'Bebas Neue',sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  html,body{min-height:100%;background:var(--black);color:var(--white);font-family:var(--mono);overflow-x:hidden;}
+  body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.4;
+    background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");}
+  a{color:inherit;text-decoration:none;}
 
-/* ── Lienzo fijo de la secuencia ─────────────────────────── */
-#stage{position:fixed;inset:0;z-index:0;background:var(--black);}
-#seq{display:block;width:100%;height:100%;}
-/* tratamiento premium sobre el canvas */
-#vignette{position:fixed;inset:0;z-index:1;pointer-events:none;
-  background:radial-gradient(ellipse 75% 75% at 50% 48%,transparent 32%,rgba(2,2,3,0.82) 100%);}
-#scan{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:0.5;mix-blend-mode:overlay;
-  background:repeating-linear-gradient(0deg,rgba(0,0,0,0) 0 2px,rgba(0,0,0,0.22) 2px 3px);}
-#grain{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:0.05;
-  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");}
+  /* ===== PORTAL: dos puertas ===== */
+  #portal{position:relative;z-index:2;min-height:100vh;display:flex;flex-direction:column;}
+  .topbar{display:flex;justify-content:space-between;align-items:center;padding:20px 26px;}
+  .logo{font-family:var(--display);font-size:26px;letter-spacing:.04em;}
+  .logo b{color:var(--acid);font-weight:400;}
+  .topbar .q{font-size:10px;letter-spacing:.2em;color:rgba(240,237,230,.45);}
+  .topbar .q:hover{color:var(--acid);}
 
-/* ── Pista de scroll ─────────────────────────────────────── */
-#track{position:relative;z-index:2;height:560vh;pointer-events:none;}
+  .doors{flex:1;display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);}
+  .door{position:relative;background:var(--black);display:flex;flex-direction:column;justify-content:center;
+    padding:8vh 6vw;transition:background .3s;overflow:hidden;min-height:70vh;}
+  .door:hover{background:#0a0a0a;}
+  .door .kick{font-size:10px;letter-spacing:.28em;text-transform:uppercase;color:rgba(240,237,230,.4);margin-bottom:18px;}
+  .door h1{font-family:var(--display);font-size:clamp(60px,9vw,128px);line-height:.82;letter-spacing:.02em;}
+  .door.hg h1{color:var(--acid);}
+  .door.vl h1{color:var(--white);}
+  .door .name{font-size:12px;letter-spacing:.24em;text-transform:uppercase;color:rgba(240,237,230,.6);margin-top:10px;}
+  .door p{font-size:13px;line-height:1.85;color:rgba(240,237,230,.62);max-width:34ch;margin-top:22px;}
+  .door .enter{margin-top:34px;font-size:11px;letter-spacing:.24em;color:var(--acid);display:inline-flex;align-items:center;gap:10px;}
+  .door.vl .enter{color:var(--cyan);}
+  .door .enter .arw{transition:transform .25s;}
+  .door:hover .enter .arw{transform:translateX(6px);}
+  .door::after{content:'';position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .3s;}
+  .door.hg::after{background:radial-gradient(120% 90% at 20% 90%,rgba(184,255,0,.10),transparent 60%);}
+  .door.vl::after{background:radial-gradient(120% 90% at 80% 10%,rgba(58,208,255,.10),transparent 60%);}
+  .door:hover::after{opacity:1;}
+  .door .tags{margin-top:26px;display:flex;flex-wrap:wrap;gap:8px;}
+  .door .tags span{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:rgba(240,237,230,.42);
+    border:1px solid var(--line);border-radius:999px;padding:5px 11px;}
 
-/* ── Marca + skip ────────────────────────────────────────── */
-.brand{position:fixed;top:1.8rem;left:6vw;z-index:8;font-size:11px;letter-spacing:0.28em;
-  color:rgba(240,237,230,0.5);text-decoration:none;}
-.brand b{color:var(--acid);}
-.brand:hover{color:var(--acid);}
-.skip{position:fixed;top:1.5rem;right:6vw;z-index:8;font-size:10px;letter-spacing:0.22em;
-  color:rgba(240,237,230,0.55);text-decoration:none;border:1px solid rgba(240,237,230,0.2);
-  padding:0.55rem 1rem;background:rgba(5,5,5,0.4);backdrop-filter:blur(6px);transition:all 0.25s;}
-.skip:hover{color:var(--acid);border-color:var(--acid);}
+  .portalfoot{text-align:center;padding:16px;font-size:9.5px;letter-spacing:.16em;color:rgba(240,237,230,.3);}
 
-/* ── Loader ──────────────────────────────────────────────── */
-#loader{position:fixed;inset:0;z-index:20;background:var(--black);
-  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.4rem;
-  transition:opacity 0.8s ease;text-align:center;padding:0 8vw;}
-#loader.done{opacity:0;pointer-events:none;}
-#loader .lk{font-size:10px;letter-spacing:0.4em;color:rgba(240,237,230,0.5);text-transform:uppercase;}
-#loader .lpct{font-family:var(--display);font-size:clamp(4rem,16vw,11rem);line-height:0.8;color:var(--white);}
-#loader .lpct .pc{color:var(--acid);}
-#loader .lbar{width:min(340px,60vw);height:2px;background:rgba(240,237,230,0.12);overflow:hidden;}
-#loader .lbar i{display:block;height:100%;width:0;background:var(--acid);transition:width 0.2s ease;}
-#loader .lsub{font-size:10px;letter-spacing:0.22em;color:rgba(240,237,230,0.35);}
+  /* ===== Zonas (hubs) ===== */
+  .zone{position:relative;z-index:2;max-width:1040px;margin:0 auto;padding:70px 22px 90px;scroll-margin-top:20px;}
+  .zone header{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:12px;border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:8px;}
+  .zone .zt{font-family:var(--display);font-size:46px;letter-spacing:.03em;}
+  .zone.hgzone .zt b{color:var(--acid);font-weight:400;}
+  .zone.vlzone .zt b{color:var(--cyan);font-weight:400;}
+  .zone header nav{font-size:10px;letter-spacing:.18em;display:flex;gap:18px;}
+  .zone header nav a{color:rgba(240,237,230,.5);}
+  .zone header nav a:hover{color:var(--acid);}
+  .zone .intro{font-size:12.5px;line-height:1.85;color:rgba(240,237,230,.58);max-width:64ch;margin:22px 0 8px;}
+  .zone .intro b{color:var(--acid);font-weight:400;}
+  .vlzone .intro b{color:var(--cyan);}
 
-/* ── Beats narrativos ────────────────────────────────────── */
-.beat{position:fixed;left:0;right:0;z-index:5;padding:0 8vw;text-align:left;
-  top:50%;transform:translateY(-42%);opacity:0;
-  transition:opacity 0.8s cubic-bezier(0.16,1,0.3,1),transform 0.8s cubic-bezier(0.16,1,0.3,1);
-  pointer-events:none;will-change:transform,opacity;}
-.beat.show{opacity:1;transform:translateY(-50%);}
-.beat .bk{font-size:10px;letter-spacing:0.34em;color:var(--acid);text-transform:uppercase;margin-bottom:1rem;}
-.beat h2{font-family:var(--display);font-weight:400;line-height:0.92;letter-spacing:0.01em;
-  font-size:clamp(2.4rem,7.5vw,6.6rem);max-width:16ch;text-shadow:0 2px 40px rgba(5,5,5,0.7);}
-.beat h2 .ac{color:var(--acid);} .beat h2 .gl{color:var(--glitch);}
+  .grouplabel{font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:rgba(240,237,230,.38);margin:34px 0 12px;}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(232px,1fr));gap:12px;}
+  .card{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:8px;padding:18px 17px;background:rgba(184,255,0,.015);transition:.2s;min-height:118px;}
+  .card:hover{border-color:var(--acid);background:rgba(184,255,0,.06);transform:translateY(-3px);}
+  .vlzone .card:hover{border-color:var(--cyan);background:rgba(58,208,255,.06);}
+  .card .ico{font-size:19px;margin-bottom:9px;}
+  .card h3{font-family:var(--display);font-size:23px;letter-spacing:.03em;color:var(--acid);line-height:.92;}
+  .vlzone .card h3{color:var(--cyan);}
+  .card .tag{font-size:8px;letter-spacing:.14em;text-transform:uppercase;color:rgba(240,237,230,.4);margin:5px 0 9px;}
+  .card p{font-size:10.5px;color:rgba(240,237,230,.58);line-height:1.65;}
+  .big{grid-column:span 2;}
+  @media(max-width:560px){.doors{grid-template-columns:1fr;}.big{grid-column:span 1;}}
+  .backtop{display:inline-block;margin-top:40px;font-size:10px;letter-spacing:.2em;color:rgba(240,237,230,.4);}
+  .backtop:hover{color:var(--acid);}
+</style></head><body>
 
-/* franja de credibilidad */
-#creds{position:fixed;left:0;right:0;bottom:8vh;z-index:5;padding:0 6vw;
-  display:flex;gap:2.4rem;flex-wrap:wrap;opacity:0;transition:opacity 0.6s ease;pointer-events:none;}
-#creds.show{opacity:1;}
-#creds .c{font-size:10px;letter-spacing:0.1em;color:rgba(240,237,230,0.75);}
-#creds .c b{display:block;font-family:var(--display);font-size:1.5rem;letter-spacing:0.02em;color:var(--acid);line-height:1;margin-bottom:3px;}
-
-/* hint scroll */
-#hint{position:fixed;left:50%;bottom:2rem;transform:translateX(-50%);z-index:6;
-  text-align:center;transition:opacity 0.5s;}
-#hint .a{display:block;font-size:22px;line-height:1;color:var(--acid);opacity:0.7;animation:bob 1.8s ease-in-out infinite;}
-@keyframes bob{0%,100%{transform:translateY(0);opacity:0.5;}50%{transform:translateY(6px);opacity:1;}}
-
-/* ── Clímax ──────────────────────────────────────────────── */
-#climax{position:fixed;inset:0;z-index:7;display:flex;flex-direction:column;
-  align-items:center;justify-content:center;gap:1.6rem;text-align:center;padding:0 8vw;
-  opacity:0;pointer-events:none;transition:opacity 0.7s ease;}
-#climax.show{opacity:1;pointer-events:auto;}
-#climax::before{content:'';position:absolute;inset:0;z-index:-1;
-  background:radial-gradient(ellipse 70% 60% at 50% 50%,rgba(184,255,0,0.16),transparent 62%);}
-.logo{font-family:var(--display);font-size:clamp(3.4rem,11vw,9rem);line-height:0.82;letter-spacing:0.02em;}
-.logo .g{color:var(--acid);text-shadow:0 0 50px rgba(184,255,0,0.5);}
-.ctag{font-size:11px;letter-spacing:0.3em;color:rgba(240,237,230,0.6);max-width:42ch;line-height:1.9;text-transform:uppercase;}
-.ctag b{color:var(--white);}
-.enter{display:inline-flex;align-items:center;gap:0.9rem;margin-top:0.6rem;
-  font-family:var(--display);font-size:clamp(1.7rem,4vw,2.6rem);letter-spacing:0.18em;
-  color:var(--black);background:var(--acid);text-decoration:none;padding:0.7rem 2.6rem;border:2px solid var(--acid);
-  transition:transform 0.2s,box-shadow 0.3s;animation:pulse 2.4s ease-in-out infinite;}
-.enter:hover{transform:scale(1.04);box-shadow:0 0 50px rgba(184,255,0,0.55);}
-.enter:active{transform:scale(0.98);}
-.enter .ch{font-family:var(--mono);font-size:0.55em;}
-@keyframes pulse{0%,100%{box-shadow:0 0 24px rgba(184,255,0,0.26);}50%{box-shadow:0 0 54px rgba(184,255,0,0.5);}}
-
-/* ── Fallback estático ───────────────────────────────────── */
-#fallback{position:fixed;inset:0;z-index:30;display:none;flex-direction:column;
-  align-items:center;justify-content:center;gap:1.6rem;text-align:center;padding:0 8vw;background:var(--black);}
-#fallback.on{display:flex;}
-#fallback img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0.4;z-index:-1;}
-
-@media(max-width:760px){
-  .brand{left:5vw;} .skip{right:5vw;}
-  .beat h2{font-size:clamp(2.1rem,9vw,3.6rem);}
-  #creds{gap:1.2rem;bottom:11vh;}
-}
-@media(prefers-reduced-motion:reduce){ .enter{animation:none;} #hint .a{animation:none;} }
-</style>
-</head>
-<body>
-
-<div id="stage"><canvas id="seq"></canvas></div>
-<div id="vignette"></div>
-<div id="scan"></div>
-<div id="grain"></div>
-
-<div id="track" aria-hidden="true"></div>
-
-<a class="brand" href="home.html"><b>HUMAN</b> GLITCHE · STUDIO</a>
-<a class="skip" href="home.html" id="skip">ENTRAR ↵</a>
-
-<!-- Beats narrativos (voz para clientes) -->
-<div id="overlay" aria-hidden="true">
-  <div class="beat" data-from="0.05" data-to="0.20">
-    <h2>TODA GIRA,<br>TODA MARCA,<br>ES UNA <span class="ac">INTERFAZ</span></h2>
+<!-- ══════════ PORTAL ══════════ -->
+<div id="portal">
+  <div class="topbar">
+    <div class="logo"><b>HG</b>·VL</div>
+    <a class="q" href="#hg">¿QUÉ ES ESTO? ↓</a>
   </div>
-  <div class="beat" data-from="0.26" data-to="0.42">
-    <h2>LA MAYORÍA<br>LA DEJA EN MANOS<br>DE <span class="gl">PLANTILLAS</span></h2>
+
+  <div class="doors">
+    <a class="door hg" href="#hg">
+      <div class="kick">La casa madre</div>
+      <h1>HUMAN<br>GLITCHE</h1>
+      <div class="name">filosofía · comunidad · herramientas</div>
+      <p>El ecosistema completo: el manifiesto, el diario, la biblioteca, la academia, la comunidad y <b style="color:var(--acid)">todas las herramientas de creación</b> que hacemos para crear.</p>
+      <span class="enter">ENTRAR AL ECOSISTEMA <span class="arw">→</span></span>
+      <div class="tags"><span>Manifiesto</span><span>Diario</span><span>Labs</span><span>Academia</span><span>Comunidad</span></div>
+    </a>
+
+    <a class="door vl" href="#vl">
+      <div class="kick">La vidriera</div>
+      <h1>VISUAL<br>LAB</h1>
+      <div class="name">galería · servicios</div>
+      <p>La rama comercial de HG. Mirá lo que hacemos y contratanos: el <b style="color:var(--cyan)">portfolio del estudio</b> y la oferta de servicios, en un solo lugar.</p>
+      <span class="enter">VER EL ESTUDIO <span class="arw">→</span></span>
+      <div class="tags"><span>Galería</span><span>Servicios</span><span>Contacto</span></div>
+    </a>
   </div>
-  <div class="beat" data-from="0.48" data-to="0.64">
-    <h2>NOSOTROS DISEÑAMOS<br>LA <span class="ac">EXPERIENCIA</span><br>QUE TU PÚBLICO VA A VIVIR</h2>
-  </div>
-  <div class="beat" data-from="0.68" data-to="0.82">
-    <h2>MAPPING · VFX<br>3D · IA<br><span class="ac">EN VIVO Y EN PANTALLA</span></h2>
-  </div>
+  <div class="portalfoot">HUMAN GLITCHE · VISUAL LAB — un dominio, dos puertas · desde Buenos Aires &nbsp;·&nbsp; <a href="/studio/" style="color:rgba(58,208,255,.7);text-decoration:none;">▶ intro cinematic</a></div>
 </div>
 
-<div id="creds">
-  <div class="c"><b>80×200 M</b>Mapping · Proyecto Marea</div>
-  <div class="c"><b>TOMORROWLAND</b>Malena Narvay · 2025</div>
-  <div class="c"><b>LOLLA</b>Luck Ra · Lil Cake · Oscu</div>
-</div>
+<!-- ══════════ ZONA HG ══════════ -->
+<section class="zone hgzone" id="hg">
+  <header>
+    <div class="zt"><b>HUMAN GLITCHE</b></div>
+    <nav>
+      <a href="#top">↑ PORTAL</a>
+      <a href="#vl">VISUAL LAB →</a>
+    </nav>
+  </header>
+  <p class="intro">La casa madre. Todo lo que <b>no</b> es la vidriera vive acá: la conciencia (⌘ Observar), el hacer (✦ Crear) y la red (☉ Expandir). Incluye <b>todas las apps de Labs</b> — corren en tu navegador, gratis y privadas.</p>
 
-<div id="hint" aria-hidden="true"><span class="a">⌄</span></div>
+  <div class="grouplabel">⌘ Observar — conciencia (gratis)</div>
+  <div class="grid">
+    <a class="card" href="/home.html#manifiesto"><div class="ico">◆</div><h3>MANIFIESTO</h3><div class="tag">filosofía · 3 pilares</div><p>El núcleo: qué es el glitch, la grieta, los tres pilares. La identidad del proyecto.</p></a>
+    <a class="card" href="/diario.html"><div class="ico">✎</div><h3>DIARIO</h3><div class="tag">media · blog</div><p>Contenido gratis: filosofía, manuales, glosario. El hub de lectura y la newsletter.</p></a>
+    <a class="card" href="/libros/"><div class="ico">▤</div><h3>BIBLIOTECA</h3><div class="tag">archivo · obras</div><p>Archivo cultural: literatura y obras. La memoria larga de HG.</p></a>
+  </div>
 
-<!-- Clímax -->
-<div id="climax">
-  <div class="logo">HUMAN<br><span class="g">GLITCHE</span></div>
-  <div class="ctag">El estudio que crea el <b>contenido de más alta calidad</b><br>para marcas y artistas masivos.</div>
-  <a class="enter" href="home.html" id="enter">ENTRAR <span class="ch">↵</span></a>
-</div>
+  <div class="grouplabel">✦ Crear — formación</div>
+  <div class="grid">
+    <a class="card" href="/academia.html"><div class="ico">✦</div><h3>ACADEMIA</h3><div class="tag">cursos · gratis + taller</div><p>Cursos gamificados gratis (XP, niveles, patches) + el Taller pago (transformación acompañada).</p></a>
+  </div>
 
-<!-- Fallback -->
-<div id="fallback" role="dialog" aria-label="Entrada a Human Glitche">
-  <img src="antesala-cine/frames/f_110.jpg" alt="" aria-hidden="true">
-  <div class="logo">HUMAN<br><span class="g">GLITCHE</span></div>
-  <div class="ctag">Contenido visual de altísima calidad para marcas y artistas.</div>
-  <a class="enter" href="home.html">ENTRAR <span class="ch">↵</span></a>
-</div>
+  <div class="grouplabel">✦ Labs — todas las herramientas (client-side)</div>
+  <div class="grid">
+    <a class="card" href="/forge/"><div class="ico">⚡</div><h3>THE FORGE</h3><div class="tag">shaders · procedural</div><p>Generador de shaders, 18 familias. Export .fs para VDMX.</p></a>
+    <a class="card" href="/aether-2/"><div class="ico">✦</div><h3>AETHER 2.0</h3><div class="tag">shaders · IA</div><p>Describís un shader y la IA lo genera, compila y autocorrige.</p></a>
+    <a class="card" href="/gif/"><div class="ico">🎞️</div><h3>VIDEO → GIF</h3><div class="tag">video · conversión</div><p>Clips a GIF: recorte, fps, ancho. 100% local.</p></a>
+    <a class="card" href="/loop/"><div class="ico">∞</div><h3>LOOP</h3><div class="tag">video · seamless</div><p>Loops sin salto: boomerang o crossfade. GIF/WebM.</p></a>
+    <a class="card" href="/frames/"><div class="ico">▦</div><h3>FRAMES</h3><div class="tag">video · fotogramas</div><p>Extraé N fotogramas o un contact sheet.</p></a>
+    <a class="card" href="/glitchdown/"><div class="ico">▓</div><h3>GLITCHDOWN</h3><div class="tag">video · fx</div><p>Trails, estrobo, glitch, shake, VHS en vivo. Overlay .webm + receta Premiere.</p></a>
+    <a class="card" href="/mapeo/"><div class="ico">⛶</div><h3>MAPEO</h3><div class="tag">video mapping · warp</div><p>Warp de perspectiva y mesh, calibración, fullscreen para Resolume/VDMX.</p></a>
+    <a class="card" href="/resize/"><div class="ico">⤢</div><h3>RESIZE</h3><div class="tag">imagen · recorte</div><p>Recorte a relación y redimensión. PNG/JPG/WebP.</p></a>
+    <a class="card" href="/paleta/"><div class="ico">◐</div><h3>PALETA</h3><div class="tag">imagen · color</div><p>Paleta dominante de una imagen. Copiás CSS o array.</p></a>
+    <a class="card" href="/extrude/"><div class="ico">⬣</div><h3>EXTRUDE</h3><div class="tag">vector · 3d</div><p>SVG a 3D: extrusión, bisel, deformaciones. OBJ/STL/GLB.</p></a>
+    <a class="card" href="/marcadores/"><div class="ico">⟐</div><h3>MARCADORES</h3><div class="tag">audio · bpm/drops</div><p>BPM, drops, breaks y acentos. Export CSV para Premiere.</p></a>
+    <a class="card" href="/compas/"><div class="ico">⏱</div><h3>COMPÁS</h3><div class="tag">audio · loop exacto</div><p>Duración exacta de loop por BPM/fps/compases. Detecta drift.</p></a>
+    <a class="card" href="/pulso/"><div class="ico">◴</div><h3>PULSO</h3><div class="tag">audio reactivo</div><p>Audio/mic a un shader ISF en vivo: graves/medios/agudos a parámetros.</p></a>
+    <a class="card" href="/stems/"><div class="ico">◫</div><h3>STEMS</h3><div class="tag">audio · separación ML</div><p>Voz, batería, bajo y resto con Demucs, local. Export WAV.</p></a>
+    <a class="card" href="/lut/"><div class="ico">◩</div><h3>LUT MAKER</h3><div class="tag">color · .cube</div><p>Diseñá o capturá un look. Export .cube para Resolve/Premiere/VDMX.</p></a>
+    <a class="card" href="/tipos/"><div class="ico">Aa</div><h3>TIPOS</h3><div class="tag">tipografía · pares</div><p>Pares tipográficos infinitos con reglas de contraste. Export a tu web.</p></a>
+    <a class="card" href="/letras/"><div class="ico">Ⓐ</div><h3>LETRAS</h3><div class="tag">lettering · logos</div><p>Logos de palabra: brutalista, graffiti, cromo, neón. PNG alta 2×/4×.</p></a>
+    <a class="card" href="/control/"><div class="ico">◉</div><h3>CONTROL</h3><div class="tag">midi · osc</div><p>Control surface web → MIDI a VDMX/Resolume/Ableton. OSC por WebSocket.</p></a>
+    <a class="card" href="/smpte/"><div class="ico">▤</div><h3>SMPTE</h3><div class="tag">timecode · LTC</div><p>Generador y checker de timecode LTC. WAV de test y verificación de lock.</p></a>
+    <a class="card" href="/packgen/"><div class="ico">📦</div><h3>PACKGEN</h3><div class="tag">packaging · troquel</div><p>Plantillas de packaging: 2D, vista 3D, armado y export SVG para troquel.</p></a>
+    <a class="card" href="/auditoria/"><div class="ico">⌖</div><h3>AUDITORÍA</h3><div class="tag">datos · leads</div><p>Tablero de comercios relevados: quién tiene web/redes y quién no. Mapa + moderación.</p></a>
+    <a class="card" href="/pipelines/"><div class="ico">🔀</div><h3>PIPELINES</h3><div class="tag">automatización · ventas</div><p>Detecta qué le falta a un comercio y arma el pipeline que le podés vender.</p></a>
+    <a class="card" href="/factura-ar/"><div class="ico">🧾</div><h3>FACTURA AR</h3><div class="tag">fiscal · qr/iva</div><p>Comprobantes A/B/C, IVA, CUIT y QR AFIP/ARCA. 100% local.</p></a>
+  </div>
 
-<script>
-(function(){
-  'use strict';
-  var N = 145, PAD = 3, DIR = 'antesala-cine/frames/f_', EXT = '.jpg';
-  var REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  <div class="grouplabel">☉ Expandir — la red</div>
+  <div class="grid">
+    <a class="card" href="/lobbies.html"><div class="ico">◎</div><h3>COMUNIDAD</h3><div class="tag">salas · perfil · discord</div><p>La red: salas en vivo, tu perfil y el Discord. Una sola puerta a lo social.</p></a>
+  </div>
 
-  var canvas = document.getElementById('seq');
-  var ctx = canvas.getContext ? canvas.getContext('2d') : null;
+  <a class="backtop" href="#top">↑ volver al portal</a>
+</section>
 
-  // ── Fallback duro: sin canvas o reduced-motion ──────────────────────
-  function fallback(){ document.getElementById('fallback').classList.add('on'); }
-  if(!ctx || REDUCED){ buildLoader(true); fallback(); return; }
+<!-- ══════════ ZONA VL ══════════ -->
+<section class="zone vlzone" id="vl">
+  <header>
+    <div class="zt"><b>VISUAL LAB</b></div>
+    <nav>
+      <a href="#top">↑ PORTAL</a>
+      <a href="#hg">← HUMAN GLITCHE</a>
+    </nav>
+  </header>
+  <p class="intro">La vidriera comercial de HG. Solo dos cosas: <b>mirá</b> lo que hacemos y <b>contratanos</b>. Sin ruido — el resto del universo vive en Human Glitche.</p>
 
-  // ── Loader (se inyecta para no ensuciar el HTML) ────────────────────
-  var loEl, loPct, loBar;
-  function buildLoader(skip){
-    loEl = document.createElement('div'); loEl.id='loader';
-    loEl.innerHTML =
-      '<div class="lk">Inicializando interfaz</div>'+
-      '<div class="lpct"><span class="n">0</span><span class="pc">%</span></div>'+
-      '<div class="lbar"><i></i></div>'+
-      '<div class="lsub">Human Glitche — Visual Studio</div>';
-    document.body.appendChild(loEl);
-    loPct = loEl.querySelector('.lpct .n'); loBar = loEl.querySelector('.lbar i');
-    if(skip){ loEl.classList.add('done'); }
-  }
-  buildLoader(false);
+  <div class="grid">
+    <a class="card big" href="/galeria/"><div class="ico">▦</div><h3>GALERÍA</h3><div class="tag">portfolio · prueba social</div><p>El trabajo del estudio: mapping, VFX, 3D, IA, visuales en vivo. La vidriera que muestra de qué somos capaces antes de que preguntes.</p></a>
+    <a class="card big" href="/servicios.html"><div class="ico">◆</div><h3>SERVICIOS</h3><div class="tag">la oferta · doble carril</div><p>Dos mundos: managers/artistas y marcas. Diseñamos la experiencia que tu público va a vivir. Del brief al render final.</p></a>
+    <a class="card" href="/contacto.html"><div class="ico">→</div><h3>CONTACTO</h3><div class="tag">reservá llamada</div><p>Contanos qué necesitás y armamos el brief. El primer paso.</p></a>
+  </div>
 
-  // ── Precarga de frames ──────────────────────────────────────────────
-  var frames = new Array(N), loaded = 0, ready = false;
-  function pad(i){ i=String(i); while(i.length<PAD) i='0'+i; return i; }
-  function onOne(){
-    loaded++;
-    var pct = Math.round(loaded/N*100);
-    if(loPct) loPct.textContent = pct;
-    if(loBar) loBar.style.width = pct+'%';
-    if(loaded===1){ draw(0); }                 // pinta el primero apenas llega
-    if(loaded>=N && !ready){ ready=true; finishLoad(); }
-  }
-  for(var i=0;i<N;i++){
-    var im = new Image();
-    im.onload = onOne;
-    im.onerror = onOne;                         // un frame que falle no traba la carga
-    im.src = DIR + pad(i+1) + EXT;
-    frames[i] = im;
-  }
+  <a class="backtop" href="#top">↑ volver al portal</a>
+</section>
 
-  function finishLoad(){
-    if(loEl) loEl.classList.add('done');
-    document.getElementById('hint').style.opacity = '1';
-    render();
-  }
-
-  // ── Dibujo cover ─────────────────────────────────────────────────────
-  var vw=0, vh=0, dpr=Math.min(devicePixelRatio||1, 2);
-  function resize(){
-    vw=innerWidth; vh=innerHeight;
-    canvas.width=vw*dpr; canvas.height=vh*dpr;
-    canvas.style.width=vw+'px'; canvas.style.height=vh+'px';
-    ctx.setTransform(dpr,0,0,dpr,0,0);
-    draw(curFrame);
-  }
-  function draw(idx){
-    var im = frames[idx];
-    if(!im || !im.complete || !im.naturalWidth) return;
-    var iw=im.naturalWidth, ih=im.naturalHeight;
-    var s=Math.max(vw/iw, vh/ih);
-    var w=iw*s, h=ih*s, x=(vw-w)/2, y=(vh-h)/2;
-    ctx.fillStyle='#050505'; ctx.fillRect(0,0,vw,vh);
-    ctx.drawImage(im, x, y, w, h);
-  }
-  window.addEventListener('resize', resize);
-
-  // ── Scroll → progreso → frame ────────────────────────────────────────
-  function progress(){
-    var max=document.documentElement.scrollHeight - innerHeight;
-    return max>0 ? Math.min(1, Math.max(0, scrollY/max)) : 0;
-  }
-  var curFrame=-1, lastP=0;
-  var beats=[].slice.call(document.querySelectorAll('.beat'));
-  var creds=document.getElementById('creds');
-  var climax=document.getElementById('climax');
-  var hint=document.getElementById('hint');
-
-  function render(){
-    var p=progress(); lastP=p;
-    var idx=Math.round(p*(N-1));
-    if(idx!==curFrame){ curFrame=idx; draw(idx); }
-    for(var b=0;b<beats.length;b++){
-      var el=beats[b];
-      el.classList.toggle('show', p>=+el.dataset.from && p<=+el.dataset.to);
-    }
-    creds.classList.toggle('show', p>0.80 && p<0.97);
-    climax.classList.toggle('show', p>0.90);
-    hint.style.opacity = p>0.04 ? '0' : '1';
-  }
-
-  // render DIRECTO en cada scroll (un drawImage; saltea si es el mismo frame).
-  // No depende de un loop rAF continuo → funciona también en tabs sin foco.
-  addEventListener('scroll', render, {passive:true});
-  addEventListener('resize', function(){ resize(); render(); });
-
-  resize(); render();
-  window.__antesalaCine = { get progress(){ return lastP; }, get frame(){ return curFrame; }, get loaded(){ return loaded; }, render:render };
-})();
-</script>
-</body>
-</html>
+<span id="top" style="position:absolute;top:0;"></span>
+</body></html>
