@@ -44,10 +44,38 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 
 #scroll-container{position:relative;z-index:2;}
 
+/* ===== SHADER DOCK (lateral ocultable) ===== */
+#dock-tab{
+  position:fixed;right:0;top:50%;transform:translateY(-50%);z-index:601;
+  writing-mode:vertical-rl;text-orientation:mixed;
+  font-family:var(--mono);font-size:9px;letter-spacing:0.22em;
+  background:rgba(5,5,5,0.92);border:1px solid rgba(184,255,0,0.25);border-right:none;
+  color:rgba(184,255,0,0.6);padding:14px 6px;border-radius:3px 0 0 3px;
+  cursor:none;transition:right 0.35s cubic-bezier(0.22,1,0.36,1),color 0.2s,border-color 0.2s;
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+}
+#dock-tab:hover{color:var(--acid);border-color:rgba(184,255,0,0.5);}
+body.dock-open #dock-tab{right:264px;}
+#shader-dock{
+  position:fixed;top:0;right:0;bottom:0;z-index:600;width:264px;
+  background:rgba(5,5,5,0.94);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border-left:1px solid rgba(184,255,0,0.14);
+  transform:translateX(100%);transition:transform 0.35s cubic-bezier(0.22,1,0.36,1);
+  display:flex;flex-direction:column;gap:10px;padding:16px 14px;
+  overflow-y:auto;overflow-x:hidden;
+}
+body.dock-open #shader-dock{transform:translateX(0);}
+#shader-dock::-webkit-scrollbar{width:3px;}
+#shader-dock::-webkit-scrollbar-track{background:transparent;}
+#shader-dock::-webkit-scrollbar-thumb{background:rgba(184,255,0,0.2);}
+#dock-head{display:flex;justify-content:space-between;align-items:center;font-family:var(--mono);font-size:9px;letter-spacing:0.25em;color:rgba(184,255,0,0.55);flex:0 0 auto;}
+#dock-close{background:none;border:none;color:rgba(240,237,230,0.35);font-size:11px;cursor:none;transition:color 0.2s;font-family:var(--mono);padding:2px 4px;}
+#dock-close:hover{color:var(--glitch);}
+#shader-dock > *{flex:0 0 auto;}
+
 /* ===== DROP ZONE ===== */
 #drop-zone{
-  position:fixed;bottom:2rem;right:2rem;z-index:500;
-  width:210px;cursor:none;
+  position:static;width:auto;cursor:none;
 }
 #drop-inner{
   border:1px dashed rgba(184,255,0,0.3);
@@ -82,11 +110,11 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 
 /* TOGGLE CONTROLES SHADER */
 #ctrl-toggle{
-  position:fixed;bottom:calc(2rem + 10px);right:2rem;z-index:501;
+  width:100%;
   font-family:var(--mono);font-size:8px;letter-spacing:0.18em;
   background:rgba(5,5,5,0.88);border:1px solid rgba(184,255,0,0.2);
   color:rgba(184,255,0,0.5);padding:5px 10px;border-radius:2px;
-  cursor:none;transition:all 0.2s;backdrop-filter:blur(12px);
+  cursor:none;transition:all 0.2s;
   display:none; /* solo aparece cuando hay shader cargado */
 }
 #ctrl-toggle:hover{border-color:rgba(184,255,0,0.5);color:var(--acid);}
@@ -96,8 +124,7 @@ body.ctrl-collapsed #ctrl-toggle{bottom:2rem;}
 
 /* ISF INPUTS PANEL */
 #isf-panel{
-  position:fixed;bottom:calc(2rem + 10px);right:2rem;z-index:499;
-  width:210px;
+  width:100%;
   font-family:var(--mono);font-size:9px;
   background:rgba(5,5,5,0.9);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
   border:1px solid rgba(184,255,0,0.15);border-radius:3px;
@@ -202,7 +229,7 @@ body.ctrl-collapsed #ctrl-toggle{bottom:2rem;}
 
 /* REPOSITORIO GLOBAL */
 #global-repo{
-  position:fixed;right:2rem;bottom:2rem;z-index:500;width:260px;
+  width:100%;
   font-family:var(--mono);font-size:9px;
   background:rgba(5,5,5,0.94);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
   border:1px solid rgba(184,255,0,0.16);border-radius:3px;
@@ -585,7 +612,7 @@ body.visual-mode #exit-visual{display:flex;}
 
 /* GALERÍA DE SHADERS */
 #shader-gallery{
-  position:fixed;right:2rem;bottom:2rem;z-index:500;width:230px;
+  width:100%;
   font-family:var(--mono);font-size:9px;
   background:rgba(5,5,5,0.93);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
   border:1px solid rgba(184,255,0,0.14);border-radius:3px;
@@ -638,6 +665,8 @@ body.visual-mode #shader-gallery,
 body.visual-mode #gallery-toggle,
 body.visual-mode #drop-zone,
 body.visual-mode #isf-panel,
+body.visual-mode #shader-dock,
+body.visual-mode #dock-tab,
 body.visual-mode #exit-visual{z-index:9000!important;}
 
 #audio-map.show{opacity:1!important;}
@@ -877,7 +906,24 @@ body.visual-mode #exit-visual{z-index:9000!important;}
   #ctrl-toggle,
   #gallery-toggle,
   #repo-toggle,
+  #dock-tab,
+  #dock-head,
   #profile-toggle{display:none !important;}
+
+  /* El dock desktop se neutraliza: sus hijos siguen gobernados por las
+     reglas móviles de siempre (FAB + bottom-sheet). */
+  #shader-dock{
+    position:static !important;transform:none !important;
+    width:auto !important;height:auto !important;
+    background:transparent !important;border:none !important;
+    padding:0 !important;overflow:visible !important;display:block !important;
+  }
+  /* Los paneles que el bottom-sheet abre vuelven a ser overlay en móvil */
+  #global-repo,#shader-gallery{
+    position:fixed !important;left:1rem !important;right:1rem !important;
+    bottom:calc(1rem + env(safe-area-inset-bottom)) !important;
+    width:auto !important;z-index:9650 !important;
+  }
 
   /* Cuando el HUD está abierto y el panel correspondiente está
      activo, drop-zone e isf-panel reaparecen como hoja por encima
@@ -961,24 +1007,6 @@ body.visual-mode #exit-visual{z-index:9000!important;}
 
 <!-- SALIR MODO VISUAL -->
 <button id="exit-visual">✕ SALIR VISUAL</button>
-
-<!-- REPOSITORIO GLOBAL -->
-<div id="global-repo">
-  <div id="repo-header">
-    <span id="repo-title">SHADER REPO GLOBAL</span>
-    <span id="repo-live"></span>
-    <span id="repo-count">—</span>
-    <button id="repo-close">✕</button>
-  </div>
-  <div id="repo-upload">
-    <label id="repo-upload-label" for="repo-file">⬆ SUBIR MI .FS A LA COMUNIDAD</label>
-    <input type="file" id="repo-file" accept=".fs,.glsl,.frag">
-    <div id="repo-status"></div>
-  </div>
-  <div id="repo-list">
-    <div id="repo-empty">Cargando repositorio...</div>
-  </div>
-</div>
 
 <!-- AUTH MODAL -->
 <div id="auth-overlay">
@@ -1077,27 +1105,11 @@ body.visual-mode #exit-visual{z-index:9000!important;}
   </div>
 </div>
 
-<!-- GALERÍA TOGGLE -->
+<!-- SHADER DOCK — todo lo relacionado a shaders vive acá (lateral ocultable) -->
+<button id="dock-tab">⬡ SHADERS</button>
+<aside id="shader-dock">
+<div id="dock-head"><span>SHADER DECK</span><button id="dock-close">✕</button></div>
 
-<!-- GALERÍA PANEL -->
-<div id="shader-gallery">
-  <div id="gallery-header">
-    <span id="gallery-title">SHADER LIBRARY</span>
-    <span id="gallery-count">0</span>
-    <button id="gallery-close">✕</button>
-  </div>
-  <div id="gallery-list">
-    <div id="gallery-empty">Todavía no guardaste shaders.<br>Droppeá un .fs y se guarda solo.</div>
-  </div>
-</div>
-
-<!-- ISF INPUTS PANEL -->
-<div id="isf-panel"></div>
-
-<!-- TOGGLE CONTROLES -->
-<button id="ctrl-toggle">— OCULTAR</button>
-
-<!-- DROP ZONE -->
 <div id="drop-zone">
   <div id="drop-inner">
     <div class="drop-icon">⬡</div>
@@ -1128,6 +1140,57 @@ body.visual-mode #exit-visual{z-index:9000!important;}
     <button id="reset-btn">✕ RESET</button>
   </div>
 </div>
+
+<!-- TOGGLE CONTROLES -->
+<button id="ctrl-toggle">— OCULTAR</button>
+
+<!-- ISF INPUTS PANEL -->
+<div id="isf-panel"></div>
+
+<!-- GALERÍA PANEL -->
+<div id="shader-gallery">
+  <div id="gallery-header">
+    <span id="gallery-title">SHADER LIBRARY</span>
+    <span id="gallery-count">0</span>
+    <button id="gallery-close">✕</button>
+  </div>
+  <div id="gallery-list">
+    <div id="gallery-empty">Todavía no guardaste shaders.<br>Droppeá un .fs y se guarda solo.</div>
+  </div>
+</div>
+
+<!-- REPOSITORIO GLOBAL -->
+<div id="global-repo">
+  <div id="repo-header">
+    <span id="repo-title">SHADER REPO GLOBAL</span>
+    <span id="repo-live"></span>
+    <span id="repo-count">—</span>
+    <button id="repo-close">✕</button>
+  </div>
+  <div id="repo-upload">
+    <label id="repo-upload-label" for="repo-file">⬆ SUBIR MI .FS A LA COMUNIDAD</label>
+    <input type="file" id="repo-file" accept=".fs,.glsl,.frag">
+    <div id="repo-status"></div>
+  </div>
+  <div id="repo-list">
+    <div id="repo-empty">Cargando repositorio...</div>
+  </div>
+</div>
+</aside>
+<script>
+/* Dock lateral de shaders: abre/cierra con la pestaña o la ✕. */
+(function(){
+  var tab=document.getElementById('dock-tab');
+  var cls=document.getElementById('dock-close');
+  function tog(on){document.body.classList.toggle('dock-open',on);}
+  tab.addEventListener('click',function(){tog(!document.body.classList.contains('dock-open'));});
+  cls.addEventListener('click',function(){tog(false);});
+  /* si arrastran un archivo sobre la página, el dock se abre solo (drop .fs) */
+  window.addEventListener('dragenter',function(e){
+    if(e.dataTransfer && Array.prototype.indexOf.call(e.dataTransfer.types,'Files')>-1) tog(true);
+  });
+})();
+</script>
 <div id="err-toast"></div>
 
 <nav id="nav">
