@@ -51,6 +51,21 @@
   .note.l2{background:var(--acid);box-shadow:0 0 14px var(--acid);}
   .note.l3{background:var(--cyan);box-shadow:0 0 14px var(--cyan);}
   .note.drop{left:2%;right:2%;height:34px;background:#fff;box-shadow:0 0 26px #fff,0 0 50px var(--acid);}
+  /* freestyle: beat bar + pads (reemplazan las lanes de notas) */
+  #beatbar{position:absolute;bottom:158px;left:50%;transform:translateX(-50%);display:flex;gap:14px;}
+  .bdot{width:12px;height:12px;border-radius:50%;border:1px solid rgba(240,237,230,.3);background:rgba(240,237,230,.06);transition:background .05s;}
+  .bdot.b1{border-color:rgba(184,255,0,.65);}
+  .bdot.on{background:var(--acid);border-color:var(--acid);box-shadow:0 0 18px var(--acid);}
+  #pads{position:absolute;bottom:66px;left:50%;transform:translateX(-50%);display:flex;gap:10px;}
+  .pad{width:96px;padding:12px 0 10px;text-align:center;border:1px solid rgba(255,255,255,.14);border-radius:6px;
+       background:rgba(5,5,5,.55);cursor:pointer;transition:all .08s;user-select:none;-webkit-user-select:none;}
+  .pad b{display:block;font-family:'Bebas Neue';font-size:26px;line-height:1;color:var(--ink);}
+  .pad span{font-size:8.5px;letter-spacing:.2em;color:rgba(240,237,230,.45);}
+  .pad.hit{border-color:var(--acid);background:rgba(184,255,0,.14);transform:translateY(-3px);}
+  .pad.hit b{color:var(--acid);}
+  .pad.miss{border-color:var(--glitch);background:rgba(255,45,85,.12);}
+  .pad.miss b{color:var(--glitch);}
+  #freehint{position:absolute;bottom:38px;left:0;right:0;text-align:center;font-size:9px;letter-spacing:.18em;color:rgba(240,237,230,.35);}
   /* overlays */
   .screen{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;
           padding:24px;background:rgba(5,5,5,.82);backdrop-filter:blur(3px);z-index:10;}
@@ -135,6 +150,13 @@
   #ewrap.beat{box-shadow:0 0 14px rgba(184,255,0,.45);}
   /* hub: highlight pulsante sobre el próximo objetivo */
   #hubhelp.next{color:var(--acid);}
+  /* brújula al objetivo — arriba centro, siempre sabés a dónde ir */
+  #compass{position:absolute;top:16px;left:50%;transform:translateX(-50%);z-index:5;
+    display:flex;align-items:center;gap:8px;padding:7px 14px;
+    background:rgba(5,5,5,.72);border:1px solid rgba(184,255,0,.22);border-radius:3px;
+    font-size:11px;letter-spacing:.18em;color:var(--acid);}
+  #compass #cArrow{display:inline-block;font-size:13px;transition:transform .08s linear;}
+  #compass #cDist{color:rgba(240,237,230,.5);font-size:10px;}
 </style>
 </head>
 <body>
@@ -145,6 +167,7 @@
   <!-- HUB ui -->
   <div id="hubui">
     <div id="worldlabel">LA NOCHE — elegí dónde operar</div>
+    <div id="compass"><span id="cArrow">▲</span><span id="cName">—</span><span id="cDist"></span></div>
     <div id="prompt" class="hidden"><div class="pn"></div><div class="pr"></div><div class="pa"></div></div>
     <div id="hubhelp">MOVERSE: WASD / FLECHAS &nbsp;·&nbsp; ENTRAR: E &nbsp;·&nbsp; caminá hasta un portal</div>
   </div>
@@ -163,12 +186,14 @@
     <div id="bigcombo"><div class="bcv"></div><div class="bcl">COMBO</div></div>
     <div id="dropwarn">DROP EN CAMINO</div>
     <div id="countdown"></div>
-    <div id="lanes">
-      <div class="lane" data-lane="0"><div class="hitline"></div><div class="label">STROBE</div><div class="key">A</div></div>
-      <div class="lane" data-lane="1"><div class="hitline"></div><div class="label">GLITCH</div><div class="key">S</div></div>
-      <div class="lane" data-lane="2"><div class="hitline"></div><div class="label">PULSE</div><div class="key">D</div></div>
-      <div class="lane" data-lane="3"><div class="hitline"></div><div class="label">WARP</div><div class="key">F</div></div>
+    <div id="beatbar"><span class="bdot b1"></span><span class="bdot"></span><span class="bdot"></span><span class="bdot"></span></div>
+    <div id="pads">
+      <div class="pad" data-lane="0"><b>A</b><span>STROBE</span></div>
+      <div class="pad" data-lane="1"><b>S</b><span>GLITCH</span></div>
+      <div class="pad" data-lane="2"><b>D</b><span>PULSE</span></div>
+      <div class="pad" data-lane="3"><b>F</b><span>WARP</span></div>
     </div>
+    <div id="freehint">FREESTYLE — tocá AL BEAT · variá los pads · marcá el 1 del compás · reventá el DROP</div>
   </div>
 
   <!-- screens -->
@@ -643,8 +668,8 @@ function makeMono(pos,color,labelText,subText){ const g=new THREE.Group();
   // glow exterior — caja más grande, opacidad baja, no escribe en depth
   const glowMat=new THREE.MeshBasicMaterial({color,transparent:true,opacity:.18,depthWrite:false});
   const glow=new THREE.Mesh(new THREE.BoxGeometry(3.6,5.4,1.7),glowMat); glow.position.y=2.5; g.add(glow);
-  const beam=new THREE.Mesh(new THREE.CylinderGeometry(0.05,1.6,30,16,1,true), new THREE.MeshBasicMaterial({color,transparent:true,opacity:.18,side:THREE.DoubleSide,depthWrite:false}));
-  beam.position.y=15; g.add(beam);
+  const beam=new THREE.Mesh(new THREE.CylinderGeometry(0.05,1.6,44,16,1,true), new THREE.MeshBasicMaterial({color,transparent:true,opacity:.20,side:THREE.DoubleSide,depthWrite:false,fog:false}));
+  beam.position.y=22; g.add(beam);
   const ring=new THREE.Mesh(new THREE.RingGeometry(2.4,2.7,32), new THREE.MeshBasicMaterial({color,side:THREE.DoubleSide,transparent:true,opacity:.65,depthWrite:false}));
   ring.rotation.x=-Math.PI/2; ring.position.y=0.04; g.add(ring);
   // charco de neón sobre el asfalto — la calle "mojada" de la estética cómic
@@ -958,17 +983,30 @@ function setCoins(){ elCoins.textContent=S.coins.toLocaleString('es'); }
 const keys={};
 addEventListener('keydown',e=>{ keys[e.key.toLowerCase()]=true;
   const k=e.key.toLowerCase();
-  if(mode==='club' && k in {a:0,s:0,d:0,f:0}){ e.preventDefault(); judge({a:0,s:1,d:2,f:3}[k]); }
+  if(mode==='club' && k in {a:0,s:0,d:0,f:0}){ e.preventDefault(); if(!e.repeat) trigger({a:0,s:1,d:2,f:3}[k]); }
   if(mode==='hub' && (k==='e'||k==='enter')) tryEnter();
 });
 addEventListener('keyup',e=>{ keys[e.key.toLowerCase()]=false; });
 let nearest=null;
 let walkPhase=0;
+const cArrowEl=document.getElementById('cArrow'), cNameEl=document.getElementById('cName'), cDistEl=document.getElementById('cDist');
 function updateHub(dt){
+  let ix=0,iz=0;
+  if(keys['w']||keys['arrowup'])iz-=1; if(keys['s']||keys['arrowdown'])iz+=1;
+  if(keys['a']||keys['arrowleft'])ix-=1; if(keys['d']||keys['arrowright'])ix+=1;
+  const moving = !!(ix||iz);
+  // movimiento RELATIVO A LA CÁMARA: W siempre es "adelante en pantalla".
+  // (antes era en ejes del mundo: al girar, la cámara rotaba detrás del
+  // avatar y los controles quedaban cruzados — la movilidad "extraña")
   let vx=0,vz=0;
-  if(keys['w']||keys['arrowup'])vz-=1; if(keys['s']||keys['arrowdown'])vz+=1;
-  if(keys['a']||keys['arrowleft'])vx-=1; if(keys['d']||keys['arrowright'])vx+=1;
-  const moving = !!(vx||vz);
+  if(moving){
+    const fwd=new THREE.Vector3(avatar.position.x-hubCam.position.x,0,avatar.position.z-hubCam.position.z);
+    if(fwd.lengthSq()<1e-4) fwd.set(Math.sin(avatar.rotation.y),0,-Math.cos(avatar.rotation.y));
+    fwd.normalize();
+    const rgt=new THREE.Vector3(-fwd.z,0,fwd.x);
+    vx=fwd.x*(-iz)+rgt.x*ix;
+    vz=fwd.z*(-iz)+rgt.z*ix;
+  }
   const len=Math.hypot(vx,vz)||1; const sp=12*dt;
   // ciudad infinita: el jugador camina libre, los chunks se generan alrededor
   avatar.position.x += (vx/len)*sp*(moving?1:0);
@@ -1000,7 +1038,7 @@ function updateHub(dt){
   // detrás = +Z relativo al cuerpo (que mira -Z por defecto). Con rotación, calculamos vector
   const tx=avatar.position.x, tz=avatar.position.z;
   const dir = new THREE.Vector3(Math.sin(avatar.rotation.y), 0, -Math.cos(avatar.rotation.y));
-  const camOffset = dir.clone().multiplyScalar(-9).add(new THREE.Vector3(0,7,0));
+  const camOffset = dir.clone().multiplyScalar(-10).add(new THREE.Vector3(0,8.2,0));
   hubCam.position.x+= ((tx+camOffset.x) - hubCam.position.x)*0.10;
   hubCam.position.y+= ((camOffset.y) - hubCam.position.y)*0.10;
   hubCam.position.z+= ((tz+camOffset.z) - hubCam.position.z)*0.10;
@@ -1025,6 +1063,17 @@ function updateHub(dt){
       mo.haloRing.material.opacity *= 0.9;
     }
     if(d<nd){nd=d;nearest=mo;} }
+  // brújula: flecha en pantalla hacia el objetivo recomendado + distancia
+  if(goal){
+    const gx=goal.g.position.x-tx, gz=goal.g.position.z-tz;
+    const fcx=tx-hubCam.position.x, fcz=tz-hubCam.position.z;   // adelante en pantalla
+    const rel=Math.atan2(fcx*gz-fcz*gx, fcx*gx+fcz*gz);          // + = a la derecha
+    cArrowEl.style.transform='rotate('+(rel*180/Math.PI).toFixed(1)+'deg)';
+    cNameEl.textContent=goal.club?goal.club.name:'EL RACK';
+    cDistEl.textContent=Math.round(Math.hypot(gx,gz))+'m';
+    cArrowEl.parentElement.style.borderColor=goal.colorHex||'rgba(184,255,0,.22)';
+    cNameEl.style.color=goal.colorHex||'var(--acid)';
+  }
   // halo del avatar adopta el color del nearest (fade suave)
   if(nearest){
     haloOuter.material.color.lerp(new THREE.Color(nearest.color), 0.12);
@@ -1083,13 +1132,17 @@ function buy(id){ const t=TOOLS[id]; if(has(id)||S.coins<t.price) return;
 document.getElementById('shopClose').addEventListener('click',()=>shopEl.classList.add('hidden'));
 
 /* ======================= CLUB (rítmico) ======================= */
-const APPROACH=1.55, W_PERFECT=0.055;
+const W_PERFECT=0.06;
 let cur=null, score=0, combo=0, energy=55, running=false;
-let notes=[], step=0, nextNoteTime=0, setEndsAt=0;
-let pendingDropAt=-1, lastBigComboMilestone=0;
+let step=0, nextNoteTime=0, setEndsAt=0, gridT0=0;
+let dropAt=-1, dropHit=false, lastBigComboMilestone=0;
+// freestyle: memoria de ejecución (timing, variedad, repetición, anti-mash)
+let lastTrig=0, lastLane=-1, laneRepeat=0, recent=[];
+let stats={hits:0,perfect:0,good:0,off:0,drops:0,dropsHit:0};
 const SET_BARS=24; // duración del set
 const fx={strobe:0,glitch:0,pulse:0,warp:0,shake:0};
-const laneEls=[...document.querySelectorAll('.lane')];
+const padEls=[...document.querySelectorAll('.pad')];
+const bdotEls=[...document.querySelectorAll('.bdot')];
 const judgeEl=document.getElementById('judge'),energyEl=document.getElementById('energy'),
       scoreEl=document.getElementById('score'),comboEl=document.getElementById('combo'),
       venueEl=document.getElementById('venue'),clockEl=document.getElementById('setclock');
@@ -1110,8 +1163,10 @@ function showCountdown(n, done){
 }
 function startSet(c){ cur=c; showMode('club');
   if(!actx) initAudio(); if(actx.state==='suspended') actx.resume();
-  score=0;combo=0;energy=58; notes.forEach(n=>rm(n)); notes=[]; step=0; running=false;
-  pendingDropAt=-1; lastBigComboMilestone=0;
+  score=0;combo=0;energy=58; step=0; running=false;
+  dropAt=-1; dropHit=false; lastBigComboMilestone=0;
+  lastTrig=0; lastLane=-1; laneRepeat=0; recent=[];
+  stats={hits:0,perfect:0,good:0,off:0,drops:0,dropsHit:0};
   U.uHue.value=c.hue; U.uLevel.value=CLUBS.indexOf(c); U.uShaderTool.value=has('shaders')?1:0;
   venueEl.innerHTML=`${c.name}<small>${c.sub} · ${c.bpm} BPM</small>`;
   // construir interior y mover al avatar a la cabina del VJ
@@ -1123,7 +1178,8 @@ function startSet(c){ cur=c; showMode('club');
   refreshHUD();
   // countdown 3·2·1·GO antes de arrancar el scheduler
   showCountdown(3, ()=>{
-    nextNoteTime=actx.currentTime+0.2; setEndsAt=actx.currentTime+0.2+(60/c.bpm)*4*SET_BARS;
+    nextNoteTime=actx.currentTime+0.2; gridT0=nextNoteTime;
+    setEndsAt=actx.currentTime+0.2+(60/c.bpm)*4*SET_BARS;
     running=true;
   });
 }
@@ -1132,7 +1188,7 @@ function scheduler(){ if(!running||mode!=='club') return;
   while(nextNoteTime<now+0.12){ const t=nextNoteTime,s=step%16;
     if(s%4===0)kick(t); hat(t,s%4===2); if(s%2===0)bass(t,BASSLINE[(step>>1)%8]);
     const bar=Math.floor(step/16);
-    if(s===0&&bar>0&&bar%4===0){ spawn(t+APPROACH,2,true); pendingDropAt=t+APPROACH; }
+    if(s===0&&bar>0&&bar%4===0){ dropAt=t; dropHit=false; stats.drops++; }
     else if(s===0 && bar>0 && (bar+2)%4===0){
       // 2 compases antes del drop — aviso visual con riser sintético
       flashDropWarn();
@@ -1144,29 +1200,76 @@ function scheduler(){ if(!running||mode!=='club') return;
       f.frequency.exponentialRampToValueAtTime(3500,t+2*beat);
       o.connect(f); f.connect(g); g.connect(master); o.start(t); o.stop(t+2*beat+0.05);
     }
-    else if(s%2===0&&Math.random()<cur.density){ spawn(t+APPROACH,Math.floor(Math.random()*4),false); }
     nextNoteTime+=sx; step++;
   }
 }
 function flashDropWarn(){ elDropWarn.classList.add('show');
   setTimeout(()=>elDropWarn.classList.remove('show'), 2200); }
 setInterval(scheduler,25);
-function spawn(time,lane,drop){ const el=document.createElement('div'); el.className='note l'+lane+(drop?' drop':'');
-  laneEls[lane].appendChild(el); notes.push({time,lane,drop,el,judged:false}); }
-function rm(n){ if(n.el&&n.el.parentNode)n.el.parentNode.removeChild(n.el); }
-function judge(lane){ if(!running)return; const now=actx.currentTime; let best=null,bd=1e9;
-  for(const n of notes){ if(n.judged||n.lane!==lane)continue; const dt=Math.abs(n.time-now); if(dt<bd){bd=dt;best=n;} }
-  flashLane(lane,'hit');
-  if(best&&bd<=timingGood()){ best.judged=true; rm(best);
-    const perfect=bd<=W_PERFECT, mult=1+Math.floor(combo/10); combo++;
-    if(best.drop){ score+=Math.round(500*mult*scoreMul()); energy=Math.min(100,energy+18); showJudge('¡DROP!','var(--acid)'); fx.strobe=1;fx.pulse=1;fx.glitch=.6;fx.shake=1; }
-    else { score+=Math.round((perfect?120:60)*mult*scoreMul()); energy=Math.min(100,energy+(perfect?5:3)); showJudge(perfect?'PERFECT':'GOOD',perfect?'#fff':'var(--acid)');
-      if(lane===0)fx.strobe=1; else if(lane===1)fx.glitch=Math.min(1,fx.glitch+.85); else if(lane===2){fx.pulse=1;fx.shake=Math.min(1,fx.shake+.4);} else fx.warp=1; }
-    // big-combo cada 10
-    if(combo>=10 && combo!==lastBigComboMilestone && combo%10===0){
-      lastBigComboMilestone=combo; showBigCombo(combo);
-    }
-  } else { combo=0; lastBigComboMilestone=0; energy=Math.max(0,energy-5); showJudge('MISS','var(--glitch)'); flashLane(lane,'miss'); fx.glitch=Math.min(1,fx.glitch+.4); }
+/* ─── FREESTYLE VJ ───────────────────────────────────────────────
+   No hay notas que caen: disparás visuales libres con A/S/D/F y el juego
+   puntúa tu LECTURA MUSICAL — qué tan al beat pegaste (negras y
+   contratiempos de la grilla que suena de verdad), si marcaste el 1 del
+   compás (acento ×1.5), si reventaste el DROP en su ventana, y la
+   COMPOSICIÓN: variedad de pads multiplica, repetir el mismo pad o
+   machacar teclas descuenta. */
+function fireFx(lane,amt){
+  if(lane===0)fx.strobe=Math.max(fx.strobe,amt);
+  else if(lane===1)fx.glitch=Math.min(1,fx.glitch+.85*amt);
+  else if(lane===2){fx.pulse=Math.max(fx.pulse,amt);fx.shake=Math.min(1,fx.shake+.4*amt);}
+  else fx.warp=Math.max(fx.warp,amt);
+}
+function trigger(lane){ if(!running)return; const now=actx.currentTime;
+  // anti-mash: más rápido que 0.15s entre golpes no puntúa (y apenas dispara)
+  if(now-lastTrig<0.15){ padFlash(lane,'miss'); fireFx(lane,0.15); return; }
+  lastTrig=now;
+  const beat=60/cur.bpm, sx=beat/4;
+  const pos=(now-gridT0)/sx;                 // posición en semicorcheas
+  const stepIdx=Math.round(pos);
+  const dts=Math.abs(pos-stepIdx)*sx;        // distancia en segundos al paso
+  const sMod=((stepIdx%16)+16)%16;
+  const onBeat=sMod%4===0;                   // negra (kick)
+  const onOff =sMod%4===2;                   // contratiempo (hat abierto)
+  const isBarOne=sMod===0;                   // el 1 del compás = acento
+  const inDrop = dropAt>0 && Math.abs(now-dropAt)<=0.28;
+  let quality;
+  if(inDrop) quality='drop';
+  else if((onBeat||onOff)&&dts<=W_PERFECT) quality='perfect';
+  else if((onBeat||onOff)&&dts<=timingGood()) quality='good';
+  else quality='off';
+  // composición: variedad de pads en los últimos 8 golpes multiplica…
+  recent.push(lane); if(recent.length>8)recent.shift();
+  const variety=1+(new Set(recent).size-1)*0.2;          // 1.0 → 1.6
+  // …y clavarse en el mismo pad descuenta
+  laneRepeat=(lane===lastLane)?laneRepeat+1:0; lastLane=lane;
+  const repPenalty=laneRepeat>=2?Math.pow(0.55,laneRepeat-1):1;
+  const mult=(1+Math.floor(combo/10))*scoreMul();
+  if(quality==='drop'){
+    dropHit=true; dropAt=-1; stats.dropsHit++; stats.hits++; combo++;
+    score+=Math.round(600*mult*variety);
+    energy=Math.min(100,energy+16);
+    showJudge('¡DROP!','var(--acid)'); fx.strobe=1;fx.pulse=1;fx.glitch=.6;fx.shake=1;
+    padFlash(lane,'hit');
+  } else if(quality==='perfect'||quality==='good'){
+    stats.hits++; if(quality==='perfect')stats.perfect++; else stats.good++;
+    combo++;
+    const base=(quality==='perfect'?130:60)*(isBarOne?1.5:1);
+    score+=Math.round(base*mult*variety*repPenalty);
+    energy=Math.min(100,energy+(quality==='perfect'?5:3)*repPenalty);
+    showJudge(repPenalty<1?'REPETIDO':(quality==='perfect'?(isBarOne?'¡ACENTO!':'AL BEAT'):'BIEN'),
+              quality==='perfect'?'#fff':'var(--acid)');
+    fireFx(lane, quality==='perfect'?1:0.7);
+    padFlash(lane,'hit');
+  } else {
+    stats.off++; combo=0; lastBigComboMilestone=0;
+    energy=Math.max(0,energy-4);
+    showJudge('FUERA','var(--glitch)');
+    fireFx(lane,0.35); fx.glitch=Math.min(1,fx.glitch+.25);
+    padFlash(lane,'miss');
+  }
+  if(combo>=10 && combo!==lastBigComboMilestone && combo%10===0){
+    lastBigComboMilestone=combo; showBigCombo(combo);
+  }
   refreshHUD();
 }
 function showBigCombo(n){
@@ -1176,13 +1279,13 @@ function showBigCombo(n){
   clearTimeout(showBigCombo.t);
   showBigCombo.t=setTimeout(()=>elBigCombo.classList.remove('show'), 900);
 }
-function flashLane(i,c){ const el=laneEls[i]; el.classList.add(c); setTimeout(()=>el.classList.remove(c),90); }
+function padFlash(i,c){ const el=padEls[i]; if(!el)return; el.classList.add(c); setTimeout(()=>el.classList.remove(c),110); }
 function showJudge(t,c){ judgeEl.textContent=t; judgeEl.style.color=c; judgeEl.style.opacity=1;
   clearTimeout(showJudge.t); showJudge.t=setTimeout(()=>judgeEl.style.opacity=0,260); }
 function refreshHUD(){ scoreEl.textContent=score.toLocaleString('es');
   comboEl.textContent=combo>2?('COMBO '+combo+' ×'+(1+Math.floor(combo/10))):'';
   energyEl.style.width=energy+'%'; energyEl.classList.toggle('low',energy<28); }
-function endSet(failed){ running=false; notes.forEach(n=>rm(n)); notes=[];
+function endSet(failed){ running=false;
   const survived=!failed; const pay=Math.round((cur.basePay + score*0.04) * payMul() * (survived?1:0.4));
   // animación de monedas volando antes de actualizar contador
   burstCoins(Math.min(18, Math.max(6, Math.round(pay/40))));
@@ -1206,12 +1309,18 @@ function endSet(failed){ running=false; notes.forEach(n=>rm(n)); notes=[];
         : `<div class="hs">RÉCORD DEL LUGAR: ${prevBest.toLocaleString('es')||'0'}</div>`)
     : '';
   const medalHTML = survived ? `<div class="medal"><span class="sym">${medal}</span>${medalLabel}</div>${hsLine}` : '';
+  // lectura musical: qué tan bien leíste la composición
+  const totalTr=stats.hits+stats.off;
+  const prec= totalTr? Math.round(100*stats.hits/totalTr) : 0;
+  const musicHTML = totalTr
+    ? `<div class="hs">LECTURA MUSICAL: <b style="color:var(--acid)">${prec}%</b> en tiempo · ${stats.perfect} perfectos · DROPS ${stats.dropsHit}/${stats.drops}</div>`
+    : '';
   document.getElementById('resKicker').textContent= survived?'SET TERMINADO':'SE FUE LA MULTITUD';
   document.getElementById('resTitle').innerHTML= survived?'BIEN <span class="g">LABURADO</span>':'NOCHE <span class="g">FLOJA</span>';
   document.getElementById('resMsg').innerHTML=
     `${cur.name}. Score <b style="color:var(--acid)">${score.toLocaleString('es')}</b>. ` +
     `Cobraste <b style="color:var(--acid)">◈ ${pay.toLocaleString('es')}</b>. ${nextHint()}`
-    + medalHTML;
+    + musicHTML + medalHTML;
   document.getElementById('results').classList.remove('hidden');
 }
 function nextHint(){
@@ -1250,7 +1359,7 @@ function burstCoins(n){
   }
 }
 function pulseCoins(){ elCoins.classList.remove('bump'); void elCoins.offsetWidth; elCoins.classList.add('bump'); }
-laneEls.forEach(el=>{ const ln=+el.dataset.lane; el.addEventListener('pointerdown',ev=>{ev.preventDefault();judge(ln);}); });
+padEls.forEach(el=>{ const ln=+el.dataset.lane; el.addEventListener('pointerdown',ev=>{ev.preventDefault();trigger(ln);}); });
 
 /* ======================= LOOP ======================= */
 let last=performance.now();
@@ -1280,10 +1389,15 @@ function loop(t){ requestAnimationFrame(loop); const dt=Math.min(0.05,(t-last)/1
     U.uStrobe.value=fx.strobe;U.uGlitch.value=fx.glitch;U.uPulse.value=fx.pulse;U.uWarp.value=fx.warp;
     const sh=fx.shake*8; canvas.style.transform=sh>0.3?`translate(${(Math.random()-0.5)*sh}px,${(Math.random()-0.5)*sh}px)`:'';
     if(running){ const now=actx.currentTime;
-      for(let i=notes.length-1;i>=0;i--){ const n=notes[i]; const prog=1-((n.time-now)/APPROACH);
-        const laneH=laneEls[0].clientHeight; if(n.el)n.el.style.transform=`translateY(${prog*(laneH-54)}px)`;
-        if(!n.judged&&now-n.time>timingGood()){ n.judged=true; rm(n); notes.splice(i,1); combo=0; energy=Math.max(0,energy-(n.drop?11:5)); fx.glitch=Math.min(1,fx.glitch+.3); refreshHUD(); }
-        else if(n.judged) notes.splice(i,1); }
+      // beat bar: el punto del beat actual late (el 1 del compás es el verde)
+      const beat=60/cur.bpm, bpos=(now-gridT0)/beat;
+      const bi=((Math.floor(bpos)%4)+4)%4, bph=bpos-Math.floor(bpos);
+      for(let i=0;i<bdotEls.length;i++) bdotEls[i].classList.toggle('on', i===bi && bph<0.22);
+      // drop no aprovechado: la multitud lo siente
+      if(dropAt>0 && !dropHit && now>dropAt+0.3){
+        dropAt=-1; energy=Math.max(0,energy-10);
+        showJudge('DROP PERDIDO','var(--glitch)'); fx.glitch=Math.min(1,fx.glitch+.4);
+      }
       energy=Math.max(0,energy-dt*(2.0+CLUBS.indexOf(cur)*0.5)); refreshHUD();
       const lvl=CLUBS.indexOf(cur);
       clockEl.textContent='SET ' + Math.max(0,Math.ceil(setEndsAt-now)) + 's';
