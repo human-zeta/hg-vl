@@ -65,6 +65,17 @@
   .btn.ghost{background:transparent;color:var(--ink);border:1px solid rgba(255,255,255,.2);}
   .small{font-size:11px;color:rgba(240,237,230,.4);margin-top:22px;letter-spacing:.1em;}
   .small a{color:var(--acid);text-decoration:none;}
+  /* shader lab */
+  #shaderlab{background:rgba(5,5,5,.28);backdrop-filter:none;}
+  #labpanel{width:min(680px,94vw);background:rgba(5,5,5,.88);border:1px solid rgba(184,255,0,.25);padding:18px 18px 14px;text-align:left;}
+  #labrow{display:flex;gap:6px;margin:10px 0;flex-wrap:wrap;}
+  .lpre{cursor:pointer;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.12em;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.15);color:rgba(240,237,230,.6);padding:6px 12px;}
+  .lpre:hover{border-color:var(--acid);color:var(--acid);}
+  #labcode{width:100%;height:36vh;background:#020203;color:var(--acid);border:1px solid rgba(255,255,255,.12);font-family:'Space Mono',monospace;font-size:11px;line-height:1.5;padding:10px;resize:vertical;white-space:pre;}
+  #labcode:focus{outline:1px solid rgba(184,255,0,.4);}
+  #laberr{margin-top:8px;padding:8px 10px;background:rgba(255,45,85,.08);border:1px solid rgba(255,45,85,.4);color:#ff8fa3;font-size:10px;line-height:1.6;white-space:pre-wrap;max-height:90px;overflow:auto;}
+  #labdoc{font-size:9px;color:rgba(240,237,230,.45);letter-spacing:.04em;margin:10px 0 12px;line-height:1.7;}
+  #labdoc b{color:rgba(184,255,0,.7);font-weight:400;}
   /* shop */
   #shop .panel{width:min(820px,94vw);max-height:84vh;overflow:auto;}
   #shop h1{font-size:clamp(40px,8vw,90px);margin-bottom:4px;}
@@ -167,6 +178,7 @@
     <p>Sos un VJ. Recorrés la noche, entrás a los boliches y trabajás el set. Cada noche bien laburada paga en monedas — y con eso comprás las <b style="color:#b8ff00">herramientas</b> que los lugares más grandes te exigen. Del sótano al festival.</p>
     <div class="keys-help">En el mundo: <b>WASD</b> moverse · <b>E</b> entrar. En el set: <b>A S D F</b> disparar visuales en el beat.</div>
     <button class="btn" id="startBtn">SALIR A LA NOCHE ▶</button>
+    <button class="btn ghost" id="labBtn">⬡ SHADER LAB</button>
     <div class="small">Subí el volumen. · <a href="/galeria/">ver el portfolio real →</a></div>
   </div>
 
@@ -184,6 +196,26 @@
       <p style="margin:6px auto 0">Comprá la herramienta que pide cada boliche. Tu stack real es el árbol de progresión.</p>
       <div class="shopgrid" id="shopgrid"></div>
       <button class="btn ghost" id="shopClose" style="margin-top:22px">VOLVER A LA NOCHE</button>
+    </div>
+  </div>
+
+  <div class="screen hidden" id="shaderlab">
+    <div id="labpanel">
+      <div class="kicker">SHADER LAB · EL VISUAL DE TUS PANTALLAS</div>
+      <div id="labrow">
+        <button class="lpre" data-pre="default">DEFAULT</button>
+        <button class="lpre" data-pre="tunel">TÚNEL</button>
+        <button class="lpre" data-pre="plasma">PLASMA</button>
+        <button class="lpre" data-pre="grid">GRID</button>
+      </div>
+      <textarea id="labcode" spellcheck="false"></textarea>
+      <div id="laberr" class="hidden"></div>
+      <div id="labdoc">uniforms: <b>uTime uAudio uEnergy uPulse uStrobe uGlitch uWarp uHue uLevel uRes</b> · varying <b>vUv</b> · APLICAR compila tu GLSL; si falla, te muestra el error y no rompe nada. Se guarda solo y corre en las <b>pantallas LED del club</b> cuando tocás.</div>
+      <div>
+        <button class="btn" id="labApply" style="font-size:22px;padding:8px 26px;">APLICAR ▶</button>
+        <button class="btn ghost" id="labReset" style="font-size:22px;padding:8px 26px;">RESET</button>
+        <button class="btn ghost" id="labClose" style="font-size:22px;padding:8px 26px;">CERRAR</button>
+      </div>
     </div>
   </div>
 </div>
@@ -356,14 +388,30 @@ function withOutline(mesh, scale=1.06){
   g.add(out); g.add(mesh);
   return g;
 }
-// piso (asfalto noche) — un único plano gigante
-const floor=new THREE.Mesh(new THREE.PlaneGeometry(WORLD*4,WORLD*4), new THREE.MeshBasicMaterial({color:0x05070d}));
+const texLoader = new THREE.TextureLoader();
+// piso (asfalto noche) — textura cómic mojada, repetida
+const floorTex = texLoader.load('assets/asphalt.jpg');
+floorTex.wrapS=floorTex.wrapT=THREE.RepeatWrapping; floorTex.repeat.set(24,24);
+const floor=new THREE.Mesh(new THREE.PlaneGeometry(WORLD*4,WORLD*4),
+  new THREE.MeshBasicMaterial({color:0x6a7088, map:floorTex}));
 floor.rotation.x=-Math.PI/2; floor.position.y=-0.02; hub.add(floor);
-// estrellas
+
+// BACKDROP — cilindro envolvente con el skyline cómic. Mata el vacío negro:
+// el horizonte siempre muestra ciudad. Caras internas, sin luz (emisivo).
+const skyTex = texLoader.load('assets/skyline.jpg');
+skyTex.wrapS=THREE.RepeatWrapping; skyTex.repeat.set(3,1); // repetir 3× alrededor
+skyTex.colorSpace = THREE.SRGBColorSpace;
+const backdrop = new THREE.Mesh(
+  new THREE.CylinderGeometry(WORLD*1.7, WORLD*1.7, 70, 64, 1, true),
+  new THREE.MeshBasicMaterial({map:skyTex, side:THREE.BackSide, fog:false})
+);
+backdrop.position.y=22; hub.add(backdrop);
+// estrellas arriba del skyline
 const starG=new THREE.BufferGeometry(); const sp=[];
-for(let i=0;i<800;i++) sp.push((Math.random()-0.5)*WORLD*4, Math.random()*90+10, (Math.random()-0.5)*WORLD*4);
+for(let i=0;i<500;i++){ const a=Math.random()*6.28, r=WORLD*1.3+Math.random()*WORLD*0.5;
+  sp.push(Math.cos(a)*r, 40+Math.random()*45, Math.sin(a)*r); }
 starG.setAttribute('position',new THREE.Float32BufferAttribute(sp,3));
-hub.add(new THREE.Points(starG,new THREE.PointsMaterial({color:0x9fb,size:0.32,sizeAttenuation:true,transparent:true,opacity:.55})));
+hub.add(new THREE.Points(starG,new THREE.PointsMaterial({color:0x9fb,size:0.5,sizeAttenuation:true,transparent:true,opacity:.5})));
 
 /* ─── ciudad procedural por chunks ─────────────────────────────
    El mundo se divide en chunks de CHUNK×CHUNK. Los chunks alrededor
@@ -382,6 +430,17 @@ const BUILD_PALETTE = [0x2c3a5e, 0x3e2a5c, 0x223e64, 0x4a2640, 0x2a3340, 0x343e6
 const WINDOW_COLORS = [0xb8ff00, 0x3ad0ff, 0xff2d55, 0xfff3d8];
 const NEON_COLORS = [0xb8ff00, 0xff2d55, 0x3ad0ff];
 
+// textura de fachada cómic — compartida; el tiling se hace escalando los UV
+// de cada edificio (no clonamos la textura, sería caro con cientos de boxes).
+const facadeTex = texLoader.load('assets/facade.jpg');
+facadeTex.wrapS=facadeTex.wrapT=THREE.RepeatWrapping;
+facadeTex.colorSpace = THREE.SRGBColorSpace;
+// escala los UV de una BoxGeometry para que la fachada tile según el tamaño
+function scaleBoxUVs(geo, sx, sy){
+  const uv = geo.attributes.uv;
+  for(let i=0;i<uv.count;i++){ uv.setXY(i, uv.getX(i)*sx, uv.getY(i)*sy); }
+  uv.needsUpdate = true;
+}
 // retorna true si la posición mundial está cerca de un CLUB fijo (no construir ahí)
 function nearAnyClub(wx, wz, minDist){
   for(const c of CLUBS){
@@ -394,38 +453,15 @@ function spawnBuilding(group, lx, lz, seed){
   const w = 3 + sRand(seed,0,1)*3;
   const h = 3 + sRand(seed,0,2)*9;
   const d = 3 + sRand(seed,0,3)*3;
-  const colIdx = Math.floor(sRand(seed,0,4)*BUILD_PALETTE.length);
-  const color = BUILD_PALETTE[colIdx];
-  // box principal con toon + outline
-  const m = new THREE.Mesh(new THREE.BoxGeometry(w,h,d), toonMat(color));
+  const tint = BUILD_PALETTE[Math.floor(sRand(seed,0,4)*BUILD_PALETTE.length)];
+  // box con la fachada cómic; UV escalado: ~1 repetición de ventanas cada 2.2u
+  const geo = new THREE.BoxGeometry(w,h,d);
+  scaleBoxUVs(geo, Math.max(1,Math.round(w/3)), Math.max(1,Math.round(h/3)));
+  const m = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({map:facadeTex, color:tint}));
   m.position.set(lx, h/2, lz);
-  const out = new THREE.Mesh(m.geometry, OUTLINE_MAT);
+  const out = new THREE.Mesh(geo, OUTLINE_MAT);
   out.position.copy(m.position); out.scale.set(1.04,1.02,1.04);
   group.add(out); group.add(m);
-  // ventanas: filas de planos pequeños en las caras frontal y lateral
-  const winRows = Math.max(1, Math.floor(h/1.8));
-  const winCols = Math.max(1, Math.floor(w/0.9));
-  for(let row=0; row<winRows; row++){
-    for(let col=0; col<winCols; col++){
-      if(sRand(seed, row*7+col, 5) < 0.45) continue; // ventana apagada
-      const wColor = WINDOW_COLORS[Math.floor(sRand(seed, row, col+8)*WINDOW_COLORS.length)];
-      const wMat = new THREE.MeshBasicMaterial({color: wColor, transparent:true, opacity:.75});
-      // ventana frontal (cara +Z)
-      const wy = 1.2 + row*1.6;
-      const wx = -w/2 + 0.5 + col*(w/winCols);
-      if(wy > h-0.4) continue;
-      const win = new THREE.Mesh(new THREE.PlaneGeometry(0.35,0.5), wMat);
-      win.position.set(lx+wx, wy, lz+d/2+0.005);
-      group.add(win);
-      // ventana trasera (-Z) — menor probabilidad
-      if(sRand(seed,row,col+11) > 0.5){
-        const winB = new THREE.Mesh(new THREE.PlaneGeometry(0.35,0.5), wMat);
-        winB.position.set(lx+wx, wy, lz-d/2-0.005);
-        winB.rotation.y = Math.PI;
-        group.add(winB);
-      }
-    }
-  }
   // cartel neón vertical en edificios altos (firma de ciudad)
   if(h > 7 && sRand(seed,0,20) > 0.45){
     const neon = NEON_COLORS[Math.floor(sRand(seed,0,21)*NEON_COLORS.length)];
@@ -671,8 +707,10 @@ void main(){
   col=mix(col,vec3(1.0),uStrobe);
   gl_FragColor=vec4(col,1.0);
 }`;
-club.add(new THREE.Mesh(new THREE.PlaneGeometry(2,2),
-  new THREE.ShaderMaterial({uniforms:U,fragmentShader:frag,vertexShader:`varying vec2 vUv; void main(){ vUv=uv; gl_Position=vec4(position,1.0); }`})));
+const CLUB_VERT=`varying vec2 vUv; void main(){ vUv=uv; gl_Position=vec4(position,1.0); }`;
+const clubQuad=new THREE.Mesh(new THREE.PlaneGeometry(2,2),
+  new THREE.ShaderMaterial({uniforms:U,fragmentShader:frag,vertexShader:CLUB_VERT}));
+club.add(clubQuad);
 // RenderTarget del shader del club — su textura alimenta las pantallas LED del interior
 const clubRT = new THREE.WebGLRenderTarget(1024,1024,{depthBuffer:false});
 U.uRes.value.set(1024,1024);
@@ -681,6 +719,97 @@ function renderClubToRT(){
   renderer.render(club, clubCam);
   renderer.setRenderTarget(null);
 }
+
+/* ---- SHADER LAB — el jugador escribe el GLSL que corre en las pantallas ----
+   El shader del club se puede reemplazar en vivo: APLICAR valida la compilación
+   con el contexto WebGL real (si falla muestra el log y conserva el anterior),
+   lo guarda en localStorage y desde entonces las pantallas LED del club (y el
+   preview del lab) corren el visual del jugador. RESET vuelve al de fábrica. */
+const DEFAULT_FRAG = frag;
+const LAB_UNIFORMS = `precision highp float;
+varying vec2 vUv;
+uniform vec2 uRes;uniform float uTime,uAudio,uEnergy,uHue,uStrobe,uGlitch,uPulse,uWarp,uLevel,uShaderTool;
+vec3 hsv(float h,float s,float v){vec3 c=clamp(abs(mod(h*6.+vec3(0.,4.,2.),6.)-3.)-1.,0.,1.);return v*mix(vec3(1.),c,s);}
+`;
+const LAB_PRESETS = {
+  default: DEFAULT_FRAG,
+  tunel: LAB_UNIFORMS + `void main(){
+  vec2 uv=(vUv-0.5)*2.0;
+  float r=length(uv)+1e-3, a=atan(uv.y,uv.x);
+  float z=1.0/r + uTime*(1.2+uAudio*2.0);
+  float ring=abs(fract(z)-0.5);
+  float tube=smoothstep(0.5,0.42,ring);
+  float spokes=0.5+0.5*sin(a*10.0+uTime*2.0);
+  vec3 col=hsv(uHue+z*0.05,0.85,1.0)*tube*(0.4+uAudio*1.6+uPulse);
+  col+=hsv(uHue+0.5,0.9,1.0)*spokes*0.15*(0.3+uEnergy);
+  col*=smoothstep(1.8,0.3,r);
+  col=mix(col,vec3(1.0),uStrobe);
+  gl_FragColor=vec4(col,1.0);
+}`,
+  plasma: LAB_UNIFORMS + `void main(){
+  vec2 uv=(vUv-0.5)*2.0;
+  float t=uTime*0.8;
+  float v=sin(uv.x*3.0+t)+sin(uv.y*4.0-t*1.3)+sin((uv.x+uv.y)*5.0+t)+sin(length(uv)*7.0-t*2.0+uAudio*6.0);
+  vec3 col=hsv(uHue+v*0.08+uEnergy*0.2,0.8,0.5+0.5*sin(v*3.14159+uPulse*3.0));
+  col*=0.5+uAudio*1.2;
+  col=mix(col,vec3(1.0),uStrobe);
+  gl_FragColor=vec4(col,1.0);
+}`,
+  grid: LAB_UNIFORMS + `void main(){
+  vec2 uv=(vUv-0.5)*2.0;
+  vec2 g=abs(fract(uv*(6.0+uLevel*2.0)+vec2(0.,uTime*(1.0+uAudio)))-0.5);
+  float line=smoothstep(0.44,0.5,max(g.x,g.y));
+  vec3 col=hsv(uHue,0.9,1.0)*line*(0.5+uAudio*1.5+uPulse);
+  col+=hsv(uHue+0.45,0.8,1.0)*(1.0-line)*0.05;
+  col*=0.85+0.15*sin(vUv.y*300.0);
+  col=mix(col,vec3(1.0),uStrobe);
+  gl_FragColor=vec4(col,1.0);
+}`
+};
+const LAB_KEY='gn_user_shader';
+let labOpen=false;
+const labEl=document.getElementById('shaderlab'), labCode=document.getElementById('labcode'),
+      labErr=document.getElementById('laberr');
+function labValidate(src){
+  const gl=renderer.getContext();
+  const sh=gl.createShader(gl.FRAGMENT_SHADER);
+  gl.shaderSource(sh,src); gl.compileShader(sh);
+  const ok=gl.getShaderParameter(sh,gl.COMPILE_STATUS);
+  const log=gl.getShaderInfoLog(sh)||''; gl.deleteShader(sh);
+  return {ok:ok,log:log};
+}
+function labApply(src,silent){
+  const v=labValidate(src);
+  if(!v.ok){ if(!silent){ labErr.textContent=(v.log.trim()||'Error de compilación GLSL'); labErr.classList.remove('hidden'); } return false; }
+  labErr.classList.add('hidden');
+  const old=clubQuad.material;
+  clubQuad.material=new THREE.ShaderMaterial({uniforms:U,fragmentShader:src,vertexShader:CLUB_VERT});
+  old.dispose();
+  try{ localStorage.setItem(LAB_KEY,src); }catch(e){}
+  return true;
+}
+document.getElementById('labBtn').addEventListener('click',()=>{
+  labOpen=true; labEl.classList.remove('hidden');
+  document.getElementById('start').classList.add('hidden');
+});
+document.getElementById('labClose').addEventListener('click',()=>{
+  labOpen=false; labEl.classList.add('hidden');
+  document.getElementById('start').classList.remove('hidden');
+});
+document.getElementById('labApply').addEventListener('click',()=>labApply(labCode.value,false));
+document.getElementById('labReset').addEventListener('click',()=>{
+  labCode.value=DEFAULT_FRAG; labApply(DEFAULT_FRAG,false);
+  try{ localStorage.removeItem(LAB_KEY); }catch(e){}
+});
+document.querySelectorAll('.lpre').forEach(b=>b.addEventListener('click',()=>{
+  labCode.value=LAB_PRESETS[b.dataset.pre]||DEFAULT_FRAG; labApply(labCode.value,false);
+}));
+// restaurar el shader guardado (si compila; si no, quedamos en el default)
+(function(){
+  let saved=null; try{ saved=localStorage.getItem(LAB_KEY); }catch(e){}
+  labCode.value = saved || DEFAULT_FRAG;
+  if(saved && !labApply(saved,true)) labCode.value=DEFAULT_FRAG;
+})();
 
 /* ---- VENUE scene (interior físico) ----
    Al entrar a un lugar, construimos su interior 3D: piso, paredes, cabina
@@ -1120,6 +1249,14 @@ function renderHubFisheye(){
   renderer.render(fishScene, fishCam);
 }
 function loop(t){ requestAnimationFrame(loop); const dt=Math.min(0.05,(t-last)/1000); last=t;
+  // SHADER LAB abierto: preview fullscreen del shader del club con audio simulado
+  if(labOpen){
+    U.uTime.value+=dt*0.8;
+    const fk=0.45+0.35*Math.sin(t*0.004)+0.2*Math.sin(t*0.0113);
+    U.uAudio.value+=(Math.max(0.0,Math.min(1.0,fk))-U.uAudio.value)*0.15;
+    U.uPulse.value*=0.95;
+    renderer.render(club,clubCam); return;
+  }
   let audio=0; if(analyser&&mode==='club'){ analyser.getByteFrequencyData(freq); let s=0; for(let i=0;i<12;i++)s+=freq[i]; audio=(s/12)/255; }
   if(mode==='hub'){ updateHub(dt); renderHubFisheye(); return; }
   if(mode==='club'){
