@@ -201,6 +201,12 @@ section{position:relative;padding:0 8vw;}
 .proc-step h4{font-family:var(--display);font-size:1.5rem;line-height:1;color:var(--acid);margin-bottom:0.7rem;}
 .proc-step p{font-family:var(--mono);font-size:10px;color:rgba(240,237,230,0.4);line-height:1.9;}
 .proc-gold{font-family:var(--body);font-size:0.98rem;color:rgba(240,237,230,0.7);line-height:1.7;margin-top:2.5rem;max-width:72ch;border-left:1px solid rgba(184,255,0,0.3);padding-left:1.4rem;}
+/* seña (paso 03) — movido desde contacto.html: el cobro vive en el proceso, no en la puerta */
+.sena-row{margin-top:2.5rem;display:flex;flex-direction:column;gap:0.7rem;align-items:flex-start;}
+.sena-btn{font-family:var(--mono);font-size:11px;letter-spacing:0.2em;color:var(--acid);border:1px solid var(--acid);padding:0.95rem 1.8rem;text-decoration:none;transition:all 0.3s;}
+.sena-btn:hover{background:var(--acid);color:var(--black);}
+.sena-btn:focus-visible{outline:2px solid var(--acid);outline-offset:3px;}
+.sena-note{font-family:var(--mono);font-size:9px;letter-spacing:0.08em;color:rgba(240,237,230,0.4);line-height:1.8;max-width:52ch;}
 .proc-gold b{color:var(--acid);font-weight:500;}
 @media (max-width:760px){.proc-grid{grid-template-columns:1fr;}}
 
@@ -676,14 +682,19 @@ section{position:relative;padding:0 8vw;}
         <p>Se abona el 50% restante a la entrega. Y se abre el camino natural: del Sprint a la Identidad, de la Identidad al Retainer, del primer show al festival, del Audit a la ejecución completa.</p>
       </div>
     </div>
+    <div class="sena-row">
+      <a href="https://link.mercadopago.com.ar/visuallab" target="_blank" rel="noopener" class="sena-btn">PAGÁ TU SEÑA →</a>
+      <span class="sena-note">¿Ya acordamos el proyecto? (Paso 03) Ingresás el monto del depósito acordado en la propuesta · MercadoPago · carril local, pesos al valor del día.</span>
+    </div>
     <p class="proc-gold"><b>Regla de oro:</b> la llamada de diagnóstico y todo lo que <b>informa</b> es gratis. Se cobra cuando empezamos a <b>transformar</b> la interfaz —de la marca o del show— y se cobra sin culpa, con depósito por adelantado.</p>
 
     <p class="proc-gold"><b>Regla de moneda (vale para ambas secciones):</b> unidad de cuenta siempre USD. <b>Ticket alto</b> (Identidad, Reality Reel, Live Reality, Audit): se cobra en <b>USD/USDT</b> cuando el cliente lo acepte. <b>Entrada y retainer chico</b> (AI Visual Sprint, Brand Partnership chico): <b>pesos por MercadoPago al cambio del día</b>. Nunca se publica un ARS fijo: el carril local muestra <b>"USD X · se abona en pesos al valor del día"</b>, y el carril export USD pleno.</p>
 
     <div class="gate-note">
-      NOTA DE PUBLICACIÓN (GATES) — Este es un artefacto de staging. Ningún CTA cobra: todos
-      llevan al formulario de contacto (contacto.html con el mundo y el paquete
-      preseleccionados). El path vivo final en hg-vl (relativo vs absoluto a /contacto/) es decisión
+      NOTA DE PUBLICACIÓN (GATES) — Este es un artefacto de staging. Los CTA de paquetes no
+      cobran: todos llevan al formulario de contacto (contacto.html con el mundo y el paquete
+      preseleccionados). Única excepción: el botón "PAGÁ TU SEÑA" del proceso (movido desde
+      contacto.html) abre el link de MercadoPago de monto libre ya vivo — no fija precios. El path vivo final en hg-vl (relativo vs absoluto a /contacto/) es decisión
       de publicación. Activar el cobro real (depósito 50%, MercadoPago para el carril local) y
       publicar esta página son acciones humanas en cola en progress/cola_aprobacion.md. El carril
       local cobra en pesos al valor del día — nunca un ARS fijo. Hasta el APROBADO, nada se publica

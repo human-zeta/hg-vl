@@ -12,11 +12,31 @@
 
   ESTADO BACKEND EN ESTA VERSION:
     · FB_URL CABLEADO al databaseURL real del sitio (hg-vl-shaders-default-rtdb).
-    · Storage en MODO FALLBACK (no habilitado): los adjuntos NO se suben; se piden
-      por mail (hola@hg-vl.com) o via link Drive/WeTransfer. El bucket queda
-      pendiente de activacion (placeholder __FIREBASE_STORAGE_BUCKET__, neutralizado).
+    · Storage en MODO FALLBACK (no habilitado): la dropzone queda OCULTA detras de
+      la bandera FB_STORAGE_HABILITADO. En su lugar hay un campo "link a tu
+      material" (Drive/WeTransfer/reel) que viaja en el registro (campo material).
+      Al habilitar Storage (bandera true) la dropzone reaparece sin tocar HTML.
     · Para que los POST a /contacto persistan hace falta la regla de seguridad en
       la consola Firebase (ver web/contacto/contacto.config.json en el cerebro).
+
+  REORG 2026-07-02:
+    · Campo WhatsApp opcional (autocomplete tel) — canal preferido PyME/managers AR.
+    · Dropzone no funcional reemplazada por campo de link (ver arriba).
+    · Canal Drive (2026-07-03): boton en el campo 06 que abre la carpeta publica
+      "Dropzone" del usuario (drive.google.com/drive/folders/1SgidTrYXnhC5GKZihX5Eay3VyZbpzhqD).
+      Permisos VERIFICADOS en la consola Drive: "cualquier usuario que tenga el
+      vinculo → Editor" — el visitante sube sin cuenta y firma el archivo con su
+      nombre. OJO: con editor-para-cualquiera, cada visitante ve (y puede borrar)
+      los archivos de los demas — revisar/vaciar la carpeta periodicamente.
+    · Anti-spam: honeypot invisible (name=website) + descarte de envios <3s.
+      Ambos simulan exito para no darle señal al bot.
+    · Exito: bloque de confirmacion grande in-page (reemplaza al form); la linea
+      .send-status queda solo para errores.
+    · Boton "PAGA TU SEÑA" (MercadoPago) MOVIDO a servicios.html#proceso (paso 03):
+      esta pagina es la puerta blanda gratis, no cobra ni muestra cobros.
+    · Canal directo (hola@hg-vl.com) visible junto al boton ENVIAR, no solo en error.
+    · Linea de privacidad → privacidad.html.
+    · Nota tecnica de GATES pasada de bloque visible a comentario HTML.
 
   ESPEJA el sistema de diseno de servicios.html: variables CSS,
   paleta acid/glitch, tipografias (Bebas Neue / Space Mono / DM Sans),
@@ -152,7 +172,33 @@ section{position:relative;padding:0 8vw;}
 .send-status{font-family:var(--mono);font-size:11px;letter-spacing:0.05em;line-height:1.7;color:rgba(240,237,230,0.5);min-height:1.2em;}
 .send-status.ok{color:var(--acid);}
 .send-status.err{color:var(--glitch);}
+.direct-line{font-family:var(--mono);font-size:10px;letter-spacing:0.08em;color:rgba(240,237,230,0.4);}
+.direct-line a{color:var(--acid);text-decoration:none;border-bottom:1px solid rgba(184,255,0,0.4);padding-bottom:1px;}
+.direct-line a:hover{color:var(--white);border-color:var(--white);}
+.privacy-line{font-family:var(--mono);font-size:9px;letter-spacing:0.06em;color:rgba(240,237,230,0.28);line-height:1.8;margin-top:1.6rem;}
+.privacy-line a{color:rgba(240,237,230,0.45);text-decoration:none;border-bottom:1px solid rgba(240,237,230,0.25);}
+.privacy-line a:hover{color:var(--acid);border-color:var(--acid);}
 .free-line{font-family:var(--mono);font-size:9px;letter-spacing:0.18em;color:var(--acid);margin-top:2.6rem;}
+
+/* material → carpeta Drive (mientras Storage está gated) */
+.drive-row{margin-top:1.4rem;display:flex;flex-direction:column;gap:0.7rem;align-items:flex-start;}
+.drive-btn{font-family:var(--mono);font-size:10px;letter-spacing:0.18em;color:var(--acid);border:1px dashed rgba(184,255,0,0.5);padding:0.9rem 1.4rem;text-decoration:none;transition:all 0.25s;}
+.drive-btn:hover{border-style:solid;background:rgba(184,255,0,0.06);}
+.drive-btn:focus-visible{outline:2px solid var(--acid);outline-offset:3px;}
+.drive-hint{font-family:var(--mono);font-size:9.5px;color:rgba(240,237,230,0.32);line-height:1.7;max-width:62ch;}
+.drive-hint i{color:rgba(240,237,230,0.5);font-style:normal;}
+
+/* honeypot — fuera de pantalla, invisible para humanos, visible para bots */
+.hp-field{position:absolute;left:-9999px;top:-9999px;width:1px;height:1px;overflow:hidden;}
+
+/* confirmación post-envío (reemplaza al form) */
+#form-ok{display:none;max-width:860px;margin-top:1rem;border:1px solid rgba(184,255,0,0.35);background:rgba(184,255,0,0.04);padding:3rem 2.5rem;}
+#form-ok.visible{display:block;}
+#form-ok h3{font-family:var(--display);font-size:clamp(2.2rem,4.5vw,3.5rem);line-height:0.95;color:var(--acid);margin-bottom:1.2rem;}
+#form-ok p{font-family:var(--mono);font-size:11px;color:rgba(240,237,230,0.6);line-height:1.9;max-width:58ch;}
+#form-ok p + p{margin-top:1rem;}
+#form-ok a{color:var(--acid);text-decoration:none;border-bottom:1px solid var(--acid);padding-bottom:1px;}
+#form-ok a:hover{color:var(--white);border-color:var(--white);}
 
 /* PROMESA / que pasa despues */
 #despues{padding:7vh 8vw;flex-direction:column;border-top:1px solid rgba(240,237,230,0.07);}
@@ -218,7 +264,7 @@ section{position:relative;padding:0 8vw;}
     <span class="hero-tag">PASO 01 · CONTACTO Y DIAGNÓSTICO</span>
     <h1 class="hero-title">CONTANOS EL PROBLEMA. NO TE VENDEMOS.</h1>
     <p class="hero-sub">MADE BY HUMANS · ESTA ES LA LÍNEA DIRECTA · ESCUCHAMOS PRIMERO · AGENDAR LA LLAMADA VIENE DESPUÉS</p>
-    <p class="hero-thesis">Antes de agendar nada, contate. Decinos qué estás construyendo —el show, la marca, el lanzamiento— y <b>dónde sentís la brecha entre lo que mostrás y lo que sos</b>. Ver dónde está esa brecha es información, y la información es gratis: la compartimos. Lo que se cobra es <b>transformarla</b>. Soltá acá lo que tengas (un reel, un set, un brief, una imagen) y te leemos como personas, no como un formulario.</p>
+    <p class="hero-thesis">Antes de agendar nada, contate. Decinos qué estás construyendo —el show, la marca, el lanzamiento— y <b>dónde sentís la brecha entre lo que mostrás y lo que sos</b>. Ver esa brecha es información, y la información es gratis. Lo que se cobra es <b>transformarla</b>. Te leemos como personas, no como un formulario.</p>
   </section>
 
   <span class="sep">— — — — — — — — —</span>
@@ -231,6 +277,13 @@ section{position:relative;padding:0 8vw;}
     </div>
 
     <form class="intake-form" id="intake-form" novalidate>
+
+      <!-- honeypot anti-spam: invisible para humanos; si un bot lo completa,
+           el envío se descarta simulando éxito -->
+      <div class="hp-field" aria-hidden="true">
+        <label for="f-website">No completes este campo</label>
+        <input type="text" id="f-website" name="website" tabindex="-1" autocomplete="off">
+      </div>
 
       <!-- 1 · SEGMENTO -->
       <div class="field">
@@ -272,35 +325,65 @@ section{position:relative;padding:0 8vw;}
         <span class="field-error" id="err-email" role="alert"></span>
       </div>
 
-      <!-- 4 · MENSAJE -->
+      <!-- 4 · WHATSAPP (opcional) -->
       <div class="field">
-        <label class="field-label" for="f-mensaje">04 · Contate / explicate <span class="req">*</span></label>
+        <label class="field-label" for="f-whatsapp">04 · ¿WhatsApp? <span style="color:rgba(240,237,230,0.3)">(opcional)</span></label>
+        <input type="tel" class="text-input" id="f-whatsapp" name="whatsapp" autocomplete="tel" inputmode="tel" placeholder="+54 9 11 ...">
+        <span class="field-hint">Si preferís que la primera respuesta llegue por ahí, dejánoslo. Si no, va por email.</span>
+        <span class="field-error" id="err-whatsapp" role="alert"></span>
+      </div>
+
+      <!-- 5 · MENSAJE -->
+      <div class="field">
+        <label class="field-label" for="f-mensaje">05 · Contate / explicate <span class="req">*</span></label>
         <textarea class="text-area" id="f-mensaje" name="mensaje" placeholder="¿Qué estás construyendo? ¿Dónde sentís la brecha entre lo que mostrás y lo que sos? Contanos el show, la marca, el lanzamiento, el problema — lo que sea. Cuanto más concreto, mejor te leemos." required></textarea>
         <span class="field-hint">No hay respuesta correcta. Escribí como hablás.</span>
         <span class="field-error" id="err-mensaje" role="alert"></span>
       </div>
 
-      <!-- 5 · ADJUNTOS -->
+      <!-- 6 · MATERIAL (opcional) — link o carpeta Drive mientras Storage está gated -->
       <div class="field">
-        <span class="field-label">05 · Soltá lo que tengas <span style="color:rgba(240,237,230,0.3)">(opcional)</span></span>
-        <div class="dropzone" id="dropzone" tabindex="0" role="button" aria-label="Soltá archivos o hacé clic para elegir. Imágenes, video, audio o PDF, hasta 25 MB por archivo.">
-          <span class="dz-icon" aria-hidden="true">⇪</span>
-          <div class="dz-main">Arrastrá tus archivos acá — o <b>hacé clic para elegir</b></div>
-          <div class="dz-sub">Reels, sets, brief, imágenes · imagen / video / audio / PDF · máx. 25&nbsp;MB por archivo · 150&nbsp;MB en total<br>El drop de archivos todavía no está activo: por ahora los adjuntos van por mail (hola@hg-vl.com) o pegando un link de Drive/WeTransfer en tu mensaje.</div>
+        <label class="field-label" for="f-material">06 · ¿Tenés material para mostrarnos? <span style="color:rgba(240,237,230,0.3)">(opcional)</span></label>
+        <input type="url" class="text-input" id="f-material" name="material" inputmode="url" autocomplete="off" placeholder="Link a tu reel, set, brief o carpeta — Drive, WeTransfer, YouTube, lo que sea">
+        <span class="field-hint">Pegá un link y lo miramos antes de responderte.</span>
+        <div class="drive-row">
+          <a class="drive-btn" href="https://drive.google.com/drive/folders/1SgidTrYXnhC5GKZihX5Eay3VyZbpzhqD" target="_blank" rel="noopener">⇪ O SUBÍ TUS ARCHIVOS A NUESTRO DRIVE →</a>
+          <span class="drive-hint">Se abre nuestra carpeta pública — arrastrá ahí tus archivos, sin cuenta ni registro. Poné tu nombre o el del proyecto en los archivos (ej. <i>mimarca-reel.mp4</i>) así los cruzamos con tu mensaje. Si algo falla, mandalos a hola@hg-vl.com.</span>
         </div>
-        <input type="file" id="file-input" multiple accept="image/*,video/*,audio/*,application/pdf" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;" aria-hidden="true" tabindex="-1">
-        <div class="file-list" id="file-list" aria-live="polite"></div>
-        <div class="file-warn" id="file-warn" role="alert"></div>
+        <span class="field-error" id="err-material" role="alert"></span>
+
+        <!-- dropzone GATED: oculta hasta que FB_STORAGE_HABILITADO=true (el JS la
+             muestra solo). No prometemos drag&drop mientras Storage no exista. -->
+        <div id="dropzone-wrap" hidden>
+          <div class="dropzone" id="dropzone" tabindex="0" role="button" aria-label="Soltá archivos o hacé clic para elegir. Imágenes, video, audio o PDF, hasta 25 MB por archivo.">
+            <span class="dz-icon" aria-hidden="true">⇪</span>
+            <div class="dz-main">Arrastrá tus archivos acá — o <b>hacé clic para elegir</b></div>
+            <div class="dz-sub">Reels, sets, brief, imágenes · imagen / video / audio / PDF · máx. 25&nbsp;MB por archivo · 150&nbsp;MB en total</div>
+          </div>
+          <input type="file" id="file-input" multiple accept="image/*,video/*,audio/*,application/pdf" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;" aria-hidden="true" tabindex="-1">
+          <div class="file-list" id="file-list" aria-live="polite"></div>
+          <div class="file-warn" id="file-warn" role="alert"></div>
+        </div>
       </div>
 
-      <!-- 6 · ENVIAR -->
+      <!-- 7 · ENVIAR -->
       <div class="submit-row">
         <button type="submit" class="btn-send" id="btn-send">ENVIAR</button>
-        <span class="send-status" id="send-status" role="status" aria-live="polite"></span>
+        <span class="direct-line">o escribinos directo → <a href="mailto:hola@hg-vl.com">hola@hg-vl.com</a></span>
       </div>
+      <span class="send-status" id="send-status" role="status" aria-live="polite" style="display:block;margin-top:1rem;"></span>
 
+      <p class="privacy-line">Tu mensaje y tu email se usan solo para responderte. Nada de listas ni spam — <a href="privacidad.html">política de privacidad</a>.</p>
       <p class="free-line">EL CONTACTO ES GRATIS · SIN MURO · ESCUCHAMOS, NO VENDEMOS</p>
     </form>
+
+    <!-- confirmación post-envío: el JS oculta el form y muestra esto -->
+    <div id="form-ok" role="status">
+      <h3>TE LEÍMOS.</h3>
+      <p>Tu mensaje ya está de nuestro lado. Lo lee una persona —no un bot— y te escribimos al email que dejaste con una primera lectura del problema. Si tiene sentido, ahí mismo te proponemos la llamada de diagnóstico (30 min, gratis).</p>
+      <p id="form-ok-adjuntos" hidden>Ojo: los archivos todavía no se suben por acá. Subilos a <a href="https://drive.google.com/drive/folders/1SgidTrYXnhC5GKZihX5Eay3VyZbpzhqD" target="_blank" rel="noopener">nuestra carpeta de Drive</a> (con tu nombre en el archivo) o mandalos a <a href="mailto:hola@hg-vl.com">hola@hg-vl.com</a>.</p>
+      <p>Mientras tanto, podés mirar los <a href="servicios.html">paquetes y el proceso completo</a>.</p>
+    </div>
   </section>
 
   <span class="sep">— — — — — — — — —</span>
@@ -328,22 +411,19 @@ section{position:relative;padding:0 8vw;}
       </div>
     </div>
     <p class="after-gold"><b>Regla de oro:</b> esta puerta y la llamada de diagnóstico son gratis — son información, y la información se comparte. Se cobra recién cuando empezamos a <b>transformar</b> la interfaz, de la marca o del show, y se cobra sin culpa, con depósito por adelantado.</p>
-    <div style="margin:1.5rem 0 .3rem;display:flex;flex-direction:column;gap:.55rem;align-items:flex-start;">
-      <a href="https://link.mercadopago.com.ar/visuallab" target="_blank" rel="noopener" style="font-family:'Space Mono',monospace;font-size:.72rem;letter-spacing:.16em;color:#3ad0ff;border:1px solid #3ad0ff;padding:.85rem 1.6rem;border-radius:4px;text-decoration:none;transition:.2s;">PAGÁ TU SEÑA →</a>
-      <span style="font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:.06em;color:rgba(240,237,230,.45);line-height:1.6;max-width:42ch;">¿Ya acordamos el proyecto? Ingresás el monto de la seña acordada en la cotización · MercadoPago</span>
-    </div>
     <p class="alt-line">¿Preferís ver primero qué hacemos? Mirá los <a href="servicios.html">paquetes y el proceso completo</a>.</p>
 
-    <div class="gate-note">
-      NOTA TÉCNICA — El intake escribe el texto + email a un nodo Firebase /contacto vía POST
-      anónimo (mismo patrón fbPush que el resto del sitio). El drop de adjuntos está en MODO
-      FALLBACK: Firebase Storage todavía no está habilitado, así que los archivos NO se suben (se
-      pide mandarlos a hola@hg-vl.com o pegar un link de Drive/WeTransfer). El formulario degrada
-      con gracia y nunca rompe. Para que los POST a /contacto persistan hace falta una regla de
-      seguridad en la consola Firebase (/contacto con .write append y .read:false); sin ella el
-      form cae al fallback de email. Encender el drop real (Storage + bucket + reglas) queda
-      pendiente como acción humana.
-    </div>
+    <!--
+      NOTA TÉCNICA (interna, no renderizar) — El intake escribe el texto + email a un nodo
+      Firebase /contacto vía POST anónimo (mismo patrón fbPush que el resto del sitio). El drop
+      de adjuntos está GATED: Firebase Storage no está habilitado, la dropzone queda oculta
+      detrás de FB_STORAGE_HABILITADO y en su lugar hay un campo de link (material). El
+      formulario degrada con gracia y nunca rompe. Para que los POST a /contacto persistan hace
+      falta una regla de seguridad en la consola Firebase (/contacto con .write append y
+      .read:false); sin ella el form cae al fallback de email. Encender el drop real
+      (Storage + bucket + reglas) queda pendiente como acción humana (progress/cola_aprobacion.md).
+      El botón "PAGÁ TU SEÑA" (MercadoPago) se movió a servicios.html#proceso — esta página no cobra.
+    -->
   </section>
 
   <span class="sep">— — — — — — — — —</span>
@@ -422,17 +502,27 @@ section{position:relative;padding:0 8vw;}
   var cards    = Array.prototype.slice.call(document.querySelectorAll('.world-card'));
   var nombreI  = document.getElementById('f-nombre');
   var emailI   = document.getElementById('f-email');
+  var waI      = document.getElementById('f-whatsapp');
   var msgI     = document.getElementById('f-mensaje');
+  var matI     = document.getElementById('f-material');
+  var hpI      = document.getElementById('f-website');   // honeypot
+  var dzWrap   = document.getElementById('dropzone-wrap');
   var dropzone = document.getElementById('dropzone');
   var fileIn   = document.getElementById('file-input');
   var fileList = document.getElementById('file-list');
   var fileWarn = document.getElementById('file-warn');
   var btn      = document.getElementById('btn-send');
   var statusEl = document.getElementById('send-status');
+  var okBlock  = document.getElementById('form-ok');
+  var okAdj    = document.getElementById('form-ok-adjuntos');
   if(!form) return;
 
   var segmento = null;
   var files = [];   // [{ id, file }]
+  var t0 = Date.now();   // anti-spam: descartar envíos a menos de 3s de cargar
+
+  // dropzone GATED: solo se muestra si Storage está habilitado
+  if(STORAGE_HABILITADO && dzWrap) dzWrap.hidden = false;
 
   // ── PREFILL por URL (?m=managers|marcas & p=<id>) ──────────────────────────
   // Llega desde web/oferta-studio/servicios.html: el CTA de cada paquete enlaza
@@ -614,12 +704,44 @@ section{position:relative;padding:0 8vw;}
     if(!msgI.value.trim()){ setErr('err-mensaje', 'Contanos algo, aunque sea una línea.'); ok = false; }
     else setErr('err-mensaje', '');
 
+    // material (opcional): si hay algo, que parezca un link; si vino sin
+    // protocolo (drive.google.com/...) le anteponemos https:// en vez de fallar
+    setErr('err-material', '');
+    var mat = matI ? matI.value.trim() : '';
+    if(mat && !/^https?:\/\//i.test(mat)){
+      if(/^[\w.-]+\.[a-z]{2,}([\/?#]|$)/i.test(mat)){
+        matI.value = 'https://' + mat;
+      }else{
+        setErr('err-material', 'Eso no parece un link. Pegá la URL completa o dejalo vacío.');
+        ok = false;
+      }
+    }
+
     return ok;
+  }
+
+  // ── éxito: ocultar el form, mostrar la confirmación grande ──
+  function showOk(conAdjuntosPendientes){
+    form.hidden = true;
+    if(okAdj) okAdj.hidden = !conAdjuntosPendientes;
+    if(okBlock){
+      okBlock.classList.add('visible');
+      okBlock.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
   }
 
   // ── submit ──
   form.addEventListener('submit', async function(e){
     e.preventDefault();
+
+    // anti-spam: honeypot completado o envío a <3s de cargar la página →
+    // descartar simulando éxito (no darle señal al bot). Un humano real no
+    // llega a completar 4 campos en menos de 3 segundos.
+    if((hpI && hpI.value) || (Date.now() - t0 < 3000)){
+      showOk(false);
+      return;
+    }
+
     if(!validate()){ say('Revisá los campos marcados.', 'err'); return; }
 
     btn.disabled = true;
@@ -656,8 +778,10 @@ section{position:relative;padding:0 8vw;}
     var record = {
       nombre: nombreI.value.trim(),
       email: (emailI.value || '').trim().toLowerCase(),
+      whatsapp: waI ? waI.value.trim() : '',
       segmento: segmento,                 // 'managers' | 'marcas' | 'otra'
       mensaje: msgI.value.trim(),
+      material: matI ? matI.value.trim() : '',   // link Drive/WeTransfer/reel (opcional)
       adjuntos: adjuntos,                 // [{url,name,size,type}] (vacío si Storage gated)
       ts: Date.now(),
       date: new Date().toISOString().slice(0,10),
@@ -668,14 +792,7 @@ section{position:relative;padding:0 8vw;}
 
     try{
       await pushContacto(record);
-      form.reset();
-      cards.forEach(function(c){ c.setAttribute('aria-pressed','false'); });
-      segmento = null; files = []; renderFiles(); fileWarn.textContent = '';
-      if(adjuntosPendientes){
-        say('Te leímos. Te escribimos pronto. (Los adjuntos todavía no se suben acá — mandalos a ' + CANAL_DIRECTO + ' o pegá un link de Drive/WeTransfer en tu mensaje y los miramos igual.)', 'ok');
-      }else{
-        say('Te leímos. Te escribimos pronto.', 'ok');
-      }
+      showOk(adjuntosPendientes > 0);
     }catch(err){
       // Backend gated / sin respuesta → degradar con gracia, nunca romper.
       btn.disabled = false;
