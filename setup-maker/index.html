@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SETUP MAKER — Human Glitche · cómo se arma cada pipeline</title>
+<meta name="description" content="El manual de armado de los pipelines: qué marcas intervienen en cada servicio, el paso a paso de construcción y los detalles que importan.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --acid:#b8ff00;
+  --glitch:#ff2d55;
+  --cyan:#3ad0ff;
+  --ink:#f0ede6;
+  --line:rgba(240,237,230,.12);
+  --bg:#050505;
+  --pan:rgba(184,255,0,.015);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg);
+  color:var(--ink);
+  font-family:"Space Mono",monospace;
+  font-size:14px;
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+a{color:inherit;text-decoration:none}
+::selection{background:var(--acid);color:#050505}
+
+/* ---------- topbar ---------- */
+.topbar{
+  display:flex;justify-content:space-between;align-items:center;gap:16px;
+  padding:14px 24px;border-bottom:1px solid var(--line);
+  position:sticky;top:0;background:rgba(5,5,5,.92);backdrop-filter:blur(8px);z-index:50;
+  flex-wrap:wrap;
+}
+.topbar .brand{font-weight:700;letter-spacing:.08em}
+.topbar .brand em{font-style:normal;color:var(--acid)}
+.topbar nav{display:flex;gap:18px;font-size:11px;letter-spacing:.12em;text-transform:uppercase}
+.topbar nav a{opacity:.7;transition:.2s}
+.topbar nav a:hover{opacity:1;color:var(--acid)}
+
+/* ---------- hero ---------- */
+.hero{padding:56px 24px 32px;max-width:1200px;margin:0 auto}
+.hero h1{
+  font-size:clamp(34px,7vw,68px);font-weight:700;letter-spacing:-.02em;line-height:1;
+  text-transform:uppercase;
+}
+.hero h1 .cur{color:var(--acid)}
+.hero .sub{
+  font-size:11px;letter-spacing:.28em;text-transform:uppercase;opacity:.6;margin-top:10px;
+}
+.hero p.intro{max-width:760px;margin-top:22px;opacity:.85}
+.hero p.intro b{color:var(--acid);font-weight:700}
+
+/* ---------- golden rules ---------- */
+.rules{
+  max-width:1200px;margin:28px auto 0;padding:0 24px;
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;
+}
+.rule{
+  border:1px solid var(--line);padding:14px 16px;background:var(--pan);
+  font-size:12.5px;line-height:1.5;
+}
+.rule .k{
+  display:block;font-size:10px;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--acid);margin-bottom:6px;font-weight:700;
+}
+.rule.warn .k{color:var(--glitch)}
+
+/* ---------- layout ---------- */
+.layout{
+  max-width:1200px;margin:40px auto 80px;padding:0 24px;
+  display:grid;grid-template-columns:280px 1fr;gap:28px;align-items:start;
+}
+@media(max-width:900px){.layout{grid-template-columns:1fr}}
+
+/* ---------- sidebar ---------- */
+.side{position:sticky;top:74px}
+@media(max-width:900px){
+  .side{position:static}
+  .side .side-title{display:none}
+  #svcList{display:flex;overflow-x:auto;gap:8px;padding-bottom:8px;-webkit-overflow-scrolling:touch}
+}
+.side-title{font-size:10px;letter-spacing:.24em;text-transform:uppercase;opacity:.5;margin-bottom:10px}
+.svc-btn{
+  display:flex;align-items:center;gap:10px;width:100%;text-align:left;
+  background:none;border:1px solid var(--line);border-bottom:none;
+  color:var(--ink);font-family:inherit;font-size:12px;letter-spacing:.04em;
+  padding:10px 12px;cursor:pointer;transition:.15s;position:relative;overflow:hidden;
+}
+.svc-btn:last-of-type{border-bottom:1px solid var(--line)}
+.svc-btn:hover{background:rgba(184,255,0,.05)}
+.svc-btn.active{background:rgba(184,255,0,.09);border-left:3px solid var(--acid)}
+.svc-btn .ic{font-size:15px;width:20px;text-align:center;flex-shrink:0}
+.svc-btn .nm{flex:1;text-transform:uppercase;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.svc-btn .pc{font-size:10px;opacity:.55;flex-shrink:0}
+.svc-btn .pc.done{color:var(--acid);opacity:1}
+.svc-btn .bar{
+  position:absolute;left:0;bottom:0;height:2px;background:var(--acid);
+  width:var(--p,0%);transition:width .3s;opacity:.8;
+}
+@media(max-width:900px){
+  .svc-btn{border:1px solid var(--line)!important;white-space:nowrap;width:auto;flex-shrink:0}
+  .svc-btn .nm{overflow:visible}
+}
+
+/* ---------- main panel ---------- */
+.panel{min-width:0}
+.svc-head{border:1px solid var(--line);padding:24px;background:var(--pan)}
+.svc-head .row1{display:flex;align-items:flex-start;gap:16px;flex-wrap:wrap}
+.svc-head .big-ic{font-size:38px;line-height:1}
+.svc-head h2{font-size:clamp(22px,4vw,34px);text-transform:uppercase;letter-spacing:-.01em;line-height:1.1}
+.svc-head .tag{font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:var(--acid);margin-top:4px}
+.svc-head p.desc{margin-top:14px;opacity:.85;max-width:720px}
+.meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+.chip{
+  font-size:10px;letter-spacing:.14em;text-transform:uppercase;
+  border:1px solid var(--line);padding:4px 10px;opacity:.85;
+}
+.chip b{color:var(--cyan);font-weight:700}
+.chip.lvl b{color:var(--acid)}
+
+/* ---------- sections ---------- */
+.sect{margin-top:26px}
+.sect-title{
+  font-size:11px;letter-spacing:.26em;text-transform:uppercase;font-weight:700;
+  display:flex;align-items:center;gap:10px;margin-bottom:14px;
+}
+.sect-title::after{content:"";flex:1;height:1px;background:var(--line)}
+.sect-title .dot{color:var(--acid)}
+.sect-title .n{opacity:.4;font-weight:400}
+
+/* stack grid */
+.stack{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.brand{border:1px solid var(--line);padding:14px 16px;background:var(--pan);display:flex;flex-direction:column;gap:6px}
+.brand .top{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.brand .bn{font-weight:700;text-transform:uppercase;font-size:13px;letter-spacing:.03em}
+.badge{font-size:9px;letter-spacing:.16em;text-transform:uppercase;padding:2px 7px;border:1px solid;flex-shrink:0}
+.badge.gratis{color:var(--acid);border-color:var(--acid)}
+.badge.freemium{color:var(--cyan);border-color:var(--cyan)}
+.badge.pago{color:var(--glitch);border-color:var(--glitch)}
+.brand .role{font-size:12px;opacity:.8;line-height:1.45}
+.brand .alt{font-size:11px;opacity:.55;border-top:1px dashed var(--line);padding-top:6px;margin-top:2px}
+.brand .alt b{opacity:.9;font-weight:700}
+
+/* steps */
+.step{
+  display:flex;gap:14px;border:1px solid var(--line);border-bottom:none;padding:14px 16px;
+  cursor:pointer;transition:.15s;align-items:flex-start;background:var(--pan);
+}
+.step:last-child{border-bottom:1px solid var(--line)}
+.step:hover{background:rgba(184,255,0,.04)}
+.step .num{
+  font-size:11px;font-weight:700;color:var(--acid);border:1px solid var(--acid);
+  width:24px;height:24px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;
+  transition:.15s;
+}
+.step.done .num{background:var(--acid);color:#050505}
+.step.done .st,.step.done .sd{opacity:.4;text-decoration:line-through;text-decoration-color:rgba(184,255,0,.5)}
+.step .body{flex:1;min-width:0}
+.step .st{font-weight:700;text-transform:uppercase;font-size:12.5px;letter-spacing:.04em}
+.step .st .tm{font-weight:400;text-transform:none;letter-spacing:0;color:var(--cyan);font-size:11px;margin-left:8px}
+.step .sd{font-size:12.5px;opacity:.8;margin-top:4px;line-height:1.5}
+
+/* claves */
+.clave{
+  display:flex;gap:12px;border-left:2px solid var(--glitch);
+  padding:10px 14px;margin-bottom:8px;background:rgba(255,45,85,.03);
+  font-size:12.5px;line-height:1.55;
+}
+.clave .x{color:var(--glitch);font-weight:700;flex-shrink:0}
+.clave b{color:var(--ink);font-weight:700}
+
+/* entrega checklist */
+.check{
+  display:flex;gap:12px;align-items:flex-start;border:1px solid var(--line);border-bottom:none;
+  padding:11px 16px;cursor:pointer;transition:.15s;font-size:12.5px;background:var(--pan);
+}
+.check:last-child{border-bottom:1px solid var(--line)}
+.check:hover{background:rgba(184,255,0,.04)}
+.check .box{
+  width:16px;height:16px;border:1px solid var(--ink);flex-shrink:0;margin-top:2px;
+  display:flex;align-items:center;justify-content:center;font-size:11px;color:#050505;transition:.15s;
+}
+.check.done .box{background:var(--acid);border-color:var(--acid)}
+.check.done span.txt{opacity:.45;text-decoration:line-through;text-decoration-color:rgba(184,255,0,.5)}
+.check .owner{
+  font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--cyan);
+  border:1px solid var(--cyan);padding:1px 6px;margin-left:auto;flex-shrink:0;align-self:center;
+}
+
+/* progress + reset */
+.progress-line{display:flex;align-items:center;gap:14px;margin-top:26px;font-size:11px;letter-spacing:.1em;text-transform:uppercase}
+.progress-line .track{flex:1;height:4px;background:var(--line);position:relative}
+.progress-line .fill{position:absolute;inset:0;width:0%;background:var(--acid);transition:width .3s}
+.reset-btn{
+  background:none;border:1px solid var(--line);color:var(--ink);font-family:inherit;
+  font-size:10px;letter-spacing:.16em;text-transform:uppercase;padding:6px 12px;cursor:pointer;transition:.15s;
+}
+.reset-btn:hover{border-color:var(--glitch);color:var(--glitch)}
+
+/* footer */
+footer{
+  border-top:1px solid var(--line);padding:26px 24px;text-align:center;
+  font-size:10px;letter-spacing:.22em;text-transform:uppercase;opacity:.5;
+}
+footer a{border-bottom:1px solid var(--line)}
+footer a:hover{color:var(--acid)}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">SETUP <em>MAKER</em></div>
+  <nav>
+    <a href="/labs">← LABS</a>
+    <a href="/pipelines/">PIPELINES</a>
+    <a href="/guia-venta/">GUÍA DE VENTA</a>
+  </nav>
+</div>
+
+<section class="hero">
+  <h1>SETUP<br><span class="cur">MAKER</span></h1>
+  <div class="sub">cómo se arma cada pipeline · marcas · paso a paso · detalles</div>
+  <p class="intro">
+    <b>PIPELINES</b> te dice qué venderle a cada negocio y <b>GUÍA DE VENTA</b> cómo cerrarlo.
+    Esta app cierra el triángulo: <b>cómo se construye</b> cada servicio una vez firmado —
+    qué marcas y herramientas intervienen, el armado paso a paso con tiempos, y los detalles
+    que separan una entrega profesional de un dolor de cabeza. Todo corre en tu navegador;
+    el progreso de cada armado se guarda acá.
+  </p>
+</section>
+
+<div class="rules">
+  <div class="rule warn"><span class="k">Regla de oro #1</span>Todo queda <b>a nombre del cliente</b>: dominio, Mercado Pago, cuenta publicitaria, perfil de Google. Vos entrás con rol de administrador. Si un día se van, se van con lo suyo — y vos con tu reputación.</div>
+  <div class="rule"><span class="k">Regla de oro #2</span>Ficha de accesos desde el día uno: qué cuenta, qué mail, quién es titular, dónde está la clave. Se entrega copia al cliente al cerrar el setup.</div>
+  <div class="rule"><span class="k">Regla de oro #3</span>El setup se cobra <b>antes</b> de empezar (o 50/50). El mensual cubre lo pactado por escrito — mantenimiento definido, no trabajo infinito.</div>
+  <div class="rule"><span class="k">Regla de oro #4</span>Probá el flujo completo como si fueras un cliente real antes de entregar: comprá, reservá, pedí, pagá. Lo que no probaste, está roto.</div>
+</div>
+
+<div class="layout">
+  <aside class="side">
+    <div class="side-title">PIPELINES · 13 SERVICIOS</div>
+    <div id="svcList"></div>
+  </aside>
+  <main class="panel" id="panel"></main>
+</div>
+
+<footer>
+  HUMAN GLITCHE · el taller · manual de armado client-side ·
+  <a href="/pipelines/">PIPELINES</a> · <a href="/guia-venta/">GUÍA DE VENTA</a> · <a href="/auditoria.html">AUDITORÍA</a>
+</footer>
+
+<script>
+/* =====================================================================
+   DATA — 13 servicios del catálogo PIPELINES
+   stack.tipo: gratis | freemium | pago
+   ===================================================================== */
+const SERVICIOS = [
+{
+  id:"web", icon:"🌐", nombre:"PRESENCIA WEB", tag:"SITIO · LANDING",
+  desc:"Que el negocio exista en internet: un sitio simple que carga rápido y aparece en Google. La base de todo lo demás — casi todos los otros pipelines se apoyan en éste.",
+  tiempo:"6–10 h", nivel:"BÁSICO",
+  stack:[
+    {n:"NIC.ar", tipo:"pago", r:"Dominio .com.ar — el estándar para negocio local argentino. Se tramita con CUIT/CUIL y clave fiscal del titular.", alt:"Namecheap / Cloudflare Registrar para .com (~US$ 10/año)"},
+    {n:"Cloudflare Pages", tipo:"gratis", r:"Hosting estático: deploy desde Git, SSL automático, CDN global. Costo de infraestructura ≈ cero.", alt:"Netlify / Vercel — mismo modelo, también gratis"},
+    {n:"GitHub", tipo:"gratis", r:"Repo del sitio. Cada cambio queda versionado y el deploy sale solo al pushear.", alt:"GitLab"},
+    {n:"Google Search Console", tipo:"gratis", r:"Da de alta el sitio en Google: sitemap, indexación, qué búsquedas lo traen.", alt:"—"},
+    {n:"Google Business Profile", tipo:"gratis", r:"La ficha del mapa: horarios, fotos, reseñas, link al sitio. Para negocio local pesa más que la web misma.", alt:"—"},
+    {n:"Formspree", tipo:"freemium", r:"Formulario de contacto sin backend: el mensaje llega por mail (50/mes gratis).", alt:"Tally / botón directo a WhatsApp (wa.me)"}
+  ],
+  pasos:[
+    {t:"Relevar el contenido", tm:"1–2 h", d:"Visita al local o llamada: qué vende, horarios, dirección, fotos reales (sacalas vos si no hay), WhatsApp, redes. El 80% de las demoras de un sitio es contenido que nunca llega — cerralo el día uno."},
+    {t:"Tramitar el dominio", tm:"30 min + espera", d:".com.ar via NIC.ar con la clave fiscal DEL CLIENTE (sentate con él, no lo hagas con la tuya). El .com se compra en 5 minutos con su tarjeta."},
+    {t:"Armar la landing", tm:"3–5 h", d:"Una página: hero con qué es y dónde está, servicios/productos, fotos, mapa embebido, botón de WhatsApp flotante, horarios, footer. HTML propio o plantilla — mobile first, sin librerías pesadas."},
+    {t:"Deploy + dominio + SSL", tm:"45 min", d:"Repo en GitHub → Cloudflare Pages → apuntar DNS del dominio → verificar HTTPS. Probar en celular con datos móviles, no solo en wifi."},
+    {t:"Alta en Google", tm:"45 min", d:"Search Console: verificar propiedad y mandar sitemap. Google Business Profile: crear o reclamar la ficha, cargar fotos y vincular el sitio."},
+    {t:"Medición mínima", tm:"20 min", d:"Un contador de visitas liviano (Cloudflare Web Analytics, gratis y sin cookies) para poder mostrar números en el reporte mensual."}
+  ],
+  claves:[
+    "<b>El dominio es del cliente.</b> Titular: su CUIT, su mail. Si lo ponés a tu nombre, el día que se pelean tenés un secuestro de dominio y una denuncia en puerta.",
+    "<b>.com.ar requiere trámite con clave fiscal</b> — coordiná una visita con el dueño para hacerlo juntos. Si es urgente, salí con .com y migrá después.",
+    "<b>Velocidad móvil o nada:</b> el cliente local entra desde el teléfono con 4G. Imágenes comprimidas (WebP), sin sliders, sin fuentes de más.",
+    "<b>La renovación anual del dominio</b> es parte de tu mensual — calendarizala. Un dominio vencido tira abajo sitio, mails y QRs impresos al mismo tiempo."
+  ],
+  entrega:[
+    {t:"Dominio a nombre del cliente (titular + mail verificados)", owner:true},
+    {t:"Sitio en producción con HTTPS funcionando en celular"},
+    {t:"Google Business Profile verificado y vinculado", owner:true},
+    {t:"Search Console con sitemap enviado"},
+    {t:"Ficha de accesos entregada (registrador, hosting, repo)"},
+    {t:"Fecha de renovación del dominio anotada en tu calendario"}
+  ]
+},
+{
+  id:"whatsapp", icon:"💬", nombre:"WHATSAPP BIZ AUTOPILOT", tag:"WHATSAPP · BOT",
+  desc:"WhatsApp Business con catálogo, respuestas automáticas a las preguntas de siempre, etiquetas y recordatorios. El canal donde el negocio local argentino realmente vende.",
+  tiempo:"4–6 h", nivel:"BÁSICO",
+  stack:[
+    {n:"WhatsApp Business (app)", tipo:"gratis", r:"La app gratuita de Meta: perfil de empresa, catálogo, mensajes de bienvenida/ausencia, respuestas rápidas, etiquetas. Alcanza para el 90% de los comercios.", alt:"—"},
+    {n:"Meta Business Manager", tipo:"gratis", r:"El paraguas de Meta: une WhatsApp, Instagram y Facebook del negocio. Conviene dejarlo armado aunque hoy no se use todo.", alt:"—"},
+    {n:"WhatsApp Business Platform (API)", tipo:"pago", r:"El paso siguiente si escala: bots reales, multi-agente, mensajes salientes masivos. Se contrata vía un BSP y se paga por conversación.", alt:"BSPs: 360dialog, Wati, Twilio, Gupshup"},
+    {n:"wa.me + QR", tipo:"gratis", r:"Link directo al chat con mensaje prellenado + QR para vidriera, mostrador y redes.", alt:"Generador de QR propio o cualquier generador gratuito"}
+  ],
+  pasos:[
+    {t:"Número dedicado", tm:"30 min", d:"Chip nuevo a nombre del cliente, exclusivo del negocio. NUNCA el número personal del dueño: el día que quiera separar vida y trabajo, el historial y el catálogo quedan presos."},
+    {t:"Perfil completo", tm:"45 min", d:"Nombre real del negocio, categoría, dirección, horarios, descripción, foto de perfil (logo del pack de identidad si existe). Un perfil incompleto genera desconfianza de entrada."},
+    {t:"Catálogo", tm:"1–2 h", d:"Productos/servicios con foto, precio y descripción. Es la 'vidriera dentro del chat' — sin catálogo el autopilot no tiene adónde apuntar."},
+    {t:"Mensajes automáticos", tm:"45 min", d:"Bienvenida (primera vez que escriben), ausencia (fuera de horario, con horario de respuesta). Tono del negocio, corto, y siempre con una acción: 'mirá el catálogo', 'dejanos tu consulta'."},
+    {t:"Respuestas rápidas", tm:"45 min", d:"Atajos '/' para las 8–10 preguntas de siempre: precios, horarios, ubicación, envíos, seña, formas de pago. Redactalas con el dueño — él sabe qué le preguntan todos los días."},
+    {t:"Etiquetas de pipeline", tm:"30 min", d:"Nuevo → Pedido → Pagado → Entregado (ajustar al rubro). Es el mini-CRM: enseñale al dueño a mover los chats de etiqueta."},
+    {t:"Link + QR en todos lados", tm:"30 min", d:"wa.me con texto prellenado en: sitio, bio de Instagram, ficha de Google, QR impreso en mostrador/vidriera."}
+  ],
+  claves:[
+    "<b>Un número no puede estar en la app y en la API a la vez.</b> Si migrás a API, ese número deja de funcionar en el teléfono. Planificá la migración, no la improvises.",
+    "<b>La API se paga por conversación</b> (ventana de 24 h, tarifa según categoría: marketing, utilidad, servicio). Presupuestala solo cuando el volumen la justifique.",
+    "<b>Nada de listas de difusión a gente que no te agendó</b> ni mensajes masivos fríos: WhatsApp banea números por spam, y el número baneado es el del negocio.",
+    "<b>Backup de chats activado</b> (Google Drive/iCloud) — el historial de pedidos es información comercial del cliente."
+  ],
+  entrega:[
+    {t:"Chip y línea a nombre del cliente", owner:true},
+    {t:"Perfil de empresa completo con catálogo cargado"},
+    {t:"Bienvenida + ausencia + respuestas rápidas activas y probadas"},
+    {t:"Etiquetas configuradas y dueño capacitado (15 min de demo)"},
+    {t:"QR impreso entregado + link wa.me en sitio/redes/Google"},
+    {t:"Backup automático de chats activado"}
+  ]
+},
+{
+  id:"redes", icon:"📲", nombre:"REDES EN PILOTO", tag:"INSTAGRAM · TIKTOK",
+  desc:"Contenido programado, respuestas automáticas a DM y un reporte mensual claro. Presencia constante sin que el dueño viva pegado al teléfono.",
+  tiempo:"5–8 h setup", nivel:"MEDIO",
+  stack:[
+    {n:"Meta Business Suite", tipo:"gratis", r:"Programación nativa de Instagram + Facebook, bandeja unificada de mensajes y comentarios, estadísticas. La base del piloto.", alt:"—"},
+    {n:"Metricool", tipo:"freemium", r:"Programación multi-red (suma TikTok), mejor calendario y reportes exportables en PDF — lo que le mostrás al cliente cada mes.", alt:"Buffer / Later"},
+    {n:"ManyChat", tipo:"freemium", r:"Auto-respuestas en DM de Instagram por palabra clave ('PRECIO', 'INFO') y respuestas a comentarios. Deriva a WhatsApp.", alt:"Respuestas guardadas nativas de IG (más manual)"},
+    {n:"Canva", tipo:"freemium", r:"Plantillas de posteo con la identidad del negocio, editables por el cliente si algún día publica solo.", alt:"Plantillas propias en Photoshop/Illustrator"},
+    {n:"CapCut", tipo:"freemium", r:"Edición rápida de reels con subtítulos automáticos. Si el negocio contrata el PACK VIDEO, esto lo cubre ese pipeline.", alt:"Premiere / After Effects"}
+  ],
+  pasos:[
+    {t:"Cuentas en orden", tm:"1 h", d:"Instagram a cuenta profesional, página de Facebook vinculada, todo unido en Meta Business Suite con vos como administrador invitado — nunca con la contraseña del dueño en tu poder."},
+    {t:"Definir la grilla", tm:"1–2 h", d:"3–4 formatos repetibles según rubro: producto de la semana, detrás de escena, testimonio/reseña, promo. Frecuencia realista (3–4 posts/semana) — mejor constante que ambicioso."},
+    {t:"Plantillas con identidad", tm:"1–2 h", d:"Set de plantillas Canva (feed, stories, promo) con la paleta y tipografías del negocio. Si no hay identidad, vendé primero el pipeline IDENTIDAD VISUAL."},
+    {t:"Producir y programar el mes", tm:"2–3 h/mes", d:"Batch mensual: producís todo el contenido de una vez y lo dejás programado. Fechas clave del rubro (feriados, temporada) van en el calendario."},
+    {t:"Auto-DM", tm:"1 h", d:"ManyChat: palabra clave en comentarios/DM dispara respuesta con link a WhatsApp o catálogo. Configurar 3–4 keywords máximo, bien elegidas."},
+    {t:"Reporte mensual", tm:"30 min/mes", d:"Una página: alcance, seguidores nuevos, clics a WhatsApp, mejor post del mes. Sin métricas de vanidad — lo que el dueño entiende y valora."}
+  ],
+  claves:[
+    "<b>Acceso por roles, no por contraseña.</b> Business Suite permite invitarte como admin/editor. Si un cliente te da su contraseña, la cambiás por él y lo invitás como corresponde… al revés: te invita él.",
+    "<b>ManyChat necesita la página de Facebook vinculada</b> a Instagram para funcionar — es el paso que siempre falta y por el que 'no anda'.",
+    "<b>Definí por escrito quién responde qué:</b> el bot contesta lo automático, pero los DM de venta real los responde el dueño (o vos, si está en el mensual). Un DM sin responder 3 días quema la cuenta.",
+    "<b>El algoritmo premia video:</b> si el cliente puede pagar los dos, REDES EN PILOTO + PACK VIDEO es el combo natural. Vendelos juntos."
+  ],
+  entrega:[
+    {t:"Cuentas profesionales unificadas en Business Suite", owner:true},
+    {t:"Vos como administrador invitado (sin contraseñas compartidas)"},
+    {t:"Grilla de contenido del primer mes programada"},
+    {t:"Plantillas Canva entregadas en el Canva del cliente", owner:true},
+    {t:"Auto-DM activo y probado con cuenta ajena"},
+    {t:"Formato de reporte mensual acordado con el dueño"}
+  ]
+},
+{
+  id:"menu", icon:"🍽️", nombre:"MENÚ + PEDIDOS WHATSAPP", tag:"GASTRO · RETAIL",
+  desc:"Carta digital con QR en la mesa o vidriera: el cliente arma el pedido y cae directo al WhatsApp del negocio, con seña opcional. Menos idas y vueltas, más tickets.",
+  tiempo:"6–9 h", nivel:"MEDIO",
+  stack:[
+    {n:"Cloudflare Pages", tipo:"gratis", r:"Hosting de la carta web. Si ya hiciste PRESENCIA WEB, la carta vive en el mismo dominio (/carta).", alt:"Netlify / Vercel"},
+    {n:"Google Sheets", tipo:"gratis", r:"La base del menú: el dueño edita nombre, precio y disponibilidad en una planilla y la carta se actualiza sola.", alt:"JSON editado por vos (más frágil: te llaman por cada cambio)"},
+    {n:"wa.me", tipo:"gratis", r:"El carrito arma el texto del pedido y lo manda al WhatsApp del local con un click.", alt:"—"},
+    {n:"Mercado Pago", tipo:"pago", r:"Link de pago para la seña opcional (comisión por transacción). Reduce el no-show de pedidos grandes.", alt:"Transferencia con alias (sin comisión, sin confirmación automática)"},
+    {n:"QR", tipo:"gratis", r:"QR a la carta, impreso y laminado: mesas, vidriera, mostrador, bio de Instagram.", alt:"—"}
+  ],
+  pasos:[
+    {t:"Relevar la carta", tm:"1–2 h", d:"Menú completo con precios, categorías y fotos REALES de los platos más vendidos (sacalas vos con luz natural). Foto de stock en gastronomía = desconfianza."},
+    {t:"Base editable", tm:"1 h", d:"Google Sheets con columnas: categoría, producto, descripción, precio, disponible sí/no. Compartida con el dueño con permiso de edición."},
+    {t:"Carta web mobile-first", tm:"2–3 h", d:"Una página rápida que lee la planilla: categorías colapsables, buscador, precios grandes. Se abre desde QR en un celular con 4G — cada segundo de carga cuesta pedidos."},
+    {t:"Carrito → WhatsApp", tm:"1–2 h", d:"El cliente suma productos, elige retiro/envío y el botón arma el mensaje: pedido detallado + total + datos. Cae al WhatsApp Business del local ya formateado."},
+    {t:"Seña opcional", tm:"45 min", d:"Para pedidos grandes o encargos: link de Mercado Pago por un % fijo. Regla clara y visible: 'encargos se confirman con seña'."},
+    {t:"QR + capacitación", tm:"1 h", d:"QR impreso y laminado en mesas/vidriera/mostrador. Demo de 15 min al dueño: cómo editar precios en la planilla y cómo marcar productos agotados."}
+  ],
+  claves:[
+    "<b>Los precios en Argentina cambian todo el tiempo:</b> si el dueño no puede editarlos solo, el pipeline muere en un mes (o te llama cada semana — cobralo en el mensual o dale la planilla).",
+    "<b>El texto de wa.me tiene límite de longitud:</b> pedidos muy largos se truncan. Formato compacto: '2x Muzza, 1x Fainá — Total $X — Retiro 21hs'.",
+    "<b>'Disponible sí/no' importa tanto como el precio:</b> vender por carta algo que no hay es la queja #1. Enseñá a apagar productos.",
+    "<b>El QR va laminado</b> — el papel en una mesa de bar dura una noche. Y también en la bio de Instagram: la carta no es solo para el que ya está sentado."
+  ],
+  entrega:[
+    {t:"Carta en producción, probada desde QR con datos móviles"},
+    {t:"Planilla de menú compartida con el dueño (editor)", owner:true},
+    {t:"Pedido de prueba completo enviado y recibido en el WhatsApp del local"},
+    {t:"Link de seña de Mercado Pago del cliente probado", owner:true},
+    {t:"QRs impresos y laminados entregados"},
+    {t:"Dueño capacitado: editar precios y marcar agotados"}
+  ]
+},
+{
+  id:"leads", icon:"🧲", nombre:"CAPTURA DE LEADS", tag:"FORMULARIO · CRM",
+  desc:"Un formulario que captura interesados y dispara seguimiento automático por mail o WhatsApp. Convierte visitas en contactos reales con nombre y teléfono.",
+  tiempo:"4–6 h", nivel:"MEDIO",
+  stack:[
+    {n:"Tally", tipo:"freemium", r:"Formularios ilimitados gratis, lindos y embebibles. El punto de captura.", alt:"Google Forms (más feo) / Typeform (más caro)"},
+    {n:"Google Sheets", tipo:"gratis", r:"El CRM liviano: cada lead es una fila con estado (nuevo / contactado / cerrado / perdido).", alt:"Airtable (más prolijo, gratis hasta 1.000 registros)"},
+    {n:"Make", tipo:"freemium", r:"La automatización: form → fila en la planilla → aviso al dueño → respuesta automática al lead. 1.000 operaciones/mes gratis.", alt:"Zapier (más caro) / n8n self-hosted (gratis, más técnico)"},
+    {n:"Brevo", tipo:"freemium", r:"El mail automático de respuesta y el goteo posterior (300 mails/día gratis).", alt:"Respuesta manual por WhatsApp (más efectiva pero depende del humano)"}
+  ],
+  pasos:[
+    {t:"Definir la oferta", tm:"1 h", d:"Nadie deja su teléfono 'por si acaso'. Un motivo concreto: presupuesto sin cargo, 10% primera compra, turno prioritario, guía/catálogo. Sin gancho no hay pipeline."},
+    {t:"Formulario corto", tm:"45 min", d:"Nombre, WhatsApp, qué necesita. Tres campos. Cada campo extra tira conversión — los datos finos se piden después, charlando."},
+    {t:"Conectar el destino", tm:"45 min", d:"Make: cada envío crea fila en Sheets con fecha y origen (sitio, IG, QR). Columna 'estado' con lista desplegable."},
+    {t:"Aviso inmediato al dueño", tm:"30 min", d:"Mail o notificación con los datos del lead al instante. Responder en menos de 5 minutos multiplica la conversión — ese es el argumento de venta del pipeline."},
+    {t:"Respuesta automática al lead", tm:"45 min", d:"Mail inmediato ('recibimos tu consulta, te escribimos hoy') o mejor: link directo a WhatsApp. El lead que espera dos días compró en otro lado."},
+    {t:"Rutina semanal", tm:"15 min/sem", d:"Revisión de la planilla con el dueño: nuevos sin contactar, seguimientos pendientes. La disciplina del dueño es la mitad del resultado — dejáselo claro."}
+  ],
+  claves:[
+    "<b>Jamás comprar bases de datos</b> ni escribirle a gente que no pidió contacto: es spam, es ilegal (Ley 25.326 de protección de datos) y quema el número/dominio del cliente.",
+    "<b>Velocidad > todo:</b> el pipeline técnico tarda segundos; si el dueño contesta a los 3 días, el sistema 'no funciona'. Pactá el tiempo de respuesta como parte del servicio.",
+    "<b>Checkbox de consentimiento</b> en el form ('acepto que me contacten') — te cubre y filtra curiosos.",
+    "<b>Origen del lead siempre registrado</b> (sitio / IG / QR / publicidad): es lo que después te deja demostrar qué canal paga y venderle PUBLICIDAD LOCAL con datos."
+  ],
+  entrega:[
+    {t:"Formulario publicado en sitio / bio / QR"},
+    {t:"Automatización Make activa (cuenta del cliente o documentada)", owner:true},
+    {t:"Planilla CRM compartida con el dueño", owner:true},
+    {t:"Lead de prueba enviado: aviso + respuesta automática verificados"},
+    {t:"Tiempo de respuesta pactado con el dueño por escrito"}
+  ]
+},
+{
+  id:"reputacion", icon:"⭐", nombre:"REPUTACIÓN", tag:"RESEÑAS · GOOGLE",
+  desc:"Pide reseñas a los clientes contentos y avisa de las negativas antes de que escalen. Sube la nota, la posición en el mapa y la confianza del que busca.",
+  tiempo:"3–5 h", nivel:"BÁSICO",
+  stack:[
+    {n:"Google Business Profile", tipo:"gratis", r:"Donde viven las reseñas que importan para un negocio local. Ficha verificada = requisito de todo lo demás.", alt:"—"},
+    {n:"Link directo de reseña", tipo:"gratis", r:"GBP genera un link corto que abre directo el cajón de 5 estrellas — sin buscar el negocio ni scrollear.", alt:"—"},
+    {n:"QR", tipo:"gratis", r:"El link de reseña en QR: mostrador, ticket, packaging, mesa.", alt:"—"},
+    {n:"WhatsApp Business", tipo:"gratis", r:"El canal del pedido post-venta: respuesta rápida guardada con el link, se manda al cliente contento.", alt:"Mail post-compra si hay EMAIL + FIDELIZACIÓN"}
+  ],
+  pasos:[
+    {t:"Reclamar y verificar la ficha", tm:"1 h + espera", d:"Buscar el negocio en Google/Maps: si la ficha existe sin dueño, reclamarla; si no, crearla. La verificación puede pedir video del local o postal — arrancá esto primero porque demora días."},
+    {t:"Completar el perfil", tm:"1 h", d:"Categoría correcta, horarios reales (y feriados), fotos del local/productos (10+, sacadas por vos), servicios, link al sitio y a WhatsApp. Ficha completa = mejor ranking en el mapa."},
+    {t:"Generar el link corto", tm:"15 min", d:"Desde GBP: 'Pedir reseñas'. Probalo en modo incógnito — tiene que abrir directo las estrellas."},
+    {t:"Guion del pedido", tm:"45 min", d:"Respuesta rápida en WhatsApp: 'Gracias por tu compra 🙌 ¿Nos dejás una reseña? Tardás 30 segundos: [link]'. Se manda SOLO después de una venta feliz, uno a uno."},
+    {t:"QR físico", tm:"30 min", d:"QR del link de reseña en el mostrador y/o ticket. El momento de pago es el pico de satisfacción — ahí se pide."},
+    {t:"Protocolo de respuesta", tm:"45 min", d:"Positivas: agradecer con nombre, corto. Negativas: responder en <24 h, sin discutir, derivar a privado ('escribinos al WhatsApp y lo resolvemos'). Notificaciones de GBP activadas en el teléfono del dueño."}
+  ],
+  claves:[
+    "<b>Nunca comprar reseñas ni poner reseñas falsas</b> — Google las detecta, penaliza la ficha y el negocio puede desaparecer del mapa. Es el equivalente local a quemar el dominio.",
+    "<b>Cuidado con el 'review gating'</b> (filtrar y pedirle reseña solo al contento con un formulario previo): viola las políticas de Google. Pedile a los contentos por WhatsApp uno a uno, que es distinto.",
+    "<b>Responder TODAS las reseñas,</b> buenas y malas: Google lo pondera y el que lee ve un negocio que da la cara.",
+    "<b>La ficha es del cliente:</b> él es propietario, vos administrador. Hay un mercado negro de fichas secuestradas — no seas parte del problema."
+  ],
+  entrega:[
+    {t:"Ficha de Google verificada, propietario = cliente", owner:true},
+    {t:"Perfil completo: fotos, horarios, servicios, links"},
+    {t:"Link corto de reseña probado en incógnito"},
+    {t:"Respuesta rápida de pedido cargada en el WhatsApp del local"},
+    {t:"QR de reseña impreso y colocado"},
+    {t:"Protocolo de respuesta a negativas entregado por escrito"}
+  ]
+},
+{
+  id:"turnos", icon:"📆", nombre:"AGENDA / TURNOS", tag:"RESERVAS · RECORDATORIOS",
+  desc:"Link de reserva con confirmación y recordatorio automático 24 h antes. Menos turnos perdidos, agenda ordenada, y el teléfono deja de sonar para coordinar horarios.",
+  tiempo:"4–6 h", nivel:"MEDIO",
+  stack:[
+    {n:"Cal.com", tipo:"freemium", r:"Página de reserva con branding, tipos de servicio, buffers y límites. Open source, plan gratis generoso.", alt:"Calendly / citas de Google Calendar (appointment schedules)"},
+    {n:"Google Calendar", tipo:"gratis", r:"El calendario real del negocio: cada reserva cae acá y bloquea el horario. Sincroniza con el del dueño para no pisarse.", alt:"—"},
+    {n:"Make", tipo:"freemium", r:"El recordatorio por WhatsApp 24 h antes (webhook de la reserva → mensaje). El recordatorio nativo es por mail, que en AR se lee menos.", alt:"Recordatorio manual con respuesta rápida (bajo volumen)"},
+    {n:"Mercado Pago", tipo:"pago", r:"Seña al reservar (link o integración): el arma definitiva contra el no-show.", alt:"Transferencia con alias + confirmación manual"}
+  ],
+  pasos:[
+    {t:"Relevar servicios y tiempos", tm:"1 h", d:"Lista de servicios con duración real (incluida la limpieza/preparación entre turnos), quiénes atienden, horarios por día. Los buffers entre turnos van acá — turnos pegados = atrasos en cadena."},
+    {t:"Configurar la agenda", tm:"1–2 h", d:"Cal.com: un tipo de evento por servicio, duración + buffer, límite de anticipación (ej. no reservar con menos de 2 h) y horizonte (ej. hasta 30 días). Branding con logo y colores."},
+    {t:"Conectar el calendario", tm:"30 min", d:"Google Calendar del NEGOCIO (cuenta del negocio, no la personal del dueño) como fuente de verdad. Si el dueño usa el personal, sincronizar ambos para bloquear superposiciones."},
+    {t:"Recordatorio 24 h antes", tm:"1 h", d:"Mail nativo + WhatsApp vía Make si el volumen lo justifica. Texto con opción de reprogramar: el que avisa que no va libera el lugar."},
+    {t:"Seña anti no-show", tm:"45 min", d:"Para servicios largos o de alta demanda: seña por Mercado Pago al reservar. Política visible: 'la seña se descuenta del servicio; cancelando con 24 h se devuelve'."},
+    {t:"Publicar el link", tm:"30 min", d:"Bio de Instagram, respuesta rápida de WhatsApp ('reservá acá: [link]'), botón en el sitio, ficha de Google (botón Reservar)."}
+  ],
+  claves:[
+    "<b>El no-show se combate con seña + recordatorio,</b> no con enojo. Con los dos activos el no-show baja del 20–30% a casi cero — ese es el número que vendés.",
+    "<b>Buffers realistas:</b> preguntale al que atiende cuánto tarda de verdad entre clientes. Una agenda que atrasa es peor que no tener agenda.",
+    "<b>Cuenta del negocio, no personal:</b> si la agenda vive en el Gmail personal del dueño, el día que cambie de empleado o se pelee con el socio, se rompe todo.",
+    "<b>El recordatorio por WhatsApp convierte mucho más que el mail en Argentina</b> — pero mandado a mano por el dueño también funciona si el volumen es bajo. No sobre-ingenierices."
+  ],
+  entrega:[
+    {t:"Agenda configurada con todos los servicios y buffers"},
+    {t:"Calendario del negocio conectado", owner:true},
+    {t:"Reserva de prueba completa: confirmación + recordatorio recibidos"},
+    {t:"Política de seña/cancelación publicada y probada"},
+    {t:"Link de reserva en bio, WhatsApp, sitio y ficha de Google"},
+    {t:"Dueño capacitado: bloquear horarios y reprogramar"}
+  ]
+},
+{
+  id:"factura", icon:"🧾", nombre:"FACTURACIÓN AUTO", tag:"FISCAL · ARCA",
+  desc:"De la venta al comprobante sin fricción: arma la factura AR (A/B/C), la envía por mail o WhatsApp y la registra. Cierra el círculo administrativo del negocio.",
+  tiempo:"4–8 h", nivel:"AVANZADO",
+  stack:[
+    {n:"ARCA (ex AFIP)", tipo:"gratis", r:"Comprobantes en línea + Facturador móvil: la vía oficial gratuita para emitir A/B/C. Requiere clave fiscal nivel 3 del titular.", alt:"—"},
+    {n:"Afip SDK", tipo:"freemium", r:"API para emitir comprobantes programáticamente (webservices de ARCA sin pelearse con SOAP ni certificados a mano). Para cuando el volumen justifica automatizar de verdad.", alt:"TusFacturas / Facturante (SaaS con API, pagos)"},
+    {n:"FACTURA AR (labs)", tipo:"gratis", r:"Nuestra herramienta: arma el comprobante, calcula IVA discriminado, valida CUIT y genera el QR oficial. Visualización y armado — no se conecta a ARCA.", alt:"—"},
+    {n:"Make + Sheets", tipo:"freemium", r:"El registro: cada comprobante emitido se anota en una planilla (fecha, cliente, monto, CAE) y se envía por mail/WhatsApp al comprador.", alt:"Registro manual en planilla"}
+  ],
+  pasos:[
+    {t:"Relevar la situación fiscal", tm:"1 h", d:"¿Monotributo o Responsable Inscripto? ¿Categoría? ¿Ya emite o es la primera vez? ESTA REUNIÓN ES CON EL CONTADOR del cliente — vos armás el flujo, el encuadre fiscal lo define el contador."},
+    {t:"Clave fiscal y punto de venta", tm:"1–2 h", d:"El titular necesita clave fiscal nivel 3 y un punto de venta dado de alta para comprobantes en línea. Se hace en la página de ARCA, sentado CON el cliente — la clave es de él y la tipea él."},
+    {t:"Definir el flujo mínimo", tm:"1 h", d:"Venta → datos del comprador (CUIT/DNI, condición IVA) → tipo de comprobante (A/B/C según quién le compra) → emisión → envío → registro. Dibujalo con el dueño: dónde le duele hoy (olvidos, fin de mes a las apuradas)."},
+    {t:"Armar la automatización", tm:"2–3 h", d:"Nivel 1 (sin API): facturador móvil + planilla de registro + plantilla de envío por WhatsApp. Nivel 2 (con API): Afip SDK emite desde el flujo de venta (ej. desde la TIENDA) y Make registra y envía solo."},
+    {t:"Probar en homologación", tm:"1 h", d:"Si vas por API: ARCA tiene ambiente de testing — probá ahí TODO antes de emitir real. Un comprobante real mal emitido se anula con nota de crédito, no se borra."},
+    {t:"Capacitar y documentar", tm:"1 h", d:"Demo al dueño del flujo completo + hoja de 'qué hacer cuando': comprador pide factura A, se equivocó el monto, no salió el CAE."}
+  ],
+  claves:[
+    "<b>Vos no sos el contador.</b> Armás la tubería, no definís encuadres fiscales. Todo lo impositivo se valida con el contador del cliente — dejalo por escrito en la propuesta.",
+    "<b>La clave fiscal es del cliente y la opera el cliente.</b> Nunca la guardes ni operes con ella desde tus equipos sin autorización escrita. Para la API existen certificados digitales delegados — esa es la vía correcta.",
+    "<b>El QR de ARCA es obligatorio</b> en todos los comprobantes electrónicos, y el CAE con su vencimiento debe registrarse. FACTURA AR de labs arma el QR oficial.",
+    "<b>Errores se corrigen con nota de crédito/débito,</b> no borrando. Si el flujo automático emite mal, emite mal en serie: probá en homologación y arrancá con volumen chico."
+  ],
+  entrega:[
+    {t:"Punto de venta activo y flujo probado con el contador del cliente", owner:true},
+    {t:"Comprobante de prueba emitido, enviado y registrado"},
+    {t:"Planilla de registro (fecha, comprador, monto, CAE) compartida", owner:true},
+    {t:"Hoja de contingencias entregada (errores comunes y qué hacer)"},
+    {t:"Acuerdo por escrito: lo fiscal lo valida el contador"}
+  ]
+},
+{
+  id:"tienda", icon:"🛒", nombre:"TIENDA + PAGOS", tag:"CATÁLOGO · MERCADO PAGO",
+  desc:"Catálogo online con carrito y cobro por Mercado Pago: el cliente elige, paga y el pedido llega cobrado. Canal propio, sin comisión de marketplace.",
+  tiempo:"8–14 h", nivel:"AVANZADO",
+  stack:[
+    {n:"Mercado Pago", tipo:"pago", r:"El cobro: Checkout Pro o links de pago. Comisión por transacción según plazo de liberación del dinero (al instante cobra más, a 10+ días menos).", alt:"—"},
+    {n:"Tiendanube", tipo:"pago", r:"La plataforma AR estándar si hay muchos productos: carrito, stock, envíos, cupones. Mensual + comisión por venta.", alt:"Empretienda (mensual fijo, sin comisión) / catálogo propio + links de MP (simple, sin mensual)"},
+    {n:"Correo Argentino / Andreani", tipo:"pago", r:"Envíos con seguimiento, integrados a la plataforma o gestionados a mano al principio.", alt:"Envíos propios / retiro en local"},
+    {n:"Instagram Shopping", tipo:"gratis", r:"Etiquetar productos en posts y stories: la vidriera de la tienda donde ya está la audiencia.", alt:"—"},
+    {n:"WhatsApp Business", tipo:"gratis", r:"Post-venta: confirmación, seguimiento de envío, reclamos. El comprador argentino quiere un humano al otro lado.", alt:"—"}
+  ],
+  pasos:[
+    {t:"Alta de Mercado Pago", tm:"1 h", d:"Cuenta de MP DEL CLIENTE con su CUIT/CVU — la plata cae directo ahí, nunca pasa por vos. Verificar identidad y datos bancarios antes de seguir: sin esto no hay tienda."},
+    {t:"Elegir la plataforma", tm:"1 h", d:"Regla práctica: menos de ~20 productos estables → catálogo propio + links de pago (sin mensual). Muchos productos, stock, variantes → Tiendanube/Empretienda. No le vendas plataforma de más."},
+    {t:"Cargar el catálogo", tm:"3–5 h", d:"Fotos propias (la foto ES la venta online), título claro, descripción con medidas/materiales, precio, stock real. Categorías simples. Menos productos bien cargados > todo el inventario a medias."},
+    {t:"Configurar pagos y envíos", tm:"1–2 h", d:"Conectar MP (cuotas sí/no, plazo de liberación), definir zonas y costos de envío, retiro en local, y los textos legales: cambios, devoluciones, tiempos."},
+    {t:"Compra de prueba REAL", tm:"1 h", d:"Comprá con tu tarjeta un producto barato: pago, mail de confirmación, notificación al dueño, estado del pedido, y devolvé/anulá para probar ese flujo también. Lo que no probaste, está roto."},
+    {t:"Vidriera y capacitación", tm:"1–2 h", d:"Vincular Instagram Shopping, link en bio y WhatsApp. Demo al dueño: entrar pedidos, marcar enviado, actualizar stock, responder preguntas."}
+  ],
+  claves:[
+    "<b>La cuenta de Mercado Pago es SIEMPRE del cliente.</b> Si la plata pasa por tu cuenta sos intermediario financiero de facto: problema fiscal tuyo y desconfianza de él. No hay excepción a esta regla.",
+    "<b>Explicale la comisión vs. liberación:</b> cobrar al instante cuesta más caro que esperar. Elegir mal el plazo se come el margen de productos baratos.",
+    "<b>Tiendanube cobra mensual + comisión propia</b> además de la de MP — hacé la cuenta con el ticket promedio del negocio antes de recomendar plataforma.",
+    "<b>La tienda vende si hay tráfico:</b> sola no hace nada. El combo natural es TIENDA + PUBLICIDAD LOCAL o TIENDA + REDES — decilo en la propuesta para anclar expectativas."
+  ],
+  entrega:[
+    {t:"Cuenta de Mercado Pago del cliente verificada y conectada", owner:true},
+    {t:"Catálogo cargado con fotos y stock real"},
+    {t:"Compra de prueba real completada y reembolsada"},
+    {t:"Envíos y políticas de cambio/devolución publicadas"},
+    {t:"Instagram Shopping vinculado", owner:true},
+    {t:"Dueño capacitado: pedidos, stock, envíos"}
+  ]
+},
+{
+  id:"ads", icon:"📣", nombre:"PUBLICIDAD LOCAL", tag:"META ADS · GOOGLE",
+  desc:"Campañas en Instagram y Google segmentadas al barrio, con piezas propias y reporte claro: cuánto pusiste, cuánta gente vino. La pauta la paga el cliente aparte.",
+  tiempo:"5–8 h setup", nivel:"AVANZADO",
+  stack:[
+    {n:"Meta Ads Manager", tipo:"pago", r:"Campañas en Instagram/Facebook. Para negocio local, el objetivo estrella es 'mensajes': el click abre un chat de WhatsApp.", alt:"—"},
+    {n:"Google Ads", tipo:"pago", r:"Búsqueda local ('ferretería cerca', 'turno peluquería + barrio') y Maps. Captura demanda que ya existe, complementa a Meta que la genera.", alt:"Empezar solo con Meta si el presupuesto es chico"},
+    {n:"Meta Pixel / API de conversiones", tipo:"gratis", r:"La medición en el sitio: qué anuncio trajo al que pidió turno o escribió. Sin esto optimizás a ciegas.", alt:"UTMs + origen del lead en el CRM (mínimo viable)"},
+    {n:"Meta Business Manager", tipo:"gratis", r:"La estructura: cuenta publicitaria DEL CLIENTE, con su tarjeta, y vos como administrador invitado.", alt:"—"}
+  ],
+  pasos:[
+    {t:"Estructura de cuentas", tm:"1–2 h", d:"Business Manager del negocio → cuenta publicitaria propia → método de pago = TARJETA DEL CLIENTE → vos invitado como administrador. Este orden no se negocia (ver detalles)."},
+    {t:"Medición antes que pauta", tm:"1 h", d:"Pixel en el sitio, eventos (contacto, pedido, reserva), y si no hay sitio: click-to-WhatsApp + origen registrado en el CRM de leads. Primero medir, después gastar."},
+    {t:"Definir objetivo y zona", tm:"1 h", d:"Un objetivo por campaña: mensajes de WhatsApp (lo que mejor funciona en local), tráfico a la carta, o visitas a la ficha. Radio geográfico real: la gente cruza 20 cuadras por una pizza, no 20 km."},
+    {t:"Piezas", tm:"1–2 h", d:"2–3 variantes usando la identidad y/o los reels del negocio (acá se encadenan IDENTIDAD y PACK VIDEO). Foto real del local/producto > stock, siempre. Texto corto con oferta concreta."},
+    {t:"Lanzar chico", tm:"45 min", d:"US$ 3–5/día por campaña la primera semana. Cuentas publicitarias nuevas que arrancan gastando fuerte disparan revisiones y baneos de Meta."},
+    {t:"Optimizar y reportar", tm:"1 h/sem", d:"Semana a semana: pausar lo que no funciona, escalar lo que sí de a 20–30%. Reporte mensual en una página: invertido, mensajes/visitas conseguidos, costo por contacto, y qué se prueba el mes que viene."}
+  ],
+  claves:[
+    "<b>La pauta se paga con la tarjeta del cliente en la cuenta del cliente.</b> Si pagás vos y te reintegra: deuda si no paga, y si Meta banea la cuenta (pasa, y a veces sin motivo claro) el muerto es tuyo y de todos tus otros clientes en esa cuenta.",
+    "<b>No prometas ventas, prometé datos:</b> 'vas a saber cuánto te cuesta cada persona que te escribe'. Los resultados dependen también del producto, el precio y de que el dueño responda los chats.",
+    "<b>Cuentas nuevas calientan despacio:</b> presupuesto chico las primeras dos semanas. Meta necesita datos para optimizar y vos necesitás que no te revisen la cuenta.",
+    "<b>Tu fee es aparte de la pauta y eso va en la propuesta en negrita.</b> El malentendido 'pensé que los US$ 180 incluían los anuncios' mata la relación en el primer mes."
+  ],
+  entrega:[
+    {t:"Business Manager + cuenta publicitaria del cliente con su tarjeta", owner:true},
+    {t:"Vos como administrador invitado (sin contraseñas)"},
+    {t:"Pixel/eventos o medición por WhatsApp verificada"},
+    {t:"Primera campaña activa con presupuesto de calentamiento"},
+    {t:"Fee vs. pauta separados por escrito y firmados"},
+    {t:"Formato de reporte mensual acordado"}
+  ]
+},
+{
+  id:"email", icon:"💌", nombre:"EMAIL + FIDELIZACIÓN", tag:"NEWSLETTER · CUPONES",
+  desc:"Base de clientes con newsletter, cupones y saludo de cumpleaños automático. Hacer volver al que ya compró cuesta 5 veces menos que conseguir uno nuevo.",
+  tiempo:"4–6 h", nivel:"MEDIO",
+  stack:[
+    {n:"Brevo", tipo:"freemium", r:"La plataforma: contactos ilimitados y 300 mails/día gratis — sobra para un comercio local. Automatizaciones (cumpleaños) incluidas.", alt:"Mailchimp (gratis hasta 500 contactos, después caro)"},
+    {n:"Tally", tipo:"freemium", r:"El formulario de alta: nombre, mail, cumpleaños. Embebido en el sitio y como QR en el mostrador.", alt:"Formulario nativo de Brevo"},
+    {n:"QR", tipo:"gratis", r:"El QR de alta en el mostrador con el gancho visible: '10% en tu próxima compra: sumate'.", alt:"—"},
+    {n:"Dominio propio (SPF/DKIM)", tipo:"gratis", r:"Autenticar el remitente con el dominio del negocio para no caer en spam. Se configura en el DNS — si hiciste PRESENCIA WEB, ya tenés acceso.", alt:"Remitente genérico de Brevo (peor entregabilidad)"}
+  ],
+  pasos:[
+    {t:"Plataforma y remitente", tm:"1 h", d:"Cuenta de Brevo del negocio, remitente 'Nombre del negocio <hola@sudominio.com.ar>' autenticado con SPF/DKIM en el DNS. Un mail que llega a spam es trabajo tirado."},
+    {t:"Base inicial", tm:"1 h", d:"Importar los contactos que el negocio YA tiene (clientes que dejaron el mail comprando, agenda). Solo gente que tuvo relación real con el negocio — nada de bases compradas ni 'me pasó una lista un amigo'."},
+    {t:"Alta permanente", tm:"1 h", d:"Form de Tally con gancho (descuento, sorteo mensual) + campo cumpleaños. QR en mostrador, link en bio y en el ticket. La base crece en el local, no en internet."},
+    {t:"Plantilla con identidad", tm:"1 h", d:"Una plantilla de newsletter con logo, paleta y tipografías del negocio. Estructura fija: novedad del mes, oferta, cupón. Que el dueño la reconozca como suya."},
+    {t:"Automatización de cumpleaños", tm:"45 min", d:"Mail automático el día del cumpleaños con cupón para canjear EN PERSONA ('mostrá este mail'). Es la automatización con mejor tasa de conversión y la que el dueño más va a mostrar a sus amigos."},
+    {t:"Ritmo mensual", tm:"30 min/mes", d:"Un newsletter por mes alcanza: constante y esperable. Medir aperturas y sobre todo canjes en el local — esa es la métrica que el dueño entiende."}
+  ],
+  claves:[
+    "<b>Base comprada = spam + baneo</b> de la cuenta de Brevo + posible denuncia (Ley 25.326). La base se construye con clientes reales, y crece más lento pero convierte.",
+    "<b>Doble opt-in activado:</b> el suscripto confirma por mail. Filtra mails inventados y te protege de denuncias de spam.",
+    "<b>El cupón se canjea en persona</b> — así medís conversión real sin integrar nada, y le llevás gente al local, que es lo que vendiste.",
+    "<b>Limpiá rebotes y desuscriptos cada mes:</b> una base sucia hunde la entregabilidad de toda la lista. Y el link de baja SIEMPRE visible — es obligatorio y te evita el botón de spam."
+  ],
+  entrega:[
+    {t:"Cuenta de Brevo del negocio con remitente autenticado", owner:true},
+    {t:"Base inicial importada (solo contactos legítimos)"},
+    {t:"Form de alta + QR de mostrador activos"},
+    {t:"Plantilla de newsletter con identidad aprobada por el dueño"},
+    {t:"Automatización de cumpleaños probada (mandátela a vos)"},
+    {t:"Primer newsletter enviado y métricas revisadas juntos"}
+  ]
+},
+{
+  id:"identidad", icon:"🎨", nombre:"IDENTIDAD VISUAL", tag:"LOGO · PALETA · PLANTILLAS",
+  desc:"Logo, paleta, tipografías y plantillas para redes: que todo lo del negocio se vea de la misma casa. Pago único — el pack queda para siempre y alimenta a todos los otros pipelines.",
+  tiempo:"10–16 h", nivel:"MEDIO",
+  stack:[
+    {n:"Illustrator / Figma", tipo:"pago", r:"Construcción del logo en vectores. Figma tiene plan gratis si querés bajar costo de herramienta.", alt:"Figma (freemium) / Inkscape (gratis)"},
+    {n:"LETRAS (labs)", tipo:"gratis", r:"Nuestra herramienta de lettering: exploración de logos de palabra con estilos, contornos, 3D, cromo, neón. Para generar rutas rápido.", alt:"—"},
+    {n:"PALETA (labs)", tipo:"gratis", r:"Extraer paleta de referencias e imágenes del rubro/local. Swatches con hex listos para el manual.", alt:"—"},
+    {n:"TIPOS (labs)", tipo:"gratis", r:"Pares tipográficos (título + cuerpo) con Google Fonts — todas las fuentes con licencia libre, sin sorpresas legales.", alt:"—"},
+    {n:"Google Fonts", tipo:"gratis", r:"El banco tipográfico: licencia libre para uso comercial, disponible en Canva y en la web del negocio.", alt:"Fuentes pagas (verificar licencia comercial POR ESCRITO)"},
+    {n:"Canva", tipo:"freemium", r:"Las plantillas finales viven en el Canva DEL CLIENTE: posts, stories, tarjeta, precio. Él las edita sin romper el sistema.", alt:"Plantillas .psd/.ai (solo si el cliente tiene Adobe — casi nunca)"}
+  ],
+  pasos:[
+    {t:"Brief", tm:"1–2 h", d:"Qué vende, a quién, qué quiere transmitir, referencias que le gustan y que odia, dónde va a vivir la marca (vidriera, redes, packaging, uniforme). Sin brief firmado no se dibuja nada."},
+    {t:"Moodboard y rutas", tm:"2–3 h", d:"Un moodboard y 2–3 rutas de logo distintas (no 3 variantes de lo mismo). Usá LETRAS de labs para explorar lettering rápido. Presentalas en contexto: mockup de vidriera, post de IG, no el logo flotando en blanco."},
+    {t:"Refinar la elegida", tm:"2–4 h", d:"Versiones: principal, horizontal, isotipo solo, monocromo, negativo. Probar en chico (foto de perfil 40px) y en grande (vidriera). El logo que no funciona en la foto de perfil de WhatsApp no funciona."},
+    {t:"Paleta y tipografías", tm:"1–2 h", d:"PALETA de labs para los colores (2 principales + 2 de apoyo, con hex), TIPOS para el par tipográfico de Google Fonts. Verificar contraste para legibilidad."},
+    {t:"Plantillas Canva", tm:"2–3 h", d:"En el Canva del cliente: plantilla de post, story, promo/precio y tarjeta. Con campos claros de qué se cambia (foto, texto) y qué no se toca (logo, colores)."},
+    {t:"Mini manual + entrega", tm:"1–2 h", d:"Una página: logos y cuándo usar cada uno, hex de la paleta, tipografías, ejemplos de bien/mal. Archivos: SVG + PNG transparente en varios tamaños + fuentes linkeadas. Todo en una carpeta de Drive del cliente."}
+  ],
+  claves:[
+    "<b>Vectores SIEMPRE en la entrega (SVG/AI).</b> El PNG solo condena al cliente a re-dibujar el logo en dos años. Y el vector habilita el pipeline EXTRUDE/3D, corte láser, ploteo de vidriera.",
+    "<b>Licencias tipográficas por escrito:</b> Google Fonts es siempre seguro. Una fuente 'bajada de internet' en el logo de un comercio es una carta documento esperando fecha.",
+    "<b>Pago único = alcance cerrado:</b> 2 rondas de correcciones incluidas, ronda extra se cotiza. Sin esto, un logo se corrige durante seis meses.",
+    "<b>El registro de marca (INPI) es del cliente</b> y no es automático: sugerilo (es un dato que suma profesionalismo) pero no lo prometas — es un trámite legal, no de diseño."
+  ],
+  entrega:[
+    {t:"Logo en SVG + PNG (todas las versiones) en Drive del cliente", owner:true},
+    {t:"Mini manual de una página (logos, hex, tipografías)"},
+    {t:"Plantillas en el Canva del cliente, probadas por él", owner:true},
+    {t:"Fuentes con licencia libre documentada"},
+    {t:"Fotos de perfil listas (WhatsApp, IG, Google) en tamaño exacto"},
+    {t:"Rondas de corrección cerradas y firmadas"}
+  ]
+},
+{
+  id:"video", icon:"🎬", nombre:"PACK VIDEO / REELS", tag:"REELS · CONTENIDO",
+  desc:"Pack mensual de videos cortos filmados y editados con estética propia. Las redes hoy son video: el que no publica reels no existe para el algoritmo.",
+  tiempo:"1 día rodaje + 4–6 h edición /mes", nivel:"MEDIO",
+  stack:[
+    {n:"Celular gama alta / mirrorless", tipo:"pago", r:"La cámara. Un teléfono moderno con buena luz le gana a una cámara cara mal usada. Estabilizador (DJI Osmo) suma para caminatas y barridos.", alt:"El equipo que ya tenés — la luz importa más que el fierro"},
+    {n:"CapCut", tipo:"freemium", r:"Edición vertical con subtítulos automáticos en español, plantillas y export directo 9:16. El caballo de batalla del formato.", alt:"Premiere / After Effects (para efectos de estudio — tu diferencial VJ/motion)"},
+    {n:"Biblioteca de audio de IG/TikTok", tipo:"gratis", r:"La música se elige DENTRO de la app al publicar: es la licenciada. Música comercial pegada en el editor = reel silenciado o bajado.", alt:"Música libre (Epidemic Sound, pago) para piezas que viven fuera de redes"},
+    {n:"Metricool", tipo:"freemium", r:"Programar el mes de reels y medir qué formato rinde. Si existe REDES EN PILOTO, ya está montado.", alt:"Programación nativa de Meta Business Suite"}
+  ],
+  pasos:[
+    {t:"Definir formatos repetibles", tm:"1–2 h una vez", d:"3–4 formatos fijos según rubro: proceso/detrás de escena, producto en uso, testimonio de cliente, promo del mes. El formato repetible es lo que hace rentable el pack — no reinventás cada mes."},
+    {t:"Guionar el batch", tm:"1 h/mes", d:"Lista de tomas por video ANTES de ir: gancho del primer segundo, 3–4 planos, cierre con llamado a la acción. 8 reels = 8 mini-guiones de tres líneas."},
+    {t:"Día de rodaje mensual", tm:"medio día/mes", d:"UNA visita al local y salen los 6–8 clips del mes: hora de buena luz, local ordenado, dueño avisado (y peinado). El batch es la diferencia entre pack rentable y hobby caro."},
+    {t:"Edición con plantilla", tm:"30–45 min/reel", d:"Plantilla propia: subtítulos SIEMPRE (se mira sin audio), logo sutil, colores de la identidad, corte al ritmo. 15–30 segundos. Acá metés tu diferencial de motion/VFX que nadie más en la zona ofrece."},
+    {t:"Aprobación por WhatsApp", tm:"—", d:"Se manda el lote al dueño con fecha límite de respuesta ('si no hay cambios para el viernes, se programa'). Una ronda de cambios incluida — igual que en identidad."},
+    {t:"Programar y medir", tm:"30 min/mes", d:"Todo el mes programado en Metricool. A fin de mes: qué formato rindió más, y el mes siguiente se dobla ese y se descarta el peor. El pack mejora solo."}
+  ],
+  claves:[
+    "<b>La música comercial solo desde la biblioteca de la app al publicar.</b> Si editás con la canción pegada en el archivo, el reel sale silenciado o bajado por copyright — y el cliente no entiende qué pasó.",
+    "<b>Subtítulos no son opcionales:</b> la mayoría mira sin audio. CapCut los hace automáticos en español y se corrigen en minutos.",
+    "<b>Vertical nativo 9:16 (1080×1920), gancho en el primer segundo:</b> el video horizontal reencuadrado y el intro con logo de 3 segundos son los dos asesinos silenciosos del alcance.",
+    "<b>Guardá los crudos organizados por cliente/mes:</b> son material para re-ediciones, para PUBLICIDAD LOCAL y tuyos hasta que el contrato diga lo contrario — definí la propiedad del material en la propuesta."
+  ],
+  entrega:[
+    {t:"6–8 reels del mes entregados y aprobados"},
+    {t:"Plantilla de edición propia del negocio (subtítulos, logo, colores)"},
+    {t:"Mes completo programado en el calendario de redes"},
+    {t:"Crudos archivados por cliente/mes"},
+    {t:"Reporte simple: qué formato rindió, qué se dobla el mes próximo"},
+    {t:"Propiedad del material definida por escrito en la propuesta"}
+  ]
+}
+];
+
+/* =====================================================================
+   STATE
+   ===================================================================== */
+const LS_KEY = "hg_setupmaker_v1";
+let state = {};
+try { state = JSON.parse(localStorage.getItem(LS_KEY)) || {}; } catch(e){ state = {}; }
+let current = location.hash ? location.hash.slice(1) : SERVICIOS[0].id;
+if (!SERVICIOS.find(s=>s.id===current)) current = SERVICIOS[0].id;
+
+function svcState(id){
+  if(!state[id]) state[id] = {pasos:{}, entrega:{}};
+  return state[id];
+}
+function save(){ localStorage.setItem(LS_KEY, JSON.stringify(state)); }
+function progreso(svc){
+  const st = svcState(svc.id);
+  const total = svc.pasos.length + svc.entrega.length;
+  let done = 0;
+  svc.pasos.forEach((_,i)=>{ if(st.pasos[i]) done++; });
+  svc.entrega.forEach((_,i)=>{ if(st.entrega[i]) done++; });
+  return Math.round(done/total*100);
+}
+
+/* =====================================================================
+   RENDER
+   ===================================================================== */
+const listEl = document.getElementById("svcList");
+const panelEl = document.getElementById("panel");
+
+function renderList(){
+  listEl.innerHTML = SERVICIOS.map(s=>{
+    const p = progreso(s);
+    return `<button class="svc-btn ${s.id===current?'active':''}" style="--p:${p}%" data-id="${s.id}">
+      <span class="ic">${s.icon}</span>
+      <span class="nm">${s.nombre}</span>
+      <span class="pc ${p===100?'done':''}">${p===100?'✓':p+'%'}</span>
+      <span class="bar"></span>
+    </button>`;
+  }).join("");
+  listEl.querySelectorAll(".svc-btn").forEach(b=>{
+    b.addEventListener("click",()=>{
+      current = b.dataset.id;
+      history.replaceState(null,"","#"+current);
+      renderList(); renderPanel();
+      if(window.innerWidth>900) window.scrollTo({top:document.querySelector('.layout').offsetTop-70,behavior:'smooth'});
+    });
+  });
+}
+
+function badge(t){
+  const lbl = t==='gratis'?'GRATIS':t==='freemium'?'FREEMIUM':'PAGO';
+  return `<span class="badge ${t}">${lbl}</span>`;
+}
+
+function renderPanel(){
+  const s = SERVICIOS.find(x=>x.id===current);
+  const st = svcState(s.id);
+  const p = progreso(s);
+
+  panelEl.innerHTML = `
+  <div class="svc-head">
+    <div class="row1">
+      <div class="big-ic">${s.icon}</div>
+      <div>
+        <h2>${s.nombre}</h2>
+        <div class="tag">${s.tag}</div>
+      </div>
+    </div>
+    <p class="desc">${s.desc}</p>
+    <div class="meta">
+      <span class="chip">ARMADO <b>${s.tiempo}</b></span>
+      <span class="chip lvl">NIVEL <b>${s.nivel}</b></span>
+      <span class="chip">STACK <b>${s.stack.length} MARCAS</b></span>
+    </div>
+  </div>
+
+  <div class="sect">
+    <div class="sect-title"><span class="dot">◼</span> EL STACK · MARCAS QUE INTERVIENEN <span class="n">${s.stack.length}</span></div>
+    <div class="stack">
+      ${s.stack.map(b=>`
+        <div class="brand">
+          <div class="top"><span class="bn">${b.n}</span>${badge(b.tipo)}</div>
+          <div class="role">${b.r}</div>
+          ${b.alt && b.alt!=="—" ? `<div class="alt"><b>ALT:</b> ${b.alt}</div>`:""}
+        </div>`).join("")}
+    </div>
+  </div>
+
+  <div class="sect">
+    <div class="sect-title"><span class="dot">◼</span> ARMADO PASO A PASO <span class="n">${s.pasos.length} pasos · tocá para marcar</span></div>
+    <div>
+      ${s.pasos.map((paso,i)=>`
+        <div class="step ${st.pasos[i]?'done':''}" data-i="${i}">
+          <div class="num">${st.pasos[i]?'✓':(i+1)}</div>
+          <div class="body">
+            <div class="st">${paso.t}<span class="tm">⏱ ${paso.tm}</span></div>
+            <div class="sd">${paso.d}</div>
+          </div>
+        </div>`).join("")}
+    </div>
+  </div>
+
+  <div class="sect">
+    <div class="sect-title"><span class="dot" style="color:var(--glitch)">◼</span> DETALLES QUE IMPORTAN</div>
+    ${s.claves.map(c=>`<div class="clave"><span class="x">!</span><span>${c}</span></div>`).join("")}
+  </div>
+
+  <div class="sect">
+    <div class="sect-title"><span class="dot">◼</span> CHECKLIST DE ENTREGA <span class="n">tocá para marcar</span></div>
+    <div>
+      ${s.entrega.map((e,i)=>`
+        <div class="check ${st.entrega[i]?'done':''}" data-i="${i}">
+          <div class="box">${st.entrega[i]?'✓':''}</div>
+          <span class="txt">${e.t}</span>
+          ${e.owner?'<span class="owner">A NOMBRE DEL CLIENTE</span>':''}
+        </div>`).join("")}
+    </div>
+  </div>
+
+  <div class="progress-line">
+    <span>ARMADO ${p}%</span>
+    <div class="track"><div class="fill" style="width:${p}%"></div></div>
+    <button class="reset-btn" id="resetSvc">↺ RESET</button>
+  </div>`;
+
+  panelEl.querySelectorAll(".step").forEach(el=>{
+    el.addEventListener("click",()=>{
+      const i = el.dataset.i;
+      st.pasos[i] = !st.pasos[i];
+      save(); renderList(); renderPanel();
+    });
+  });
+  panelEl.querySelectorAll(".check").forEach(el=>{
+    el.addEventListener("click",()=>{
+      const i = el.dataset.i;
+      st.entrega[i] = !st.entrega[i];
+      save(); renderList(); renderPanel();
+    });
+  });
+  document.getElementById("resetSvc").addEventListener("click",()=>{
+    state[s.id] = {pasos:{}, entrega:{}};
+    save(); renderList(); renderPanel();
+  });
+}
+
+renderList();
+renderPanel();
+</script>
+</body>
+</html>
