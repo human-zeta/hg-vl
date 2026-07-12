@@ -1,0 +1,341 @@
+<!doctype html><html lang="es"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>GUÍA DE VENTA — Human Glitche · cómo vender cada pipeline</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{ --acid:#b8ff00; --glitch:#ff2d55; --cyan:#3ad0ff; --ink:#f0ede6; --line:rgba(240,237,230,.12); --bg:#050505; --pan:rgba(184,255,0,.015); }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{min-height:100%;background:var(--bg);color:var(--ink);font-family:'Space Mono',monospace;}
+  body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");z-index:0;pointer-events:none;opacity:.4;}
+  .wrap{position:relative;z-index:1;max-width:1180px;margin:0 auto;padding:30px 22px 90px;}
+  header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;gap:16px;flex-wrap:wrap;}
+  .brand{font-family:'Bebas Neue',sans-serif;font-size:54px;letter-spacing:.03em;line-height:.82;}
+  .brand b{color:var(--acid);font-weight:400;}
+  .brand span{display:block;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.28em;color:rgba(240,237,230,.4);margin-top:8px;}
+  header nav a{font-size:10px;letter-spacing:.2em;color:rgba(240,237,230,.4);text-decoration:none;margin-left:16px;} header nav a:hover{color:var(--acid);}
+  .intro{font-size:12px;color:rgba(240,237,230,.55);line-height:1.8;max-width:74ch;margin:14px 0 26px;}
+  .intro b{color:var(--acid);font-weight:400;}
+
+  .seclabel{font-size:9px;letter-spacing:.24em;text-transform:uppercase;color:rgba(240,237,230,.4);margin:30px 0 14px;display:flex;align-items:center;gap:10px;}
+  .seclabel::after{content:'';flex:1;height:1px;background:var(--line);}
+
+  /* proceso */
+  .steps{display:flex;flex-direction:column;gap:10px;}
+  .step{border:1px solid var(--line);border-radius:10px;background:var(--pan);overflow:hidden;}
+  .step .head{display:flex;gap:14px;align-items:baseline;padding:14px 16px;cursor:pointer;}
+  .step .num{font-family:'Bebas Neue',sans-serif;font-size:26px;color:var(--acid);min-width:28px;line-height:1;}
+  .step h3{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:.03em;line-height:.95;flex:1;}
+  .step .hint{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:rgba(240,237,230,.4);}
+  .step .body{display:none;padding:0 16px 16px 58px;font-size:11.5px;color:rgba(240,237,230,.62);line-height:1.8;}
+  .step.open .body{display:block;}
+  .step .body b{color:var(--acid);font-weight:400;}
+  .step .body a{color:var(--cyan);text-decoration:none;} .step .body a:hover{text-decoration:underline;}
+
+  /* reglas de oro */
+  .rules{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px;}
+  .rule{border:1px solid var(--line);border-radius:8px;background:var(--pan);padding:12px 13px;font-size:11px;line-height:1.7;color:rgba(240,237,230,.65);}
+  .rule b{color:var(--acid);font-weight:400;display:block;font-size:10px;letter-spacing:.12em;text-transform:uppercase;margin-bottom:5px;}
+
+  /* selector de servicios */
+  .svcsel{display:flex;flex-wrap:wrap;gap:8px;}
+  .svcbtn{cursor:pointer;background:transparent;border:1px solid var(--line);color:rgba(240,237,230,.7);font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.06em;padding:8px 11px;border-radius:6px;transition:.18s;display:flex;gap:7px;align-items:center;}
+  .svcbtn:hover{border-color:var(--acid);color:var(--acid);}
+  .svcbtn.on{border-color:var(--acid);color:var(--acid);background:rgba(184,255,0,.07);}
+
+  /* panel de guía */
+  .guide{border:1px solid var(--line);border-radius:10px;background:var(--pan);padding:20px 20px 22px;margin-top:16px;}
+  .guide .top{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:flex-start;margin-bottom:4px;}
+  .guide h2{font-family:'Bebas Neue',sans-serif;font-size:34px;letter-spacing:.02em;color:var(--acid);line-height:.9;}
+  .guide .tag{font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:rgba(240,237,230,.4);margin-top:5px;}
+  .guide .price{font-size:11px;color:rgba(240,237,230,.55);text-align:right;line-height:1.7;}
+  .guide .price b{color:var(--acid);font-weight:700;}
+  .guide .price small{color:var(--cyan);}
+  .blk{margin-top:18px;}
+  .blk .bl{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:rgba(240,237,230,.4);margin-bottom:8px;display:flex;align-items:center;gap:10px;}
+  .blk .bl .cp{cursor:pointer;font-size:9px;letter-spacing:.1em;border:1px solid var(--line);border-radius:5px;padding:3px 8px;color:rgba(240,237,230,.55);transition:.18s;}
+  .blk .bl .cp:hover{border-color:var(--acid);color:var(--acid);}
+  .script{border:1px solid var(--line);border-left:3px solid var(--acid);border-radius:6px;background:#0a0a0a;padding:12px 14px;font-size:11.5px;line-height:1.8;color:rgba(240,237,230,.8);white-space:pre-wrap;}
+  .qs{display:flex;flex-direction:column;gap:7px;}
+  .qs .q{font-size:11.5px;line-height:1.7;color:rgba(240,237,230,.72);padding-left:16px;position:relative;}
+  .qs .q::before{content:'?';position:absolute;left:0;color:var(--cyan);}
+  .obj{border:1px solid var(--line);border-radius:6px;overflow:hidden;margin-bottom:8px;}
+  .obj .o{padding:10px 13px;font-size:11px;color:var(--glitch);background:rgba(255,45,85,.05);line-height:1.6;}
+  .obj .o::before{content:'✗ “';} .obj .o::after{content:'”';}
+  .obj .r{padding:10px 13px;font-size:11.5px;color:rgba(240,237,230,.75);line-height:1.75;border-top:1px solid var(--line);}
+  .obj .r::before{content:'→ ';color:var(--acid);}
+  .close{border:1px solid rgba(184,255,0,.35);border-radius:6px;background:rgba(184,255,0,.05);padding:12px 14px;font-size:11.5px;line-height:1.8;color:rgba(240,237,230,.85);}
+  .close::before{content:'⚡ CIERRE — ';color:var(--acid);font-size:9px;letter-spacing:.16em;}
+  .golink{display:inline-block;margin-top:16px;font-size:10px;letter-spacing:.14em;color:var(--cyan);text-decoration:none;border:1px solid var(--line);border-radius:6px;padding:9px 13px;transition:.18s;text-transform:uppercase;}
+  .golink:hover{border-color:var(--cyan);}
+
+  .foot{font-size:10px;color:rgba(240,237,230,.35);letter-spacing:.1em;margin-top:44px;text-align:center;}
+  .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--acid);color:#050505;font-size:11px;font-weight:700;letter-spacing:.08em;padding:10px 18px;border-radius:6px;opacity:0;pointer-events:none;transition:.25s;z-index:9;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+</style></head><body>
+<div class="wrap">
+  <header>
+    <div class="brand"><b>GUÍA DE VENTA</b><span>cómo vender cada pipeline, paso a paso</span></div>
+    <nav><a href="/labs/">← LABS</a><a href="/pipelines/">PIPELINES</a><a href="/auditoria.html">AUDITORÍA</a></nav>
+  </header>
+  <p class="intro">El manual de campo para vender los servicios de <b>PIPELINES</b>: el proceso completo de la venta, las reglas de oro, y por cada servicio el <b>pitch de 30 segundos</b>, el primer mensaje de WhatsApp, las preguntas de diagnóstico, las <b>objeciones con su respuesta</b> y cómo cerrar. Los precios se sincronizan con los que editaste en PIPELINES. Todo corre en tu navegador.</p>
+
+  <div class="seclabel">El proceso · de desconocido a cliente</div>
+  <div class="steps" id="steps"></div>
+
+  <div class="seclabel">Reglas de oro</div>
+  <div class="rules" id="rules"></div>
+
+  <div class="seclabel">Guión por servicio</div>
+  <div class="svcsel" id="svcsel"></div>
+  <div id="guide"></div>
+
+  <div class="foot">HUMAN GLITCHE · VISUAL LAB · guía de venta client-side, hermana de PIPELINES</div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+'use strict';
+const $=id=>document.getElementById(id);
+
+// ── Proceso de venta ─────────────────────────────────────────────────────────
+const STEPS = [
+  { t:'PROSPECCIÓN', h:'a quién le vendo', d:
+`Abrí la <a href="/auditoria.html">AUDITORÍA</a>, filtrá por tu ciudad y buscá negocios con <b>chips en rojo</b> (sin web, sin WhatsApp Business, sin redes). Empezá por los que ya conocés o donde comprás: la confianza previa vale más que cualquier guión. Armá una lista corta — <b>10 negocios</b> — y trabajala hasta agotarla antes de sumar más.` },
+  { t:'PRIMER CONTACTO', h:'vender la charla, no el servicio', d:
+`Por WhatsApp o en persona. El objetivo del primer mensaje <b>no es vender</b>: es conseguir una charla de 10 minutos. Mencioná algo específico del negocio (su hueco real) para demostrar que no es spam masivo. Cada servicio de abajo tiene su primer mensaje listo para copiar y adaptar.` },
+  { t:'DIAGNÓSTICO', h:'que el problema lo diga él', d:
+`En la charla, preguntá antes de proponer (cada servicio tiene sus preguntas abajo). Abrí <a href="/pipelines/">PIPELINES</a> con su negocio elegido y mostrale <b>sus propios chips en rojo</b>: el diagnóstico visual convence más que cualquier discurso. Cuando el dueño dice en voz alta "sí, pierdo ventas por eso" — ahí recién aparece tu propuesta.` },
+  { t:'PROPUESTA', h:'máximo 3 servicios, valor antes que precio', d:
+`Armá el presupuesto en <a href="/pipelines/">PIPELINES</a> (botón Copiar) con <b>2-3 pipelines máximo</b> — más que eso abruma y no se decide nada. Presentá siempre en este orden: el problema (su hueco) → qué va a pasar cuando esté resuelto → recién ahí el precio. El setup se ancla contra lo que pierde por mes sin el sistema.` },
+  { t:'CIERRE', h:'pedir algo chico y callarse', d:
+`No pidas "que lo piense": pedí un <b>próximo paso chico y concreto</b> — "¿me pasás las fotos esta semana?", "¿me mandás las 5 preguntas que más te hacen?". Después de decir el precio, <b>silencio</b>: el primero que habla, cede. Si duda, ofrecé arrancar por el pipeline más barato como prueba.` },
+  { t:'ONBOARDING', h:'el cliente contento vende por vos', d:
+`La primera semana <b>sobre-comunicá</b>: avances, capturas, "ya quedó esto". Al mes, con el sistema andando, pedí las dos cosas que valen oro: una <b>reseña</b> y un <b>referido</b> ("¿conocés otro comercio al que le sirva esto?"). Cada cliente cerrado te abre la puerta de los vecinos.` },
+];
+
+// ── Reglas de oro ────────────────────────────────────────────────────────────
+const RULES = [
+  {t:'Vendé el hueco, no la tecnología', d:'Al dueño no le importa "automatización con bot": le importa no perder ventas mientras atiende. Hablá del problema, no del stack.'},
+  {t:'Hablá de la plata de él', d:'Cada precio se compara con lo que pierde: turnos ausentes, comisión de apps, ventas que se van sin contestar. El servicio se paga solo o no se vende.'},
+  {t:'Específico gana a genérico', d:'"Vi que no tenés web" abre puertas; "ofrezco servicios digitales" las cierra. Siempre nombrá su hueco concreto.'},
+  {t:'El mensual es tranquilidad', d:'El setup compra el sistema; el mensual compra que funcione siempre y que haya alguien cuando algo se rompe. Nombralo así.'},
+  {t:'Una prueba corta cierra más que un contrato largo', d:'"Probalo un mes y medimos" baja la barrera. Con el sistema andando, nadie lo quiere apagar.'},
+  {t:'No regatees: recortá alcance', d:'Si el precio no entra, sacá un pipeline de la propuesta en vez de bajar el precio. El precio bajo de hoy es el techo de mañana.'},
+];
+
+// ── Guía por servicio (ids = catálogo de PIPELINES) ─────────────────────────
+const GUIA = [
+  { id:'web', ico:'🌐', name:'PRESENCIA WEB', tag:'sitio · landing',
+    pitch:`Hoy, cuando alguien te busca en Google, no aparece nada tuyo — aparece la competencia. Te armo un sitio simple que carga rápido, con tus fotos, horarios y botón de WhatsApp, y te dejo la ficha de Google al día. En una semana existís en internet.`,
+    wa:`Hola! Soy [tu nombre], trabajo con comercios de [ciudad]. Busqué [negocio] en Google y no encontré página propia — ahí se pierde gente que quiere ver precios y horarios antes de ir. Armo webs simples y rápidas para negocios como el tuyo. ¿Te muestro un ejemplo? Son 2 minutos.`,
+    preguntas:[`¿Cómo te encuentran hoy los clientes nuevos?`,`¿Cuántas veces por semana te preguntan horarios o precios por teléfono?`,`Si alguien te googlea ahora mismo, ¿qué aparece?`],
+    objeciones:[
+      {o:`Ya tengo Instagram, no necesito web`, r:`Instagram es terreno alquilado: el algoritmo decide quién te ve. La web es tuya, aparece en Google y no depende de nadie. Van juntas, no compiten.`},
+      {o:`Es caro`, r:`Compará con una sola venta perdida por semana de gente que te googleó y no encontró nada. El armado se paga una vez; el mensual es mantenimiento, no te vuelvo a cobrar el sitio.`},
+      {o:`Mi sobrino me la puede hacer`, r:`Si te la hace, genial. Lo que yo vendo es que quede terminada, rápida y apareciendo en Google — y alguien que responde cuando algo se rompe un sábado.`}],
+    cierre:`Te la dejo andando en 7 días con tus fotos y textos. Si antes de publicarla no te gusta cómo quedó, no se publica y no pasa nada. ¿Arrancamos juntando las fotos esta semana?` },
+
+  { id:'wa', ico:'💬', name:'WHATSAPP BIZ AUTOPILOT', tag:'whatsapp · bot',
+    pitch:`El 80% de tus ventas pasa por WhatsApp y contestás todo a mano. Te configuro WhatsApp Business con catálogo y respuestas automáticas para las preguntas de siempre — horario, precios, ubicación — y vos contestás solo lo que de verdad vende.`,
+    wa:`Hola! Soy [tu nombre]. Vi que [negocio] atiende por WhatsApp común — te escriben fuera de horario y esas ventas se enfrían. Configuro WhatsApp Business con catálogo y respuestas automáticas: lo repetido se contesta solo, al instante. ¿Te cuento cómo en 10 minutos?`,
+    preguntas:[`¿Cuántos mensajes contestás por día?`,`¿Cuáles son las 5 preguntas que te hacen siempre?`,`¿Sentís que perdés ventas por contestar tarde?`],
+    objeciones:[
+      {o:`Los bots son fríos, mis clientes quieren hablar conmigo`, r:`No es un bot que charla: responde lo repetido (horario, dirección, precios) al segundo y te pasa la conversación cuando hay que vender. El cliente prefiere respuesta inmediata antes que esperar dos horas.`},
+      {o:`Ya uso WhatsApp normal y me funciona`, r:`Business es gratis y suma catálogo, etiquetas y respuestas rápidas. Te lo dejo armado con tu catálogo cargado — seguís usando el mismo número.`},
+      {o:`¿Y si responde cualquier cosa?`, r:`Solo responde lo que definimos juntos, palabra por palabra. Todo lo que no está definido te llega a vos como siempre.`}],
+    cierre:`En una tarde te lo dejo funcionando con el catálogo cargado. ¿Me pasás la lista de las 5 preguntas que más te hacen?` },
+
+  { id:'social', ico:'📲', name:'REDES EN PILOTO', tag:'instagram · tiktok',
+    pitch:`Publicar todos los días no es tu trabajo — es el mío. Calendario mensual, contenido con tu estética, programado en horario, y un reporte que entendés en 2 minutos. Presencia constante sin que vivas pegado al teléfono.`,
+    wa:`Hola! Soy [tu nombre]. Vi el Instagram de [negocio] — el último posteo es de hace [X]. No es falta de ganas, es falta de tiempo: el negocio se atiende solo si estás vos. Yo me encargo del contenido: calendario, posteos con tu estética y reporte mensual. ¿Te muestro cómo se vería tu primer mes?`,
+    preguntas:[`¿Quién publica hoy y cada cuánto?`,`¿Alguna vez un posteo te trajo clientes que puedas nombrar?`,`¿Cuánto tiempo por semana le podés dedicar a las redes, en serio?`],
+    objeciones:[
+      {o:`Puedo publicar yo`, r:`Publicar podés; sostenerlo tres meses seguidos con calidad y horario, casi nadie. Lo que el algoritmo (y la gente) premia es la constancia — eso es lo que vendo.`},
+      {o:`Las redes no me traen ventas`, r:`Sin plan, las redes son ruido. Con calendario, horarios y reporte medimos qué posteo trae gente y repetimos ese. Lo que no se mide no mejora.`},
+      {o:`Es caro por mes`, r:`Es una fracción de un community manager fijo, y trabaja todos los días del mes. Además cortás cuando quieras.`}],
+    cierre:`Armemos el primer mes: 12 posteos con tu estética, programados. Si el reporte del mes 1 no te convence, cortás sin compromiso.` },
+
+  { id:'menu', ico:'🍽️', name:'MENÚ + PEDIDOS WHATSAPP', tag:'gastro · retail',
+    pitch:`QR en la mesa o en la vidriera: el cliente ve la carta, arma el pedido y te cae ordenado a tu WhatsApp, con seña opcional. Menos idas y vueltas, tickets más grandes y cero comisión de apps de delivery.`,
+    wa:`Hola! Soy [tu nombre]. ¿Cuánto te queda de cada pedido después de la comisión de PedidosYa/Rappi? Armo cartas digitales con QR: el cliente pide y te llega directo al WhatsApp, sin comisión. Tu canal propio. ¿Te muestro una carta de ejemplo andando?`,
+    preguntas:[`¿Cuánto pagás de comisión a las apps de delivery por mes?`,`¿Los pedidos por WhatsApp te llegan ordenados o hay que ir y venir preguntando?`,`¿Cada cuánto cambiás precios o platos?`],
+    objeciones:[
+      {o:`Ya estoy en PedidosYa`, r:`Con 20-30% de comisión. Esto no reemplaza a las apps: es tu canal directo para el cliente fiel — ese margen te lo quedás vos. Conviven perfecto.`},
+      {o:`Mis clientes son grandes, no usan QR`, r:`El QR es una puerta más, no reemplaza nada. El que no lo usa pide como siempre; el que sí, te ahorra diez mensajes por pedido.`},
+      {o:`¿Y cuando cambio los precios?`, r:`Los cambiás vos desde el celular en un minuto, o me lo mandás y lo cambio yo en el día. La carta nunca queda vieja.`}],
+    cierre:`Te armo la carta digital con tus fotos esta semana y la probamos en 5 mesas. Si funciona, va a todo el salón.` },
+
+  { id:'leads', ico:'🧲', name:'CAPTURA DE LEADS', tag:'formulario · crm',
+    pitch:`Cada visita que entra a tu web y se va sin dejar contacto es plata perdida. Formulario simple más seguimiento automático por WhatsApp o mail: el interesado deja su dato y el sistema lo persigue por vos hasta que compra o dice que no.`,
+    wa:`Hola! Soy [tu nombre]. Vi la web de [negocio] — entra gente, mira y se va sin dejar rastro. Instalo un sistema que captura el contacto del interesado y le hace seguimiento automático. Nada de perseguir gente a mano. ¿Te cuento cómo funciona en 10 minutos?`,
+    preguntas:[`¿Cuántas consultas te llegan por semana y cuántas terminan en venta?`,`¿Qué pasa hoy con el que pregunta y no compra? ¿Alguien lo vuelve a contactar?`,`¿Dónde anotás los interesados?`],
+    objeciones:[
+      {o:`Ya me escriben por Instagram`, r:`Y se pierden en el inbox entre historias y spam. Esto los ordena en una lista con nombre, teléfono y qué querían — ninguno se pierde, a todos se les hace seguimiento.`},
+      {o:`No tengo tiempo de responder leads`, r:`Por eso el seguimiento es automático: responde al instante, insiste con criterio y te avisa cuáles están calientes para que llames solo a esos.`}],
+    cierre:`Lo conecto a tu web en 2 días. El primer mes contamos cuántos contactos entran — con los números en la mano decidís si sigue.` },
+
+  { id:'resenas', ico:'⭐', name:'REPUTACIÓN', tag:'reseñas · google',
+    pitch:`Cuando alguien te googlea, las estrellas deciden antes de que vos puedas hablar. Sistema que le pide la reseña al cliente contento en el momento justo y te avisa del enojado antes de que explote en Google. La nota sube sola.`,
+    wa:`Hola! Soy [tu nombre]. Vi que [negocio] tiene ★[nota] con [N] reseñas en Google — la competencia de tu zona tiene más y eso decide adónde va la gente. Armo un sistema que pide reseñas a tus clientes contentos automáticamente. ¿Te muestro cómo?`,
+    preguntas:[`¿Sabés qué nota tenés hoy en Google? ¿Y tu competencia de la zona?`,`¿Le pedís reseña a algún cliente? ¿Cómo te resulta?`,`¿Te enteraste alguna vez de una queja recién cuando ya era reseña pública?`],
+    objeciones:[
+      {o:`Me da vergüenza pedir reseñas`, r:`No pedís vos: un mensaje automático post-venta lo hace con el timing perfecto. Al cliente contento no le molesta — le gusta ayudar a un negocio que lo atendió bien.`},
+      {o:`Tengo una reseña mala vieja que me mata`, r:`Se tapa con volumen: veinte reseñas nuevas de 5 estrellas la entierran. Y las negativas nuevas las agarramos en privado antes de que lleguen a Google.`}],
+    cierre:`En 90 días subimos la nota. Arrancamos con tus últimos 30 clientes — ¿tenés sus WhatsApp?` },
+
+  { id:'turnos', ico:'📆', name:'AGENDA / TURNOS', tag:'reservas · recordatorios',
+    pitch:`Cada turno que no se presenta es plata que no vuelve. Link de reserva, confirmación y recordatorio automático 24 horas antes. Los que no pueden venir avisan, y vos llenás el hueco con otro.`,
+    wa:`Hola! Soy [tu nombre]. Pregunta directa: ¿cuántos turnos se te caen por semana sin aviso? Armo agendas con recordatorio automático 24h antes — el ausentismo baja a la mitad y el hueco se llena. ¿Te cuento cómo en 10 minutos?`,
+    preguntas:[`¿Cuántos turnos por semana no se presentan sin avisar?`,`¿Cuánto vale un turno promedio? (hacé la cuenta del mes)`,`¿Te escriben para reservar fuera de horario?`],
+    objeciones:[
+      {o:`Mi agenda de papel funciona bien`, r:`Hasta que alguien no viene y no avisó. El recordatorio automático baja el ausentismo a la mitad — solo eso paga el sistema. El papel puede seguir existiendo, esto lo complementa.`},
+      {o:`Mis clientas prefieren llamar`, r:`Y pueden seguir llamando. El link es para las que te escriben a las 11 de la noche y no quieren esperar a mañana para saber si hay lugar.`}],
+    cierre:`Te lo dejo andando con tus horarios reales en 3 días. Contá los ausentes de este mes y los del que viene — esa comparación cierra sola.` },
+
+  { id:'factura', ico:'🧾', name:'FACTURACIÓN AUTO', tag:'fiscal · arca',
+    pitch:`De la venta al comprobante sin cargar todo dos veces: la factura A/B/C se arma, se envía por mail o WhatsApp y queda registrada. El círculo administrativo se cierra solo, sin pilas de papeles para el contador.`,
+    wa:`Hola! Soy [tu nombre]. ¿Cuánto tiempo por semana se te va en armar y mandar facturas? Automatizo el circuito: de la venta al comprobante enviado y registrado, sin doble carga. Tu contador recibe todo ordenado. ¿Te muestro cómo?`,
+    preguntas:[`¿Cuántas facturas hacés por semana y cuánto tardás con cada una?`,`¿Alguna vez se te pasó facturar algo?`,`¿Cómo le llega la info a tu contador a fin de mes?`],
+    objeciones:[
+      {o:`Mi contador se encarga de eso`, r:`Se encarga de los impuestos. Esto le simplifica la vida también a él: todo registrado y ordenado le llega listo, y vos dejás de ser el cuello de botella.`},
+      {o:`Facturo poco, no me hace falta`, r:`Justo por eso: cuando facturás poco, cada hora administrativa te duele más — es hora que no estás vendiendo.`}],
+    cierre:`Con 3 facturas de ejemplo tuyas te lo dejo configurado. ¿Me pasás una factura tipo de las que hacés?` },
+
+  { id:'tienda', ico:'🛒', name:'TIENDA + PAGOS', tag:'catálogo · mercado pago',
+    pitch:`Tu catálogo online con carrito y Mercado Pago: el cliente elige, paga, y a vos te llega el pedido ya cobrado. Vendés mientras dormís, sin comisión de marketplace y con la lista de clientes en tu poder.`,
+    wa:`Hola! Soy [tu nombre]. Vi que [negocio] vende por Instagram — cada venta son quince mensajes de ida y vuelta. Armo tiendas simples con Mercado Pago: el cliente elige y paga solo, el pedido te llega cobrado. ¿Te muestro una tienda de ejemplo?`,
+    preguntas:[`¿Cuántos mensajes te lleva cerrar una venta por DM?`,`¿Cuántas ventas se enfrían en el ida y vuelta de "¿hay stock?" "¿cuánto sale?" "¿cómo pago?"?`,`¿Vendés por MercadoLibre? ¿Cuánto te queda después de la comisión?`],
+    objeciones:[
+      {o:`Ya vendo por Instagram y funciona`, r:`Vender por DM funciona pero es lento: quince mensajes por venta. Con la tienda, el cliente elige, paga y listo — el DM queda para atender, no para cobrar.`},
+      {o:`MercadoLibre ya me resuelve esto`, r:`Cobrándote comisión y mostrándote al lado de tu competencia. La tienda propia es tu margen completo y tu lista de clientes — que hoy es de ML, no tuya.`}],
+    cierre:`Subimos primero tus 20 productos más vendidos. En una semana estás cobrando online.` },
+
+  { id:'ads', ico:'📣', name:'PUBLICIDAD LOCAL', tag:'meta ads · google',
+    pitch:`Tus próximos clientes están a veinte cuadras y no saben que existís. Campañas en Instagram y Google segmentadas a tu barrio, con piezas hechas por nosotros y un reporte claro: cuánto pusiste, cuánta gente vino.`,
+    wa:`Hola! Soy [tu nombre]. ¿Alguna vez pusiste plata en publicidad y no supiste si sirvió? Armo campañas hiperlocales (solo tu zona) con piezas propias y reporte claro: cada peso, medido. ¿Te cuento cómo sería para [negocio]?`,
+    preguntas:[`¿Probaste pauta alguna vez? ¿Qué pasó?`,`¿De qué zona vienen tus clientes hoy?`,`¿Cuánto vale para vos un cliente nuevo que se queda?`],
+    objeciones:[
+      {o:`Probé ads y tiré la plata`, r:`Boosteando posteos sin segmentar, seguro. Campaña con objetivo, público local y pieza pensada es otro deporte — y el reporte te muestra exactamente qué volvió de cada peso.`},
+      {o:`No tengo presupuesto para pauta`, r:`Arrancamos hiperlocal con poca pauta: poca plata bien apuntada a veinte cuadras rinde más que mucha plata regada por toda la ciudad.`}],
+    cierre:`Primer mes de prueba con pauta chica. Si el costo por cliente nuevo no te cierra con los números en la mano, lo cortamos.` },
+
+  { id:'email', ico:'💌', name:'EMAIL + FIDELIZACIÓN', tag:'newsletter · cupones',
+    pitch:`Conseguir un cliente nuevo cuesta cinco veces más que hacer volver a uno que ya te compró. Base de clientes con newsletter, cupones y saludo de cumpleaños automático: el que ya te conoce, vuelve más seguido.`,
+    wa:`Hola! Soy [tu nombre]. ¿Cuántos clientes pasaron por [negocio] este año? ¿Y a cuántos les podés avisar cuando hay algo nuevo? Armo bases de clientes con cupones y cumpleaños automático — el cliente viejo vuelve solo. ¿Te cuento cómo se arma?`,
+    preguntas:[`¿Tenés forma de avisarle a tus clientes cuando hay una promo?`,`¿Sabés cuántos de tus clientes vuelven?`,`¿Qué hacés hoy para que el que compró una vez vuelva?`],
+    objeciones:[
+      {o:`El mail no lo lee nadie`, r:`El de las marcas genéricas, no. El de tu negocio de barrio con un cupón real, sí se abre — y el saludo de cumpleaños con descuento es el mensaje más abierto que existe.`},
+      {o:`No tengo ninguna lista de clientes`, r:`La armamos desde cero: QR en el mostrador con un descuento por anotarse. En un mes tenés cientos de contactos que son tuyos, no del algoritmo.`}],
+    cierre:`Armamos la base este mes con el QR en caja. El primer envío con promo sale antes de fin de mes.` },
+
+  { id:'brand', ico:'🎨', name:'IDENTIDAD VISUAL', tag:'logo · paleta · plantillas',
+    pitch:`Tu negocio es bueno pero se ve improvisado: logo pixelado, cada posteo de un color distinto. Identidad completa — logo, paleta, tipografías y plantillas para redes — para que todo lo tuyo se vea de la misma casa. Pago único: el pack es tuyo para siempre.`,
+    wa:`Hola! Soy [tu nombre], diseño identidades para comercios. Vi las redes de [negocio]: el producto es bueno pero cada posteo parece de un negocio distinto — eso resta confianza. Armo el pack completo: logo, colores, tipografías y plantillas listas. ¿Te muestro ejemplos?`,
+    preguntas:[`¿Quién hizo tu logo actual? ¿Tenés el archivo original en buena calidad?`,`¿Tus posteos, tu vidriera y tus bolsas se ven de la misma marca?`,`¿Cómo querés que la gente describa tu negocio en una palabra?`],
+    objeciones:[
+      {o:`Ya tengo logo`, r:`Y si sirve lo respetamos: lo afinamos y le armamos el sistema alrededor — paleta, tipografías, plantillas, todo consistente. No es empezar de cero, es terminar lo que empezaste.`},
+      {o:`Eso es para marcas grandes`, r:`Al revés: a la marca grande ya la conocen. Al negocio chico, verse prolijo y consistente le da la confianza que todavía no tiene. Es el traje para la entrevista.`}],
+    cierre:`En 10 días tenés el pack completo con mini manual y plantillas listas para usar en redes. Pago único — ¿arrancamos con el brief esta semana?` },
+
+  { id:'video', ico:'🎬', name:'PACK VIDEO / REELS', tag:'reels · contenido',
+    pitch:`Las redes hoy son video: el que no publica reels no existe para el algoritmo. Pack mensual de videos cortos filmados y editados con estética propia — vos atendés el negocio, nosotros lo hacemos ver increíble.`,
+    wa:`Hola! Soy [tu nombre], hago video para comercios. Los reels son lo único que el algoritmo muestra gratis hoy — y [negocio] tiene material de sobra: el producto, el proceso, el local. Filmo y edito un pack mensual con estética propia. ¿Te muestro ejemplos de mi trabajo?`,
+    preguntas:[`¿Publicaste algún video del negocio alguna vez? ¿Qué pasó?`,`¿Qué parte de tu laburo te parece que "queda linda en cámara"?`,`¿Seguís a algún negocio parecido al tuyo que la rompa con reels?`],
+    objeciones:[
+      {o:`Me da vergüenza salir en cámara`, r:`No hace falta que salgas: el producto, las manos, el local y el proceso son los protagonistas. Los mejores reels de comercios no tienen a nadie hablándole a la cámara.`},
+      {o:`Un reel no me trae ventas`, r:`Uno solo, no — la serie, sí. El algoritmo premia constancia, y con el reporte medimos qué formato te trae gente para repetir justo ese.`}],
+    cierre:`Primera sesión de captura en tu local: en una sola visita sacamos material para todo el mes. ¿Qué día te viene bien?` },
+];
+
+// ── Precios (defaults = catálogo PIPELINES; overrides compartidos por localStorage) ──
+const PRECIOS = {
+  web:{setup:{costo:40,precio:200},mensual:{costo:6,precio:30}},
+  wa:{setup:{costo:25,precio:150},mensual:{costo:14,precio:70}},
+  social:{setup:{costo:30,precio:160},mensual:{costo:45,precio:200}},
+  menu:{setup:{costo:35,precio:180},mensual:{costo:16,precio:80}},
+  leads:{setup:{costo:22,precio:120},mensual:{costo:9,precio:50}},
+  resenas:{setup:{costo:16,precio:90},mensual:{costo:7,precio:45}},
+  turnos:{setup:{costo:22,precio:130},mensual:{costo:10,precio:55}},
+  factura:{setup:{costo:26,precio:140},mensual:{costo:11,precio:60}},
+  tienda:{setup:{costo:45,precio:240},mensual:{costo:12,precio:60}},
+  ads:{setup:{costo:25,precio:140},mensual:{costo:40,precio:180}},
+  email:{setup:{costo:18,precio:100},mensual:{costo:10,precio:50}},
+  brand:{setup:{costo:35,precio:220},mensual:{costo:0,precio:0}},
+  video:{setup:{costo:20,precio:120},mensual:{costo:55,precio:250}},
+};
+let priceOv={}, moneda='US$';
+try{ priceOv = JSON.parse(localStorage.getItem('hg_pipelines_precios')||'{}')||{}; }catch(e){ priceOv={}; }
+try{ moneda = localStorage.getItem('hg_pipelines_moneda')||'US$'; }catch(e){}
+function num(v,d){ return (typeof v==='number'&&!isNaN(v))?v:d; }
+function P(id){
+  const d=PRECIOS[id]||{setup:{costo:0,precio:0},mensual:{costo:0,precio:0}}, o=priceOv[id]||{};
+  return {
+    setup:{ costo:num(o.setup&&o.setup.costo,d.setup.costo), precio:num(o.setup&&o.setup.precio,d.setup.precio) },
+    mensual:{ costo:num(o.mensual&&o.mensual.costo,d.mensual.costo), precio:num(o.mensual&&o.mensual.precio,d.mensual.precio) }
+  };
+}
+function money(n){ return moneda+' '+Math.round(n).toLocaleString('es-AR'); }
+function esc(s){ return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+// ── Render proceso ───────────────────────────────────────────────────────────
+$('steps').innerHTML = STEPS.map((s,i)=>`
+  <div class="step${i===0?' open':''}" data-step="${i}">
+    <div class="head"><div class="num">${i+1}</div><h3>${s.t}</h3><div class="hint">${esc(s.h)}</div></div>
+    <div class="body">${s.d}</div>
+  </div>`).join('');
+$('steps').addEventListener('click', e=>{
+  const st=e.target.closest('.step'); if(!st || e.target.closest('a')) return;
+  st.classList.toggle('open');
+});
+
+// ── Render reglas ────────────────────────────────────────────────────────────
+$('rules').innerHTML = RULES.map(r=>`<div class="rule"><b>${esc(r.t)}</b>${esc(r.d)}</div>`).join('');
+
+// ── Render selector + guía ───────────────────────────────────────────────────
+let cur = GUIA[0].id;
+function renderSel(){
+  $('svcsel').innerHTML = GUIA.map(g=>
+    `<button class="svcbtn${g.id===cur?' on':''}" data-svc="${g.id}">${g.ico} ${esc(g.name)}</button>`).join('');
+}
+function renderGuide(){
+  const g = GUIA.find(x=>x.id===cur); if(!g) return;
+  const pr = P(g.id);
+  const priceHtml = (pr.setup.precio+pr.mensual.precio>0)
+    ? `Setup <b>${money(pr.setup.precio)}</b> · Mensual <b>${money(pr.mensual.precio)}</b><br><small>tu costo: ${money(pr.setup.costo)} + ${money(pr.mensual.costo)}/mes</small>`
+    : `<small>precio a definir</small>`;
+  $('guide').innerHTML = `<div class="guide">
+    <div class="top">
+      <div><h2>${g.ico} ${esc(g.name)}</h2><div class="tag">${esc(g.tag)}</div></div>
+      <div class="price">${priceHtml}</div>
+    </div>
+    <div class="blk"><div class="bl">Pitch de 30 segundos <span class="cp" data-copy="pitch">📋 copiar</span></div>
+      <div class="script" id="txt-pitch">${esc(g.pitch)}</div></div>
+    <div class="blk"><div class="bl">Primer mensaje de WhatsApp <span class="cp" data-copy="wa">📋 copiar</span></div>
+      <div class="script" id="txt-wa">${esc(g.wa)}</div></div>
+    <div class="blk"><div class="bl">Preguntas de diagnóstico — preguntá antes de proponer</div>
+      <div class="qs">${g.preguntas.map(q=>`<div class="q">${esc(q)}</div>`).join('')}</div></div>
+    <div class="blk"><div class="bl">Objeciones y cómo responderlas</div>
+      ${g.objeciones.map(x=>`<div class="obj"><div class="o">${esc(x.o)}</div><div class="r">${esc(x.r)}</div></div>`).join('')}</div>
+    <div class="blk"><div class="close">${esc(g.cierre)}</div></div>
+    <a class="golink" href="/pipelines/">Armar el presupuesto en PIPELINES →</a>
+  </div>`;
+}
+$('svcsel').addEventListener('click', e=>{
+  const b=e.target.closest('[data-svc]'); if(!b) return;
+  cur=b.getAttribute('data-svc'); renderSel(); renderGuide();
+});
+$('guide').addEventListener('click', e=>{
+  const c=e.target.closest('[data-copy]'); if(!c) return;
+  const el=$('txt-'+c.getAttribute('data-copy')); if(!el) return;
+  const t=el.textContent;
+  if(navigator.clipboard) navigator.clipboard.writeText(t).then(()=>toast('Copiado — adaptá los [corchetes]'),()=>prompt('Copiá el texto:',t));
+  else prompt('Copiá el texto:',t);
+});
+function toast(t){ const el=$('toast'); el.textContent=t; el.classList.add('show'); setTimeout(()=>el.classList.remove('show'),1800); }
+
+renderSel(); renderGuide();
+})();
+</script>
+</body></html>

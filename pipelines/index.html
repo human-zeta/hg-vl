@@ -217,6 +217,36 @@ const PIPELINES = [
     gap:[], tipos:['Mecánica','Contabilidad','Inmobiliaria','Profesional','Electrónica','Ropa'],
     nodes:['Venta','Datos cliente','Factura AR','Envío email/WA','Registro'],
     setup:{costo:26, precio:140}, mensual:{costo:11, precio:60} },
+
+  { id:'tienda', ico:'🛒', name:'TIENDA + PAGOS', tag:'catálogo · mercado pago',
+    desc:'Catálogo online con carrito y cobro por Mercado Pago: el cliente elige, paga y el pedido llega cobrado. Canal propio, sin comisión de marketplace.',
+    gap:[], tipos:['Tienda','Ropa','Electrónica','Ferretería','Librería','Juguetería','Deportes','Bazar','Regalería','Vivero','Florería','Panadería'],
+    nodes:['Catálogo','Carrito','Mercado Pago','Confirmación','Envío / retiro','Registro ventas'],
+    setup:{costo:45, precio:240}, mensual:{costo:12, precio:60} },
+
+  { id:'ads', ico:'📣', name:'PUBLICIDAD LOCAL', tag:'meta ads · google',
+    desc:'Campañas en Instagram/Google segmentadas al barrio, con piezas propias y reporte claro: cuánto pusiste, cuánta gente vino. La pauta la paga el cliente aparte.',
+    gap:[], tipos:['Gimnasio','Inmobiliaria','Restaurante','Estética','Hotel','Academia','Agencia de viajes','Pizzería'],
+    nodes:['Objetivo','Pieza (motor-media)','Segmentación local','Campaña Meta/Google','Optimización','Reporte'],
+    setup:{costo:25, precio:140}, mensual:{costo:40, precio:180} },
+
+  { id:'email', ico:'💌', name:'EMAIL + FIDELIZACIÓN', tag:'newsletter · cupones',
+    desc:'Base de clientes con newsletter, cupones y saludo de cumpleaños automático. Hacer volver al que ya compró cuesta 5 veces menos que conseguir uno nuevo.',
+    gap:[], tipos:['Restaurante','Cafetería','Peluquería','Tienda','Gimnasio','Librería','Heladería','Barbería','Estética'],
+    nodes:['Alta QR / form','Base de clientes','Newsletter','Cupones','Cumpleaños auto','Métricas'],
+    setup:{costo:18, precio:100}, mensual:{costo:10, precio:50} },
+
+  { id:'brand', ico:'🎨', name:'IDENTIDAD VISUAL', tag:'logo · paleta · plantillas',
+    desc:'Logo, paleta, tipografías y plantillas para redes: que todo lo del negocio se vea de la misma casa. Pago único — el pack queda para siempre.',
+    gap:[], tipos:[],
+    nodes:['Brief','Logo (LETRAS)','Paleta (PALETA)','Tipografías (TIPOS)','Plantillas redes','Manual mini'],
+    setup:{costo:35, precio:220}, mensual:{costo:0, precio:0} },
+
+  { id:'video', ico:'🎬', name:'PACK VIDEO / REELS', tag:'reels · contenido',
+    desc:'Pack mensual de videos cortos filmados y editados con estética propia. Las redes hoy son video: el que no publica reels no existe para el algoritmo.',
+    gap:[], tipos:['Restaurante','Ropa','Gimnasio','Estética','Bar','Heladería','Tienda','Cafetería','Barbería'],
+    nodes:['Guion','Rodaje / captura','Edición (motor-media)','Formatos 9:16','Publicación','Reporte'],
+    setup:{costo:20, precio:120}, mensual:{costo:55, precio:250} },
 ];
 
 const CHANNELS = [
@@ -319,6 +349,11 @@ function recoFor(p, b){
       break;
     case 'turnos':  if(typeMatch) return r('Trabaja con turnos'); break;
     case 'factura': if(typeMatch) return r('Factura seguido'); break;
+    case 'tienda':  if(typeMatch) return r('Vende productos'); break;
+    case 'ads':     if(typeMatch) return r('Compite en su zona'); break;
+    case 'email':   if(typeMatch) return r('Clientes que vuelven'); break;
+    case 'brand':   if(b.web===false && b.ig===false) return r('Arranca de cero: identidad primero'); break;
+    case 'video':   if(typeMatch && (b.ig===true||b.tt===true)) return r('Redes activas piden video'); break;
   }
   // fallback genérico por rubro
   if(typeMatch) return r('Ideal para '+(b.type||'el rubro'));
