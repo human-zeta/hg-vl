@@ -506,6 +506,16 @@ const FB_API_KEY = 'AIzaSyAeMKHe7dj4bnaUzkF7iDANrC_cBtg4LAA';
 const REFRESH_URL = 'https://securetoken.googleapis.com/v1/token';
 const LS_KEY = 'hg_auth_session';
 
+// ── Worker de detección de redes (Cloudflare) ──────────────────────────────
+// Google Places NO expone redes sociales, y el navegador no puede bajar la web
+// de un tercero para escanearla (CORS). Este Worker corre server-side y, dada la
+// URL de la web de un negocio, devuelve qué redes linkea (IG/FB/WA/TikTok) —
+// espejo de find_socials() de refresh_seed.py. Vacío = se saltea (redes quedan
+// en false, como antes).
+const REDES_WORKER_URL = (typeof window!=='undefined' && typeof window.REDES_WORKER_URL!=='undefined')
+  ? window.REDES_WORKER_URL
+  : 'https://hg-redes-scan.tukyquilme.workers.dev';
+
 // ── Key de Google Maps — esta SÍ es real e intencionalmente client-side. ──
 // Solo renderiza el mapa (tiles + marcadores); nunca busca datos de comercios.
 const GMAPS_KEY = 'AIzaSyCnXWhyWR6VxayZBDcTUu7AkkeH60bU180';
@@ -973,6 +983,29 @@ function buildPlaceRecord(r, city, website, phone){
   };
 }
 
+// Enriquece un record recién armado con las redes detectadas por el Worker
+// (escanea la web del negocio server-side). Muta el record: sube ig/fb/wa/tt y
+// confirma `web` si la web respondió. Si no hay web, no hay Worker configurado o
+// falla, deja el record como está (redes en false) — nunca rompe el flujo.
+async function enrichRedes(record){
+  if(!REDES_WORKER_URL || !record.website) return;
+  try{
+    const r = await fetch(REDES_WORKER_URL+'?url='+encodeURIComponent(record.website), {cache:'no-store'});
+    if(!r.ok) return;
+    const d = await r.json();
+    if(d.alive === true) record.web = true;
+    let hit = false;
+    for(const k of ['ig','fb','wa','tt']){ if(d[k]===true){ record[k]=true; hit=true; } }
+    if(hit || d.alive!==null){
+      record.notes = (record.notes||'').replace(
+        /Instagram\/Facebook\/WhatsApp\/TikTok SIN VERIFICAR[^.]*\./,
+        'Redes detectadas automáticamente escaneando su web'
+        + (hit ? ' ('+['ig','fb','wa','tt'].filter(k=>record[k]).map(k=>k.toUpperCase()).join('/')+')' : ' (no se hallaron redes linkeadas)')
+        + ' — confirmar a mano antes de aprobar.');
+    }
+  }catch(e){ /* fallo transitorio: redes quedan como estaban */ }
+}
+
 function searchGooglePlaces(){
   const city = $('mod-search-city').value;
   const c = CITIES[city];
@@ -1040,6 +1073,7 @@ async function addPlaceToPending(i){
   try{
     const details = await getPlaceDetails(r.place_id);  // web + teléfono de Google (llamada paga)
     const record = buildPlaceRecord(r, city, details.website, details.phone);
+    await enrichRedes(record);  // detecta redes escaneando su web (Worker)
     const token = await freshToken(session);
     const resp = await fetch(`${FB_URL}/comercios_pending.json?auth=${token}`, {
       method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(record)
@@ -1073,6 +1107,7 @@ async function saveAllSearchResults(){
     try{
       const details = await getPlaceDetails(r.place_id);
       const record = buildPlaceRecord(r, city, details.website, details.phone);
+      await enrichRedes(record);  // detecta redes escaneando su web (Worker)
       const token = await freshToken(session);
       const resp = await fetch(`${FB_URL}/comercios_pending.json?auth=${token}`, {
         method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(record)
@@ -1235,6 +1270,7 @@ async function relevarZona(){
           +'nombre/dirección/ubicación/rating/web/teléfono vienen de Google. Instagram/Facebook/'
           +'WhatsApp/TikTok SIN VERIFICAR (Google no expone redes): confirmar a mano antes de aprobar.';
         record.suggestedByName = (session.name || session.email || 'Moderador') + ' (relevo de zona)';
+        await enrichRedes(record);  // detecta redes escaneando su web (Worker)
         const token = await freshToken(session);
         const resp = await fetch(`${FB_URL}/comercios_pending.json?auth=${token}`, {
           method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(record)
