@@ -421,6 +421,7 @@
           <input type="text" id="mod-search-query" value="comercios" maxlength="60" placeholder="panadería, peluquería…">
         </div>
         <button class="btn sm" onclick="searchGooglePlaces()">⌖ BUSCAR EN GOOGLE MAPS</button>
+        <button class="btn sm" onclick="relevarZona()">⟲ RELEVAR ZONA (12 rubros)</button>
         <button class="btn sm" onclick="searchAllCities()">🌎 BUSCAR LAS 25 CIUDADES</button>
       </div>
       <p style="font-size:.7rem;color:rgba(240,237,230,.4);margin:-.3rem 0 .5rem;">
@@ -429,8 +430,11 @@
         IG/FB/WhatsApp/TikTok no las da Google: quedan para confirmar a mano). Con
         "💾 GUARDAR TODOS" volcás la búsqueda entera a pendientes de una, sin duplicar lo
         que ya está en la base — así cada búsqueda va armando la base de datos.
+        "⟲ Relevar zona" hace el relevo automático de la ciudad elegida: una búsqueda por
+        cada uno de los 12 rubros estándar (los que venden los PIPELINES) y cada negocio
+        nuevo cae solo a pendientes con web y teléfono de su ficha de Google.
         "Buscar las 25 ciudades" recorre todas las ciudades solo y manda los nuevos directo
-        a pendientes (sin web/teléfono, para no multiplicar el costo). En los tres casos
+        a pendientes (sin web/teléfono, para no multiplicar el costo). En todos los casos
         nada se confirma solo: el review del moderador sigue siendo obligatorio, y cada
         llamada consume cuota paga de Google Cloud — te lo confirma antes de arrancar.
       </p>
@@ -1176,6 +1180,81 @@ async function searchAllCities(){
   await loadPendientes(); updateStats(); renderModPanel();
 }
 
+// RELEVAR ZONA: cuando el moderador elige una ciudad, releva la zona entera de una —
+// UNA búsqueda de Places por cada rubro estándar (los mismos rubros que venden los
+// PIPELINES), dedup contra la base y los pendientes, y cada negocio NUEVO cae solo a
+// /comercios_pending con web+teléfono de la ficha de Google (Place Details, paga,
+// solo para los nuevos). Automatiza la búsqueda y el guardado, NUNCA la aprobación:
+// misma decisión del 2026-06-27 (searchAllCities) — el review del moderador sigue
+// siendo obligatorio y el tablero público no se toca solo.
+const RUBROS_RELEVO = ['panadería','peluquería','restaurante','ferretería','farmacia',
+  'cafetería','gimnasio','veterinaria','taller mecánico','tienda de ropa','inmobiliaria','heladería'];
+async function relevarZona(){
+  if(bulkSearchRunning || !session) return;
+  const city = $('mod-search-city').value;
+  const statusEl = $('mod-search-status');
+  const resultsEl = $('mod-search-results');
+  if(!placesService || !CITIES[city]){
+    statusEl.textContent = !placesService
+      ? 'Google Maps todavía no cargó (esperá unos segundos o abrí primero la pestaña Mapa) — sin eso no se puede relevar.'
+      : 'Elegí una ciudad para relevar la zona.';
+    statusEl.className = 'status-msg err';
+    return;
+  }
+  const ok = confirm(`Relevo automático de ${city}: ${RUBROS_RELEVO.length} búsquedas en Google Places (una por rubro: ${RUBROS_RELEVO.join(', ')}) + una consulta de ficha (web/teléfono) por cada negocio NUEVO. Todo consume cuota paga de Google Cloud. Los nuevos caen a pendientes — ninguno se confirma solo. ¿Relevar?`);
+  if(!ok) return;
+
+  bulkSearchRunning = true;
+  resultsEl.innerHTML = '';
+  const seen = new Set([...bizList(), ...pendList()].map(b=>gpDedupKey(b.name, b.city)));
+  let added = 0, skipped = 0, errors = 0;
+  const summary = [];
+
+  for(let i=0; i<RUBROS_RELEVO.length; i++){
+    const rubro = RUBROS_RELEVO[i];
+    statusEl.textContent = `Relevando ${city}: "${rubro}" (${i+1}/${RUBROS_RELEVO.length}) — nuevos hasta ahora: ${added}`;
+    statusEl.className = 'status-msg';
+    let r;
+    try{ r = await textSearchOne(rubro, city); }
+    catch(e){ errors++; summary.push(`${rubro}: error de red`); await sleep(350); continue; }
+    if(r.status !== google.maps.places.PlacesServiceStatus.OK || !r.results.length){
+      summary.push(`${rubro}: 0 resultados (${r.status})`);
+      await sleep(350);
+      continue;
+    }
+    let addedHere = 0;
+    for(const place of r.results){
+      const name = (place.name||'').trim();
+      const key = gpDedupKey(name, city);
+      if(!name || seen.has(key)){ skipped++; continue; }
+      seen.add(key);
+      try{
+        const details = await getPlaceDetails(place.place_id);  // web + teléfono (paga, solo nuevos)
+        const record = buildPlaceRecord(place, city, details.website, details.phone);
+        record.notes = 'Importado vía RELEVO AUTOMÁTICO de zona ('+city+', rubro "'+rubro+'") — '
+          +'nombre/dirección/ubicación/rating/web/teléfono vienen de Google. Instagram/Facebook/'
+          +'WhatsApp/TikTok SIN VERIFICAR (Google no expone redes): confirmar a mano antes de aprobar.';
+        record.suggestedByName = (session.name || session.email || 'Moderador') + ' (relevo de zona)';
+        const token = await freshToken(session);
+        const resp = await fetch(`${FB_URL}/comercios_pending.json?auth=${token}`, {
+          method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(record)
+        });
+        if(!resp.ok) throw new Error('Firebase respondió '+resp.status);
+        added++; addedHere++;
+      }catch(e){ errors++; }
+      await sleep(300);
+    }
+    summary.push(`${rubro}: +${addedHere} nuevo(s) de ${r.results.length} resultado(s)`);
+    await sleep(350);
+  }
+
+  bulkSearchRunning = false;
+  statusEl.textContent = `Relevo de ${city} listo. ${added} negocios nuevos a pendientes, ${skipped} ya estaban${errors?`, ${errors} error(es)`:''}. Revisalos y aprobá los que sirvan.`;
+  statusEl.className = errors ? 'status-msg warn' : 'status-msg ok';
+  resultsEl.innerHTML = `<div class="pend-item"><div class="pmeta" style="white-space:pre-line;">${escHtml(summary.join('\n'))}</div></div>`;
+  await loadPendientes(); updateStats(); renderModPanel();
+}
+
 // ════════════════════════════════════════════════════════════════════
 // MODERACIÓN — aprobar/rechazar pendientes, editar /comercios directo
 // ════════════════════════════════════════════════════════════════════
@@ -1345,7 +1424,7 @@ function exportCSV(){
 window.selectBiz=selectBiz; window.closeSide=closeSide; window.setFilter=setFilter; window.switchTab=switchTab;
 window.approvePending=approvePending; window.rejectPending=rejectPending; window.openModEdit=openModEdit; window.saveModEdit=saveModEdit; window.googleSearchEdit=googleSearchEdit;
 window.filterCity=filterCity; window.changePage=changePage; window.saveCRMNote=saveCRMNote; window.exportCSV=exportCSV;
-window.searchGooglePlaces=searchGooglePlaces; window.addPlaceToPending=addPlaceToPending; window.searchAllCities=searchAllCities; window.saveAllSearchResults=saveAllSearchResults; window.googleSearchPlace=googleSearchPlace; window.googleSearchPending=googleSearchPending;
+window.searchGooglePlaces=searchGooglePlaces; window.addPlaceToPending=addPlaceToPending; window.searchAllCities=searchAllCities; window.saveAllSearchResults=saveAllSearchResults; window.relevarZona=relevarZona; window.googleSearchPlace=googleSearchPlace; window.googleSearchPending=googleSearchPending;
 
 // ── Boot ──
 async function boot(){
