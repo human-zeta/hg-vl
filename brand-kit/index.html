@@ -1,0 +1,231 @@
+<!doctype html><html lang="es"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BRAND KIT — Human Glitche · el mini-manual de marca, listo para PDF</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link id="dynfonts" href="" rel="stylesheet">
+<style>
+  :root{ --acid:#b8ff00; --glitch:#ff2d55; --cyan:#3ad0ff; --ink:#f0ede6; --line:rgba(240,237,230,.12); --bg:#050505; --pan:rgba(184,255,0,.015);
+         --paper:#faf9f6; --pink:#12100c; --pline:#e3ded2; --pmut:#6b6656; }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{min-height:100%;background:var(--bg);color:var(--ink);font-family:'Space Mono',monospace;}
+  body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");z-index:0;pointer-events:none;opacity:.4;}
+  .wrap{position:relative;z-index:1;max-width:1300px;margin:0 auto;padding:26px 20px 90px;}
+  header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;gap:16px;flex-wrap:wrap;}
+  .brand{font-family:'Bebas Neue',sans-serif;font-size:52px;letter-spacing:.03em;line-height:.82;}
+  .brand b{color:var(--acid);font-weight:400;}
+  .brand span{display:block;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.26em;color:rgba(240,237,230,.4);margin-top:8px;}
+  header nav a{font-size:10px;letter-spacing:.2em;color:rgba(240,237,230,.4);text-decoration:none;margin-left:16px;} header nav a:hover{color:var(--acid);}
+  .intro{font-size:12px;color:rgba(240,237,230,.55);line-height:1.8;max-width:76ch;margin:12px 0 22px;}
+  .intro b{color:var(--acid);font-weight:400;}
+  .cols{display:grid;grid-template-columns:360px 1fr;gap:24px;align-items:start;}
+  @media(max-width:980px){ .cols{grid-template-columns:1fr;} }
+  .editor{border:1px solid var(--line);border-radius:10px;background:var(--pan);padding:16px;position:sticky;top:16px;max-height:calc(100vh - 32px);overflow:auto;}
+  .editor h2{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:.04em;color:var(--acid);margin:2px 0 12px;}
+  .grp{margin-bottom:16px;} .grp>.gl{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:rgba(240,237,230,.4);margin-bottom:8px;display:flex;align-items:center;gap:8px;}
+  .grp>.gl::after{content:'';flex:1;height:1px;background:var(--line);}
+  .fld{display:flex;flex-direction:column;gap:4px;margin-bottom:9px;} .fld label{font-size:8.5px;letter-spacing:.16em;text-transform:uppercase;color:rgba(240,237,230,.4);}
+  .fld input,.fld select,.fld textarea{background:#0b0b0b;border:1px solid var(--line);color:var(--ink);font-family:'Space Mono',monospace;font-size:12px;padding:7px 9px;border-radius:6px;width:100%;}
+  .fld textarea{resize:vertical;min-height:48px;line-height:1.6;} .fld input:focus,.fld select:focus,.fld textarea:focus{outline:none;border-color:var(--acid);}
+  .colorrow{display:flex;gap:7px;align-items:center;margin-bottom:7px;}
+  .colorrow input[type=color]{width:36px;height:34px;padding:2px;border:1px solid var(--line);border-radius:6px;background:#0b0b0b;cursor:pointer;flex-shrink:0;}
+  .colorrow input[type=text]{flex:1;} .colorrow .rol{width:96px;} .colorrow .rm{cursor:pointer;color:rgba(240,237,230,.35);font-size:14px;padding:0 4px;} .colorrow .rm:hover{color:var(--glitch);}
+  .addc{border:1px dashed var(--line);border-radius:6px;padding:7px;text-align:center;color:rgba(240,237,230,.5);font-size:10px;cursor:pointer;} .addc:hover{border-color:var(--acid);color:var(--acid);}
+  .logobox{border:1px dashed var(--line);border-radius:8px;padding:14px;text-align:center;}
+  .logobox img{max-width:100%;max-height:80px;margin-bottom:8px;}
+  .logobox .fbtn{display:inline-block;font-size:10px;letter-spacing:.1em;text-transform:uppercase;border:1px solid var(--line);border-radius:6px;padding:8px 12px;cursor:pointer;color:rgba(240,237,230,.7);} .logobox .fbtn:hover{border-color:var(--acid);color:var(--acid);}
+  .logobox .rmv{display:block;margin-top:8px;font-size:9px;color:rgba(240,237,230,.4);cursor:pointer;} .logobox .rmv:hover{color:var(--glitch);}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;} .chip{font-size:10px;padding:5px 9px;border:1px solid var(--line);border-radius:5px;cursor:pointer;transition:.12s;color:rgba(240,237,230,.7);} .chip:hover{border-color:var(--acid);} .chip.on{border-color:var(--acid);color:var(--acid);background:rgba(184,255,0,.07);}
+  .btn{cursor:pointer;background:transparent;border:1px solid var(--line);color:var(--ink);font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.12em;padding:10px 12px;border-radius:6px;transition:.18s;text-transform:uppercase;width:100%;} .btn:hover{border-color:var(--acid);color:var(--acid);} .btn.pri{background:var(--acid);color:#050505;font-weight:700;border-color:var(--acid);} .btn.pri:hover{filter:brightness(1.08);} .btnrow{display:flex;gap:8px;margin-top:6px;}
+
+  /* manual (papel) */
+  .doc{background:var(--paper);color:var(--pink);border-radius:6px;box-shadow:0 20px 60px rgba(0,0,0,.5);overflow:hidden;}
+  .page{padding:44px 48px;border-bottom:1px dashed var(--pline);page-break-after:always;}
+  .page:last-child{border-bottom:none;page-break-after:auto;}
+  .cover{min-height:340px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;gap:16px;}
+  .cover .clogo{max-width:70%;max-height:150px;} .cover .cname{font-family:var(--titlefont,'Bebas Neue');font-size:64px;line-height:.9;color:var(--pink);word-break:break-word;} .cover .ctag{font-size:14px;color:var(--pmut);letter-spacing:.02em;max-width:60ch;} .cover .ckm{font-size:9px;letter-spacing:.24em;text-transform:uppercase;color:var(--pmut);margin-top:8px;}
+  .ph{font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:.16em;text-transform:uppercase;color:var(--pmut);margin-bottom:16px;display:flex;align-items:center;gap:10px;} .ph::before{content:'';width:26px;height:2px;background:var(--pink);}
+  .logopanel{display:grid;grid-template-columns:1fr 1fr;gap:20px;} @media print{.logopanel{gap:14px;}}
+  .logoclear{border:1px solid var(--pline);border-radius:6px;padding:26px;display:flex;align-items:center;justify-content:center;position:relative;min-height:130px;background:#fff;}
+  .logoclear.dark{background:var(--pink);} .logoclear img{max-width:100%;max-height:90px;} .logoclear .lgtype{font-family:var(--titlefont,'Bebas Neue');font-size:34px;line-height:.9;} .logoclear.dark .lgtype{color:#fff;} .logoclear .lgtype.lt{color:var(--pink);}
+  .logorules{font-size:11.5px;color:#2a2822;line-height:1.7;} .logorules li{margin:4px 0 4px 16px;}
+  .swatches{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px;}
+  .sw{border:1px solid var(--pline);border-radius:6px;overflow:hidden;page-break-inside:avoid;} .sw .chip2{height:74px;display:flex;align-items:flex-end;padding:8px;} .sw .chip2 .rol2{font-size:10px;font-weight:700;} .sw .meta2{padding:8px 10px;font-size:10.5px;color:#2a2822;line-height:1.5;} .sw .meta2 b{color:var(--pink);}
+  .typespec{border:1px solid var(--pline);border-radius:6px;padding:18px 20px;margin-bottom:14px;page-break-inside:avoid;}
+  .typespec .tl2{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--pmut);margin-bottom:8px;} .typespec .tl2 b{color:var(--pink);}
+  .typespec .big{font-size:56px;line-height:1;color:var(--pink);margin-bottom:8px;} .typespec .abc{font-size:15px;color:#43403a;letter-spacing:.02em;word-break:break-word;} .typespec .pan{font-size:13px;color:#2a2822;margin-top:8px;}
+  .tono{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;} .tono span{font-size:12px;background:#efece3;border:1px solid var(--pline);border-radius:20px;padding:5px 13px;color:#3a382f;}
+  .tonoej{font-size:13px;color:#2a2822;border-left:3px solid var(--acid);padding:8px 14px;background:#f2efe6;border-radius:0 4px 4px 0;font-style:italic;}
+  .dorow{display:grid;grid-template-columns:1fr 1fr;gap:16px;font-size:11.5px;} .dorow .do{border:1px solid #bfe0c4;border-radius:6px;padding:10px 12px;color:#1a6a34;background:#f0f7f1;} .dorow .dont{border:1px solid #e6bcc6;border-radius:6px;padding:10px 12px;color:#a3324a;background:#faf0f2;} .dorow b{display:block;margin-bottom:5px;letter-spacing:.06em;text-transform:uppercase;font-size:9px;}
+  .dorow li{margin:3px 0 3px 15px;}
+  .pfoot{margin-top:22px;padding-top:12px;border-top:1px solid var(--pline);font-size:10px;color:var(--pmut);display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;} .pfoot b{color:var(--pink);}
+
+  .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--acid);color:#050505;font-size:11px;font-weight:700;letter-spacing:.08em;padding:10px 18px;border-radius:6px;opacity:0;pointer-events:none;transition:.25s;z-index:9;} .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  .foot{font-size:10px;color:rgba(240,237,230,.35);letter-spacing:.1em;margin-top:36px;text-align:center;}
+  @media print{ @page{margin:14mm;} body::before{display:none;} body{background:#fff;} .wrap{max-width:none;padding:0;} header,.intro,.editor,.foot,.toast{display:none!important;} .cols{display:block;} .doc{box-shadow:none;border-radius:0;} .page{border-bottom:none;} }
+</style></head><body>
+<div class="wrap">
+  <header>
+    <div class="brand"><b>BRAND KIT</b><span>el mini-manual de marca, listo para PDF</span></div>
+    <nav><a href="/labs/">← LABS</a><a href="/letras/">LETRAS</a><a href="/paleta/">PALETA</a><a href="/tipos/">TIPOS</a></nav>
+  </header>
+  <p class="intro">Junta lo que hacés en <b>LETRAS</b> (logo), <b>PALETA</b> (colores) y <b>TIPOS</b> (tipografías) en un <b>mini-manual de marca</b>: portada, logo con área de protección y reglas, paleta con HEX/RGB, tipografías con muestra en vivo (Google Fonts), tono de voz y reglas de uso. Subís el logo (el PNG que exportaste en LETRAS), elegís colores y fuentes, y sale un manual listo para imprimir o PDF. Todo en tu navegador.</p>
+
+  <div class="cols">
+    <aside class="editor">
+      <h2>Armá el manual</h2>
+      <div class="grp"><div class="gl">Marca</div>
+        <div class="fld"><label>Nombre</label><input id="nombre" placeholder="Tu marca"></div>
+        <div class="fld"><label>Tagline / bajada</label><input id="tag" placeholder="Lo que hace, en una frase"></div>
+      </div>
+      <div class="grp"><div class="gl">Logo</div>
+        <div class="logobox" id="logobox"></div>
+        <div class="fld" style="margin-top:8px;color:rgba(240,237,230,.35);font-size:9px;">PNG transparente (el de LETRAS). Si no subís, se usa el nombre como logotipo.</div>
+      </div>
+      <div class="grp"><div class="gl">Paleta</div>
+        <div id="colors"></div>
+        <div class="addc" id="addColor">+ agregar color</div>
+      </div>
+      <div class="grp"><div class="gl">Tipografías (Google Fonts)</div>
+        <div class="fld"><label>Títulos</label><select id="titleFont"></select></div>
+        <div class="fld"><label>Cuerpo</label><select id="bodyFont"></select></div>
+      </div>
+      <div class="grp"><div class="gl">Tono de voz</div>
+        <div class="fld"><label>Adjetivos</label><div class="chips" id="tonoChips"></div></div>
+        <div class="fld"><label>Frase de ejemplo</label><input id="tonoEj" placeholder="Cómo suena tu marca en una frase"></div>
+      </div>
+      <div class="grp"><div class="gl">Pie</div>
+        <div class="fld"><label>Autor / contacto</label><input id="cont" value="Human Glitche · hg-vl.com"></div>
+      </div>
+      <button class="btn pri" id="printBtn">🖨 Imprimir / Guardar PDF</button>
+      <div class="btnrow"><button class="btn" id="resetBtn">↺ Limpiar</button></div>
+    </aside>
+    <div class="paperwrap" style="min-width:0"><div class="doc" id="doc"></div></div>
+  </div>
+  <div class="foot">HUMAN GLITCHE · VISUAL LAB · manual de marca client-side · suite Marca / Creador</div>
+</div>
+<div class="toast" id="toast"></div>
+<input type="file" id="fileInput" accept="image/*" style="display:none">
+
+<script>
+(function(){
+'use strict';
+var $=function(id){return document.getElementById(id);};
+var TITLE_FONTS=['Bebas Neue','Anton','Archivo Black','Oswald','Montserrat','Poppins','Space Grotesk','Syne','Righteous','Teko'];
+var BODY_FONTS=['Space Mono','Inter','Roboto','Work Sans','IBM Plex Sans','Source Sans 3','DM Sans','Manrope','Lora','Bitter'];
+var TONOS=['Enérgico','Elegante','Cercano','Under','Minimal','Divertido','Serio','Rebelde','Cálido','Tech','Artesanal','Premium'];
+var LS='hg_brandkit_v1';
+var st={ nombre:'', tag:'', logo:'', colors:[ {rol:'Primario',hex:'#b8ff00'}, {rol:'Tinta',hex:'#12100c'}, {rol:'Fondo',hex:'#faf9f6'} ],
+  titleFont:'Bebas Neue', bodyFont:'Space Mono', tono:['Enérgico'], tonoEj:'', cont:'Human Glitche · hg-vl.com' };
+try{ var s=JSON.parse(localStorage.getItem(LS)||'null'); if(s) st=Object.assign(st,s); }catch(e){}
+
+function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
+function save(){ try{ localStorage.setItem(LS, JSON.stringify(st)); }catch(e){ toast('El logo es muy pesado para guardar'); } }
+function toast(t){ var el=$('toast'); el.textContent=t; el.classList.add('show'); setTimeout(function(){el.classList.remove('show');},1800); }
+function hexToRgb(h){ h=(h||'').replace('#',''); if(h.length===3) h=h.split('').map(function(c){return c+c;}).join(''); var n=parseInt(h,16); if(isNaN(n)) return null; return [(n>>16)&255,(n>>8)&255,n&255]; }
+function lum(h){ var r=hexToRgb(h); if(!r) return 1; return (0.2126*r[0]+0.7152*r[1]+0.0722*r[2])/255; }
+function txtOn(h){ return lum(h)>0.6 ? '#12100c' : '#ffffff'; }
+function ff(name){ return "'"+name+"', sans-serif"; }
+
+// ── Google Fonts dinámicas ──────────────────────────────────────────────────
+function loadFonts(){
+  var fams=[];
+  if(TITLE_FONTS.indexOf(st.titleFont)>=0) fams.push('family='+st.titleFont.replace(/ /g,'+'));
+  if(BODY_FONTS.indexOf(st.bodyFont)>=0) fams.push('family='+st.bodyFont.replace(/ /g,'+')+':wght@400;700');
+  $('dynfonts').href = 'https://fonts.googleapis.com/css2?'+fams.join('&')+'&display=swap';
+}
+
+// ── Render manual ───────────────────────────────────────────────────────────
+function render(){
+  var doc=$('doc');
+  document.documentElement.style.setProperty('--titlefont', ff(st.titleFont));
+  var nombre=st.nombre||'Tu Marca';
+  var logoImg = st.logo ? '<img src="'+st.logo+'" alt="logo">' : '';
+
+  // portada
+  var cover='<div class="page cover">'
+    + (st.logo?'<img class="clogo" src="'+st.logo+'">':'')
+    + '<div class="cname" style="font-family:'+ff(st.titleFont)+'">'+esc(nombre)+'</div>'
+    + (st.tag?'<div class="ctag" style="font-family:'+ff(st.bodyFont)+'">'+esc(st.tag)+'</div>':'')
+    + '<div class="ckm">Manual de marca</div></div>';
+
+  // logo
+  var logoTypeLt = st.logo?logoImg:'<span class="lgtype lt" style="font-family:'+ff(st.titleFont)+'">'+esc(nombre)+'</span>';
+  var logoTypeDk = st.logo?logoImg:'<span class="lgtype" style="font-family:'+ff(st.titleFont)+'">'+esc(nombre)+'</span>';
+  var logoPage='<div class="page"><div class="ph">01 · Logo</div><div class="logopanel">'
+    +'<div class="logoclear">'+logoTypeLt+'</div><div class="logoclear dark">'+logoTypeDk+'</div></div>'
+    +'<ul class="logorules" style="margin-top:16px">'
+      +'<li>Respetá un <b>área de protección</b> alrededor del logo igual a la altura de su inicial.</li>'
+      +'<li>No lo deformes, rotes ni le cambies los colores.</li>'
+      +'<li>Usalo sobre fondos con contraste suficiente (versión clara / oscura arriba).</li>'
+      +'<li>Tamaño mínimo legible; si no se lee, va más grande.</li></ul></div>';
+
+  // paleta
+  var sws=st.colors.map(function(c){ var rgb=hexToRgb(c.hex)||[0,0,0];
+    return '<div class="sw"><div class="chip2" style="background:'+esc(c.hex)+';color:'+txtOn(c.hex)+'"><span class="rol2">'+esc(c.rol||'')+'</span></div><div class="meta2"><b>'+esc((c.hex||'').toUpperCase())+'</b><br>RGB '+rgb.join(', ')+'</div></div>';
+  }).join('');
+  var palPage='<div class="page"><div class="ph">02 · Paleta</div><div class="swatches">'+sws+'</div></div>';
+
+  // tipografías
+  var abc='ABCDEFGHIJKLMNÑOPQRSTUVWXYZ abcdefghijklmnñopqrstuvwxyz 0123456789';
+  var typePage='<div class="page"><div class="ph">03 · Tipografías</div>'
+    +'<div class="typespec"><div class="tl2">Títulos · <b>'+esc(st.titleFont)+'</b></div>'
+      +'<div class="big" style="font-family:'+ff(st.titleFont)+'">'+esc(nombre)+'</div>'
+      +'<div class="abc" style="font-family:'+ff(st.titleFont)+'">'+abc+'</div></div>'
+    +'<div class="typespec"><div class="tl2">Cuerpo · <b>'+esc(st.bodyFont)+'</b></div>'
+      +'<div class="abc" style="font-family:'+ff(st.bodyFont)+'">'+abc+'</div>'
+      +'<div class="pan" style="font-family:'+ff(st.bodyFont)+'">El veloz murciélago hindú comía feliz cardillo y kiwi. La cigüeña tocaba el saxofón detrás del palenque de paja.</div></div></div>';
+
+  // tono
+  var tonoTags=st.tono.map(function(t){return '<span>'+esc(t)+'</span>';}).join('');
+  var tonoPage='<div class="page"><div class="ph">04 · Tono de voz</div>'
+    +(tonoTags?'<div class="tono">'+tonoTags+'</div>':'')
+    +(st.tonoEj?'<div class="tonoej">"'+esc(st.tonoEj)+'"</div>':'<div style="color:var(--pmut);font-size:12px">Definí unos adjetivos y una frase de ejemplo.</div>')
+    +'<div class="dorow" style="margin-top:18px"><div class="do"><b>Sí</b><ul><li>Coherente en logo, colores y tipografías</li><li>Mensajes claros y con la personalidad de arriba</li></ul></div>'
+      +'<div class="dont"><b>No</b><ul><li>Mezclar fuentes o colores fuera de la paleta</li><li>Deformar el logo o perder contraste</li></ul></div></div>'
+    +'<div class="pfoot"><div>Manual de marca de <b>'+esc(nombre)+'</b></div><div>'+esc(st.cont||'')+'</div></div></div>';
+
+  doc.innerHTML = cover + logoPage + palPage + typePage + tonoPage;
+}
+
+// ── Editor ──────────────────────────────────────────────────────────────────
+function renderColors(){
+  $('colors').innerHTML = st.colors.map(function(c,i){
+    return '<div class="colorrow" data-i="'+i+'"><input type="color" data-f="hex" value="'+esc(c.hex)+'"><input type="text" class="rol" data-f="rol" value="'+esc(c.rol)+'" placeholder="Rol"><input type="text" data-f="hex2" value="'+esc(c.hex)+'" placeholder="#hex"><span class="rm" data-rm="'+i+'">✕</span></div>';
+  }).join('');
+}
+function renderLogo(){
+  $('logobox').innerHTML = (st.logo?'<img src="'+st.logo+'">':'')
+    +'<span class="fbtn" id="upBtn">'+(st.logo?'Cambiar logo':'⬆ Subir logo (PNG)')+'</span>'
+    +(st.logo?'<span class="rmv" id="rmLogo">quitar logo</span>':'');
+  $('upBtn').addEventListener('click', function(){ $('fileInput').click(); });
+  if(st.logo) $('rmLogo').addEventListener('click', function(){ st.logo=''; save(); renderLogo(); render(); });
+}
+function fillFontSelects(){
+  $('titleFont').innerHTML=TITLE_FONTS.map(function(f){return '<option '+(st.titleFont===f?'selected':'')+'>'+f+'</option>';}).join('');
+  $('bodyFont').innerHTML=BODY_FONTS.map(function(f){return '<option '+(st.bodyFont===f?'selected':'')+'>'+f+'</option>';}).join('');
+}
+function renderTono(){ $('tonoChips').innerHTML=TONOS.map(function(t){return '<span class="chip '+(st.tono.indexOf(t)>=0?'on':'')+'" data-t="'+esc(t)+'">'+esc(t)+'</span>';}).join(''); }
+
+$('fileInput').addEventListener('change', function(e){ var f=e.target.files[0]; if(!f) return;
+  if(f.size>1600000){ toast('Imagen muy pesada (máx ~1.5MB)'); return; }
+  var r=new FileReader(); r.onload=function(){ st.logo=r.result; save(); renderLogo(); render(); }; r.readAsDataURL(f); e.target.value=''; });
+$('colors').addEventListener('input', function(e){ var el=e.target.closest('[data-f]'); if(!el) return; var i=+el.closest('.colorrow').getAttribute('data-i'), f=el.getAttribute('data-f');
+  if(f==='hex'){ st.colors[i].hex=el.value; el.closest('.colorrow').querySelector('[data-f=hex2]').value=el.value; }
+  else if(f==='hex2'){ var v=el.value.trim(); if(!/^#/.test(v)&&v) v='#'+v; st.colors[i].hex=v; if(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(v)) el.closest('.colorrow').querySelector('[data-f=hex]').value=v; }
+  else st.colors[i].rol=el.value; save(); render(); });
+$('colors').addEventListener('click', function(e){ var rm=e.target.closest('[data-rm]'); if(!rm) return; st.colors.splice(+rm.getAttribute('data-rm'),1); save(); renderColors(); render(); });
+$('addColor').addEventListener('click', function(){ if(st.colors.length>=8){ toast('Con 8 alcanza'); return; } st.colors.push({rol:'Color',hex:'#3ad0ff'}); save(); renderColors(); render(); });
+$('titleFont').addEventListener('change', function(){ st.titleFont=this.value; save(); loadFonts(); render(); });
+$('bodyFont').addEventListener('change', function(){ st.bodyFont=this.value; save(); loadFonts(); render(); });
+$('tonoChips').addEventListener('click', function(e){ var c=e.target.closest('.chip'); if(!c) return; var t=c.getAttribute('data-t'), i=st.tono.indexOf(t); if(i>=0) st.tono.splice(i,1); else st.tono.push(t); c.classList.toggle('on'); save(); render(); });
+['nombre','tag','tonoEj','cont'].forEach(function(k){ var el=$(k); if(st[k]) el.value=st[k]; el.addEventListener('input', function(){ st[k]=el.value; save(); render(); }); });
+$('printBtn').addEventListener('click', function(){ if(!st.nombre){ toast('Poné el nombre de la marca'); return; } window.print(); });
+$('resetBtn').addEventListener('click', function(){ if(!confirm('¿Limpiar el manual?'))return;
+  st={ nombre:'', tag:'', logo:'', colors:[{rol:'Primario',hex:'#b8ff00'},{rol:'Tinta',hex:'#12100c'},{rol:'Fondo',hex:'#faf9f6'}], titleFont:'Bebas Neue', bodyFont:'Space Mono', tono:['Enérgico'], tonoEj:'', cont:'Human Glitche · hg-vl.com' }; save(); location.reload(); });
+
+fillFontSelects(); renderColors(); renderLogo(); renderTono(); loadFonts(); render();
+})();
+</script>
+</body></html>
