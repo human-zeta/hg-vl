@@ -1,0 +1,311 @@
+<!doctype html><html lang="es"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CALCULADORA — Human Glitche · tu margen y el ROI del cliente</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{ --acid:#b8ff00; --glitch:#ff2d55; --cyan:#3ad0ff; --ink:#f0ede6; --line:rgba(240,237,230,.12); --bg:#050505; --pan:rgba(184,255,0,.015);
+         --paper:#faf9f6; --pink:#12100c; --pline:#e3ded2; --pmut:#6b6656; }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{min-height:100%;background:var(--bg);color:var(--ink);font-family:'Space Mono',monospace;}
+  body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");z-index:0;pointer-events:none;opacity:.4;}
+  .wrap{position:relative;z-index:1;max-width:1180px;margin:0 auto;padding:26px 20px 90px;}
+  header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;gap:16px;flex-wrap:wrap;}
+  .brand{font-family:'Bebas Neue',sans-serif;font-size:50px;letter-spacing:.03em;line-height:.82;}
+  .brand b{color:var(--acid);font-weight:400;}
+  .brand span{display:block;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.24em;color:rgba(240,237,230,.4);margin-top:8px;}
+  header nav a{font-size:10px;letter-spacing:.2em;color:rgba(240,237,230,.4);text-decoration:none;margin-left:16px;} header nav a:hover{color:var(--acid);}
+  .intro{font-size:12px;color:rgba(240,237,230,.55);line-height:1.8;max-width:76ch;margin:12px 0 20px;}
+  .intro b{color:var(--acid);font-weight:400;}
+
+  .modeswitch{display:flex;gap:8px;margin-bottom:18px;}
+  .ms{cursor:pointer;background:transparent;border:1px solid var(--line);color:rgba(240,237,230,.7);font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.08em;padding:11px 16px;border-radius:8px;transition:.15s;}
+  .ms:hover{border-color:var(--acid);color:var(--acid);} .ms.on{border-color:var(--acid);color:var(--acid);background:rgba(184,255,0,.07);}
+
+  .cols{display:grid;grid-template-columns:1fr 380px;gap:24px;align-items:start;}
+  @media(max-width:920px){ .cols{grid-template-columns:1fr;} }
+  .editor{border:1px solid var(--line);border-radius:10px;background:var(--pan);padding:18px;}
+  .grp{margin-bottom:16px;} .grp>.gl{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:rgba(240,237,230,.4);margin-bottom:9px;display:flex;align-items:center;gap:8px;}
+  .grp>.gl::after{content:'';flex:1;height:1px;background:var(--line);}
+  .fld{display:flex;flex-direction:column;gap:4px;margin-bottom:10px;}
+  .fld label{font-size:8.5px;letter-spacing:.16em;text-transform:uppercase;color:rgba(240,237,230,.4);}
+  .fld .sub{font-size:9px;color:rgba(240,237,230,.35);}
+  .fld input,.fld select{background:#0b0b0b;border:1px solid var(--line);color:var(--ink);font-family:'Space Mono',monospace;font-size:12px;padding:8px 10px;border-radius:6px;width:100%;}
+  .fld input:focus,.fld select:focus{outline:none;border-color:var(--acid);}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;} .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+  .svc{display:flex;align-items:center;gap:9px;padding:7px 9px;border:1px solid var(--line);border-radius:6px;margin-bottom:6px;cursor:pointer;transition:.15s;}
+  .svc:hover{border-color:rgba(184,255,0,.4);} .svc.on{border-color:var(--acid);background:rgba(184,255,0,.06);}
+  .svc input{accent-color:var(--acid);width:14px;height:14px;flex-shrink:0;}
+  .svc .ic{font-size:15px;} .svc .nm{flex:1;font-size:11px;} .svc .pr{font-size:10px;color:var(--cyan);white-space:nowrap;}
+  .hint{font-size:10px;color:rgba(240,237,230,.45);line-height:1.7;margin-top:2px;}
+  .hint b{color:var(--cyan);font-weight:400;}
+
+  /* panel de resultado */
+  .out{border:1px solid var(--line);border-radius:10px;background:var(--pan);padding:20px;position:sticky;top:16px;}
+  .out h3{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:.03em;color:var(--acid);margin-bottom:4px;}
+  .out .osub{font-size:10px;color:rgba(240,237,230,.45);margin-bottom:16px;}
+  .big{border:1px solid var(--acid);border-radius:8px;background:rgba(184,255,0,.05);padding:16px;text-align:center;margin-bottom:14px;}
+  .big .bv{font-family:'Bebas Neue',sans-serif;font-size:44px;line-height:.9;color:var(--acid);}
+  .big .bl{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:rgba(240,237,230,.55);margin-top:6px;}
+  .big.warnbox{border-color:var(--glitch);background:rgba(255,45,85,.05);} .big.warnbox .bv{color:var(--glitch);}
+  .line{display:flex;justify-content:space-between;gap:10px;font-size:12px;padding:8px 0;border-bottom:1px solid var(--line);}
+  .line .l{color:rgba(240,237,230,.6);} .line .v{font-weight:700;text-align:right;}
+  .line .v.acid{color:var(--acid);} .line .v.cyan{color:var(--cyan);} .line .v.glitch{color:var(--glitch);}
+  .line.big2{font-size:13px;} .verdict{font-size:11.5px;line-height:1.7;color:rgba(240,237,230,.7);margin-top:14px;border-left:2px solid var(--acid);padding:8px 12px;background:rgba(184,255,0,.03);}
+  .verdict b{color:var(--acid);font-weight:400;}
+  .barwrap{margin-top:12px;} .barlbl{font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:rgba(240,237,230,.4);margin-bottom:5px;display:flex;justify-content:space-between;}
+  .bar{height:8px;background:#0b0b0b;border:1px solid var(--line);border-radius:20px;overflow:hidden;}
+  .bar .fill{height:100%;background:var(--acid);transition:width .3s;}
+  .bar .fill.glitch{background:var(--glitch);}
+  .copyrow{margin-top:16px;} .btn{cursor:pointer;background:transparent;border:1px solid var(--line);color:var(--ink);font-family:'Space Mono',monospace;font-size:10.5px;letter-spacing:.1em;padding:10px 12px;border-radius:6px;transition:.18s;text-transform:uppercase;width:100%;}
+  .btn:hover{border-color:var(--acid);color:var(--acid);}
+
+  .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--acid);color:#050505;font-size:11px;font-weight:700;letter-spacing:.08em;padding:10px 18px;border-radius:6px;opacity:0;pointer-events:none;transition:.25s;z-index:9;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  .foot{font-size:10px;color:rgba(240,237,230,.35);letter-spacing:.1em;margin-top:36px;text-align:center;}
+</style></head><body>
+<div class="wrap">
+  <header>
+    <div class="brand"><b>CALCULADORA</b><span>tu margen · el ROI del cliente</span></div>
+    <nav><a href="/labs/">← LABS</a><a href="/pipelines/">PIPELINES</a><a href="/propuesta/">PROPUESTA</a></nav>
+  </header>
+  <p class="intro">Dos calculadoras en una, la regla de oro de la GUÍA: <b>hablá de la plata</b>. La <b>del prestador</b> te dice cuánto te queda por hora y si el precio te cierra. La <b>del cliente</b> le muestra en cuánto se paga solo cada pipeline — el argumento que cierra la venta. Los números salen de PIPELINES (editables) y se guardan en tu navegador.</p>
+
+  <div class="modeswitch">
+    <button class="ms" data-mode="prestador">💼 Tu rentabilidad</button>
+    <button class="ms" data-mode="cliente">📈 ROI para el cliente</button>
+  </div>
+
+  <div class="cols">
+    <div class="editor" id="editor"></div>
+    <aside class="out" id="out"></aside>
+  </div>
+  <div class="foot">HUMAN GLITCHE · VISUAL LAB · calculadora client-side · números de PIPELINES · el precio se ancla en la plata del cliente</div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+'use strict';
+var $=function(id){return document.getElementById(id);};
+
+// ── Catálogo (mismos costo/precio por defecto que PIPELINES) ────────────────
+var CATALOGO = [
+  {id:'web', ico:'🌐', name:'Presencia Web', horas:8, setup:{costo:40,precio:200}, mensual:{costo:6,precio:30}},
+  {id:'wa', ico:'💬', name:'WhatsApp Autopilot', horas:5, setup:{costo:25,precio:150}, mensual:{costo:14,precio:70}},
+  {id:'social', ico:'📲', name:'Redes en Piloto', horas:6, setup:{costo:30,precio:160}, mensual:{costo:45,precio:200}},
+  {id:'menu', ico:'🍽️', name:'Menú + Pedidos', horas:7, setup:{costo:35,precio:180}, mensual:{costo:16,precio:80}},
+  {id:'leads', ico:'🧲', name:'Captura de Leads', horas:5, setup:{costo:22,precio:120}, mensual:{costo:9,precio:50}},
+  {id:'resenas', ico:'⭐', name:'Reputación', horas:4, setup:{costo:16,precio:90}, mensual:{costo:7,precio:45}},
+  {id:'turnos', ico:'📆', name:'Agenda / Turnos', horas:5, setup:{costo:22,precio:130}, mensual:{costo:10,precio:55}},
+  {id:'factura', ico:'🧾', name:'Facturación Auto', horas:6, setup:{costo:26,precio:140}, mensual:{costo:11,precio:60}},
+  {id:'tienda', ico:'🛒', name:'Tienda + Pagos', horas:11, setup:{costo:45,precio:240}, mensual:{costo:12,precio:60}},
+  {id:'ads', ico:'📣', name:'Publicidad Local', horas:6, setup:{costo:25,precio:140}, mensual:{costo:40,precio:180}},
+  {id:'email', ico:'💌', name:'Email + Fidelización', horas:5, setup:{costo:18,precio:100}, mensual:{costo:10,precio:50}},
+  {id:'brand', ico:'🎨', name:'Identidad Visual', horas:13, setup:{costo:35,precio:220}, mensual:{costo:0,precio:0}},
+  {id:'video', ico:'🎬', name:'Pack Video / Reels', horas:8, setup:{costo:20,precio:120}, mensual:{costo:55,precio:250}},
+];
+var BY_ID={}; CATALOGO.forEach(function(c){BY_ID[c.id]=c;});
+// ROI por defecto por pipeline: cómo aporta plata al cliente (editable).
+// tipo 'nuevos' = clientes nuevos por mes × ticket × margen; 'ahorro' = ahorro fijo mensual.
+var ROIDEF={
+  web:{tipo:'nuevos', nuevos:4, nota:'clientes que te googlean y hoy no te encuentran'},
+  wa:{tipo:'nuevos', nuevos:6, nota:'consultas que hoy se enfrían sin responder'},
+  social:{tipo:'nuevos', nuevos:8, nota:'gente que llega por contenido constante'},
+  menu:{tipo:'ahorro', ahorro:120, nota:'comisión de apps de delivery que dejás de pagar'},
+  leads:{tipo:'nuevos', nuevos:5, nota:'interesados que hoy se pierden sin seguimiento'},
+  resenas:{tipo:'nuevos', nuevos:3, nota:'clientes que eligen por tu nota en Google'},
+  turnos:{tipo:'ahorro', ahorro:90, nota:'turnos que hoy se caen sin aviso'},
+  factura:{tipo:'ahorro', ahorro:60, nota:'horas administrativas que recuperás'},
+  tienda:{tipo:'nuevos', nuevos:10, nota:'ventas online que hoy no ocurren'},
+  ads:{tipo:'nuevos', nuevos:12, nota:'gente del barrio que no sabe que existís'},
+  email:{tipo:'nuevos', nuevos:6, nota:'clientes que vuelven por cupones y novedades'},
+  brand:{tipo:'nuevos', nuevos:3, nota:'ventas que ganás por verte profesional'},
+  video:{tipo:'nuevos', nuevos:9, nota:'alcance nuevo que traen los reels'},
+};
+
+var LS='hg_calc_v1', LS_PRICE='hg_pipelines_precios', LS_MON='hg_pipelines_moneda';
+var priceOv={}, moneda='US$';
+try{ priceOv=JSON.parse(localStorage.getItem(LS_PRICE)||'{}')||{}; }catch(e){}
+try{ moneda=localStorage.getItem(LS_MON)||'US$'; }catch(e){}
+var st={ mode:'prestador', sel:['web','wa'],
+  // prestador
+  tarifaMeta:8, mesesHoriz:6,
+  // cliente
+  ticket:15, margen:40, nuevos:{}, ahorro:{} };
+try{ var s=JSON.parse(localStorage.getItem(LS)||'null'); if(s) st=Object.assign(st,s); }catch(e){}
+
+function num(v,d){ var n=(typeof v==='string')?parseFloat(v):v; return (typeof n==='number'&&!isNaN(n))?n:d; }
+function P(c){ var o=priceOv[c.id]||{}; return {
+  setup:{ costo:num(o.setup&&o.setup.costo,c.setup.costo), precio:num(o.setup&&o.setup.precio,c.setup.precio) },
+  mensual:{ costo:num(o.mensual&&o.mensual.costo,c.mensual.costo), precio:num(o.mensual&&o.mensual.precio,c.mensual.precio) } }; }
+function money(n){ return moneda+' '+Math.round(n).toLocaleString('es-AR'); }
+function money1(n){ return moneda+' '+(Math.round(n*10)/10).toLocaleString('es-AR'); }
+function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
+function save(){ try{ localStorage.setItem(LS, JSON.stringify(st)); }catch(e){} }
+function toast(t){ var el=$('toast'); el.textContent=t; el.classList.add('show'); setTimeout(function(){el.classList.remove('show');},1600); }
+
+function svcListHtml(showPrice){
+  return CATALOGO.map(function(c){ var on=st.sel.indexOf(c.id)>=0; var p=P(c);
+    var pr = showPrice ? (p.mensual.precio>0 ? money(p.setup.precio)+' + '+money(p.mensual.precio)+'/mes' : money(p.setup.precio)) : '';
+    return '<label class="svc '+(on?'on':'')+'"><input type="checkbox" data-id="'+c.id+'" '+(on?'checked':'')+'><span class="ic">'+c.ico+'</span><span class="nm">'+esc(c.name)+'</span><span class="pr">'+pr+'</span></label>';
+  }).join('');
+}
+
+// ── Render editor según modo ────────────────────────────────────────────────
+function renderEditor(){
+  var e=$('editor');
+  if(st.mode==='prestador'){
+    e.innerHTML =
+      '<div class="grp"><div class="gl">Servicios a analizar</div>'+svcListHtml(true)+'</div>'
+    + '<div class="grp"><div class="gl">Tu objetivo</div>'
+      + '<div class="row2">'
+      + '<div class="fld"><label>Tarifa/hora meta</label><input id="tarifa" type="number" step="any" value="'+st.tarifaMeta+'"><span class="sub">lo que querés ganar por hora ('+esc(moneda)+')</span></div>'
+      + '<div class="fld"><label>Horizonte (meses)</label><input id="meses" type="number" value="'+st.mesesHoriz+'"><span class="sub">para sumar los abonos</span></div>'
+      + '</div></div>'
+    + '<div class="hint">Las horas y los costos por servicio salen de PIPELINES (editables ahí). Esta vista te dice, por el trabajo de armado, cuánto te queda por hora y si llegás a tu tarifa meta — y cuánto suma el abono en el horizonte elegido.</div>';
+    var t=$('tarifa'), m=$('meses');
+    t.addEventListener('input',function(){ st.tarifaMeta=this.value; save(); renderOut(); });
+    m.addEventListener('input',function(){ st.mesesHoriz=this.value; save(); renderOut(); });
+  } else {
+    e.innerHTML =
+      '<div class="grp"><div class="gl">Pipelines a mostrar</div>'+svcListHtml(true)+'</div>'
+    + '<div class="grp"><div class="gl">El negocio del cliente</div>'
+      + '<div class="row2">'
+      + '<div class="fld"><label>Ticket promedio</label><input id="ticket" type="number" step="any" value="'+st.ticket+'"><span class="sub">lo que gasta un cliente por compra</span></div>'
+      + '<div class="fld"><label>Margen %</label><input id="margen" type="number" value="'+st.margen+'"><span class="sub">cuánto le queda de cada venta</span></div>'
+      + '</div></div>'
+    + '<div class="grp"><div class="gl">Aporte estimado por pipeline / mes</div><div id="roiInputs"></div>'
+      + '<div class="hint">Cada pipeline suma plata de un modo: clientes <b>nuevos</b> por mes (× ticket × margen) o <b>ahorro</b> fijo mensual. Los valores por defecto son conservadores — ajustá con el cliente delante. El ROI es el resultado.</div></div>';
+    var tk=$('ticket'), mg=$('margen');
+    tk.addEventListener('input',function(){ st.ticket=this.value; save(); renderOut(); });
+    mg.addEventListener('input',function(){ st.margen=this.value; save(); renderOut(); });
+    renderRoiInputs();
+  }
+}
+function renderRoiInputs(){
+  var box=$('roiInputs'); if(!box) return;
+  var sel=st.sel.map(function(id){return BY_ID[id];}).filter(Boolean);
+  if(!sel.length){ box.innerHTML='<div class="hint">Elegí al menos un pipeline arriba.</div>'; return; }
+  box.innerHTML = sel.map(function(c){ var d=ROIDEF[c.id]||{tipo:'nuevos',nuevos:3,nota:''};
+    if(d.tipo==='nuevos'){ var v=num(st.nuevos[c.id], d.nuevos);
+      return '<div class="fld"><label>'+c.ico+' '+esc(c.name)+' — clientes nuevos/mes</label><input type="number" step="any" data-roi="nuevos" data-id="'+c.id+'" value="'+v+'"><span class="sub">'+esc(d.nota)+'</span></div>';
+    } else { var v2=num(st.ahorro[c.id], d.ahorro);
+      return '<div class="fld"><label>'+c.ico+' '+esc(c.name)+' — ahorro/mes ('+esc(moneda)+')</label><input type="number" step="any" data-roi="ahorro" data-id="'+c.id+'" value="'+v2+'"><span class="sub">'+esc(d.nota)+'</span></div>';
+    }
+  }).join('');
+  box.querySelectorAll('input[data-roi]').forEach(function(inp){
+    inp.addEventListener('input',function(){ var id=this.getAttribute('data-id'), kind=this.getAttribute('data-roi');
+      st[kind][id]=this.value; save(); renderOut(); });
+  });
+}
+
+// ── Cálculos ─────────────────────────────────────────────────────────────────
+function calcPrestador(){
+  var sel=st.sel.map(function(id){return BY_ID[id];}).filter(Boolean);
+  var horas=0, costoSetup=0, precioSetup=0, costoMes=0, precioMes=0;
+  sel.forEach(function(c){ var p=P(c); horas+=c.horas; costoSetup+=p.setup.costo; precioSetup+=p.setup.precio; costoMes+=p.mensual.costo; precioMes+=p.mensual.precio; });
+  var gananciaSetup=precioSetup-costoSetup;
+  var porHora= horas>0 ? gananciaSetup/horas : 0;
+  var meses=num(st.mesesHoriz,6), tarifa=num(st.tarifaMeta,0);
+  var gananciaMes=precioMes-costoMes;
+  var totalHoriz=(precioSetup-costoSetup) + gananciaMes*meses;
+  return { sel:sel, horas:horas, precioSetup:precioSetup, costoSetup:costoSetup, gananciaSetup:gananciaSetup, porHora:porHora, tarifa:tarifa, precioMes:precioMes, costoMes:costoMes, gananciaMes:gananciaMes, meses:meses, totalHoriz:totalHoriz };
+}
+function calcCliente(){
+  var sel=st.sel.map(function(id){return BY_ID[id];}).filter(Boolean);
+  var ticket=num(st.ticket,0), margen=num(st.margen,0)/100;
+  var precioSetup=0, precioMes=0, aporteMes=0, detalle=[];
+  sel.forEach(function(c){ var p=P(c); precioSetup+=p.setup.precio; precioMes+=p.mensual.precio;
+    var d=ROIDEF[c.id]||{tipo:'nuevos',nuevos:3}; var ap;
+    if(d.tipo==='nuevos'){ var n=num(st.nuevos[c.id], d.nuevos); ap=n*ticket*margen; }
+    else { ap=num(st.ahorro[c.id], d.ahorro); }
+    aporteMes+=ap; detalle.push({c:c, ap:ap, tipo:d.tipo});
+  });
+  var netoMes=aporteMes-precioMes;               // lo que gana por mes después de pagar el abono
+  var payback= netoMes>0 ? (precioSetup/netoMes) : Infinity;  // meses para recuperar el setup
+  var anual= aporteMes*12 - (precioMes*12 + precioSetup);      // ganancia neta del año 1
+  var roiPct= (precioSetup+precioMes*12)>0 ? (anual/(precioSetup+precioMes*12))*100 : 0;
+  return { sel:sel, ticket:ticket, margen:margen, precioSetup:precioSetup, precioMes:precioMes, aporteMes:aporteMes, netoMes:netoMes, payback:payback, anual:anual, roiPct:roiPct, detalle:detalle };
+}
+
+// ── Render resultado ────────────────────────────────────────────────────────
+function renderOut(){
+  var o=$('out');
+  if(!st.sel.length){ o.innerHTML='<h3>Resultado</h3><div class="osub">Elegí al menos un servicio.</div>'; return; }
+  if(st.mode==='prestador') renderOutPrestador(o); else renderOutCliente(o);
+}
+function renderOutPrestador(o){
+  var r=calcPrestador();
+  var hit = r.porHora>=r.tarifa && r.tarifa>0;
+  var pct = r.tarifa>0 ? Math.min(100, r.porHora/r.tarifa*100) : 0;
+  o.innerHTML =
+    '<h3>Tu rentabilidad</h3><div class="osub">por el armado de '+r.sel.length+' servicio(s) · '+r.horas+' h de trabajo</div>'
+  + '<div class="big'+(hit?'':' warnbox')+'"><div class="bv">'+money1(r.porHora)+'</div><div class="bl">te queda por hora (armado)</div></div>'
+  + (r.tarifa>0 ? '<div class="barwrap"><div class="barlbl"><span>vs tu meta '+money(r.tarifa)+'/h</span><span>'+Math.round(pct)+'%</span></div><div class="bar"><div class="fill'+(hit?'':' glitch')+'" style="width:'+pct+'%"></div></div></div>' : '')
+  + '<div style="margin-top:14px">'
+  + '<div class="line"><span class="l">Precio de armado</span><span class="v">'+money(r.precioSetup)+'</span></div>'
+  + '<div class="line"><span class="l">Tu costo de armado</span><span class="v">'+money(r.costoSetup)+'</span></div>'
+  + '<div class="line big2"><span class="l">Ganancia del armado</span><span class="v acid">'+money(r.gananciaSetup)+'</span></div>'
+  + '<div class="line"><span class="l">Abono (precio − costo)</span><span class="v cyan">'+money(r.gananciaMes)+'/mes</span></div>'
+  + '<div class="line big2"><span class="l">Total en '+r.meses+' meses</span><span class="v acid">'+money(r.totalHoriz)+'</span></div>'
+  + '</div>'
+  + '<div class="verdict">'+(hit
+      ? 'A '+money1(r.porHora)+'/hora estás <b>por encima</b> de tu meta ('+money(r.tarifa)+'). El precio te cierra — y el abono suma '+money(r.gananciaMes)+' por mes encima.'
+      : (r.tarifa>0 ? 'A '+money1(r.porHora)+'/hora estás <b>por debajo</b> de tu meta ('+money(r.tarifa)+'). Subí el precio de armado, recortá horas, o compensá con el abono recurrente.'
+                    : 'Cargá tu tarifa/hora meta para ver si el precio te cierra.'))+'</div>'
+  + '<div class="copyrow"><button class="btn" id="copyBtn">📋 Copiar resumen</button></div>';
+  $('copyBtn').addEventListener('click', function(){ copyText(prestadorText(r)); });
+}
+function renderOutCliente(o){
+  var r=calcCliente();
+  var paybackTxt = isFinite(r.payback) ? (r.payback<1 ? 'menos de 1 mes' : (Math.round(r.payback*10)/10)+' meses') : '—';
+  var good = isFinite(r.payback) && r.payback<=6 && r.netoMes>0;
+  o.innerHTML =
+    '<h3>ROI para el cliente</h3><div class="osub">'+r.sel.length+' pipeline(s) · ticket '+money(r.ticket)+' · margen '+Math.round(r.margen*100)+'%</div>'
+  + '<div class="big'+(r.netoMes>0?'':' warnbox')+'"><div class="bv">'+(isFinite(r.payback)?paybackTxt:'no recupera')+'</div><div class="bl">se paga solo en</div></div>'
+  + '<div style="margin-top:2px">'
+  + '<div class="line"><span class="l">Aporte estimado</span><span class="v acid">'+money(r.aporteMes)+'/mes</span></div>'
+  + '<div class="line"><span class="l">Cuesta (abono)</span><span class="v">'+money(r.precioMes)+'/mes</span></div>'
+  + '<div class="line big2"><span class="l">Le queda neto</span><span class="v '+(r.netoMes>0?'acid':'glitch')+'">'+money(r.netoMes)+'/mes</span></div>'
+  + '<div class="line"><span class="l">Inversión de armado</span><span class="v">'+money(r.precioSetup)+'</span></div>'
+  + '<div class="line big2"><span class="l">Ganancia neta año 1</span><span class="v '+(r.anual>0?'acid':'glitch')+'">'+money(r.anual)+'</span></div>'
+  + '<div class="line"><span class="l">ROI año 1</span><span class="v '+(r.roiPct>0?'acid':'glitch')+'">'+(r.roiPct>0?'+':'')+Math.round(r.roiPct)+'%</span></div>'
+  + '</div>'
+  + '<div class="verdict">'+(good
+      ? 'El sistema <b>se paga solo en '+paybackTxt+'</b> y después le deja '+money(r.netoMes)+' limpios por mes. En el primer año, por cada peso invertido recupera '+ (Math.round((r.roiPct/100+1)*10)/10) +'. Este es el número que cierra la venta.'
+      : (r.netoMes>0 ? 'Recupera la inversión en '+paybackTxt+'. Ajustá los aportes con el cliente: con números reales suele mejorar.'
+                     : 'Con estos números el abono se come el aporte. Subí clientes nuevos/ahorro estimados (sé realista), o proponé menos pipelines para arrancar.'))+'</div>'
+  + '<div class="copyrow"><button class="btn" id="copyBtn">📋 Copiar para la propuesta</button></div>';
+  $('copyBtn').addEventListener('click', function(){ copyText(clienteText(r)); });
+}
+
+function prestadorText(r){
+  return ['RENTABILIDAD — '+r.sel.map(function(c){return c.name;}).join(', '),
+    'Trabajo de armado: '+r.horas+' h', 'Precio armado: '+money(r.precioSetup)+' · costo: '+money(r.costoSetup),
+    'Ganancia armado: '+money(r.gananciaSetup)+' → '+money1(r.porHora)+'/hora',
+    'Abono: '+money(r.gananciaMes)+'/mes de ganancia', 'Total en '+r.meses+' meses: '+money(r.totalHoriz)].join('\n');
+}
+function clienteText(r){
+  var paybackTxt = isFinite(r.payback) ? (r.payback<1?'menos de 1 mes':(Math.round(r.payback*10)/10)+' meses') : 'no recupera';
+  return ['LO QUE DEJA ESTE SISTEMA (estimado)',
+    'Aporte: '+money(r.aporteMes)+'/mes · cuesta '+money(r.precioMes)+'/mes',
+    'Neto para vos: '+money(r.netoMes)+'/mes',
+    'Se paga solo en: '+paybackTxt,
+    'Ganancia neta primer año: '+money(r.anual)+' (ROI '+(r.roiPct>0?'+':'')+Math.round(r.roiPct)+'%)',
+    '— Human Glitche'].join('\n');
+}
+function copyText(t){ if(navigator.clipboard) navigator.clipboard.writeText(t).then(function(){toast('Copiado');},function(){prompt('Copiá:',t);}); else prompt('Copiá:',t); }
+
+// ── Bind global ──────────────────────────────────────────────────────────────
+function renderMode(){ document.querySelectorAll('.ms').forEach(function(b){ b.classList.toggle('on', b.getAttribute('data-mode')===st.mode); }); }
+document.querySelectorAll('.ms').forEach(function(b){ b.addEventListener('click', function(){ st.mode=this.getAttribute('data-mode'); save(); renderMode(); renderEditor(); renderOut(); }); });
+$('editor').addEventListener('change', function(e){ var cb=e.target.closest('input[data-id]'); if(!cb||cb.hasAttribute('data-roi')) return;
+  var id=cb.getAttribute('data-id'); var i=st.sel.indexOf(id);
+  if(cb.checked && i<0) st.sel.push(id); else if(!cb.checked && i>=0) st.sel.splice(i,1);
+  save(); renderEditor(); renderOut(); });
+
+renderMode(); renderEditor(); renderOut();
+})();
+</script>
+</body></html>
