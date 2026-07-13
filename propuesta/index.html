@@ -1,0 +1,394 @@
+<!doctype html><html lang="es"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PROPUESTA — Human Glitche · del presupuesto a la propuesta lista para el cliente</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{ --acid:#b8ff00; --glitch:#ff2d55; --cyan:#3ad0ff; --ink:#f0ede6; --line:rgba(240,237,230,.12); --bg:#050505; --pan:rgba(184,255,0,.015);
+         --paper:#faf9f6; --pink:#12100c; --pline:#e3ded2; --pmut:#6b6656; }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{min-height:100%;background:var(--bg);color:var(--ink);font-family:'Space Mono',monospace;}
+  body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");z-index:0;pointer-events:none;opacity:.4;}
+  .wrap{position:relative;z-index:1;max-width:1280px;margin:0 auto;padding:26px 20px 90px;}
+  header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;gap:16px;flex-wrap:wrap;}
+  .brand{font-family:'Bebas Neue',sans-serif;font-size:52px;letter-spacing:.03em;line-height:.82;}
+  .brand b{color:var(--acid);font-weight:400;}
+  .brand span{display:block;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.26em;color:rgba(240,237,230,.4);margin-top:8px;}
+  header nav a{font-size:10px;letter-spacing:.2em;color:rgba(240,237,230,.4);text-decoration:none;margin-left:16px;} header nav a:hover{color:var(--acid);}
+  .intro{font-size:12px;color:rgba(240,237,230,.55);line-height:1.8;max-width:76ch;margin:12px 0 22px;}
+  .intro b{color:var(--acid);font-weight:400;}
+
+  .cols{display:grid;grid-template-columns:340px 1fr;gap:24px;align-items:start;}
+  @media(max-width:980px){ .cols{grid-template-columns:1fr;} }
+
+  /* ── editor (aspecto lab) ── */
+  .editor{border:1px solid var(--line);border-radius:10px;background:var(--pan);padding:16px;position:sticky;top:16px;max-height:calc(100vh - 32px);overflow:auto;}
+  .editor h2{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:.04em;color:var(--acid);margin:2px 0 12px;}
+  .grp{margin-bottom:16px;} .grp>.gl{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:rgba(240,237,230,.4);margin-bottom:8px;display:flex;align-items:center;gap:8px;}
+  .grp>.gl::after{content:'';flex:1;height:1px;background:var(--line);}
+  .fld{display:flex;flex-direction:column;gap:4px;margin-bottom:9px;}
+  .fld label{font-size:8.5px;letter-spacing:.16em;text-transform:uppercase;color:rgba(240,237,230,.4);}
+  .fld input,.fld textarea,.fld select{background:#0b0b0b;border:1px solid var(--line);color:var(--ink);font-family:'Space Mono',monospace;font-size:12px;padding:7px 9px;border-radius:6px;width:100%;}
+  .fld textarea{resize:vertical;min-height:64px;line-height:1.6;}
+  .fld input:focus,.fld textarea:focus,.fld select:focus{outline:none;border-color:var(--acid);}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
+  .svc{display:flex;align-items:center;gap:9px;padding:7px 9px;border:1px solid var(--line);border-radius:6px;margin-bottom:6px;cursor:pointer;transition:.15s;}
+  .svc:hover{border-color:rgba(184,255,0,.4);}
+  .svc.on{border-color:var(--acid);background:rgba(184,255,0,.06);}
+  .svc input{accent-color:var(--acid);width:14px;height:14px;flex-shrink:0;}
+  .svc .ic{font-size:15px;} .svc .nm{flex:1;font-size:11px;letter-spacing:.03em;}
+  .svc .pr{font-size:10px;color:var(--cyan);white-space:nowrap;}
+  .btn{cursor:pointer;background:transparent;border:1px solid var(--line);color:var(--ink);font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.12em;padding:10px 12px;border-radius:6px;transition:.18s;text-transform:uppercase;width:100%;}
+  .btn:hover{border-color:var(--acid);color:var(--acid);}
+  .btn.pri{background:var(--acid);color:#050505;font-weight:700;border-color:var(--acid);}
+  .btn.pri:hover{filter:brightness(1.08);}
+  .btnrow{display:flex;gap:8px;margin-top:6px;}
+
+  /* ── documento (papel, listo para imprimir/PDF) ── */
+  .paperwrap{min-width:0;}
+  .doc{background:var(--paper);color:var(--pink);border-radius:6px;box-shadow:0 20px 60px rgba(0,0,0,.5);padding:52px 54px;font-size:13px;line-height:1.65;}
+  .doc .dhead{display:flex;justify-content:space-between;align-items:flex-start;gap:18px;border-bottom:2px solid var(--pink);padding-bottom:16px;margin-bottom:22px;flex-wrap:wrap;}
+  .doc .dbrand{font-family:'Bebas Neue',sans-serif;font-size:38px;letter-spacing:.02em;line-height:.85;color:var(--pink);}
+  .doc .dbrand em{font-style:normal;color:#111;border-bottom:4px solid var(--acid);}
+  .doc .dbrand small{display:block;font-family:'Space Mono',monospace;font-size:9.5px;letter-spacing:.18em;color:var(--pmut);margin-top:8px;text-transform:uppercase;}
+  .doc .dmeta{text-align:right;font-size:11px;color:var(--pmut);line-height:1.7;}
+  .doc .dmeta b{color:var(--pink);}
+  .doc .dtitle{font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:.02em;line-height:.95;margin-bottom:4px;}
+  .doc .dfor{font-size:13px;color:var(--pmut);margin-bottom:22px;}
+  .doc .dfor b{color:var(--pink);}
+  .doc h3.sec{font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:.06em;text-transform:uppercase;margin:26px 0 10px;padding-bottom:5px;border-bottom:1px solid var(--pline);display:flex;align-items:baseline;gap:8px;}
+  .doc h3.sec .n{font-family:'Space Mono',monospace;font-size:10px;color:var(--acid);background:var(--pink);padding:2px 6px;border-radius:3px;letter-spacing:.1em;}
+  .doc .diag{white-space:pre-wrap;font-size:12.5px;color:#2a2822;}
+  .svccard{border:1px solid var(--pline);border-radius:6px;padding:14px 16px;margin-bottom:11px;page-break-inside:avoid;}
+  .svccard .st{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;}
+  .svccard .snm{font-family:'Bebas Neue',sans-serif;font-size:19px;letter-spacing:.03em;}
+  .svccard .spr{font-size:12px;color:var(--pink);white-space:nowrap;text-align:right;}
+  .svccard .spr b{font-size:14px;} .svccard .spr small{color:var(--pmut);}
+  .svccard .sdesc{font-size:12px;color:#43403a;margin:6px 0 9px;}
+  .svccard .snodes{display:flex;flex-wrap:wrap;gap:5px;}
+  .svccard .snodes span{font-size:10px;color:#4a473f;background:#efece3;border:1px solid var(--pline);border-radius:4px;padding:2px 7px;}
+  .totbox{border:2px solid var(--pink);border-radius:6px;overflow:hidden;margin-top:6px;page-break-inside:avoid;}
+  .totbox .tr{display:flex;justify-content:space-between;padding:9px 16px;font-size:12.5px;border-bottom:1px solid var(--pline);}
+  .totbox .tr:last-child{border-bottom:none;}
+  .totbox .tr b{font-weight:700;}
+  .totbox .tr.big{background:var(--pink);color:var(--paper);} .totbox .tr.big b{color:var(--acid);}
+  .totbox .tr.sub{color:var(--pmut);font-size:11.5px;}
+  .cond{font-size:12px;color:#3a382f;} .cond li{margin:5px 0 5px 18px;}
+  .cond b{color:var(--pink);}
+  .dfoot{margin-top:28px;padding-top:16px;border-top:2px solid var(--pink);display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font-size:11.5px;color:var(--pmut);}
+  .dfoot b{color:var(--pink);}
+  .empty{color:var(--pmut);font-size:13px;text-align:center;padding:40px 0;}
+
+  .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--acid);color:#050505;font-size:11px;font-weight:700;letter-spacing:.08em;padding:10px 18px;border-radius:6px;opacity:0;pointer-events:none;transition:.25s;z-index:9;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  .foot{font-size:10px;color:rgba(240,237,230,.35);letter-spacing:.1em;margin-top:36px;text-align:center;}
+
+  /* ── impresión / PDF ── */
+  @media print{
+    @page{margin:14mm;}
+    body::before{display:none;}
+    body{background:#fff;}
+    .wrap{max-width:none;padding:0;}
+    header,.intro,.editor,.foot,.toast{display:none!important;}
+    .cols{display:block;}
+    .doc{box-shadow:none;border-radius:0;padding:0;}
+  }
+</style></head><body>
+<div class="wrap">
+  <header>
+    <div class="brand"><b>PROPUESTA</b><span>del presupuesto a la propuesta lista para el cliente</span></div>
+    <nav><a href="/labs/">← LABS</a><a href="/pipelines/">PIPELINES</a><a href="/guia-venta/">GUÍA</a></nav>
+  </header>
+  <p class="intro">Convierte tu selección de <b>PIPELINES</b> en una propuesta con tu marca, lista para <b>imprimir o guardar en PDF</b> y mandar al cliente: portada, el problema que resolvés, los servicios con lo que incluye cada uno, la inversión con forma de pago (seña + saldo) y las condiciones. Los precios se sincronizan con los que editaste en PIPELINES. Todo corre en tu navegador y se guarda solo.</p>
+
+  <div class="cols">
+    <!-- EDITOR -->
+    <aside class="editor">
+      <h2>Armá la propuesta</h2>
+
+      <div class="grp">
+        <div class="gl">Cliente</div>
+        <div class="fld"><label>Cargar negocio auditado (opcional)</label><select id="bizPick"><option value="">— a mano —</option></select></div>
+        <div class="fld"><label>Negocio</label><input id="cNeg" placeholder="Panadería La Tradición"></div>
+        <div class="row2">
+          <div class="fld"><label>Ciudad</label><input id="cCiu" placeholder="La Plata"></div>
+          <div class="fld"><label>A la atención de</label><input id="cAt" placeholder="Dueño/a"></div>
+        </div>
+      </div>
+
+      <div class="grp">
+        <div class="gl">Servicios a proponer</div>
+        <div id="svcList"></div>
+      </div>
+
+      <div class="grp">
+        <div class="gl">Diagnóstico (editable)</div>
+        <div class="fld"><textarea id="diag" placeholder="Se autocompleta según los servicios elegidos; editalo a gusto."></textarea></div>
+      </div>
+
+      <div class="grp">
+        <div class="gl">Condiciones</div>
+        <div class="row2">
+          <div class="fld"><label>Seña %</label><input id="sena" type="number" value="50" min="0" max="100"></div>
+          <div class="fld"><label>Validez (días)</label><input id="valid" type="number" value="15" min="1"></div>
+        </div>
+        <div class="fld"><label>Moneda</label><select id="moneda"><option>US$</option><option>AR$</option><option>€</option><option>$</option></select></div>
+      </div>
+
+      <div class="grp">
+        <div class="gl">Tu marca</div>
+        <div class="fld"><label>Nombre</label><input id="mMarca" value="Human Glitche"></div>
+        <div class="fld"><label>Contacto (pie)</label><input id="mCont" value="hola@hg-vl.com · hg-vl.com"></div>
+      </div>
+
+      <button class="btn pri" id="printBtn">🖨 Imprimir / Guardar PDF</button>
+      <div class="btnrow">
+        <button class="btn" id="copyBtn">📋 Copiar texto</button>
+        <button class="btn" id="resetBtn">↺ Limpiar</button>
+      </div>
+    </aside>
+
+    <!-- DOCUMENTO -->
+    <div class="paperwrap"><div class="doc" id="doc"></div></div>
+  </div>
+
+  <div class="foot">HUMAN GLITCHE · VISUAL LAB · propuesta client-side, hermana de PIPELINES · imprimí a PDF para enviar</div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+'use strict';
+const $=id=>document.getElementById(id);
+
+// ── Catálogo (mismo orden y precios por defecto que PIPELINES) ──────────────
+// precio = lo que ve el cliente; el costo interno no va en la propuesta.
+const CATALOGO = [
+  {id:'web', ico:'🌐', name:'PRESENCIA WEB',
+    incluye:'Un sitio propio que carga rápido y aparece en Google — con tus fotos, horarios, ubicación y botón de WhatsApp.',
+    nodes:['Dominio','Sitio','Contenido + fotos','Publicación','SEO básico','Ficha de Google'], setup:200, mensual:30},
+  {id:'wa', ico:'💬', name:'WHATSAPP BIZ AUTOPILOT',
+    incluye:'WhatsApp Business con catálogo y respuestas automáticas a las preguntas de siempre. El canal donde realmente se vende, ordenado.',
+    nodes:['WhatsApp Business','Catálogo','Respuestas automáticas','Etiquetas','Recordatorios','Aviso al dueño'], setup:150, mensual:70},
+  {id:'social', ico:'📲', name:'REDES EN PILOTO',
+    incluye:'Contenido con tu estética, programado, y respuestas automáticas a mensajes. Presencia constante sin vivir en el teléfono.',
+    nodes:['Calendario','Contenido','Programación','Auto-respuesta DM','Hashtags','Reporte mensual'], setup:160, mensual:200},
+  {id:'menu', ico:'🍽️', name:'MENÚ + PEDIDOS WHATSAPP',
+    incluye:'Carta digital con QR: el cliente arma el pedido y te llega directo al WhatsApp, con seña opcional. Sin comisión de apps.',
+    nodes:['Menú con QR','Carrito','Pedido a WhatsApp','Confirmación','Seña / cobro','Aviso a cocina'], setup:180, mensual:80},
+  {id:'leads', ico:'🧲', name:'CAPTURA DE LEADS',
+    incluye:'Un formulario que captura interesados y les hace seguimiento automático. Cada visita se vuelve un contacto con nombre y teléfono.',
+    nodes:['Formulario','Base / CRM','Email o WhatsApp automático','Seguimiento','Aviso al dueño'], setup:120, mensual:50},
+  {id:'resenas', ico:'⭐', name:'REPUTACIÓN',
+    incluye:'Pide reseñas a los clientes contentos y te avisa de las negativas antes de que escalen. Tu nota en Google, en alza.',
+    nodes:['Post-venta','Mensaje al cliente','Link a reseña','Filtro','Alerta de negativas'], setup:90, mensual:45},
+  {id:'turnos', ico:'📆', name:'AGENDA / TURNOS',
+    incluye:'Reservas online con confirmación y recordatorio 24 h antes. Menos turnos perdidos y la agenda ordenada.',
+    nodes:['Link de reserva','Calendario','Confirmación','Recordatorio 24 h','Reprogramación'], setup:130, mensual:55},
+  {id:'factura', ico:'🧾', name:'FACTURACIÓN AUTO',
+    incluye:'De la venta al comprobante sin doble carga: factura A/B/C armada, enviada y registrada.',
+    nodes:['Venta','Datos del cliente','Factura A/B/C','Envío','Registro'], setup:140, mensual:60},
+  {id:'tienda', ico:'🛒', name:'TIENDA + PAGOS',
+    incluye:'Tu catálogo online con carrito y cobro por Mercado Pago. El pedido te llega ya cobrado, sin comisión de marketplace.',
+    nodes:['Catálogo','Carrito','Mercado Pago','Confirmación','Envío / retiro','Registro'], setup:240, mensual:60},
+  {id:'ads', ico:'📣', name:'PUBLICIDAD LOCAL',
+    incluye:'Campañas en Instagram y Google apuntadas a tu zona, con piezas propias y un reporte claro de cada peso invertido. (La pauta la pagás aparte.)',
+    nodes:['Objetivo','Pieza','Segmentación local','Campaña','Optimización','Reporte'], setup:140, mensual:180},
+  {id:'email', ico:'💌', name:'EMAIL + FIDELIZACIÓN',
+    incluye:'Base de clientes con newsletter, cupones y saludo de cumpleaños automático. Hacer volver al que ya te compró.',
+    nodes:['Alta con QR','Base de clientes','Newsletter','Cupones','Cumpleaños auto','Métricas'], setup:100, mensual:50},
+  {id:'brand', ico:'🎨', name:'IDENTIDAD VISUAL',
+    incluye:'Logo, paleta, tipografías y plantillas para redes: que todo tu negocio se vea de la misma casa. Queda tuyo para siempre.',
+    nodes:['Brief','Logo','Paleta','Tipografías','Plantillas','Mini manual'], setup:220, mensual:0},
+  {id:'video', ico:'🎬', name:'PACK VIDEO / REELS',
+    incluye:'Pack mensual de videos cortos filmados y editados con estética propia. Lo único que el algoritmo muestra gratis hoy.',
+    nodes:['Guion','Rodaje','Edición','Formato 9:16','Publicación','Reporte'], setup:120, mensual:250},
+];
+const BY_ID = Object.fromEntries(CATALOGO.map(c=>[c.id,c]));
+
+// ── Estado + persistencia (comparte precios/moneda con PIPELINES) ───────────
+const LS='hg_propuesta_v1', LS_PRICE='hg_pipelines_precios', LS_MON='hg_pipelines_moneda';
+let priceOv={}, moneda='US$';
+let st = { neg:'', ciu:'', at:'', sel:[], diag:'', diagTouched:false, sena:50, valid:15, marca:'Human Glitche', cont:'hola@hg-vl.com · hg-vl.com' };
+try{ priceOv=JSON.parse(localStorage.getItem(LS_PRICE)||'{}')||{}; }catch(e){}
+try{ moneda=localStorage.getItem(LS_MON)||'US$'; }catch(e){}
+try{ const s=JSON.parse(localStorage.getItem(LS)||'null'); if(s) st=Object.assign(st,s); }catch(e){}
+
+function num(v,d){ return (typeof v==='number'&&!isNaN(v))?v:d; }
+function priceOf(c){
+  const o=priceOv[c.id]||{};
+  return { setup:num(o.setup&&o.setup.precio,c.setup), mensual:num(o.mensual&&o.mensual.precio,c.mensual) };
+}
+function money(n){ return moneda+' '+Math.round(n).toLocaleString('es-AR'); }
+function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function save(){ try{ localStorage.setItem(LS, JSON.stringify(st)); }catch(e){} }
+function today(){ const d=new Date(); return d.toLocaleDateString('es-AR',{day:'2-digit',month:'long',year:'numeric'}); }
+
+// ── Diagnóstico por defecto según selección ─────────────────────────────────
+function defaultDiag(){
+  const negocio = st.neg || 'tu negocio';
+  const names = st.sel.map(id=>BY_ID[id]&&BY_ID[id].name).filter(Boolean);
+  if(!names.length) return 'Relevamos '+negocio+' y detectamos oportunidades concretas para conseguir más clientes y ordenar la operación. Elegí los servicios a la izquierda y este texto se arma solo (podés editarlo).';
+  const lista = names.length===1 ? names[0]
+    : names.slice(0,-1).join(', ')+' y '+names[names.length-1];
+  return 'Relevamos '+negocio+' y encontramos lugar para crecer sin cambiar cómo trabajás. '
+    + 'Proponemos poner a andar '+lista+' — sistemas que corren solos, se pagan con lo que hoy se pierde '
+    + '(clientes que no encuentran el negocio, mensajes sin responder, turnos que no avisan) y quedan a tu nombre.';
+}
+
+// ── Selector de servicios ───────────────────────────────────────────────────
+function renderSvcList(){
+  $('svcList').innerHTML = CATALOGO.map(c=>{
+    const on=st.sel.includes(c.id); const p=priceOf(c);
+    const pr = p.mensual>0 ? money(p.setup)+' + '+money(p.mensual)+'/mes' : money(p.setup);
+    return `<label class="svc ${on?'on':''}">
+      <input type="checkbox" data-id="${c.id}" ${on?'checked':''}>
+      <span class="ic">${c.ico}</span><span class="nm">${esc(c.name)}</span><span class="pr">${pr}</span>
+    </label>`;
+  }).join('');
+}
+
+// ── Render del documento ────────────────────────────────────────────────────
+function render(){
+  const doc=$('doc');
+  const items = st.sel.map(id=>BY_ID[id]).filter(Boolean);
+  const marca = st.marca||'Human Glitche';
+  // marca con la última palabra resaltada
+  const mp = marca.trim().split(/\s+/);
+  const brandHtml = mp.length>1 ? esc(mp.slice(0,-1).join(' '))+' <em>'+esc(mp[mp.length-1])+'</em>' : '<em>'+esc(marca)+'</em>';
+
+  if(!items.length){
+    doc.innerHTML = `<div class="empty">Elegí al menos un servicio a la izquierda para armar la propuesta.<br>Se sincroniza con los precios de PIPELINES y la podés imprimir a PDF.</div>`;
+    return;
+  }
+  let setupTot=0, mensTot=0;
+  const cards = items.map(c=>{
+    const p=priceOf(c); setupTot+=p.setup; mensTot+=p.mensual;
+    const priceLine = p.mensual>0
+      ? `Armado <b>${money(p.setup)}</b><br><small>Mensual ${money(p.mensual)}</small>`
+      : `Armado <b>${money(p.setup)}</b><br><small>pago único</small>`;
+    return `<div class="svccard">
+      <div class="st"><div class="snm">${c.ico} ${esc(c.name)}</div><div class="spr">${priceLine}</div></div>
+      <div class="sdesc">${esc(c.incluye)}</div>
+      <div class="snodes">${c.nodes.map(n=>`<span>${esc(n)}</span>`).join('')}</div>
+    </div>`;
+  }).join('');
+
+  const senaPct = num(parseFloat(st.sena),50);
+  const sena = Math.round(setupTot*senaPct/100);
+  const saldo = setupTot - sena;
+  const diagTxt = (st.diagTouched && st.diag) ? st.diag : defaultDiag();
+
+  doc.innerHTML = `
+    <div class="dhead">
+      <div class="dbrand">${brandHtml}<small>${esc(st.cont||'')}</small></div>
+      <div class="dmeta">Propuesta<br><b>${today()}</b><br>Válida por ${esc(String(st.valid||15))} días</div>
+    </div>
+
+    <div class="dtitle">Propuesta de servicios digitales</div>
+    <div class="dfor">Para: <b>${esc(st.neg||'—')}</b>${st.ciu?' · '+esc(st.ciu):''}${st.at?' · a la atención de '+esc(st.at):''}</div>
+
+    <h3 class="sec"><span class="n">01</span> El diagnóstico</h3>
+    <div class="diag">${esc(diagTxt)}</div>
+
+    <h3 class="sec"><span class="n">02</span> Lo que proponemos</h3>
+    ${cards}
+
+    <h3 class="sec"><span class="n">03</span> La inversión</h3>
+    <div class="totbox">
+      <div class="tr"><span>Armado (única vez)</span><b>${money(setupTot)}</b></div>
+      ${mensTot>0?`<div class="tr"><span>Abono mensual</span><b>${money(mensTot)}/mes</b></div>`:''}
+      <div class="tr sub"><span>Seña para arrancar (${senaPct}%)</span><span>${money(sena)}</span></div>
+      <div class="tr sub"><span>Saldo contra entrega</span><span>${money(saldo)}</span></div>
+      <div class="tr big"><span>Para comenzar hoy</span><b>${money(sena)}</b></div>
+    </div>
+
+    <h3 class="sec"><span class="n">04</span> Condiciones</h3>
+    <ul class="cond">
+      <li><b>Forma de pago:</b> seña del ${senaPct}% (${money(sena)}) para comenzar; el saldo (${money(saldo)}) contra entrega.${mensTot>0?` El abono mensual (${money(mensTot)}) arranca al mes de la entrega y cubre operación y mantenimiento de lo pactado.`:''}</li>
+      <li><b>Todo a tu nombre:</b> dominio, cuentas, perfiles y accesos quedan como propiedad tuya. Trabajamos con rol de administrador.</li>
+      <li><b>Alcance cerrado:</b> incluye dos rondas de ajustes por servicio; cambios fuera de lo descripto se cotizan aparte.</li>
+      <li><b>Validez:</b> esta propuesta vale por ${esc(String(st.valid||15))} días desde la fecha.</li>
+    </ul>
+
+    <div class="dfoot">
+      <div>Próximo paso: confirmás la seña y arrancamos esta semana.<br><b>${esc(marca)}</b></div>
+      <div style="text-align:right">${esc(st.cont||'')}</div>
+    </div>`;
+}
+
+function renderAll(){ renderSvcList(); render(); }
+
+// ── Texto plano (para WhatsApp / email) ─────────────────────────────────────
+function asText(){
+  const items = st.sel.map(id=>BY_ID[id]).filter(Boolean);
+  if(!items.length) return '';
+  let setupTot=0, mensTot=0;
+  const lines = items.map(c=>{ const p=priceOf(c); setupTot+=p.setup; mensTot+=p.mensual;
+    return `• ${c.name}\n   ${c.incluye}\n   Armado: ${money(p.setup)}${p.mensual>0?' · Mensual: '+money(p.mensual):' (pago único)'}`; });
+  const senaPct=num(parseFloat(st.sena),50), sena=Math.round(setupTot*senaPct/100);
+  const diagTxt=(st.diagTouched&&st.diag)?st.diag:defaultDiag();
+  return [
+    `PROPUESTA — ${st.marca||'Human Glitche'}`,
+    `Para: ${st.neg||'—'}${st.ciu?' ('+st.ciu+')':''}`, ``,
+    diagTxt, ``, `— LO QUE PROPONEMOS —`, ...lines, ``,
+    `Armado (única vez): ${money(setupTot)}`,
+    mensTot>0?`Abono mensual: ${money(mensTot)}/mes`:``,
+    `Seña para arrancar (${senaPct}%): ${money(sena)}`, ``,
+    `Válida por ${st.valid||15} días · ${st.cont||''}`
+  ].filter(x=>x!==undefined).join('\n');
+}
+
+function toast(t){ const el=$('toast'); el.textContent=t; el.classList.add('show'); setTimeout(()=>el.classList.remove('show'),1700); }
+
+// ── Bind ─────────────────────────────────────────────────────────────────────
+function bindInput(id, key, isNum){
+  const el=$(id); if(!el) return;
+  el.value = st[key];
+  el.addEventListener('input', ()=>{ st[key]= isNum ? el.value : el.value; if(id==='diag') st.diagTouched=true; save(); render(); });
+}
+bindInput('cNeg','neg'); bindInput('cCiu','ciu'); bindInput('cAt','at');
+bindInput('sena','sena',true); bindInput('valid','valid',true);
+bindInput('mMarca','marca'); bindInput('mCont','cont');
+$('diag').value = st.diag||''; // el placeholder muestra el auto si está vacío
+$('moneda').value = moneda;
+$('moneda').addEventListener('change', ()=>{ moneda=$('moneda').value; try{localStorage.setItem(LS_MON,moneda);}catch(e){}; renderAll(); });
+
+$('svcList').addEventListener('change', e=>{
+  const cb=e.target.closest('input[data-id]'); if(!cb) return;
+  const id=cb.getAttribute('data-id'); const i=st.sel.indexOf(id);
+  if(cb.checked && i<0) st.sel.push(id); else if(!cb.checked && i>=0) st.sel.splice(i,1);
+  save(); renderAll();
+});
+
+$('printBtn').addEventListener('click', ()=>{ if(!st.sel.length){ toast('Elegí al menos un servicio'); return; } window.print(); });
+$('copyBtn').addEventListener('click', ()=>{ const t=asText(); if(!t){ toast('Propuesta vacía'); return; }
+  navigator.clipboard?.writeText(t).then(()=>toast('Texto copiado'),()=>prompt('Copiá la propuesta:',t)); });
+$('resetBtn').addEventListener('click', ()=>{ if(!confirm('¿Limpiar la propuesta actual?'))return;
+  st={ neg:'', ciu:'', at:'', sel:[], diag:'', diagTouched:false, sena:50, valid:15, marca:'Human Glitche', cont:'hola@hg-vl.com · hg-vl.com' };
+  save(); ['cNeg','cCiu','cAt','mMarca','mCont'].forEach(k=>{}); location.reload(); });
+
+// ── Prefill desde la Auditoría (opcional, robusto) ──────────────────────────
+async function loadBiz(){
+  const paths=['/seed_comercios_pba.json','/auditoria/seed_comercios_pba.json','../auditoria/seed_comercios_pba.json','seed_comercios_pba.json'];
+  for(const p of paths){
+    try{ const r=await fetch(p,{cache:'no-store'}); if(!r.ok) continue; const d=await r.json();
+      if(d && typeof d==='object' && Object.keys(d).length){
+        const sel=$('bizPick');
+        sel.innerHTML='<option value="">— a mano —</option>'+Object.entries(d)
+          .sort((a,b)=>(a[1].name||'').localeCompare(b[1].name||''))
+          .map(([id,b])=>`<option value="${esc(id)}" data-n="${esc(b.name||'')}" data-c="${esc(b.city||'')}">${esc(b.name||id)}${b.city?' · '+esc(b.city):''}</option>`).join('');
+        sel.addEventListener('change', ()=>{ const o=sel.options[sel.selectedIndex]; if(!o||!o.value) return;
+          st.neg=o.getAttribute('data-n')||''; st.ciu=o.getAttribute('data-c')||'';
+          $('cNeg').value=st.neg; $('cCiu').value=st.ciu; save(); render(); });
+        return;
+      }
+    }catch(e){}
+  }
+}
+
+renderAll();
+loadBiz();
+})();
+</script>
+</body></html>
