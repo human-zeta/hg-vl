@@ -1,0 +1,395 @@
+<!doctype html><html lang="es"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>QR + WA STUDIO — Human Glitche · QR y links de WhatsApp para tus setups</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{ --acid:#b8ff00; --glitch:#ff2d55; --cyan:#3ad0ff; --ink:#f0ede6; --line:rgba(240,237,230,.12); --bg:#050505; --pan:rgba(184,255,0,.015); }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{min-height:100%;background:var(--bg);color:var(--ink);font-family:'Space Mono',monospace;}
+  body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");z-index:0;pointer-events:none;opacity:.4;}
+  .wrap{position:relative;z-index:1;max-width:1180px;margin:0 auto;padding:26px 20px 90px;}
+  header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;gap:16px;flex-wrap:wrap;}
+  .brand{font-family:'Bebas Neue',sans-serif;font-size:50px;letter-spacing:.03em;line-height:.82;}
+  .brand b{color:var(--acid);font-weight:400;}
+  .brand span{display:block;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.24em;color:rgba(240,237,230,.4);margin-top:8px;}
+  header nav a{font-size:10px;letter-spacing:.2em;color:rgba(240,237,230,.4);text-decoration:none;margin-left:16px;} header nav a:hover{color:var(--acid);}
+  .intro{font-size:12px;color:rgba(240,237,230,.55);line-height:1.8;max-width:76ch;margin:12px 0 22px;}
+  .intro b{color:var(--acid);font-weight:400;}
+
+  .cols{display:grid;grid-template-columns:1fr 360px;gap:24px;align-items:start;}
+  @media(max-width:920px){ .cols{grid-template-columns:1fr;} }
+  .editor{border:1px solid var(--line);border-radius:10px;background:var(--pan);padding:18px;}
+  .tabs{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:16px;}
+  .tab{cursor:pointer;background:transparent;border:1px solid var(--line);color:rgba(240,237,230,.7);font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.06em;padding:8px 11px;border-radius:6px;transition:.15s;display:flex;gap:6px;align-items:center;}
+  .tab:hover{border-color:var(--acid);color:var(--acid);} .tab.on{border-color:var(--acid);color:var(--acid);background:rgba(184,255,0,.07);}
+  .fld{display:flex;flex-direction:column;gap:4px;margin-bottom:11px;}
+  .fld label{font-size:8.5px;letter-spacing:.16em;text-transform:uppercase;color:rgba(240,237,230,.4);}
+  .fld input,.fld textarea,.fld select{background:#0b0b0b;border:1px solid var(--line);color:var(--ink);font-family:'Space Mono',monospace;font-size:12px;padding:8px 10px;border-radius:6px;width:100%;}
+  .fld textarea{resize:vertical;min-height:60px;line-height:1.6;}
+  .fld input:focus,.fld textarea:focus,.fld select:focus{outline:none;border-color:var(--acid);}
+  .row2{display:grid;grid-template-columns:120px 1fr;gap:9px;} .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px;}
+  .hint{font-size:9.5px;color:rgba(240,237,230,.4);line-height:1.6;margin-top:-4px;margin-bottom:10px;}
+  .linkbox{display:flex;gap:8px;align-items:center;background:#0b0b0b;border:1px solid var(--line);border-radius:6px;padding:8px 10px;margin-bottom:11px;}
+  .linkbox code{flex:1;font-size:10.5px;color:var(--cyan);word-break:break-all;line-height:1.4;}
+  .linkbox button{flex-shrink:0;cursor:pointer;background:transparent;border:1px solid var(--line);color:rgba(240,237,230,.7);font-family:inherit;font-size:10px;padding:5px 8px;border-radius:5px;}
+  .linkbox button:hover{border-color:var(--acid);color:var(--acid);}
+  .swatches{display:flex;gap:7px;flex-wrap:wrap;}
+  .sw{width:26px;height:26px;border-radius:5px;cursor:pointer;border:2px solid transparent;} .sw.on{border-color:var(--acid);}
+
+  /* preview */
+  .preview{border:1px solid var(--line);border-radius:10px;background:var(--pan);padding:18px;position:sticky;top:16px;}
+  .qcard{background:#fff;border-radius:8px;padding:22px;display:flex;flex-direction:column;align-items:center;gap:12px;}
+  .qcard svg{width:100%;height:auto;max-width:280px;display:block;}
+  .qcap{font-family:'Space Mono',monospace;font-size:12px;color:#12100c;text-align:center;line-height:1.4;font-weight:700;}
+  .qwarn{font-size:10px;color:var(--glitch);text-align:center;margin-top:8px;line-height:1.5;}
+  .dlrow{display:flex;gap:8px;margin-top:14px;}
+  .btn{cursor:pointer;background:transparent;border:1px solid var(--line);color:var(--ink);font-family:'Space Mono',monospace;font-size:10.5px;letter-spacing:.1em;padding:10px 12px;border-radius:6px;transition:.18s;text-transform:uppercase;flex:1;text-align:center;}
+  .btn:hover{border-color:var(--acid);color:var(--acid);}
+  .btn.pri{background:var(--acid);color:#050505;font-weight:700;border-color:var(--acid);} .btn.pri:hover{filter:brightness(1.08);}
+  .meta{font-size:9.5px;color:rgba(240,237,230,.4);margin-top:12px;line-height:1.6;text-align:center;}
+
+  .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--acid);color:#050505;font-size:11px;font-weight:700;letter-spacing:.08em;padding:10px 18px;border-radius:6px;opacity:0;pointer-events:none;transition:.25s;z-index:9;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  .foot{font-size:10px;color:rgba(240,237,230,.35);letter-spacing:.1em;margin-top:36px;text-align:center;}
+</style></head><body>
+<div class="wrap">
+  <header>
+    <div class="brand"><b>QR + WA</b><span>studio de QR y links de WhatsApp</span></div>
+    <nav><a href="/labs/">← LABS</a><a href="/setup-maker/">SETUP MAKER</a><a href="/pipelines/">PIPELINES</a></nav>
+  </header>
+  <p class="intro">La utilidad que usan medio de los setups: generá <b>QR</b> y <b>links de WhatsApp con mensaje prellenado</b> para menú, reseñas, alta de email, turnos o lo que sea. QR real generado <b>en tu navegador</b> (nada sale a internet), descargable en <b>PNG y SVG</b> (vector, nítido para imprimir y laminar). Elegí el tipo, completá y descargá.</p>
+
+  <div class="cols">
+    <div class="editor">
+      <div class="tabs" id="tabs"></div>
+      <div id="form"></div>
+      <div class="fld"><label>Texto debajo del QR (opcional)</label><input id="cap" placeholder="Escaneá para ver la carta"></div>
+      <div class="row2" style="grid-template-columns:1fr 1fr;">
+        <div class="fld"><label>Color del QR</label><div class="swatches" id="swatches"></div></div>
+        <div class="fld"><label>Corrección de error</label><select id="ecc">
+          <option value="M">M — media (recomendada)</option>
+          <option value="Q">Q — alta (carteles/exterior)</option>
+          <option value="H">H — máxima</option>
+          <option value="L">L — baja (más simple)</option>
+        </select></div>
+      </div>
+    </div>
+
+    <aside class="preview">
+      <div class="qcard" id="qcard"></div>
+      <div class="dlrow">
+        <button class="btn pri" id="dlPng">⬇ PNG</button>
+        <button class="btn" id="dlSvg">⬇ SVG</button>
+      </div>
+      <div class="meta" id="meta"></div>
+    </aside>
+  </div>
+  <div class="foot">HUMAN GLITCHE · VISUAL LAB · generador de QR client-side · el QR nunca sale de tu navegador</div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════════════════
+   QR CORE — generador de QR completo (byte mode, versiones 1-40, ECC L/M/Q/H).
+   Algoritmo estándar (basado en la implementación de dominio público de Nayuki).
+   Devuelve una matriz de módulos booleana. Verificado de punta a punta
+   decodificando la salida con jsQR (ver test en repo). NO usar CDN.
+   ═══════════════════════════════════════════════════════════════════════════ */
+var QR = (function(){
+  var ECC_CW = [
+    [-1,7,10,15,20,26,18,20,24,30,18,20,24,26,30,22,24,28,30,28,28,28,28,30,30,26,28,30,30,30,30,30,30,30,30,30,30,30,30,30,30],
+    [-1,10,16,26,18,24,16,18,22,22,26,30,22,22,24,24,28,28,26,26,26,26,28,28,28,28,28,28,28,28,28,28,28,28,28,28,28,28,28,28,28],
+    [-1,13,22,18,26,18,24,18,22,20,24,28,26,24,20,30,24,28,28,26,30,28,30,30,30,30,28,30,30,30,30,30,30,30,30,30,30,30,30,30,30],
+    [-1,17,28,22,16,22,28,26,26,24,28,24,28,22,24,24,30,28,28,26,28,30,24,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30]
+  ];
+  var ECC_BLK = [
+    [-1,1,1,1,1,1,2,2,2,2,4,4,4,4,4,6,6,6,6,7,8,8,9,9,10,12,12,12,13,14,15,16,17,18,19,19,20,21,22,24,25],
+    [-1,1,1,1,2,2,4,4,4,5,5,5,8,9,9,10,10,11,13,14,16,17,17,18,20,21,23,25,26,28,29,31,33,35,37,38,40,43,45,47,49],
+    [-1,1,1,2,2,4,4,6,6,8,8,8,10,12,16,12,17,16,18,21,20,23,23,25,27,29,34,34,35,38,40,43,45,48,51,53,56,59,62,65,68],
+    [-1,1,1,2,4,4,4,5,6,8,8,11,11,16,16,18,16,19,21,25,25,25,34,30,32,35,37,40,42,45,48,51,54,57,60,63,66,70,74,77,81]
+  ];
+  // ecl ordinal L=0 M=1 Q=2 H=3 · formatBits L=1 M=0 Q=3 H=2
+  var ECL = { L:{o:0,f:1}, M:{o:1,f:0}, Q:{o:2,f:3}, H:{o:3,f:2} };
+
+  function rawModules(ver){
+    var r=(16*ver+128)*ver+64;
+    if(ver>=2){ var n=Math.floor(ver/7)+2; r-=(25*n-10)*n-55; if(ver>=7) r-=36; }
+    return r;
+  }
+  function dataCodewords(ver,o){ return Math.floor(rawModules(ver)/8) - ECC_CW[o][ver]*ECC_BLK[o][ver]; }
+  function alignPos(ver){
+    if(ver==1) return [];
+    var size=ver*4+17, n=Math.floor(ver/7)+2;
+    var step=(ver==32)?26:Math.ceil((ver*4+4)/(n*2-2))*2;
+    var res=[6]; for(var pos=size-7; res.length<n; pos-=step) res.splice(1,0,pos);
+    return res;
+  }
+  // GF(256)
+  function rsMul(x,y){ var z=0; for(var i=7;i>=0;i--){ z=(z<<1)^((z>>>7)*0x11d); z^=((y>>>i)&1)*x; } return z&0xff; }
+  function rsDivisor(deg){ var res=new Uint8Array(deg); res[deg-1]=1; var root=1;
+    for(var i=0;i<deg;i++){ for(var j=0;j<res.length;j++){ res[j]=rsMul(res[j],root); if(j+1<res.length) res[j]^=res[j+1]; } root=rsMul(root,2); }
+    return res; }
+  function rsRemainder(data,div){ var res=new Uint8Array(div.length);
+    for(var k=0;k<data.length;k++){ var f=data[k]^res[0]; res.copyWithin(0,1); res[res.length-1]=0;
+      for(var j=0;j<res.length;j++) res[j]^=rsMul(div[j],f); }
+    return res; }
+
+  function encode(text, eccName){
+    var ecl = ECL[eccName]||ECL.M, o=ecl.o;
+    // UTF-8 bytes
+    var bytes = [];
+    for(var i=0;i<text.length;i++){ var c=text.charCodeAt(i);
+      if(c<0x80) bytes.push(c);
+      else if(c<0x800){ bytes.push(0xc0|(c>>6),0x80|(c&0x3f)); }
+      else if(c<0xd800||c>=0xe000){ bytes.push(0xe0|(c>>12),0x80|((c>>6)&0x3f),0x80|(c&0x3f)); }
+      else { // surrogate pair
+        var hi=c, lo=text.charCodeAt(++i); var cp=0x10000+((hi-0xd800)<<10)+(lo-0xdc00);
+        bytes.push(0xf0|(cp>>18),0x80|((cp>>12)&0x3f),0x80|((cp>>6)&0x3f),0x80|(cp&0x3f)); }
+    }
+    // versión mínima
+    var ver=0;
+    for(var v=1;v<=40;v++){ var cc=(v<=9)?8:16; var need=4+cc+8*bytes.length;
+      if(need <= dataCodewords(v,o)*8){ ver=v; break; } }
+    if(!ver) throw new Error('El texto es demasiado largo para un QR.');
+    var cc=(ver<=9)?8:16;
+
+    // bit buffer
+    var bits=[]; function push(val,len){ for(var b=len-1;b>=0;b--) bits.push((val>>>b)&1); }
+    push(4,4); push(bytes.length,cc); for(var i=0;i<bytes.length;i++) push(bytes[i],8);
+    var cap=dataCodewords(ver,o)*8;
+    push(0, Math.min(4, cap-bits.length));           // terminador
+    while(bits.length%8!=0) bits.push(0);            // padding a byte
+    for(var pad=0xEC; bits.length<cap; pad^=0xEC^0x11) push(pad,8);  // pad bytes
+    // a codewords
+    var data=new Uint8Array(bits.length/8);
+    for(var i=0;i<bits.length;i++) data[i>>3]|=bits[i]<<(7-(i&7));
+
+    // ECC + interleave
+    var numBlk=ECC_BLK[o][ver], eccLen=ECC_CW[o][ver], total=Math.floor(rawModules(ver)/8);
+    var numShort=numBlk-(total%numBlk), shortLen=Math.floor(total/numBlk);
+    var div=rsDivisor(eccLen), blocks=[], k=0;
+    for(var b=0;b<numBlk;b++){ var dlen=shortLen-eccLen+(b<numShort?0:1);
+      var dat=data.slice(k,k+dlen); k+=dlen;
+      var ecc=rsRemainder(dat,div);
+      blocks.push({dat:dat,ecc:ecc});
+    }
+    var result=new Uint8Array(total), idx=0;
+    var maxData=shortLen-eccLen+1;
+    for(var i=0;i<maxData;i++) for(var b=0;b<numBlk;b++){ if(i<blocks[b].dat.length) result[idx++]=blocks[b].dat[i]; }
+    for(var i=0;i<eccLen;i++) for(var b=0;b<numBlk;b++) result[idx++]=blocks[b].ecc[i];
+
+    // matriz
+    var size=ver*4+17;
+    var mod=[], fn=[];
+    for(var y=0;y<size;y++){ mod.push(new Array(size).fill(false)); fn.push(new Array(size).fill(false)); }
+    function setFn(x,y,dark){ if(x<0||y<0||x>=size||y>=size)return; mod[y][x]=dark; fn[y][x]=true; }
+    function finder(cx,cy){ for(var dy=-4;dy<=4;dy++) for(var dx=-4;dx<=4;dx++){
+      var d=Math.max(Math.abs(dx),Math.abs(dy)); setFn(cx+dx,cy+dy, d!=2&&d!=4); } }
+    function align(cx,cy){ for(var dy=-2;dy<=2;dy++) for(var dx=-2;dx<=2;dx++) setFn(cx+dx,cy+dy, Math.max(Math.abs(dx),Math.abs(dy))!=1); }
+    // timing
+    for(var i=0;i<size;i++){ setFn(6,i,i%2==0); setFn(i,6,i%2==0); }
+    finder(3,3); finder(size-4,3); finder(3,size-4);
+    // separators ya cubiertos por finder d==4 (falso); marcamos fn en bordes
+    for(var i=0;i<8;i++){ setFn(7,i,false);setFn(i,7,false);setFn(size-8,i,false);setFn(size-1-i,7,false);setFn(i,size-8,false);setFn(7,size-1-i,false); }
+    // alignment
+    var ap=alignPos(ver);
+    for(var i=0;i<ap.length;i++) for(var j=0;j<ap.length;j++){
+      if((i==0&&j==0)||(i==0&&j==ap.length-1)||(i==ap.length-1&&j==0)) continue;
+      align(ap[i],ap[j]); }
+    // dark module + reservar formato
+    setFn(8,size-8,true);
+    for(var i=0;i<9;i++){ setFn(8,i,false); setFn(i,8,false); }
+    for(var i=0;i<8;i++){ setFn(size-1-i,8,false); setFn(8,size-1-i,false); }
+    // version info (>=7) reservar
+    if(ver>=7){ for(var i=0;i<18;i++){ var a=size-11+i%3, b=Math.floor(i/3); setFn(a,b,false); setFn(b,a,false); } }
+
+    // colocar datos (zigzag)
+    var bi=0;
+    for(var right=size-1; right>=1; right-=2){ if(right==6) right=5;
+      for(var vert=0; vert<size; vert++){ for(var jj=0;jj<2;jj++){
+        var x=right-jj; var up=((right+1)&2)==0; var y=up?size-1-vert:vert;
+        if(!fn[y][x] && bi<result.length*8){ mod[y][x]=((result[bi>>3]>>>(7-(bi&7)))&1)!=0; bi++; }
+      } } }
+
+    // máscara: probar 0-7, elegir menor penalidad
+    function applyMask(m){ for(var y=0;y<size;y++) for(var x=0;x<size;x++){ if(fn[y][x]) continue;
+      var inv; switch(m){ case 0:inv=(x+y)%2==0;break; case 1:inv=y%2==0;break; case 2:inv=x%3==0;break;
+        case 3:inv=(x+y)%3==0;break; case 4:inv=(Math.floor(x/3)+Math.floor(y/2))%2==0;break;
+        case 5:inv=(x*y)%2+(x*y)%3==0;break; case 6:inv=((x*y)%2+(x*y)%3)%2==0;break;
+        case 7:inv=((x+y)%2+(x*y)%3)%2==0;break; }
+      if(inv) mod[y][x]=!mod[y][x]; } }
+    function drawFormat(m){ var data=(ecl.f<<3)|m, rem=data;
+      for(var i=0;i<10;i++) rem=(rem<<1)^((rem>>>9)*0x537);
+      var val=((data<<10)|rem)^0x5412;
+      for(var i=0;i<=5;i++) setFn(8,i,((val>>>i)&1)!=0);
+      setFn(8,7,((val>>>6)&1)!=0); setFn(8,8,((val>>>7)&1)!=0); setFn(7,8,((val>>>8)&1)!=0);
+      for(var i=9;i<15;i++) setFn(14-i,8,((val>>>i)&1)!=0);
+      for(var i=0;i<8;i++) setFn(size-1-i,8,((val>>>i)&1)!=0);
+      for(var i=8;i<15;i++) setFn(8,size-15+i,((val>>>i)&1)!=0);
+      setFn(8,size-8,true);
+    }
+    function drawVersion(){ if(ver<7) return; var rem=ver;
+      for(var i=0;i<12;i++) rem=(rem<<1)^((rem>>>11)*0x1f25);
+      var val=(ver<<12)|rem;
+      for(var i=0;i<18;i++){ var bit=((val>>>i)&1)!=0; var a=size-11+i%3, b=Math.floor(i/3); setFn(a,b,bit); setFn(b,a,bit); }
+    }
+    function penalty(){ var p=0;
+      for(var y=0;y<size;y++){ var run=1,last=mod[y][0]; for(var x=1;x<size;x++){ if(mod[y][x]==last){ run++; if(run==5)p+=3; else if(run>5)p++; } else { last=mod[y][x]; run=1; } } }
+      for(var x=0;x<size;x++){ var run=1,last=mod[0][x]; for(var y=1;y<size;y++){ if(mod[y][x]==last){ run++; if(run==5)p+=3; else if(run>5)p++; } else { last=mod[y][x]; run=1; } } }
+      for(var y=0;y<size-1;y++) for(var x=0;x<size-1;x++){ var c=mod[y][x]; if(c==mod[y][x+1]&&c==mod[y+1][x]&&c==mod[y+1][x+1]) p+=3; }
+      // patrón finder-like 1:1:3:1:1
+      for(var y=0;y<size;y++){ for(var x=0;x<size;x++){
+        if(x+6<size){ var s=''; for(var k=0;k<7;k++) s+=mod[y][x+k]?'1':'0'; if(s=='1011101'){ p+=40; } }
+        if(y+6<size){ var s2=''; for(var k=0;k<7;k++) s2+=mod[y+k][x]?'1':'0'; if(s2=='1011101'){ p+=40; } }
+      } }
+      var dark=0; for(var y=0;y<size;y++) for(var x=0;x<size;x++) if(mod[y][x]) dark++;
+      var pct=dark*100/(size*size); p+=Math.floor(Math.abs(pct-50)/5)*10;
+      return p;
+    }
+    var best=-1, bestP=Infinity, saved=null;
+    for(var m=0;m<8;m++){ applyMask(m); drawFormat(m); var pn=penalty();
+      if(pn<bestP){ bestP=pn; best=m; } applyMask(m); /* revertir máscara */ }
+    // aplicar mejor
+    applyMask(best); drawFormat(best); drawVersion();
+    return { size:size, modules:mod, version:ver, ecl:eccName, mask:best };
+  }
+  return { encode:encode };
+})();
+
+/* ─── SVG / PNG desde la matriz ─────────────────────────────────────────────── */
+function qrSvg(qr, color, cap){
+  var q=4, s=qr.size, dim=s+q*2, cell=10, W=dim*cell;
+  var capH = cap ? 46 : 0;
+  var rects='';
+  for(var y=0;y<s;y++){ var run=null;
+    for(var x=0;x<s;x++){ if(qr.modules[y][x]){ if(run===null) run=x; }
+      else if(run!==null){ rects+='<rect x="'+((run+q)*cell)+'" y="'+((y+q)*cell)+'" width="'+((x-run)*cell)+'" height="'+cell+'"/>'; run=null; } }
+    if(run!==null) rects+='<rect x="'+((run+q)*cell)+'" y="'+((y+q)*cell)+'" width="'+((s-run)*cell)+'" height="'+cell+'"/>';
+  }
+  var capSvg = cap ? '<text x="'+(W/2)+'" y="'+(W+30)+'" text-anchor="middle" font-family="monospace" font-size="26" font-weight="700" fill="#12100c">'+escapeXml(cap)+'</text>' : '';
+  return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 '+W+' '+(W+capH)+'">'
+    +'<rect width="'+W+'" height="'+(W+capH)+'" fill="#ffffff"/>'
+    +'<g fill="'+color+'">'+rects+'</g>'+capSvg+'</svg>';
+}
+function escapeXml(s){ return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
+
+/* ─── App ──────────────────────────────────────────────────────────────────── */
+(function(){
+var $=function(id){return document.getElementById(id);};
+var TABS=[
+  {k:'wa', ic:'💬', t:'WhatsApp'},
+  {k:'url', ic:'🔗', t:'Menú / URL'},
+  {k:'reseña', ic:'⭐', t:'Reseña Google'},
+  {k:'email', ic:'💌', t:'Alta email'},
+  {k:'texto', ic:'✏️', t:'Texto libre'},
+];
+var COLORS=['#12100c','#000000','#0a3a1e','#0d1b3a','#3a0d1b'];
+var LS='hg_qrwa_v1';
+var st={ tab:'wa', wa_cc:'54', wa_num:'', wa_msg:'Hola! Vi tu negocio y quería consultar por…', url:'', cap:'', color:'#12100c', ecc:'M' };
+try{ var s=JSON.parse(localStorage.getItem(LS)||'null'); if(s) st=Object.assign(st,s); }catch(e){}
+var lastQr=null, lastPayload='';
+
+function save(){ try{ localStorage.setItem(LS, JSON.stringify(st)); }catch(e){} }
+function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
+function toast(t){ var el=$('toast'); el.textContent=t; el.classList.add('show'); setTimeout(function(){el.classList.remove('show');},1600); }
+
+function waLink(){
+  var num=(st.wa_cc+st.wa_num).replace(/[^0-9]/g,'');
+  var base='https://wa.me/'+num;
+  return st.wa_msg ? base+'?text='+encodeURIComponent(st.wa_msg) : base;
+}
+function payload(){
+  switch(st.tab){
+    case 'wa': return waLink();
+    case 'url': case 'reseña': case 'email': return (st.url||'').trim();
+    case 'texto': return (st.url||'').trim();
+  }
+  return '';
+}
+
+function renderTabs(){
+  $('tabs').innerHTML = TABS.map(function(t){ return '<button class="tab '+(st.tab===t.k?'on':'')+'" data-k="'+t.k+'">'+t.ic+' '+t.t+'</button>'; }).join('');
+}
+function renderForm(){
+  var f=$('form'), h='';
+  if(st.tab==='wa'){
+    h = '<div class="fld"><label>Número de WhatsApp</label><div class="row2">'
+      + '<input id="waCc" value="'+esc(st.wa_cc)+'" placeholder="54">'
+      + '<input id="waNum" value="'+esc(st.wa_num)+'" placeholder="9 221 5xxxxxx (sin 0 ni 15)"></div></div>'
+      + '<div class="hint">Argentina: código país 54, después 9 + código de área + número, sin el 0 ni el 15. Ej: 54 9 221 5123456.</div>'
+      + '<div class="fld"><label>Mensaje prellenado</label><textarea id="waMsg">'+esc(st.wa_msg)+'</textarea></div>';
+  } else if(st.tab==='url'||st.tab==='reseña'||st.tab==='email'){
+    var ph = st.tab==='reseña' ? 'Pegá el link corto de reseña de tu ficha de Google (g.page/.../review)'
+           : st.tab==='email' ? 'Link del formulario de alta (Tally, etc.)'
+           : 'https://tunegocio.com.ar/carta';
+    var lbl = st.tab==='reseña' ? 'Link de reseña de Google' : st.tab==='email' ? 'Link de alta' : 'Dirección / URL';
+    h = '<div class="fld"><label>'+lbl+'</label><input id="urlIn" value="'+esc(st.url)+'" placeholder="'+esc(ph)+'"></div>'
+      + (st.tab==='reseña' ? '<div class="hint">Lo generás desde tu perfil de Google Business → "Pedir reseñas". Abre directo las estrellas.</div>' : '');
+  } else {
+    h = '<div class="fld"><label>Texto o dirección</label><textarea id="urlIn" placeholder="Cualquier texto o link">'+esc(st.url)+'</textarea></div>';
+  }
+  f.innerHTML = h;
+  if(st.tab==='wa'){
+    $('waCc').addEventListener('input',function(){ st.wa_cc=this.value; save(); render(); });
+    $('waNum').addEventListener('input',function(){ st.wa_num=this.value; save(); render(); });
+    $('waMsg').addEventListener('input',function(){ st.wa_msg=this.value; save(); render(); });
+  } else {
+    $('urlIn').addEventListener('input',function(){ st.url=this.value; save(); render(); });
+  }
+}
+function renderSwatches(){
+  $('swatches').innerHTML = COLORS.map(function(c){ return '<div class="sw '+(st.color===c?'on':'')+'" data-c="'+c+'" style="background:'+c+'"></div>'; }).join('');
+}
+
+function render(){
+  var pl=payload(); lastPayload=pl;
+  var card=$('qcard');
+  // link box para WhatsApp
+  var linkHtml='';
+  if(st.tab==='wa'){
+    linkHtml='<div class="linkbox" style="margin:-4px 0 12px"><code>'+esc(waLink())+'</code><button id="copyLink">Copiar</button></div>';
+  }
+  if(!pl){ card.innerHTML='<div style="color:#888;font-size:12px;padding:30px;text-align:center">Completá los datos para generar el QR.</div>';
+    $('meta').textContent=''; lastQr=null;
+    // insertar linkbox arriba del editor si wa
+    injectLink(linkHtml); return; }
+  var qr, warn='';
+  try{ qr=QR.encode(pl, st.ecc); }catch(e){ card.innerHTML='<div style="color:#c00;font-size:12px;padding:30px;text-align:center">'+esc(e.message)+'</div>'; $('meta').textContent=''; lastQr=null; injectLink(linkHtml); return; }
+  lastQr=qr;
+  var svg=qrSvg(qr, st.color, st.cap);
+  card.innerHTML = svg;
+  $('meta').innerHTML = 'Versión '+qr.version+' · '+qr.size+'×'+qr.size+' módulos · ECC '+qr.ecl+'<br>'+pl.length+' caracteres · escaneá para probar antes de imprimir';
+  injectLink(linkHtml);
+}
+function injectLink(html){
+  var ex=$('waLinkWrap'); if(ex) ex.remove();
+  if(html){ var d=document.createElement('div'); d.id='waLinkWrap'; d.innerHTML=html; $('form').appendChild(d);
+    var b=$('copyLink'); if(b) b.addEventListener('click',function(){ navigator.clipboard&&navigator.clipboard.writeText(waLink()).then(function(){toast('Link copiado');}); }); }
+}
+
+function download(name, blob){ var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name; a.click(); setTimeout(function(){URL.revokeObjectURL(a.href);},1000); }
+function fileBase(){ return (st.tab==='wa'?'whatsapp':st.tab)+'-qr'; }
+
+$('dlSvg').addEventListener('click',function(){ if(!lastQr){ toast('Generá un QR primero'); return; }
+  download(fileBase()+'.svg', new Blob([qrSvg(lastQr, st.color, st.cap)],{type:'image/svg+xml'})); });
+$('dlPng').addEventListener('click',function(){ if(!lastQr){ toast('Generá un QR primero'); return; }
+  var svg=qrSvg(lastQr, st.color, st.cap);
+  var img=new Image(); var url='data:image/svg+xml;base64,'+btoa(unescape(encodeURIComponent(svg)));
+  img.onload=function(){ var scale=3; var cv=document.createElement('canvas'); cv.width=img.width*scale; cv.height=img.height*scale;
+    var ctx=cv.getContext('2d'); ctx.fillStyle='#fff'; ctx.fillRect(0,0,cv.width,cv.height); ctx.drawImage(img,0,0,cv.width,cv.height);
+    cv.toBlob(function(b){ download(fileBase()+'.png', b); }); };
+  img.onerror=function(){ toast('No se pudo exportar PNG'); };
+  img.src=url;
+});
+
+$('tabs').addEventListener('click',function(e){ var b=e.target.closest('[data-k]'); if(!b)return; st.tab=b.getAttribute('data-k'); save(); renderTabs(); renderForm(); render(); });
+$('swatches').addEventListener('click',function(e){ var s=e.target.closest('[data-c]'); if(!s)return; st.color=s.getAttribute('data-c'); save(); renderSwatches(); render(); });
+$('cap').addEventListener('input',function(){ st.cap=this.value; save(); render(); });
+$('ecc').addEventListener('change',function(){ st.ecc=this.value; save(); render(); });
+$('cap').value=st.cap; $('ecc').value=st.ecc;
+
+renderTabs(); renderSwatches(); renderForm(); render();
+})();
+</script>
+</body></html>
