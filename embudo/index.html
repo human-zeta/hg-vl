@@ -1,0 +1,292 @@
+<!doctype html><html lang="es"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>EMBUDO — Human Glitche · tu funnel de ventas, de prospecto a cliente</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{ --acid:#b8ff00; --glitch:#ff2d55; --cyan:#3ad0ff; --ink:#f0ede6; --line:rgba(240,237,230,.12); --bg:#050505; --pan:rgba(184,255,0,.015); }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{min-height:100%;background:var(--bg);color:var(--ink);font-family:'Space Mono',monospace;}
+  body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");z-index:0;pointer-events:none;opacity:.4;}
+  .wrap{position:relative;z-index:1;max-width:1400px;margin:0 auto;padding:26px 20px 90px;}
+  header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;gap:16px;flex-wrap:wrap;}
+  .brand{font-family:'Bebas Neue',sans-serif;font-size:52px;letter-spacing:.03em;line-height:.82;}
+  .brand b{color:var(--acid);font-weight:400;}
+  .brand span{display:block;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.26em;color:rgba(240,237,230,.4);margin-top:8px;}
+  header nav a{font-size:10px;letter-spacing:.2em;color:rgba(240,237,230,.4);text-decoration:none;margin-left:16px;} header nav a:hover{color:var(--acid);}
+  .intro{font-size:12px;color:rgba(240,237,230,.55);line-height:1.8;max-width:78ch;margin:12px 0 18px;}
+  .intro b{color:var(--acid);font-weight:400;}
+
+  /* barra */
+  .bar{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;border:1px solid var(--line);border-radius:10px;padding:14px;background:var(--pan);margin-bottom:16px;}
+  .field{display:flex;flex-direction:column;gap:4px;}
+  .field label{font-size:8.5px;letter-spacing:.16em;text-transform:uppercase;color:rgba(240,237,230,.4);}
+  select,input[type=text]{background:#0b0b0b;border:1px solid var(--line);color:var(--ink);font-family:'Space Mono',monospace;font-size:12px;padding:7px 9px;border-radius:6px;min-width:180px;}
+  select:focus,input:focus{outline:none;border-color:var(--acid);}
+  .btn{cursor:pointer;background:transparent;border:1px solid var(--line);color:var(--ink);font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.12em;padding:8px 11px;border-radius:6px;transition:.18s;text-transform:uppercase;}
+  .btn:hover{border-color:var(--acid);color:var(--acid);}
+  .btn.pri{border-color:var(--acid);color:var(--acid);background:rgba(184,255,0,.06);}
+  .bar .grow{flex:1;}
+  .stat{font-size:10px;color:rgba(240,237,230,.5);letter-spacing:.06em;}
+  .stat b{color:var(--cyan);}
+
+  /* tablero kanban */
+  .board{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;align-items:start;}
+  @media(max-width:1080px){ .board{grid-template-columns:repeat(2,1fr);} }
+  @media(max-width:620px){ .board{grid-template-columns:1fr;} }
+  .col{border:1px solid var(--line);border-radius:10px;background:var(--pan);min-height:120px;display:flex;flex-direction:column;transition:.15s;}
+  .col.drag{border-color:var(--acid);background:rgba(184,255,0,.05);}
+  .col .ch{display:flex;justify-content:space-between;align-items:center;padding:11px 12px;border-bottom:1px solid var(--line);position:sticky;top:0;}
+  .col .ch .ct{font-size:10px;letter-spacing:.14em;text-transform:uppercase;display:flex;align-items:center;gap:7px;}
+  .col .ch .dot{width:8px;height:8px;border-radius:50%;}
+  .col .ch .cc{font-size:10px;color:rgba(240,237,230,.4);background:#0b0b0b;border:1px solid var(--line);border-radius:20px;padding:1px 8px;}
+  .col .cards{padding:10px;display:flex;flex-direction:column;gap:9px;flex:1;}
+  .col .cadd{margin:0 10px 10px;font-size:10px;color:rgba(240,237,230,.4);border:1px dashed var(--line);border-radius:6px;padding:7px;text-align:center;cursor:pointer;transition:.15s;}
+  .col .cadd:hover{border-color:var(--acid);color:var(--acid);}
+
+  .card{border:1px solid var(--line);border-radius:8px;background:#0a0a0a;padding:11px 12px;cursor:grab;transition:.12s;}
+  .card:active{cursor:grabbing;} .card.dragging{opacity:.4;}
+  .card .cn{font-size:12px;font-weight:700;letter-spacing:.02em;line-height:1.25;}
+  .card .cm{font-size:10px;color:rgba(240,237,230,.45);margin-top:3px;}
+  .card .ctags{display:flex;flex-wrap:wrap;gap:4px;margin-top:7px;}
+  .card .tg{font-size:8.5px;letter-spacing:.04em;padding:2px 6px;border-radius:4px;background:rgba(58,208,255,.1);color:var(--cyan);border:1px solid rgba(58,208,255,.25);}
+  .card .cnext{font-size:9.5px;color:rgba(240,237,230,.55);margin-top:7px;display:flex;gap:5px;align-items:baseline;}
+  .card .cnext b{color:var(--acid);font-weight:400;}
+  .card .cnext.due{color:var(--glitch);} .card .cnext.due b{color:var(--glitch);}
+  .card .cval{font-size:10px;color:var(--acid);margin-top:5px;}
+  .card .cmove{display:flex;gap:4px;margin-top:8px;}
+  .card .cmove button{flex:1;font-size:12px;line-height:1;background:transparent;border:1px solid var(--line);color:rgba(240,237,230,.5);border-radius:4px;padding:3px;cursor:pointer;}
+  .card .cmove button:hover{border-color:var(--acid);color:var(--acid);}
+
+  /* modal */
+  .ovl{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:20;display:none;align-items:center;justify-content:center;padding:20px;}
+  .ovl.on{display:flex;}
+  .modal{background:#0a0a0a;border:1px solid var(--acid);border-radius:12px;max-width:460px;width:100%;max-height:90vh;overflow:auto;padding:20px;}
+  .modal h3{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:.03em;color:var(--acid);margin-bottom:14px;}
+  .modal .fld{display:flex;flex-direction:column;gap:4px;margin-bottom:11px;}
+  .modal .fld label{font-size:8.5px;letter-spacing:.16em;text-transform:uppercase;color:rgba(240,237,230,.4);}
+  .modal input,.modal textarea,.modal select{background:#111;border:1px solid var(--line);color:var(--ink);font-family:'Space Mono',monospace;font-size:12px;padding:8px 9px;border-radius:6px;width:100%;}
+  .modal textarea{resize:vertical;min-height:56px;line-height:1.6;}
+  .modal input:focus,.modal textarea:focus,.modal select:focus{outline:none;border-color:var(--acid);}
+  .modal .row2{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
+  .modal .chips{display:flex;flex-wrap:wrap;gap:6px;}
+  .modal .chip{font-size:10px;padding:5px 9px;border:1px solid var(--line);border-radius:5px;cursor:pointer;transition:.12s;}
+  .modal .chip.on{border-color:var(--acid);color:var(--acid);background:rgba(184,255,0,.07);}
+  .modal .mact{display:flex;gap:8px;margin-top:16px;}
+  .modal .mact .btn{flex:1;text-align:center;}
+  .modal .del{color:var(--glitch);border-color:rgba(255,45,85,.4);} .modal .del:hover{border-color:var(--glitch);color:var(--glitch);}
+
+  .foot{font-size:10px;color:rgba(240,237,230,.35);letter-spacing:.1em;margin-top:36px;text-align:center;}
+  .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--acid);color:#050505;font-size:11px;font-weight:700;letter-spacing:.08em;padding:10px 18px;border-radius:6px;opacity:0;pointer-events:none;transition:.25s;z-index:30;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+</style></head><body>
+<div class="wrap">
+  <header>
+    <div class="brand"><b>EMBUDO</b><span>tu funnel de ventas, de prospecto a cliente</span></div>
+    <nav><a href="/labs/">← LABS</a><a href="/auditoria.html">AUDITORÍA</a><a href="/pipelines/">PIPELINES</a></nav>
+  </header>
+  <p class="intro">La GUÍA DE VENTA dice "armá una lista de 10 y trabajala": este es el tablero para hacerlo. Traés negocios de la <b>AUDITORÍA</b> (o los cargás a mano) y los movés por las etapas — <b>Prospecto → Contactado → Propuesta → Cerrado / Perdido</b> — con arrastrar, notas, próxima acción y el valor estimado. Todo se guarda en tu navegador.</p>
+
+  <div class="bar">
+    <div class="field"><label>Sumar desde Auditoría</label><select id="bizPick"><option value="">— elegí un negocio —</option></select></div>
+    <button class="btn pri" id="addBiz">+ Sumar a Prospectos</button>
+    <button class="btn" id="addManual">+ A mano</button>
+    <div class="grow"></div>
+    <div class="stat" id="stats"></div>
+    <button class="btn" id="exportBtn">Exportar</button>
+  </div>
+
+  <div class="board" id="board"></div>
+
+  <div class="foot">HUMAN GLITCHE · VISUAL LAB · CRM del funnel client-side · conectado a AUDITORÍA · arrastrá las tarjetas entre etapas</div>
+</div>
+
+<!-- MODAL -->
+<div class="ovl" id="ovl"><div class="modal" id="modal"></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+'use strict';
+const $=id=>document.getElementById(id);
+const ETAPAS=[
+  {k:'prospecto', t:'Prospecto', c:'#6b6656'},
+  {k:'contactado', t:'Contactado', c:'#3ad0ff'},
+  {k:'propuesta', t:'Propuesta', c:'#b8ff00'},
+  {k:'cerrado', t:'Cerrado', c:'#1fbf5a'},
+  {k:'perdido', t:'Perdido', c:'#ff2d55'},
+];
+const EK = ETAPAS.map(e=>e.k);
+// pipelines para taggear interés (id → etiqueta corta)
+const PIPES=[['web','Web'],['wa','WhatsApp'],['social','Redes'],['menu','Menú'],['leads','Leads'],['resenas','Reputación'],['turnos','Turnos'],['factura','Factura'],['tienda','Tienda'],['ads','Ads'],['email','Email'],['brand','Identidad'],['video','Video']];
+const PIPE_LBL=Object.fromEntries(PIPES);
+
+const LS='hg_embudo_v1';
+let cards=[];        // {id,name,city,type,stage,tags[],next,due,val,notes}
+let seed={};
+let editId=null, tagSel=[];
+try{ const s=JSON.parse(localStorage.getItem(LS)||'null'); if(Array.isArray(s)) cards=s; }catch(e){}
+
+function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function save(){ try{ localStorage.setItem(LS, JSON.stringify(cards)); }catch(e){} }
+function uid(){ return 'c'+Math.random().toString(36).slice(2,9); }
+function todayStr(){ const d=new Date(); return d.toISOString().slice(0,10); }
+function fmtDue(due){ if(!due) return null; const d=new Date(due+'T00:00:00'); const t=new Date(); t.setHours(0,0,0,0);
+  const diff=Math.round((d-t)/86400000);
+  const txt = diff===0?'hoy':diff<0?('hace '+(-diff)+'d'):('en '+diff+'d');
+  return { txt, overdue: diff<0, soon: diff>=0&&diff<=1 };
+}
+
+// ── Render tablero ──────────────────────────────────────────────────────────
+function render(){
+  const board=$('board');
+  board.innerHTML = ETAPAS.map(e=>{
+    const list=cards.filter(c=>c.stage===e.k);
+    return `<div class="col" data-stage="${e.k}">
+      <div class="ch"><span class="ct"><span class="dot" style="background:${e.c}"></span>${e.t}</span><span class="cc">${list.length}</span></div>
+      <div class="cards" data-stage="${e.k}">${list.map(cardHtml).join('')}</div>
+      <div class="cadd" data-stage="${e.k}">+ agregar</div>
+    </div>`;
+  }).join('');
+  bindBoard();
+  renderStats();
+}
+function cardHtml(c){
+  const idx=EK.indexOf(c.stage);
+  const due=fmtDue(c.due);
+  const tags=(c.tags||[]).map(t=>`<span class="tg">${esc(PIPE_LBL[t]||t)}</span>`).join('');
+  return `<div class="card" draggable="true" data-id="${c.id}">
+    <div class="cn">${esc(c.name||'(sin nombre)')}</div>
+    ${(c.city||c.type)?`<div class="cm">${esc([c.type,c.city].filter(Boolean).join(' · '))}</div>`:''}
+    ${tags?`<div class="ctags">${tags}</div>`:''}
+    ${c.next?`<div class="cnext ${due&&due.overdue?'due':''}">→ <b>${esc(c.next)}</b>${due?' · '+due.txt:''}</div>`:(due?`<div class="cnext ${due.overdue?'due':''}">📅 ${due.txt}</div>`:'')}
+    ${c.val?`<div class="cval">${esc(c.val)}</div>`:''}
+    <div class="cmove">
+      <button data-move="prev" data-id="${c.id}" ${idx<=0?'disabled style="opacity:.25"':''}>◀</button>
+      <button data-edit="${c.id}">✎</button>
+      <button data-move="next" data-id="${c.id}" ${idx>=EK.length-1?'disabled style="opacity:.25"':''}>▶</button>
+    </div>
+  </div>`;
+}
+function renderStats(){
+  const n=cards.length, cerr=cards.filter(c=>c.stage==='cerrado').length, act=cards.filter(c=>!['cerrado','perdido'].includes(c.stage)).length;
+  $('stats').innerHTML = `<b>${n}</b> en el embudo · <b>${act}</b> activos · <b>${cerr}</b> cerrados`;
+}
+
+// ── Drag & drop + botones ───────────────────────────────────────────────────
+let dragId=null;
+function bindBoard(){
+  document.querySelectorAll('.card').forEach(el=>{
+    el.addEventListener('dragstart', e=>{ dragId=el.getAttribute('data-id'); el.classList.add('dragging'); e.dataTransfer.effectAllowed='move'; });
+    el.addEventListener('dragend', ()=>{ dragId=null; el.classList.remove('dragging'); document.querySelectorAll('.col').forEach(c=>c.classList.remove('drag')); });
+  });
+  document.querySelectorAll('.col').forEach(col=>{
+    col.addEventListener('dragover', e=>{ e.preventDefault(); col.classList.add('drag'); });
+    col.addEventListener('dragleave', ()=>col.classList.remove('drag'));
+    col.addEventListener('drop', e=>{ e.preventDefault(); col.classList.remove('drag');
+      const stage=col.getAttribute('data-stage'); const c=cards.find(x=>x.id===dragId);
+      if(c && stage && c.stage!==stage){ c.stage=stage; save(); render(); } });
+  });
+  $('board').addEventListener('click', boardClick);
+}
+function boardClick(e){
+  const mv=e.target.closest('[data-move]'); const ed=e.target.closest('[data-edit]'); const add=e.target.closest('.cadd');
+  if(mv){ const c=cards.find(x=>x.id===mv.getAttribute('data-id')); if(!c) return;
+    let i=EK.indexOf(c.stage); i += mv.getAttribute('data-move')==='next'?1:-1;
+    if(i>=0&&i<EK.length){ c.stage=EK[i]; save(); render(); } return; }
+  if(ed){ openModal(ed.getAttribute('data-edit')); return; }
+  if(add){ openModal(null, add.getAttribute('data-stage')); return; }
+}
+
+// ── Modal alta/edición ──────────────────────────────────────────────────────
+function openModal(id, stage){
+  editId=id;
+  const c = id ? cards.find(x=>x.id===id) : { name:'', city:'', type:'', stage:stage||'prospecto', tags:[], next:'', due:'', val:'', notes:'' };
+  tagSel = (c.tags||[]).slice();
+  $('modal').innerHTML = `
+    <h3>${id?'Editar':'Nuevo'} en el embudo</h3>
+    <div class="fld"><label>Negocio</label><input id="mName" value="${esc(c.name)}"></div>
+    <div class="row2">
+      <div class="fld"><label>Rubro</label><input id="mType" value="${esc(c.type)}"></div>
+      <div class="fld"><label>Ciudad</label><input id="mCity" value="${esc(c.city)}"></div>
+    </div>
+    <div class="fld"><label>Etapa</label><select id="mStage">${ETAPAS.map(e=>`<option value="${e.k}" ${c.stage===e.k?'selected':''}>${e.t}</option>`).join('')}</select></div>
+    <div class="fld"><label>Le interesa (pipelines)</label><div class="chips" id="mTags">${PIPES.map(([k,l])=>`<span class="chip ${tagSel.includes(k)?'on':''}" data-k="${k}">${l}</span>`).join('')}</div></div>
+    <div class="row2">
+      <div class="fld"><label>Próxima acción</label><input id="mNext" value="${esc(c.next)}" placeholder="Llamar / mandar propuesta"></div>
+      <div class="fld"><label>Para cuándo</label><input id="mDue" type="date" value="${esc(c.due)}"></div>
+    </div>
+    <div class="fld"><label>Valor estimado</label><input id="mVal" value="${esc(c.val)}" placeholder="US$ 350 setup + 200/mes"></div>
+    <div class="fld"><label>Notas</label><textarea id="mNotes">${esc(c.notes)}</textarea></div>
+    <div class="mact">
+      ${id?'<button class="btn del" id="mDel">Eliminar</button>':''}
+      <button class="btn" id="mCancel">Cancelar</button>
+      <button class="btn pri" id="mSave">Guardar</button>
+    </div>`;
+  $('ovl').classList.add('on');
+  $('mTags').addEventListener('click', e=>{ const ch=e.target.closest('.chip'); if(!ch) return;
+    const k=ch.getAttribute('data-k'); const i=tagSel.indexOf(k);
+    if(i>=0) tagSel.splice(i,1); else tagSel.push(k); ch.classList.toggle('on'); });
+  $('mCancel').addEventListener('click', closeModal);
+  $('mSave').addEventListener('click', ()=>{
+    const data={ name:$('mName').value.trim(), type:$('mType').value.trim(), city:$('mCity').value.trim(),
+      stage:$('mStage').value, tags:tagSel.slice(), next:$('mNext').value.trim(), due:$('mDue').value,
+      val:$('mVal').value.trim(), notes:$('mNotes').value.trim() };
+    if(!data.name){ toast('Poné un nombre'); return; }
+    if(editId){ Object.assign(cards.find(x=>x.id===editId), data); }
+    else { cards.push(Object.assign({id:uid()}, data)); }
+    save(); closeModal(); render();
+  });
+  if(id) $('mDel').addEventListener('click', ()=>{ if(!confirm('¿Eliminar del embudo?'))return;
+    cards=cards.filter(x=>x.id!==editId); save(); closeModal(); render(); });
+}
+function closeModal(){ $('ovl').classList.remove('on'); editId=null; }
+$('ovl').addEventListener('click', e=>{ if(e.target===$('ovl')) closeModal(); });
+
+// ── Alta desde Auditoría ────────────────────────────────────────────────────
+function addFromBiz(){
+  const sel=$('bizPick'); const o=sel.options[sel.selectedIndex]; if(!o||!o.value) { toast('Elegí un negocio'); return; }
+  const b=seed[o.value]; if(!b) return;
+  if(cards.some(c=>c.name===b.name && c.city===b.city)){ toast('Ya está en el embudo'); return; }
+  // sugerir tags por huecos de canal
+  const tags=[]; if(b.web===false) tags.push('web'); if(b.wa===false) tags.push('wa'); if(b.ig===false) tags.push('social');
+  cards.push({ id:uid(), name:b.name||'', city:b.city||'', type:b.type||'', stage:'prospecto', tags, next:'Primer contacto', due:'', val:'', notes:'' });
+  save(); render(); toast('Sumado a Prospectos');
+}
+
+// ── Export ──────────────────────────────────────────────────────────────────
+function exportText(){
+  if(!cards.length) return '';
+  const out=['EMBUDO DE VENTAS — '+todayStr(),''];
+  for(const e of ETAPAS){ const list=cards.filter(c=>c.stage===e.k); if(!list.length) continue;
+    out.push('== '+e.t.toUpperCase()+' ('+list.length+') ==');
+    for(const c of list){ out.push('• '+c.name+(c.city?' ('+c.city+')':'')
+      + (c.tags&&c.tags.length?' — '+c.tags.map(t=>PIPE_LBL[t]||t).join('/'):'')
+      + (c.next?' → '+c.next+(c.due?' ['+c.due+']':''):'')
+      + (c.val?' · '+c.val:'')); }
+    out.push(''); }
+  return out.join('\n');
+}
+
+function toast(t){ const el=$('toast'); el.textContent=t; el.classList.add('show'); setTimeout(()=>el.classList.remove('show'),1600); }
+
+// ── Bind barra ──────────────────────────────────────────────────────────────
+$('addBiz').addEventListener('click', addFromBiz);
+$('addManual').addEventListener('click', ()=>openModal(null,'prospecto'));
+$('exportBtn').addEventListener('click', ()=>{ const t=exportText(); if(!t){ toast('Embudo vacío'); return; }
+  navigator.clipboard?.writeText(t).then(()=>toast('Embudo copiado'),()=>prompt('Copiá el embudo:',t)); });
+
+// ── Prefill Auditoría ───────────────────────────────────────────────────────
+async function loadBiz(){
+  const paths=['/seed_comercios_pba.json','/auditoria/seed_comercios_pba.json','../auditoria/seed_comercios_pba.json','seed_comercios_pba.json'];
+  for(const p of paths){ try{ const r=await fetch(p,{cache:'no-store'}); if(!r.ok) continue; const d=await r.json();
+    if(d && typeof d==='object' && Object.keys(d).length){ seed=d;
+      $('bizPick').innerHTML='<option value="">— elegí un negocio —</option>'+Object.entries(d).sort((a,b)=>(a[1].name||'').localeCompare(b[1].name||''))
+        .map(([id,b])=>`<option value="${esc(id)}">${esc(b.name||id)}${b.city?' · '+esc(b.city):''}</option>`).join('');
+      return; } }catch(e){} }
+}
+
+render(); loadBiz();
+})();
+</script>
+</body></html>
