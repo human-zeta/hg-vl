@@ -1,0 +1,316 @@
+<!doctype html><html lang="es"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CONTRATO — Human Glitche · el acuerdo de servicios, por escrito y listo para firmar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{ --acid:#b8ff00; --glitch:#ff2d55; --cyan:#3ad0ff; --ink:#f0ede6; --line:rgba(240,237,230,.12); --bg:#050505; --pan:rgba(184,255,0,.015);
+         --paper:#faf9f6; --pink:#12100c; --pline:#e3ded2; --pmut:#6b6656; }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{min-height:100%;background:var(--bg);color:var(--ink);font-family:'Space Mono',monospace;}
+  body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");z-index:0;pointer-events:none;opacity:.4;}
+  .wrap{position:relative;z-index:1;max-width:1280px;margin:0 auto;padding:26px 20px 90px;}
+  header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;gap:16px;flex-wrap:wrap;}
+  .brand{font-family:'Bebas Neue',sans-serif;font-size:52px;letter-spacing:.03em;line-height:.82;}
+  .brand b{color:var(--acid);font-weight:400;}
+  .brand span{display:block;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.26em;color:rgba(240,237,230,.4);margin-top:8px;}
+  header nav a{font-size:10px;letter-spacing:.2em;color:rgba(240,237,230,.4);text-decoration:none;margin-left:16px;} header nav a:hover{color:var(--acid);}
+  .intro{font-size:12px;color:rgba(240,237,230,.55);line-height:1.8;max-width:76ch;margin:12px 0 10px;}
+  .intro b{color:var(--acid);font-weight:400;}
+  .warn{font-size:11px;color:rgba(255,45,85,.85);line-height:1.7;max-width:76ch;margin:0 0 20px;border-left:2px solid var(--glitch);padding:8px 12px;background:rgba(255,45,85,.04);}
+
+  .cols{display:grid;grid-template-columns:340px 1fr;gap:24px;align-items:start;}
+  @media(max-width:980px){ .cols{grid-template-columns:1fr;} }
+  .editor{border:1px solid var(--line);border-radius:10px;background:var(--pan);padding:16px;position:sticky;top:16px;max-height:calc(100vh - 32px);overflow:auto;}
+  .editor h2{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:.04em;color:var(--acid);margin:2px 0 12px;}
+  .grp{margin-bottom:16px;} .grp>.gl{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:rgba(240,237,230,.4);margin-bottom:8px;display:flex;align-items:center;gap:8px;}
+  .grp>.gl::after{content:'';flex:1;height:1px;background:var(--line);}
+  .fld{display:flex;flex-direction:column;gap:4px;margin-bottom:9px;}
+  .fld label{font-size:8.5px;letter-spacing:.16em;text-transform:uppercase;color:rgba(240,237,230,.4);}
+  .fld input,.fld select{background:#0b0b0b;border:1px solid var(--line);color:var(--ink);font-family:'Space Mono',monospace;font-size:12px;padding:7px 9px;border-radius:6px;width:100%;}
+  .fld input:focus,.fld select:focus{outline:none;border-color:var(--acid);}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
+  .svc{display:flex;align-items:center;gap:9px;padding:7px 9px;border:1px solid var(--line);border-radius:6px;margin-bottom:6px;cursor:pointer;transition:.15s;}
+  .svc:hover{border-color:rgba(184,255,0,.4);} .svc.on{border-color:var(--acid);background:rgba(184,255,0,.06);}
+  .svc input{accent-color:var(--acid);width:14px;height:14px;flex-shrink:0;}
+  .svc .ic{font-size:15px;} .svc .nm{flex:1;font-size:11px;letter-spacing:.03em;} .svc .pr{font-size:10px;color:var(--cyan);white-space:nowrap;}
+  .btn{cursor:pointer;background:transparent;border:1px solid var(--line);color:var(--ink);font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.12em;padding:10px 12px;border-radius:6px;transition:.18s;text-transform:uppercase;width:100%;}
+  .btn:hover{border-color:var(--acid);color:var(--acid);}
+  .btn.pri{background:var(--acid);color:#050505;font-weight:700;border-color:var(--acid);} .btn.pri:hover{filter:brightness(1.08);}
+  .btnrow{display:flex;gap:8px;margin-top:6px;}
+
+  /* documento (papel legal) */
+  .paperwrap{min-width:0;}
+  .doc{background:var(--paper);color:var(--pink);border-radius:6px;box-shadow:0 20px 60px rgba(0,0,0,.5);padding:54px 56px;font-size:12.5px;line-height:1.7;}
+  .doc .dtitle{font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:.03em;text-align:center;line-height:1;margin-bottom:4px;}
+  .doc .dsub{text-align:center;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--pmut);margin-bottom:26px;}
+  .doc .lead{margin-bottom:18px;}
+  .doc .lead b{color:var(--pink);}
+  .doc h3.cl{font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:.05em;text-transform:uppercase;margin:20px 0 7px;display:flex;align-items:baseline;gap:8px;page-break-after:avoid;}
+  .doc h3.cl .n{font-family:'Space Mono',monospace;font-size:10px;color:var(--acid);background:var(--pink);padding:2px 6px;border-radius:3px;letter-spacing:.08em;}
+  .doc .cltext{font-size:12px;color:#2a2822;}
+  .doc .cltext b{color:var(--pink);}
+  .doc ul.svclist{margin:6px 0 4px;} .doc ul.svclist li{margin:4px 0 4px 18px;font-size:12px;color:#2a2822;}
+  .doc .pricetbl{border:1px solid var(--pline);border-radius:5px;overflow:hidden;margin:8px 0;}
+  .doc .pricetbl .tr{display:flex;justify-content:space-between;padding:7px 13px;font-size:12px;border-bottom:1px solid var(--pline);}
+  .doc .pricetbl .tr:last-child{border-bottom:none;} .doc .pricetbl .tr b{font-weight:700;}
+  .doc .pricetbl .tr.big{background:var(--pink);color:var(--paper);} .doc .pricetbl .tr.big b{color:var(--acid);}
+  .clause{page-break-inside:avoid;}
+  .doc .firmas{display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-top:46px;page-break-inside:avoid;}
+  .doc .firma{text-align:center;font-size:11px;color:var(--pmut);}
+  .doc .firma .line{border-top:1px solid var(--pink);margin-bottom:6px;height:1px;}
+  .doc .firma b{color:var(--pink);display:block;font-size:12px;}
+  .doc .modelnote{margin-top:26px;font-size:9.5px;color:#9a9484;text-align:center;font-style:italic;}
+  .empty{color:var(--pmut);font-size:13px;text-align:center;padding:40px 0;}
+
+  .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--acid);color:#050505;font-size:11px;font-weight:700;letter-spacing:.08em;padding:10px 18px;border-radius:6px;opacity:0;pointer-events:none;transition:.25s;z-index:9;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  .foot{font-size:10px;color:rgba(240,237,230,.35);letter-spacing:.1em;margin-top:36px;text-align:center;}
+
+  @media print{
+    @page{margin:16mm;}
+    body::before{display:none;} body{background:#fff;}
+    .wrap{max-width:none;padding:0;} header,.intro,.warn,.editor,.foot,.toast{display:none!important;}
+    .cols{display:block;} .doc{box-shadow:none;border-radius:0;padding:0;font-size:11.5px;}
+  }
+</style></head><body>
+<div class="wrap">
+  <header>
+    <div class="brand"><b>CONTRATO</b><span>el acuerdo de servicios, por escrito y listo para firmar</span></div>
+    <nav><a href="/labs/">← LABS</a><a href="/propuesta/">PROPUESTA</a><a href="/setup-maker/">SETUP MAKER</a></nav>
+  </header>
+  <p class="intro">Arma el <b>contrato de prestación de servicios</b> a partir de los mismos servicios y precios de PIPELINES: partes, objeto, precio y forma de pago (seña + saldo + abono), plazos, <b>todo a nombre del cliente</b>, alcance y revisiones, confidencialidad, vigencia y cancelación — las cláusulas que el SETUP MAKER repite "por escrito". Listo para imprimir o guardar en PDF y firmar. Se guarda solo en tu navegador.</p>
+  <p class="warn">⚠ Es un <b>modelo base</b> para ordenar el acuerdo, no asesoramiento legal. Antes de usarlo con un cliente real, revisalo con un abogado/contador — sobre todo la parte fiscal (figura, CUIT, IVA) y la moneda/actualización.</p>
+
+  <div class="cols">
+    <aside class="editor">
+      <h2>Armá el contrato</h2>
+
+      <div class="grp">
+        <div class="gl">Prestador (vos)</div>
+        <div class="fld"><label>Nombre / Razón social</label><input id="pNom" value="Human Glitche"></div>
+        <div class="row2">
+          <div class="fld"><label>CUIT / CUIL</label><input id="pCuit" placeholder="20-xxxxxxxx-x"></div>
+          <div class="fld"><label>Localidad</label><input id="pLoc" placeholder="La Plata"></div>
+        </div>
+        <div class="fld"><label>Domicilio</label><input id="pDom" placeholder="Calle 00 N°000"></div>
+      </div>
+
+      <div class="grp">
+        <div class="gl">Cliente</div>
+        <div class="fld"><label>Cargar negocio auditado (opcional)</label><select id="bizPick"><option value="">— a mano —</option></select></div>
+        <div class="fld"><label>Negocio / Razón social</label><input id="cNeg" placeholder="Panadería La Tradición"></div>
+        <div class="fld"><label>Titular (nombre y apellido)</label><input id="cTit" placeholder="Nombre del dueño/a"></div>
+        <div class="row2">
+          <div class="fld"><label>CUIT / DNI</label><input id="cDni" placeholder="DNI o CUIT"></div>
+          <div class="fld"><label>Ciudad</label><input id="cCiu" placeholder="La Plata"></div>
+        </div>
+        <div class="fld"><label>Domicilio</label><input id="cDom" placeholder="Calle 00 N°000"></div>
+      </div>
+
+      <div class="grp">
+        <div class="gl">Servicios contratados</div>
+        <div id="svcList"></div>
+      </div>
+
+      <div class="grp">
+        <div class="gl">Términos</div>
+        <div class="row2">
+          <div class="fld"><label>Seña %</label><input id="sena" type="number" value="50" min="0" max="100"></div>
+          <div class="fld"><label>Entrega (días)</label><input id="plazo" type="number" value="15" min="1"></div>
+        </div>
+        <div class="row2">
+          <div class="fld"><label>Preaviso baja (días)</label><input id="preaviso" type="number" value="30" min="0"></div>
+          <div class="fld"><label>Moneda</label><select id="moneda"><option>US$</option><option>AR$</option><option>€</option><option>$</option></select></div>
+        </div>
+        <div class="fld"><label>Jurisdicción (ciudad, provincia)</label><input id="juris" placeholder="La Plata, Prov. de Buenos Aires"></div>
+        <div class="fld"><label>Fecha</label><input id="fecha" type="date"></div>
+      </div>
+
+      <button class="btn pri" id="printBtn">🖨 Imprimir / Guardar PDF</button>
+      <div class="btnrow">
+        <button class="btn" id="copyBtn">📋 Copiar texto</button>
+        <button class="btn" id="resetBtn">↺ Limpiar</button>
+      </div>
+    </aside>
+
+    <div class="paperwrap"><div class="doc" id="doc"></div></div>
+  </div>
+  <div class="foot">HUMAN GLITCHE · VISUAL LAB · contrato client-side · modelo base para revisar con asesoría · imprimí a PDF y firmá</div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+'use strict';
+const $=id=>document.getElementById(id);
+
+// ── Catálogo (mismos servicios y precios por defecto que PIPELINES) ─────────
+const CATALOGO = [
+  {id:'web', ico:'🌐', name:'Presencia Web', incluye:'sitio propio, publicación, alta en Google y ficha del negocio', setup:200, mensual:30},
+  {id:'wa', ico:'💬', name:'WhatsApp Business Autopilot', incluye:'WhatsApp Business con catálogo, respuestas automáticas y etiquetas', setup:150, mensual:70},
+  {id:'social', ico:'📲', name:'Gestión de Redes', incluye:'contenido, programación, respuestas automáticas y reporte mensual', setup:160, mensual:200},
+  {id:'menu', ico:'🍽️', name:'Menú + Pedidos por WhatsApp', incluye:'carta digital con QR, carrito y pedidos al WhatsApp del local', setup:180, mensual:80},
+  {id:'leads', ico:'🧲', name:'Captura de Leads', incluye:'formulario de captación y seguimiento automático de interesados', setup:120, mensual:50},
+  {id:'resenas', ico:'⭐', name:'Reputación', incluye:'sistema de pedido de reseñas y alerta de negativas', setup:90, mensual:45},
+  {id:'turnos', ico:'📆', name:'Agenda / Turnos', incluye:'reservas online con confirmación y recordatorio automático', setup:130, mensual:55},
+  {id:'factura', ico:'🧾', name:'Facturación Automática', incluye:'circuito de emisión, envío y registro de comprobantes', setup:140, mensual:60},
+  {id:'tienda', ico:'🛒', name:'Tienda + Pagos', incluye:'catálogo online con carrito y cobro por Mercado Pago', setup:240, mensual:60},
+  {id:'ads', ico:'📣', name:'Publicidad Local', incluye:'campañas segmentadas, piezas y reporte (la pauta la abona el Cliente aparte)', setup:140, mensual:180},
+  {id:'email', ico:'💌', name:'Email + Fidelización', incluye:'base de clientes, newsletter, cupones y cumpleaños automático', setup:100, mensual:50},
+  {id:'brand', ico:'🎨', name:'Identidad Visual', incluye:'logo, paleta, tipografías y plantillas (pago único)', setup:220, mensual:0},
+  {id:'video', ico:'🎬', name:'Pack Video / Reels', incluye:'pack mensual de videos cortos filmados y editados', setup:120, mensual:250},
+];
+const BY_ID = Object.fromEntries(CATALOGO.map(c=>[c.id,c]));
+
+// ── Estado + precios compartidos con PIPELINES ──────────────────────────────
+const LS='hg_contrato_v1', LS_PRICE='hg_pipelines_precios', LS_MON='hg_pipelines_moneda';
+let priceOv={}, moneda='US$';
+let st = { pNom:'Human Glitche', pCuit:'', pLoc:'', pDom:'', neg:'', tit:'', dni:'', ciu:'', dom:'', sel:[], sena:50, plazo:15, preaviso:30, juris:'', fecha:'' };
+try{ priceOv=JSON.parse(localStorage.getItem(LS_PRICE)||'{}')||{}; }catch(e){}
+try{ moneda=localStorage.getItem(LS_MON)||'US$'; }catch(e){}
+try{ const s=JSON.parse(localStorage.getItem(LS)||'null'); if(s) st=Object.assign(st,s); }catch(e){}
+
+function num(v,d){ return (typeof v==='number'&&!isNaN(v))?v:d; }
+function priceOf(c){ const o=priceOv[c.id]||{};
+  return { setup:num(o.setup&&o.setup.precio,c.setup), mensual:num(o.mensual&&o.mensual.precio,c.mensual) }; }
+function money(n){ return moneda+' '+Math.round(n).toLocaleString('es-AR'); }
+function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function save(){ try{ localStorage.setItem(LS, JSON.stringify(st)); }catch(e){} }
+function fechaTxt(){ const v=st.fecha; const d=v?new Date(v+'T00:00:00'):new Date();
+  return d.toLocaleDateString('es-AR',{day:'2-digit',month:'long',year:'numeric'}); }
+
+function renderSvcList(){
+  $('svcList').innerHTML = CATALOGO.map(c=>{ const on=st.sel.includes(c.id); const p=priceOf(c);
+    const pr = p.mensual>0 ? money(p.setup)+' + '+money(p.mensual)+'/mes' : money(p.setup);
+    return `<label class="svc ${on?'on':''}"><input type="checkbox" data-id="${c.id}" ${on?'checked':''}><span class="ic">${c.ico}</span><span class="nm">${esc(c.name)}</span><span class="pr">${pr}</span></label>`;
+  }).join('');
+}
+
+// ── Documento (contrato) ────────────────────────────────────────────────────
+function render(){
+  const doc=$('doc');
+  const items=st.sel.map(id=>BY_ID[id]).filter(Boolean);
+  if(!items.length){ doc.innerHTML=`<div class="empty">Elegí al menos un servicio a la izquierda para armar el contrato.<br>Se sincroniza con los precios de PIPELINES y lo imprimís a PDF para firmar.</div>`; return; }
+
+  let setupTot=0, mensTot=0;
+  items.forEach(c=>{ const p=priceOf(c); setupTot+=p.setup; mensTot+=p.mensual; });
+  const senaPct=num(parseFloat(st.sena),50), sena=Math.round(setupTot*senaPct/100), saldo=setupTot-sena;
+  const hayAds = st.sel.includes('ads');
+  const hayFiscal = st.sel.includes('factura');
+  const prestador = st.pNom||'el Prestador', cliente = st.neg||'el Cliente';
+  let cl=0; const N=()=>String(++cl).padStart(2,'0');
+
+  const objetoLi = items.map(c=>`<li><b>${esc(c.name)}:</b> ${esc(c.incluye)}.</li>`).join('');
+
+  doc.innerHTML = `
+    <div class="dtitle">Contrato de Prestación de Servicios</div>
+    <div class="dsub">${esc(st.juris||'Argentina')} · ${esc(fechaTxt())}</div>
+
+    <div class="lead">Entre <b>${esc(st.pNom||'—')}</b>${st.pCuit?', CUIT '+esc(st.pCuit):''}${st.pDom?', con domicilio en '+esc(st.pDom):''}${st.pLoc?' ('+esc(st.pLoc)+')':''}, en adelante <b>"el Prestador"</b>; y <b>${esc(st.neg||'—')}</b>${st.tit?', representada por '+esc(st.tit):''}${st.dni?', CUIT/DNI '+esc(st.dni):''}${st.dom?', con domicilio en '+esc(st.dom):''}${st.ciu?' ('+esc(st.ciu)+')':''}, en adelante <b>"el Cliente"</b>, se celebra el presente contrato conforme a las siguientes cláusulas:</div>
+
+    <div class="clause"><h3 class="cl"><span class="n">${N()}</span> Objeto</h3>
+      <div class="cltext">El Prestador se obliga a proveer al Cliente los siguientes servicios digitales:</div>
+      <ul class="svclist">${objetoLi}</ul></div>
+
+    <div class="clause"><h3 class="cl"><span class="n">${N()}</span> Precio y forma de pago</h3>
+      <div class="pricetbl">
+        <div class="tr"><span>Armado / puesta en marcha (pago único)</span><b>${money(setupTot)}</b></div>
+        ${mensTot>0?`<div class="tr"><span>Abono mensual</span><b>${money(mensTot)}/mes</b></div>`:''}
+        <div class="tr big"><span>Seña para iniciar (${senaPct}%)</span><b>${money(sena)}</b></div>
+      </div>
+      <div class="cltext">El armado se abona en dos tramos: una seña del ${senaPct}% (<b>${money(sena)}</b>) al firmar, que habilita el inicio de los trabajos, y el saldo (<b>${money(saldo)}</b>) contra entrega.${mensTot>0?` El abono mensual (<b>${money(mensTot)}</b>) comienza al mes de la entrega y cubre la operación y el mantenimiento de lo pactado; se factura por adelantado.`:''} Los importes se expresan en ${esc(moneda)}.${mensTot>0?' El abono mensual podrá actualizarse cada tres (3) meses de común acuerdo entre las partes.':''} La mora es automática por el mero vencimiento del plazo.</div></div>
+
+    <div class="clause"><h3 class="cl"><span class="n">${N()}</span> Plazo de entrega</h3>
+      <div class="cltext">El Prestador entregará el armado dentro de los <b>${esc(String(st.plazo||15))} días hábiles</b> contados desde que se acrediten la seña y la totalidad del contenido, accesos y material que el Cliente debe proveer, lo que ocurra último.</div></div>
+
+    <div class="clause"><h3 class="cl"><span class="n">${N()}</span> Obligaciones del Cliente</h3>
+      <div class="cltext">El Cliente se compromete a entregar en tiempo el contenido, las fotos, los datos y los accesos necesarios, y a designar una persona de contacto para aprobaciones.${hayAds?' <b>La inversión publicitaria (pauta) corre por cuenta exclusiva del Cliente</b>, se abona con su propio medio de pago y es independiente de los honorarios del Prestador.':''}${hayFiscal?' La definición del encuadre fiscal y la validación impositiva corresponden al contador del Cliente; el Prestador solo provee el circuito técnico.':''}</div></div>
+
+    <div class="clause"><h3 class="cl"><span class="n">${N()}</span> Titularidad y accesos</h3>
+      <div class="cltext">Todas las cuentas, dominios, perfiles, medios de cobro y activos digitales quedan a <b>nombre y como propiedad del Cliente</b>. El Prestador opera con rol de administrador durante la vigencia y, al finalizar la relación por cualquier causa, entrega al Cliente la totalidad de los accesos, sin retención alguna.</div></div>
+
+    <div class="clause"><h3 class="cl"><span class="n">${N()}</span> Alcance y revisiones</h3>
+      <div class="cltext">El servicio incluye hasta <b>dos (2) rondas de ajustes</b> por entregable. Los pedidos que excedan lo descripto en la cláusula de Objeto se cotizan y facturan por separado, previa conformidad del Cliente.</div></div>
+
+    <div class="clause"><h3 class="cl"><span class="n">${N()}</span> Propiedad del material y confidencialidad</h3>
+      <div class="cltext">El material entregado y aprobado es de propiedad del Cliente. Ambas partes se obligan a guardar confidencialidad sobre la información comercial, credenciales y datos de clientes a los que accedan con motivo del presente, obligación que subsiste tras la finalización del contrato.</div></div>
+
+    <div class="clause"><h3 class="cl"><span class="n">${N()}</span> Vigencia, renovación y cancelación</h3>
+      <div class="cltext">${mensTot>0?`El abono mensual se renueva automáticamente mes a mes. `:''}Cualquiera de las partes puede dar por terminado el contrato ${mensTot>0?'notificando con al menos <b>'+esc(String(st.preaviso||30))+' días</b> de anticipación':'una vez cumplidas las obligaciones pendientes'}. Al cesar, el Prestador entrega los accesos y el Cliente abona los servicios efectivamente prestados y no cancelados a esa fecha.</div></div>
+
+    <div class="clause"><h3 class="cl"><span class="n">${N()}</span> Responsabilidad</h3>
+      <div class="cltext">El Prestador ejecuta los trabajos con diligencia profesional. Los resultados comerciales (ventas, alcance, turnos) dependen también de factores ajenos al Prestador —producto, precio, atención y respuesta del Cliente—, por lo que no se garantizan resultados específicos. El Prestador no responde por caídas o cambios de políticas de plataformas de terceros.</div></div>
+
+    <div class="clause"><h3 class="cl"><span class="n">${N()}</span> Ley aplicable y jurisdicción</h3>
+      <div class="cltext">El presente se rige por las leyes de la República Argentina. Para toda controversia las partes se someten a los tribunales ordinarios de <b>${esc(st.juris||'la jurisdicción del Cliente')}</b>, renunciando a cualquier otro fuero.</div></div>
+
+    <div class="cltext" style="margin-top:18px">En prueba de conformidad, las partes firman dos ejemplares de un mismo tenor y a un solo efecto, en ${esc(st.juris||'—')}, a los ${esc(fechaTxt())}.</div>
+
+    <div class="firmas">
+      <div class="firma"><div class="line"></div><b>${esc(st.pNom||'El Prestador')}</b>${st.pCuit?'CUIT '+esc(st.pCuit):'El Prestador'}</div>
+      <div class="firma"><div class="line"></div><b>${esc(st.tit||st.neg||'El Cliente')}</b>${st.dni?'CUIT/DNI '+esc(st.dni):'El Cliente'}</div>
+    </div>
+    <div class="modelnote">Modelo base generado con Human Glitche · revisar con asesoría legal/contable antes de su uso.</div>`;
+}
+function renderAll(){ renderSvcList(); render(); }
+
+// ── Texto plano ─────────────────────────────────────────────────────────────
+function asText(){
+  const items=st.sel.map(id=>BY_ID[id]).filter(Boolean); if(!items.length) return '';
+  let setupTot=0, mensTot=0; items.forEach(c=>{ const p=priceOf(c); setupTot+=p.setup; mensTot+=p.mensual; });
+  const senaPct=num(parseFloat(st.sena),50), sena=Math.round(setupTot*senaPct/100);
+  return [
+    `CONTRATO DE PRESTACIÓN DE SERVICIOS`,
+    `${st.juris||''} · ${fechaTxt()}`, ``,
+    `PRESTADOR: ${st.pNom||'—'}${st.pCuit?' (CUIT '+st.pCuit+')':''}`,
+    `CLIENTE: ${st.neg||'—'}${st.tit?' — '+st.tit:''}${st.dni?' (CUIT/DNI '+st.dni+')':''}`, ``,
+    `OBJETO — servicios contratados:`,
+    ...items.map(c=>`  • ${c.name}: ${c.incluye}.`), ``,
+    `PRECIO: armado ${money(setupTot)} (seña ${senaPct}% = ${money(sena)}, saldo contra entrega)${mensTot>0?'; abono mensual '+money(mensTot):''}. Moneda ${moneda}.`,
+    `ENTREGA: ${st.plazo||15} días hábiles desde seña + material.`,
+    `TITULARIDAD: todo a nombre del Cliente; Prestador con rol administrador.`,
+    `ALCANCE: 2 rondas de ajustes; extra se cotiza.`,
+    mensTot>0?`CANCELACIÓN: preaviso ${st.preaviso||30} días.`:``,
+    `JURISDICCIÓN: ${st.juris||'—'} (leyes de Argentina).`, ``,
+    `Modelo base — revisar con asesoría legal/contable.`
+  ].filter(x=>x!==undefined).join('\n');
+}
+
+function toast(t){ const el=$('toast'); el.textContent=t; el.classList.add('show'); setTimeout(()=>el.classList.remove('show'),1700); }
+
+// ── Bind ─────────────────────────────────────────────────────────────────────
+const MAP={ pNom:'pNom', pCuit:'pCuit', pLoc:'pLoc', pDom:'pDom', cNeg:'neg', cTit:'tit', cDni:'dni', cCiu:'ciu', cDom:'dom', sena:'sena', plazo:'plazo', preaviso:'preaviso', juris:'juris', fecha:'fecha' };
+Object.entries(MAP).forEach(([id,key])=>{ const el=$(id); if(!el) return; if(st[key]!=null&&st[key]!=='') el.value=st[key];
+  el.addEventListener('input', ()=>{ st[key]=el.value; save(); render(); }); });
+$('moneda').value=moneda;
+$('moneda').addEventListener('change', ()=>{ moneda=$('moneda').value; try{localStorage.setItem(LS_MON,moneda);}catch(e){}; renderAll(); });
+
+$('svcList').addEventListener('change', e=>{ const cb=e.target.closest('input[data-id]'); if(!cb) return;
+  const id=cb.getAttribute('data-id'); const i=st.sel.indexOf(id);
+  if(cb.checked && i<0) st.sel.push(id); else if(!cb.checked && i>=0) st.sel.splice(i,1);
+  save(); renderAll(); });
+
+$('printBtn').addEventListener('click', ()=>{ if(!st.sel.length){ toast('Elegí al menos un servicio'); return; } window.print(); });
+$('copyBtn').addEventListener('click', ()=>{ const t=asText(); if(!t){ toast('Contrato vacío'); return; }
+  navigator.clipboard?.writeText(t).then(()=>toast('Texto copiado'),()=>prompt('Copiá el contrato:',t)); });
+$('resetBtn').addEventListener('click', ()=>{ if(!confirm('¿Limpiar el contrato actual?'))return;
+  st={ pNom:'Human Glitche', pCuit:'', pLoc:'', pDom:'', neg:'', tit:'', dni:'', ciu:'', dom:'', sel:[], sena:50, plazo:15, preaviso:30, juris:'', fecha:'' };
+  save(); location.reload(); });
+
+// ── Prefill Auditoría ───────────────────────────────────────────────────────
+async function loadBiz(){
+  const paths=['/seed_comercios_pba.json','/auditoria/seed_comercios_pba.json','../auditoria/seed_comercios_pba.json','seed_comercios_pba.json'];
+  for(const p of paths){ try{ const r=await fetch(p,{cache:'no-store'}); if(!r.ok) continue; const d=await r.json();
+    if(d && typeof d==='object' && Object.keys(d).length){ const sel=$('bizPick');
+      sel.innerHTML='<option value="">— a mano —</option>'+Object.entries(d).sort((a,b)=>(a[1].name||'').localeCompare(b[1].name||''))
+        .map(([id,b])=>`<option data-n="${esc(b.name||'')}" data-c="${esc(b.city||'')}">${esc(b.name||id)}${b.city?' · '+esc(b.city):''}</option>`).join('');
+      sel.addEventListener('change', ()=>{ const o=sel.options[sel.selectedIndex]; if(!o||sel.selectedIndex===0) return;
+        st.neg=o.getAttribute('data-n')||''; st.ciu=o.getAttribute('data-c')||'';
+        $('cNeg').value=st.neg; $('cCiu').value=st.ciu; save(); render(); });
+      return; } }catch(e){} }
+}
+renderAll(); loadBiz();
+})();
+</script>
+</body></html>
