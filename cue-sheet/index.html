@@ -1,0 +1,129 @@
+<!doctype html><html lang="es"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CUE SHEET — Human Glitche · el guión del show, momento a momento</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{ --acid:#b8ff00; --glitch:#ff2d55; --cyan:#3ad0ff; --ink:#f0ede6; --line:rgba(240,237,230,.12); --bg:#050505; --pan:rgba(184,255,0,.015);
+         --paper:#faf9f6; --pink:#12100c; --pline:#e3ded2; --pmut:#6b6656; }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{min-height:100%;background:var(--bg);color:var(--ink);font-family:'Space Mono',monospace;}
+  body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");z-index:0;pointer-events:none;opacity:.4;}
+  .wrap{position:relative;z-index:1;max-width:1300px;margin:0 auto;padding:26px 20px 90px;}
+  header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;gap:16px;flex-wrap:wrap;}
+  .brand{font-family:'Bebas Neue',sans-serif;font-size:50px;letter-spacing:.03em;line-height:.82;}
+  .brand b{color:var(--acid);font-weight:400;}
+  .brand span{display:block;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.24em;color:rgba(240,237,230,.4);margin-top:8px;}
+  header nav a{font-size:10px;letter-spacing:.2em;color:rgba(240,237,230,.4);text-decoration:none;margin-left:16px;} header nav a:hover{color:var(--acid);}
+  .intro{font-size:12px;color:rgba(240,237,230,.55);line-height:1.8;max-width:76ch;margin:12px 0 18px;}
+  .intro b{color:var(--acid);font-weight:400;}
+  .bar{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;border:1px solid var(--line);border-radius:10px;padding:14px;background:var(--pan);margin-bottom:16px;}
+  .fld{display:flex;flex-direction:column;gap:4px;} .fld label{font-size:8.5px;letter-spacing:.16em;text-transform:uppercase;color:rgba(240,237,230,.4);}
+  .fld input{background:#0b0b0b;border:1px solid var(--line);color:var(--ink);font-family:'Space Mono',monospace;font-size:12px;padding:7px 9px;border-radius:6px;} .fld input:focus{outline:none;border-color:var(--acid);} .grow{flex:1;min-width:150px;} .grow input{width:100%;}
+  .stat{font-size:11px;color:rgba(240,237,230,.55);} .stat b{color:var(--acid);}
+  .btn{cursor:pointer;background:transparent;border:1px solid var(--line);color:var(--ink);font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.1em;padding:9px 12px;border-radius:6px;transition:.18s;text-transform:uppercase;} .btn:hover{border-color:var(--acid);color:var(--acid);} .btn.pri{border-color:var(--acid);color:var(--acid);background:rgba(184,255,0,.07);}
+  .cues{display:flex;flex-direction:column;gap:8px;margin-bottom:16px;}
+  .cue{display:grid;grid-template-columns:30px 54px 60px 1fr 1fr 1fr 60px;gap:8px;align-items:center;border:1px solid var(--line);border-radius:8px;padding:9px;background:var(--pan);}
+  @media(max-width:900px){ .cue{grid-template-columns:1fr 1fr;} .cue .sn{grid-column:1/-1;} }
+  .cue .sn{font-family:'Bebas Neue',sans-serif;font-size:19px;color:var(--acid);text-align:center;} .cue .start{font-size:11px;color:var(--cyan);text-align:center;white-space:nowrap;}
+  .cue input,.cue textarea{background:#0b0b0b;border:1px solid var(--line);color:var(--ink);font-family:'Space Mono',monospace;font-size:11px;padding:6px 7px;border-radius:5px;width:100%;} .cue textarea{resize:vertical;min-height:32px;line-height:1.4;} .cue input:focus,.cue textarea:focus{outline:none;border-color:var(--acid);}
+  .cue .ops{display:flex;gap:3px;justify-content:flex-end;} .cue .ops button{cursor:pointer;background:transparent;border:1px solid var(--line);color:rgba(240,237,230,.5);border-radius:4px;font-size:11px;padding:3px 5px;} .cue .ops button:hover{border-color:var(--acid);color:var(--acid);} .cue .ops button.del:hover{border-color:var(--glitch);color:var(--glitch);}
+  .addrow{border:1px dashed var(--line);border-radius:8px;padding:10px;text-align:center;color:rgba(240,237,230,.5);font-size:11px;cursor:pointer;transition:.15s;} .addrow:hover{border-color:var(--acid);color:var(--acid);}
+  .doc{background:var(--paper);color:var(--pink);border-radius:6px;box-shadow:0 20px 60px rgba(0,0,0,.5);padding:46px 48px;font-size:12.5px;line-height:1.6;margin-top:18px;}
+  .doc .dhead{display:flex;justify-content:space-between;align-items:flex-start;gap:18px;border-bottom:2px solid var(--pink);padding-bottom:14px;margin-bottom:16px;flex-wrap:wrap;}
+  .doc .dbrand{font-family:'Bebas Neue',sans-serif;font-size:34px;letter-spacing:.02em;} .doc .dbrand em{font-style:normal;border-bottom:4px solid var(--acid);}
+  .doc .dmeta{text-align:right;font-size:11px;color:var(--pmut);line-height:1.7;} .doc .dmeta b{color:var(--pink);}
+  .doc .dtitle{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:.02em;margin-bottom:14px;}
+  table.cs{width:100%;border-collapse:collapse;font-size:11.5px;} table.cs th{text-align:left;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:#8a8578;border-bottom:2px solid var(--pink);padding:5px 6px;} table.cs td{padding:7px 6px;border-bottom:1px solid var(--pline);vertical-align:top;color:#2a2822;} table.cs tr{page-break-inside:avoid;}
+  table.cs td.n{font-family:'Bebas Neue',sans-serif;font-size:15px;color:var(--pink);width:24px;} table.cs td.t{font-weight:700;white-space:nowrap;width:52px;color:#1558b0;} table.cs td.esc{color:#43403a;} table.cs td.notas{color:#5a564c;width:24%;}
+  .dfoot{margin-top:18px;padding-top:12px;border-top:2px solid var(--pink);font-size:11px;color:var(--pmut);} .dfoot b{color:var(--pink);}
+  .empty{color:var(--pmut);font-size:13px;text-align:center;padding:34px 0;}
+  .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--acid);color:#050505;font-size:11px;font-weight:700;letter-spacing:.08em;padding:10px 18px;border-radius:6px;opacity:0;pointer-events:none;transition:.25s;z-index:9;} .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  .foot{font-size:10px;color:rgba(240,237,230,.35);letter-spacing:.1em;margin-top:36px;text-align:center;}
+  @media print{ @page{margin:12mm;} body::before{display:none;} body{background:#fff;} .wrap{max-width:none;padding:0;} header,.intro,.bar,.cues,.addrow,.foot,.toast,#eTitle{display:none!important;} .doc{box-shadow:none;border-radius:0;padding:0;margin:0;} }
+</style></head><body>
+<div class="wrap">
+  <header>
+    <div class="brand"><b>CUE SHEET</b><span>el guión del show, momento a momento</span></div>
+    <nav><a href="/labs/">← LABS</a><a href="/rider/">RIDER</a><a href="/checklist-show/">CHECKLIST</a></nav>
+  </header>
+  <p class="intro">El guión del set: cada <b>momento</b> con su tiempo, el track o sección, qué <b>escena/preset visual</b> disparás y las notas (trigger, transición, fx). Los tiempos de inicio se calculan solos y el total te dice cuánto dura el set. Sale una hoja de cues lista para PDF — la tenés en cabina o la compartís con quien opera. Todo en tu navegador.</p>
+  <div class="bar">
+    <div class="fld grow"><label>Show</label><input id="show" placeholder="Human Glitche @ Club X"></div>
+    <div class="fld"><label>Venue / fecha</label><input id="venue" placeholder="Club X · 00/00"></div>
+    <div class="stat" id="stat"></div>
+    <div style="flex:1"></div>
+    <button class="btn pri" id="printBtn">🖨 PDF</button>
+    <button class="btn" id="copyBtn">📋 Copiar</button>
+  </div>
+  <div id="eTitle" style="font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:rgba(240,237,230,.4);margin-bottom:10px;">Cues · duración en minutos · ▲▼ para reordenar</div>
+  <div class="cues" id="cues"></div>
+  <div class="addrow" id="addCue">+ agregar cue</div>
+  <div class="doc" id="doc"></div>
+  <div class="foot">HUMAN GLITCHE · VISUAL LAB · cue sheet client-side · suite Show en vivo</div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+'use strict';
+var $=function(id){return document.getElementById(id);};
+var LS='hg_cuesheet_v1';
+var st={ show:'', venue:'', marca:'Human Glitche', cont:'hola@hg-vl.com',
+  cues:[ {dur:8,track:'Intro / ambient',esc:'Shader lento',notas:'Fade in'}, {dur:12,track:'Subida',esc:'Loop reactivo',notas:'Sync al kick'} ] };
+try{ var s=JSON.parse(localStorage.getItem(LS)||'null'); if(s) st=Object.assign(st,s); }catch(e){}
+
+function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
+function save(){ try{ localStorage.setItem(LS, JSON.stringify(st)); }catch(e){} }
+function toast(t){ var el=$('toast'); el.textContent=t; el.classList.add('show'); setTimeout(function(){el.classList.remove('show');},1600); }
+function num(v,d){ var n=parseFloat(v); return isNaN(n)?d:n; }
+function mmss(mins){ var tot=Math.round(mins*60); var m=Math.floor(tot/60), s=tot%60; return m+':'+(s<10?'0':'')+s; }
+function total(){ return st.cues.reduce(function(a,c){return a+num(c.dur,0);},0); }
+function starts(){ var acc=0, arr=[]; st.cues.forEach(function(c){ arr.push(acc); acc+=num(c.dur,0); }); return arr; }
+function today(){ return new Date().toLocaleDateString('es-AR',{day:'2-digit',month:'long',year:'numeric'}); }
+
+function renderCues(){
+  var sts=starts();
+  $('cues').innerHTML = st.cues.map(function(c,i){
+    return '<div class="cue" data-i="'+i+'"><div class="sn">'+(i+1)+'</div>'
+      +'<div class="start">'+mmss(sts[i])+'</div>'
+      +'<input type="number" step="any" data-f="dur" value="'+esc(c.dur)+'" title="minutos">'
+      +'<input data-f="track" value="'+esc(c.track)+'" placeholder="Track / sección">'
+      +'<input data-f="esc" value="'+esc(c.esc)+'" placeholder="Escena / preset">'
+      +'<textarea data-f="notas" placeholder="Trigger, fx…">'+esc(c.notas)+'</textarea>'
+      +'<div class="ops"><button data-op="up" '+(i===0?'disabled style=opacity:.3':'')+'>▲</button><button data-op="down" '+(i===st.cues.length-1?'disabled style=opacity:.3':'')+'>▼</button><button class="del" data-op="del">✕</button></div></div>';
+  }).join('');
+}
+function renderStat(){ $('stat').innerHTML = st.cues.length+' cues · set <b>'+mmss(total())+'</b>'; }
+function renderDoc(){
+  var doc=$('doc'); if(!st.cues.length){ doc.innerHTML='<div class="empty">Agregá cues para armar el guión del set.</div>'; return; }
+  var marca=st.marca||'Human Glitche', mp=marca.trim().split(/\s+/);
+  var brandHtml = mp.length>1 ? esc(mp.slice(0,-1).join(' '))+' <em>'+esc(mp[mp.length-1])+'</em>' : '<em>'+esc(marca)+'</em>';
+  var sts=starts();
+  var rows = st.cues.map(function(c,i){ return '<tr><td class="n">'+(i+1)+'</td><td class="t">'+mmss(sts[i])+'</td><td>'+esc(c.track||'—')+'</td><td class="esc">'+esc(c.esc||'')+'</td><td class="notas">'+esc(c.notas||'')+'</td></tr>'; }).join('');
+  doc.innerHTML =
+    '<div class="dhead"><div class="dbrand">'+brandHtml+'</div><div class="dmeta">Cue sheet · '+today()+'<br>'+st.cues.length+' cues · <b>'+mmss(total())+'</b></div></div>'
+    +'<div class="dtitle">'+esc(st.show||'Show')+(st.venue?' · '+esc(st.venue):'')+'</div>'
+    +'<table class="cs"><tr><th>#</th><th>Tiempo</th><th>Track / sección</th><th>Escena / visual</th><th>Trigger / notas</th></tr>'+rows+'</table>'
+    +'<div class="dfoot">Set <b>'+mmss(total())+'</b> en '+st.cues.length+' cues · <b>'+esc(marca)+'</b></div>';
+}
+function render(){ renderStat(); renderDoc(); }
+function renderAll(){ renderCues(); render(); }
+function asText(){ if(!st.cues.length) return ''; var sts=starts();
+  var L=['CUE SHEET — '+(st.show||'Show')+(st.venue?' · '+st.venue:''), 'Set '+mmss(total())+' · '+st.cues.length+' cues', ''];
+  st.cues.forEach(function(c,i){ L.push(mmss(sts[i])+'  '+(c.track||'—')+' → '+(c.esc||'')+(c.notas?'  ['+c.notas+']':'')); }); return L.join('\n'); }
+
+$('cues').addEventListener('input', function(e){ var el=e.target.closest('[data-f]'); if(!el) return; var i=+el.closest('.cue').getAttribute('data-i'), f=el.getAttribute('data-f'); st.cues[i][f]=el.value; save(); render(); if(f==='dur') renderCues(); });
+$('cues').addEventListener('click', function(e){ var b=e.target.closest('[data-op]'); if(!b) return; var i=+b.closest('.cue').getAttribute('data-i'), op=b.getAttribute('data-op');
+  if(op==='del'){ st.cues.splice(i,1); } else if(op==='up'&&i>0){ var x=st.cues.splice(i,1)[0]; st.cues.splice(i-1,0,x); } else if(op==='down'&&i<st.cues.length-1){ var y=st.cues.splice(i,1)[0]; st.cues.splice(i+1,0,y); }
+  save(); renderAll(); });
+$('addCue').addEventListener('click', function(){ st.cues.push({dur:5,track:'',esc:'',notas:''}); save(); renderAll(); });
+$('show').addEventListener('input', function(){ st.show=this.value; save(); renderDoc(); });
+$('venue').addEventListener('input', function(){ st.venue=this.value; save(); renderDoc(); });
+$('printBtn').addEventListener('click', function(){ if(!st.cues.length){ toast('Agregá cues'); return; } window.print(); });
+$('copyBtn').addEventListener('click', function(){ var t=asText(); if(!t){ toast('Vacío'); return; } if(navigator.clipboard) navigator.clipboard.writeText(t).then(function(){toast('Copiado');},function(){prompt('Copiá:',t);}); else prompt('Copiá:',t); });
+$('show').value=st.show; $('venue').value=st.venue;
+renderAll();
+})();
+</script>
+</body></html>

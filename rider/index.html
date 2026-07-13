@@ -1,0 +1,175 @@
+<!doctype html><html lang="es"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RIDER — Human Glitche · el rider técnico del show, listo para el venue</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{ --acid:#b8ff00; --glitch:#ff2d55; --cyan:#3ad0ff; --ink:#f0ede6; --line:rgba(240,237,230,.12); --bg:#050505; --pan:rgba(184,255,0,.015);
+         --paper:#faf9f6; --pink:#12100c; --pline:#e3ded2; --pmut:#6b6656; }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{min-height:100%;background:var(--bg);color:var(--ink);font-family:'Space Mono',monospace;}
+  body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");z-index:0;pointer-events:none;opacity:.4;}
+  .wrap{position:relative;z-index:1;max-width:1280px;margin:0 auto;padding:26px 20px 90px;}
+  header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;gap:16px;flex-wrap:wrap;}
+  .brand{font-family:'Bebas Neue',sans-serif;font-size:52px;letter-spacing:.03em;line-height:.82;}
+  .brand b{color:var(--acid);font-weight:400;}
+  .brand span{display:block;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.26em;color:rgba(240,237,230,.4);margin-top:8px;}
+  header nav a{font-size:10px;letter-spacing:.2em;color:rgba(240,237,230,.4);text-decoration:none;margin-left:16px;} header nav a:hover{color:var(--acid);}
+  .intro{font-size:12px;color:rgba(240,237,230,.55);line-height:1.8;max-width:76ch;margin:12px 0 22px;}
+  .intro b{color:var(--acid);font-weight:400;}
+  .cols{display:grid;grid-template-columns:360px 1fr;gap:24px;align-items:start;}
+  @media(max-width:980px){ .cols{grid-template-columns:1fr;} }
+  .editor{border:1px solid var(--line);border-radius:10px;background:var(--pan);padding:16px;position:sticky;top:16px;max-height:calc(100vh - 32px);overflow:auto;}
+  .editor h2{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:.04em;color:var(--acid);margin:2px 0 12px;}
+  .grp{margin-bottom:16px;} .grp>.gl{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:rgba(240,237,230,.4);margin-bottom:8px;display:flex;align-items:center;gap:8px;}
+  .grp>.gl::after{content:'';flex:1;height:1px;background:var(--line);}
+  .fld{display:flex;flex-direction:column;gap:4px;margin-bottom:9px;} .fld label{font-size:8.5px;letter-spacing:.16em;text-transform:uppercase;color:rgba(240,237,230,.4);}
+  .fld input,.fld textarea{background:#0b0b0b;border:1px solid var(--line);color:var(--ink);font-family:'Space Mono',monospace;font-size:12px;padding:7px 9px;border-radius:6px;width:100%;}
+  .fld textarea{resize:vertical;min-height:52px;line-height:1.6;} .fld input:focus,.fld textarea:focus{outline:none;border-color:var(--acid);}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;} .chip{font-size:10px;padding:5px 9px;border:1px solid var(--line);border-radius:5px;cursor:pointer;transition:.12s;color:rgba(240,237,230,.7);} .chip:hover{border-color:var(--acid);} .chip.on{border-color:var(--acid);color:var(--acid);background:rgba(184,255,0,.07);}
+  .btn{cursor:pointer;background:transparent;border:1px solid var(--line);color:var(--ink);font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.12em;padding:10px 12px;border-radius:6px;transition:.18s;text-transform:uppercase;width:100%;} .btn:hover{border-color:var(--acid);color:var(--acid);} .btn.pri{background:var(--acid);color:#050505;font-weight:700;border-color:var(--acid);} .btn.pri:hover{filter:brightness(1.08);} .btnrow{display:flex;gap:8px;margin-top:6px;}
+
+  .doc{background:var(--paper);color:var(--pink);border-radius:6px;box-shadow:0 20px 60px rgba(0,0,0,.5);padding:52px 54px;font-size:13px;line-height:1.65;}
+  .doc .dhead{display:flex;justify-content:space-between;align-items:flex-start;gap:18px;border-bottom:2px solid var(--pink);padding-bottom:16px;margin-bottom:22px;flex-wrap:wrap;}
+  .doc .dbrand{font-family:'Bebas Neue',sans-serif;font-size:38px;letter-spacing:.02em;line-height:.85;} .doc .dbrand em{font-style:normal;border-bottom:4px solid var(--acid);}
+  .doc .dbrand small{display:block;font-family:'Space Mono',monospace;font-size:9.5px;letter-spacing:.18em;color:var(--pmut);margin-top:8px;text-transform:uppercase;}
+  .doc .dmeta{text-align:right;font-size:11px;color:var(--pmut);line-height:1.7;} .doc .dmeta b{color:var(--pink);}
+  .doc .dtitle{font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:.02em;margin-bottom:4px;}
+  .doc .dfor{font-size:13px;color:var(--pmut);margin-bottom:18px;} .doc .dfor b{color:var(--pink);}
+  .doc h3.sec{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:.06em;text-transform:uppercase;margin:20px 0 8px;padding-bottom:5px;border-bottom:1px solid var(--pline);display:flex;align-items:baseline;gap:8px;page-break-after:avoid;}
+  .doc h3.sec .n{font-family:'Space Mono',monospace;font-size:10px;color:var(--acid);background:var(--pink);padding:2px 6px;border-radius:3px;letter-spacing:.1em;}
+  .doc .txt{font-size:12.5px;color:#2a2822;white-space:pre-wrap;} .doc .txt.mut{color:var(--pmut);font-style:italic;}
+  .doc .tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:2px;} .doc .tags span{font-size:11px;background:#efece3;border:1px solid var(--pline);border-radius:4px;padding:3px 9px;color:#3a382f;}
+  .doc ul.chk{list-style:none;} .doc ul.chk li{font-size:12.5px;color:#2a2822;padding:2px 0 2px 20px;position:relative;} .doc ul.chk li::before{content:'▸';position:absolute;left:0;color:var(--pmut);}
+  .sec2{display:grid;grid-template-columns:1fr 1fr;gap:22px;} @media print{.sec2{gap:14px;}}
+  .clause{page-break-inside:avoid;}
+  .dfoot{margin-top:26px;padding-top:14px;border-top:2px solid var(--pink);display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font-size:11.5px;color:var(--pmut);} .dfoot b{color:var(--pink);}
+  .empty{color:var(--pmut);font-size:13px;text-align:center;padding:40px 0;}
+  .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--acid);color:#050505;font-size:11px;font-weight:700;letter-spacing:.08em;padding:10px 18px;border-radius:6px;opacity:0;pointer-events:none;transition:.25s;z-index:9;} .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  .foot{font-size:10px;color:rgba(240,237,230,.35);letter-spacing:.1em;margin-top:36px;text-align:center;}
+  @media print{ @page{margin:15mm;} body::before{display:none;} body{background:#fff;} .wrap{max-width:none;padding:0;} header,.intro,.editor,.foot,.toast{display:none!important;} .cols{display:block;} .doc{box-shadow:none;border-radius:0;padding:0;} }
+</style></head><body>
+<div class="wrap">
+  <header>
+    <div class="brand"><b>RIDER</b><span>el rider técnico del show, listo para el venue</span></div>
+    <nav><a href="/labs/">← LABS</a><a href="/cue-sheet/">CUE SHEET</a><a href="/gigs/">GIGS</a></nav>
+  </header>
+  <p class="intro">Lo que necesitás del venue para que el show salga bien: <b>qué señal de video</b> entregás, qué <b>pantalla/proyección</b> hace falta, dónde va la <b>mesa</b>, la <b>señal de audio para sync</b> (audio-reactivo / timecode), energía y tiempos de armado. Completá y sale un rider técnico con tu marca, listo para PDF y mandar a producción — así llegás y está todo. Todo en tu navegador.</p>
+
+  <div class="cols">
+    <aside class="editor">
+      <h2>Armá el rider</h2>
+      <div class="grp"><div class="gl">Show</div>
+        <div class="fld"><label>Artista / proyecto</label><input id="artista" placeholder="Human Glitche"></div>
+        <div class="row2"><div class="fld"><label>Venue</label><input id="venue" placeholder="Club X"></div><div class="fld"><label>Ciudad</label><input id="ciudad" placeholder="La Plata"></div></div>
+        <div class="row2"><div class="fld"><label>Fecha</label><input id="fecha" type="date"></div><div class="fld"><label>Contacto técnico</label><input id="contacto" placeholder="Del venue"></div></div>
+      </div>
+      <div class="grp"><div class="gl">Tipo de setup</div><div class="chips" id="setupChips"></div></div>
+      <div class="grp"><div class="gl">Video — lo que entrego</div>
+        <div class="fld"><label>Salida de video</label><div class="chips" id="salidaChips"></div></div>
+        <div class="row2"><div class="fld"><label>Resolución</label><input id="reso" value="1920×1080 @60"></div><div class="fld"><label>N° de salidas</label><input id="nsal" value="1"></div></div>
+      </div>
+      <div class="grp"><div class="gl">Video — lo que necesito del venue</div>
+        <div class="fld"><label>Superficie</label><input id="superficie" placeholder="Pantalla LED / proyección frontal + proyector 5000 lúmenes"></div>
+        <div class="fld"><label>Cableado / distancia a la mesa</label><input id="cable" placeholder="Tirada HDMI/SDI hasta cabina · o el venue provee"></div>
+      </div>
+      <div class="grp"><div class="gl">Posición + audio para sync</div>
+        <div class="fld"><label>Posición de la mesa</label><input id="posicion" placeholder="Con visión de la pantalla · mesa/tablón 1,5m · junto a FOH"></div>
+        <div class="fld"><label>Señal de audio para sync</label><input id="audiosync" value="Feed de línea (mini-jack o XLR) desde consola, pre-fader, para audio-reactivo / timecode"></div>
+      </div>
+      <div class="grp"><div class="gl">Energía + tiempos</div>
+        <div class="fld"><label>Energía / red</label><input id="energia" placeholder="2 tomas 220V estabilizadas en cabina · internet no requerido"></div>
+        <div class="fld"><label>Tiempos</label><input id="tiempos" placeholder="Prueba de video 1h antes de puertas · armado 45 min"></div>
+      </div>
+      <div class="grp"><div class="gl">Provee</div>
+        <div class="fld"><label>Provee el venue (una por línea)</label><textarea id="proveeVenue" placeholder="Pantalla y proyector&#10;Tirada de video a cabina&#10;Feed de audio&#10;Mesa y energía"></textarea></div>
+        <div class="fld"><label>Provee el artista (una por línea)</label><textarea id="proveeArt" placeholder="Notebook + controladora&#10;Placa de captura&#10;Adaptadores&#10;Software y contenido"></textarea></div>
+      </div>
+      <div class="grp"><div class="gl">Notas + marca</div>
+        <div class="fld"><label>Notas</label><textarea id="notas" placeholder="Cualquier aclaración para producción"></textarea></div>
+        <div class="fld"><label>Marca</label><input id="marca" value="Human Glitche"></div>
+        <div class="fld"><label>Contacto (pie)</label><input id="cont" value="hola@hg-vl.com · hg-vl.com"></div>
+      </div>
+      <button class="btn pri" id="printBtn">🖨 Imprimir / Guardar PDF</button>
+      <div class="btnrow"><button class="btn" id="copyBtn">📋 Copiar texto</button><button class="btn" id="resetBtn">↺ Limpiar</button></div>
+    </aside>
+    <div class="paperwrap" style="min-width:0"><div class="doc" id="doc"></div></div>
+  </div>
+  <div class="foot">HUMAN GLITCHE · VISUAL LAB · rider técnico client-side · suite Show en vivo</div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+'use strict';
+var $=function(id){return document.getElementById(id);};
+var SETUPS=['VJ set','Video mapping','Visuales para banda / DJ','Instalación','Live audiovisual'];
+var SALIDAS=['HDMI','SDI','NDI','DisplayPort','USB-C'];
+var LS='hg_rider_v1';
+var st={ artista:'Human Glitche', venue:'', ciudad:'', fecha:'', contacto:'', setup:['VJ set'], salida:['HDMI'], reso:'1920×1080 @60', nsal:'1',
+  superficie:'', cable:'', posicion:'', audiosync:'Feed de línea (mini-jack o XLR) desde consola, pre-fader, para audio-reactivo / timecode',
+  energia:'', tiempos:'', proveeVenue:'', proveeArt:'', notas:'', marca:'Human Glitche', cont:'hola@hg-vl.com · hg-vl.com' };
+try{ var s=JSON.parse(localStorage.getItem(LS)||'null'); if(s) st=Object.assign(st,s); }catch(e){}
+
+function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
+function save(){ try{ localStorage.setItem(LS, JSON.stringify(st)); }catch(e){} }
+function toast(t){ var el=$('toast'); el.textContent=t; el.classList.add('show'); setTimeout(function(){el.classList.remove('show');},1700); }
+function fechaTxt(){ var v=st.fecha; if(!v) return '—'; return new Date(v+'T00:00:00').toLocaleDateString('es-AR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'}); }
+function chips(elId,list,key){ $(elId).innerHTML=list.map(function(t){return '<span class="chip '+(st[key].indexOf(t)>=0?'on':'')+'" data-t="'+esc(t)+'">'+esc(t)+'</span>';}).join('');
+  $(elId).addEventListener('click',function(e){ var c=e.target.closest('.chip'); if(!c) return; var t=c.getAttribute('data-t'); var i=st[key].indexOf(t); if(i>=0) st[key].splice(i,1); else st[key].push(t); c.classList.toggle('on'); save(); render(); }); }
+function bind(id,key){ var el=$(id); if(!el) return; if(st[key]!=null&&st[key]!=='') el.value=st[key]; el.addEventListener('input',function(){ st[key]=el.value; save(); render(); }); }
+function lines(v){ return (v||'').split('\n').map(function(x){return x.trim();}).filter(Boolean); }
+function secTxt(n,t,v){ if(!v) return ''; return '<div class="clause"><h3 class="sec"><span class="n">'+n+'</span> '+t+'</h3><div class="txt">'+esc(v)+'</div></div>'; }
+function secList(n,t,arr){ if(!arr.length) return ''; return '<div class="clause"><h3 class="sec"><span class="n">'+n+'</span> '+t+'</h3><ul class="chk">'+arr.map(function(x){return '<li>'+esc(x)+'</li>';}).join('')+'</ul></div>'; }
+
+function render(){
+  var doc=$('doc');
+  if(!st.venue && !st.superficie && !st.setup.length){ doc.innerHTML='<div class="empty">Cargá el venue y el tipo de setup.<br>El rider se arma solo, listo para PDF.</div>'; return; }
+  var marca=st.marca||'Human Glitche', mp=marca.trim().split(/\s+/);
+  var brandHtml = mp.length>1 ? esc(mp.slice(0,-1).join(' '))+' <em>'+esc(mp[mp.length-1])+'</em>' : '<em>'+esc(marca)+'</em>';
+  var n=0, N=function(){ n++; return (n<10?'0':'')+n; };
+  var setupTags = st.setup.length ? '<div class="tags">'+st.setup.map(function(t){return '<span>'+esc(t)+'</span>';}).join('')+'</div>' : '';
+  var video = 'Salida: '+(st.salida.join(' / ')||'—')+' · Resolución: '+(st.reso||'—')+' · '+(st.nsal||'1')+' salida(s).'
+    +(st.superficie?'\nSuperficie necesaria: '+st.superficie:'')+(st.cable?'\nCableado: '+st.cable:'');
+  doc.innerHTML =
+    '<div class="dhead"><div class="dbrand">'+brandHtml+'<small>'+esc(st.cont||'')+'</small></div><div class="dmeta">Rider técnico · visuales<br><b>'+esc(fechaTxt())+'</b></div></div>'
+    +'<div class="dtitle">'+esc(st.artista||'Rider técnico')+'</div>'
+    +'<div class="dfor">Venue: <b>'+esc(st.venue||'—')+'</b>'+(st.ciudad?' · '+esc(st.ciudad):'')+(st.contacto?' · contacto técnico: '+esc(st.contacto):'')+'</div>'
+    +(setupTags?'<div class="clause"><h3 class="sec"><span class="n">'+N()+'</span> Tipo de setup</h3>'+setupTags+'</div>':'')
+    +'<div class="clause"><h3 class="sec"><span class="n">'+N()+'</span> Video</h3><div class="txt">'+esc(video)+'</div></div>'
+    +secTxt(N(),'Posición de la mesa', st.posicion)
+    +secTxt(N(),'Señal de audio para sync', st.audiosync)
+    +secTxt(N(),'Energía y red', st.energia)
+    +secTxt(N(),'Tiempos', st.tiempos)
+    +secList(N(),'Provee el venue', lines(st.proveeVenue))
+    +secList(N(),'Provee el artista', lines(st.proveeArt))
+    +secTxt(N(),'Notas', st.notas)
+    +'<div class="dfoot"><div>Ante cualquier duda, coordinamos.<br><b>'+esc(marca)+'</b></div><div style="text-align:right">'+esc(st.cont||'')+'</div></div>';
+}
+function asText(){
+  var L=['RIDER TÉCNICO — '+(st.artista||'Visuales'), 'Venue: '+(st.venue||'—')+(st.ciudad?' ('+st.ciudad+')':'')+' · '+fechaTxt(), ''];
+  if(st.setup.length) L.push('Setup: '+st.setup.join(', '));
+  L.push('Video: salida '+st.salida.join('/')+' · '+st.reso+' · '+(st.nsal||'1')+' salida(s)');
+  if(st.superficie) L.push('Superficie: '+st.superficie);
+  if(st.posicion) L.push('Mesa: '+st.posicion);
+  if(st.audiosync) L.push('Audio sync: '+st.audiosync);
+  if(st.energia) L.push('Energía: '+st.energia);
+  if(st.tiempos) L.push('Tiempos: '+st.tiempos);
+  if(lines(st.proveeVenue).length) L.push('Provee venue: '+lines(st.proveeVenue).join(', '));
+  if(lines(st.proveeArt).length) L.push('Provee artista: '+lines(st.proveeArt).join(', '));
+  if(st.notas) L.push('Notas: '+st.notas);
+  L.push('', '— '+(st.marca||'Human Glitche')+' · '+(st.cont||''));
+  return L.join('\n');
+}
+
+chips('setupChips',SETUPS,'setup'); chips('salidaChips',SALIDAS,'salida');
+['artista','venue','ciudad','fecha','contacto','reso','nsal','superficie','cable','posicion','audiosync','energia','tiempos','proveeVenue','proveeArt','notas','marca','cont'].forEach(function(k){ bind(k,k); });
+$('printBtn').addEventListener('click', function(){ if(!st.venue){ toast('Cargá al menos el venue'); return; } window.print(); });
+$('copyBtn').addEventListener('click', function(){ var t=asText(); if(navigator.clipboard) navigator.clipboard.writeText(t).then(function(){toast('Copiado');},function(){prompt('Copiá:',t);}); else prompt('Copiá:',t); });
+$('resetBtn').addEventListener('click', function(){ if(!confirm('¿Limpiar el rider?'))return;
+  st={ artista:'Human Glitche', venue:'', ciudad:'', fecha:'', contacto:'', setup:[], salida:['HDMI'], reso:'1920×1080 @60', nsal:'1', superficie:'', cable:'', posicion:'', audiosync:'', energia:'', tiempos:'', proveeVenue:'', proveeArt:'', notas:'', marca:'Human Glitche', cont:'hola@hg-vl.com · hg-vl.com' }; save(); location.reload(); });
+render();
+})();
+</script>
+</body></html>

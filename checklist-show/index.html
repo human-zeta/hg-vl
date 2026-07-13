@@ -1,0 +1,104 @@
+<!doctype html><html lang="es"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CHECKLIST DE SHOW — Human Glitche · nada se te olvida antes de tocar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{ --acid:#b8ff00; --glitch:#ff2d55; --cyan:#3ad0ff; --ink:#f0ede6; --line:rgba(240,237,230,.12); --bg:#050505; --pan:rgba(184,255,0,.015); }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{min-height:100%;background:var(--bg);color:var(--ink);font-family:'Space Mono',monospace;}
+  body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");z-index:0;pointer-events:none;opacity:.4;}
+  .wrap{position:relative;z-index:1;max-width:900px;margin:0 auto;padding:26px 20px 90px;}
+  header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;gap:16px;flex-wrap:wrap;}
+  .brand{font-family:'Bebas Neue',sans-serif;font-size:48px;letter-spacing:.03em;line-height:.82;}
+  .brand b{color:var(--acid);font-weight:400;}
+  .brand span{display:block;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.22em;color:rgba(240,237,230,.4);margin-top:8px;}
+  header nav a{font-size:10px;letter-spacing:.2em;color:rgba(240,237,230,.4);text-decoration:none;margin-left:16px;} header nav a:hover{color:var(--acid);}
+  .intro{font-size:12px;color:rgba(240,237,230,.55);line-height:1.8;max-width:74ch;margin:12px 0 18px;} .intro b{color:var(--acid);font-weight:400;}
+  .top{display:flex;gap:12px;align-items:center;border:1px solid var(--line);border-radius:10px;padding:14px;background:var(--pan);margin-bottom:18px;flex-wrap:wrap;position:sticky;top:8px;backdrop-filter:blur(6px);z-index:5;}
+  .top .prog{flex:1;min-width:160px;} .top .pl{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:rgba(240,237,230,.4);margin-bottom:6px;display:flex;justify-content:space-between;} .top .pl b{color:var(--acid);}
+  .top .bar{height:8px;background:#0b0b0b;border:1px solid var(--line);border-radius:20px;overflow:hidden;} .top .bar .fill{height:100%;background:var(--acid);transition:width .3s;width:0%;} .top .bar .fill.full{background:#1fbf5a;}
+  .btn{cursor:pointer;background:transparent;border:1px solid var(--line);color:var(--ink);font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.1em;padding:9px 12px;border-radius:6px;transition:.18s;text-transform:uppercase;} .btn:hover{border-color:var(--acid);color:var(--acid);}
+  .sec{margin-bottom:18px;} .sec .sh{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:.03em;color:var(--ink);margin-bottom:2px;display:flex;align-items:baseline;gap:10px;} .sec .sh .sc{font-family:'Space Mono',monospace;font-size:11px;color:rgba(240,237,230,.4);}
+  .sec .sh .sc.done{color:#1fbf5a;}
+  .item{display:flex;align-items:flex-start;gap:11px;padding:9px 11px;border:1px solid var(--line);border-bottom:none;background:var(--pan);cursor:pointer;transition:.12s;} .item:first-of-type{border-radius:8px 8px 0 0;} .item:last-of-type{border-bottom:1px solid var(--line);border-radius:0 0 8px 8px;} .item:hover{background:rgba(184,255,0,.04);}
+  .item .box{width:17px;height:17px;border:1px solid var(--ink);border-radius:4px;flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;font-size:12px;color:#050505;transition:.12s;} .item.on .box{background:var(--acid);border-color:var(--acid);}
+  .item .tx{font-size:12.5px;line-height:1.5;flex:1;} .item.on .tx{opacity:.5;text-decoration:line-through;text-decoration-color:rgba(184,255,0,.5);}
+  .item .rm{color:rgba(240,237,230,.3);font-size:12px;padding:0 3px;} .item .rm:hover{color:var(--glitch);}
+  .additem{display:flex;gap:8px;margin-top:8px;} .additem input{flex:1;background:#0b0b0b;border:1px solid var(--line);color:var(--ink);font-family:'Space Mono',monospace;font-size:11px;padding:7px 9px;border-radius:6px;} .additem input:focus{outline:none;border-color:var(--acid);} .additem button{cursor:pointer;background:transparent;border:1px solid var(--line);color:rgba(240,237,230,.6);border-radius:6px;font-size:11px;padding:0 12px;} .additem button:hover{border-color:var(--acid);color:var(--acid);}
+  .foot{font-size:10px;color:rgba(240,237,230,.35);letter-spacing:.1em;margin-top:36px;text-align:center;}
+  .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--acid);color:#050505;font-size:11px;font-weight:700;letter-spacing:.08em;padding:10px 18px;border-radius:6px;opacity:0;pointer-events:none;transition:.25s;z-index:9;} .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  .prtitle{display:none;}
+  @media print{ @page{margin:14mm;} body::before{display:none;} body{background:#fff;color:#12100c;} .wrap{max-width:none;padding:0;}
+    header,.intro,.foot,.toast,.additem,.item .rm,.top .btn{display:none!important;} .top{position:static;border:none;padding:0;background:none;margin-bottom:14px;}
+    .prtitle{display:block;font-family:'Bebas Neue',sans-serif;font-size:26px;margin-bottom:6px;} .sec .sh{color:#12100c;} .item{background:none;border-color:#ccc;} .item .box{border-color:#12100c;} .item.on .box{background:#12100c;color:#fff;} .item .tx{color:#12100c;} .item.on .tx{opacity:1;text-decoration:none;} }
+</style></head><body>
+<div class="wrap">
+  <header>
+    <div class="brand"><b>CHECKLIST</b><span>de show · nada se te olvida antes de tocar</span></div>
+    <nav><a href="/labs/">← LABS</a><a href="/rider/">RIDER</a><a href="/gigs/">GIGS</a></nav>
+  </header>
+  <p class="intro">La lista que salva shows: <b>antes de salir</b>, <b>armado</b> en el venue, <b>durante</b> y <b>teardown</b>. Tocá cada ítem para marcarlo; el progreso se guarda solo. Podés agregar los tuyos y <b>imprimir</b> la lista para tenerla en papel. Reseteás antes de cada fecha y empezás limpio.</p>
+  <div class="prtitle">Checklist de show — Human Glitche</div>
+  <div class="top">
+    <div class="prog"><div class="pl"><span>Progreso</span><b id="pctTxt">0%</b></div><div class="bar"><div class="fill" id="fill"></div></div></div>
+    <button class="btn" id="printBtn">🖨 Imprimir</button>
+    <button class="btn" id="resetBtn">↺ Reset</button>
+  </div>
+  <div id="secs"></div>
+  <div class="foot">HUMAN GLITCHE · VISUAL LAB · checklist client-side · suite Show en vivo</div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+'use strict';
+var $=function(id){return document.getElementById(id);};
+var DEF=[
+  {t:'Antes de salir', items:['Backup del set en pendrive + nube','Notebook cargada + cargador','Placa de captura + cables de video','Adaptadores (HDMI / USB-C / Mini-DP)','Controladora MIDI + cable','Cable de audio para sync (mini-jack / XLR)','Zapatilla + alargue','Cue sheet / setlist cargado','Software actualizado y probado','Contenido, loops y shaders del set listos']},
+  {t:'Llegada y armado', items:['Ubicar la cabina con visión de la pantalla','Conectar y probar la salida de video','Pedir y conectar el feed de audio','Probar audio-reactivo / lock de timecode','Verificar resolución y aspecto en la pantalla real','Plan B listo (loop de emergencia)','Ajustar brillo/contraste a la pantalla del venue']},
+  {t:'Durante', items:['Grabar el set (captura / OBS)','Vigilar la temperatura de la notebook','Modo avión / notificaciones off','Sacar foto y video para redes']},
+  {t:'Cierre / teardown', items:['Recuperar todos los cables y adaptadores','Confirmar cobro / seña','Pedir contacto y próxima fecha','Guardar el registro del set']}
+];
+var LS='hg_checklistshow_v1';
+var st={ checked:{}, custom:{} };
+try{ var s=JSON.parse(localStorage.getItem(LS)||'null'); if(s){ st.checked=s.checked||{}; st.custom=s.custom||{}; } }catch(e){}
+
+function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
+function save(){ try{ localStorage.setItem(LS, JSON.stringify(st)); }catch(e){} }
+function toast(t){ var el=$('toast'); el.textContent=t; el.classList.add('show'); setTimeout(function(){el.classList.remove('show');},1500); }
+function itemsOf(i){ return DEF[i].items.concat(st.custom[i]||[]); }
+function key(i,txt){ return i+'::'+txt; }
+
+function render(){
+  var total=0, done=0;
+  $('secs').innerHTML = DEF.map(function(sec,i){
+    var items=itemsOf(i); var sd=0;
+    var lis=items.map(function(txt){ var on=!!st.checked[key(i,txt)]; if(on){sd++;done++;} total++;
+      var isCustom=(st.custom[i]||[]).indexOf(txt)>=0;
+      return '<div class="item '+(on?'on':'')+'" data-i="'+i+'" data-tx="'+esc(txt)+'"><div class="box">'+(on?'✓':'')+'</div><div class="tx">'+esc(txt)+'</div>'+(isCustom?'<span class="rm" data-rm="'+esc(txt)+'" data-i="'+i+'">✕</span>':'')+'</div>';
+    }).join('');
+    return '<div class="sec"><div class="sh">'+esc(sec.t)+' <span class="sc '+(sd===items.length&&items.length?'done':'')+'">'+sd+'/'+items.length+'</span></div>'+lis
+      +'<div class="additem"><input placeholder="Agregar ítem…" data-add="'+i+'"><button data-addbtn="'+i+'">+</button></div></div>';
+  }).join('');
+  var pct = total?Math.round(done/total*100):0;
+  $('fill').style.width=pct+'%'; $('fill').classList.toggle('full', pct===100); $('pctTxt').textContent=pct+'%';
+}
+
+$('secs').addEventListener('click', function(e){
+  var rm=e.target.closest('[data-rm]'); if(rm){ e.stopPropagation(); var i=+rm.getAttribute('data-i'), tx=rm.getAttribute('data-rm');
+    st.custom[i]=(st.custom[i]||[]).filter(function(x){return x!==tx;}); delete st.checked[key(i,tx)]; save(); render(); return; }
+  var it=e.target.closest('.item'); if(it){ var i=+it.getAttribute('data-i'), tx=it.getAttribute('data-tx'), k=key(i,tx);
+    st.checked[k]=!st.checked[k]; if(!st.checked[k]) delete st.checked[k]; save(); render(); return; }
+  var ab=e.target.closest('[data-addbtn]'); if(ab){ var si=ab.getAttribute('data-addbtn'); addItem(si); }
+});
+$('secs').addEventListener('keydown', function(e){ if(e.key!=='Enter') return; var inp=e.target.closest('[data-add]'); if(inp) addItem(inp.getAttribute('data-add')); });
+function addItem(i){ var inp=document.querySelector('[data-add="'+i+'"]'); var v=(inp.value||'').trim(); if(!v) return;
+  st.custom[i]=st.custom[i]||[]; st.custom[i].push(v); save(); render(); toast('Agregado'); }
+
+$('printBtn').addEventListener('click', function(){ window.print(); });
+$('resetBtn').addEventListener('click', function(){ if(!confirm('¿Desmarcar todo para la próxima fecha? (los ítems que agregaste se conservan)'))return; st.checked={}; save(); render(); toast('Listo para la próxima'); });
+render();
+})();
+</script>
+</body></html>
