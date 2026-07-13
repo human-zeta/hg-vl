@@ -1,0 +1,385 @@
+<!doctype html><html lang="es"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>REPORTE — Human Glitche · el reporte mensual que justifica el abono</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{ --acid:#b8ff00; --glitch:#ff2d55; --cyan:#3ad0ff; --ink:#f0ede6; --line:rgba(240,237,230,.12); --bg:#050505; --pan:rgba(184,255,0,.015);
+         --paper:#faf9f6; --pink:#12100c; --pline:#e3ded2; --pmut:#6b6656; }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{min-height:100%;background:var(--bg);color:var(--ink);font-family:'Space Mono',monospace;}
+  body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");z-index:0;pointer-events:none;opacity:.4;}
+  .wrap{position:relative;z-index:1;max-width:1280px;margin:0 auto;padding:26px 20px 90px;}
+  header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;gap:16px;flex-wrap:wrap;}
+  .brand{font-family:'Bebas Neue',sans-serif;font-size:52px;letter-spacing:.03em;line-height:.82;}
+  .brand b{color:var(--acid);font-weight:400;}
+  .brand span{display:block;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.26em;color:rgba(240,237,230,.4);margin-top:8px;}
+  header nav a{font-size:10px;letter-spacing:.2em;color:rgba(240,237,230,.4);text-decoration:none;margin-left:16px;} header nav a:hover{color:var(--acid);}
+  .intro{font-size:12px;color:rgba(240,237,230,.55);line-height:1.8;max-width:76ch;margin:12px 0 22px;}
+  .intro b{color:var(--acid);font-weight:400;}
+
+  .cols{display:grid;grid-template-columns:340px 1fr;gap:24px;align-items:start;}
+  @media(max-width:980px){ .cols{grid-template-columns:1fr;} }
+
+  .editor{border:1px solid var(--line);border-radius:10px;background:var(--pan);padding:16px;position:sticky;top:16px;max-height:calc(100vh - 32px);overflow:auto;}
+  .editor h2{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:.04em;color:var(--acid);margin:2px 0 12px;}
+  .grp{margin-bottom:16px;} .grp>.gl{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:rgba(240,237,230,.4);margin-bottom:8px;display:flex;align-items:center;gap:8px;}
+  .grp>.gl::after{content:'';flex:1;height:1px;background:var(--line);}
+  .fld{display:flex;flex-direction:column;gap:4px;margin-bottom:9px;}
+  .fld label{font-size:8.5px;letter-spacing:.16em;text-transform:uppercase;color:rgba(240,237,230,.4);}
+  .fld input,.fld textarea,.fld select{background:#0b0b0b;border:1px solid var(--line);color:var(--ink);font-family:'Space Mono',monospace;font-size:12px;padding:7px 9px;border-radius:6px;width:100%;}
+  .fld textarea{resize:vertical;min-height:60px;line-height:1.6;}
+  .fld input:focus,.fld textarea:focus,.fld select:focus{outline:none;border-color:var(--acid);}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
+  .svc{display:flex;align-items:center;gap:9px;padding:7px 9px;border:1px solid var(--line);border-radius:6px;margin-bottom:6px;cursor:pointer;transition:.15s;}
+  .svc:hover{border-color:rgba(184,255,0,.4);} .svc.on{border-color:var(--acid);background:rgba(184,255,0,.06);}
+  .svc input{accent-color:var(--acid);width:14px;height:14px;flex-shrink:0;}
+  .svc .ic{font-size:15px;} .svc .nm{flex:1;font-size:11px;letter-spacing:.03em;}
+
+  /* métricas dinámicas por servicio */
+  .metric{border:1px solid var(--line);border-radius:6px;padding:9px 10px;margin-bottom:8px;background:#0a0a0a;}
+  .metric .mh{font-size:10px;letter-spacing:.06em;color:var(--cyan);margin-bottom:7px;display:flex;align-items:center;gap:6px;}
+  .metric .mrow{display:grid;grid-template-columns:1fr 66px 66px;gap:6px;align-items:center;margin-bottom:5px;}
+  .metric .mrow .ml{font-size:10px;color:rgba(240,237,230,.7);}
+  .metric .mrow input{background:#111;border:1px solid var(--line);color:var(--ink);font-family:'Space Mono',monospace;font-size:11px;padding:4px 6px;border-radius:4px;width:100%;text-align:right;}
+  .metric .mrow input:focus{outline:none;border-color:var(--acid);}
+  .metric .mcap{font-size:8px;letter-spacing:.14em;text-transform:uppercase;color:rgba(240,237,230,.35);text-align:center;}
+
+  .btn{cursor:pointer;background:transparent;border:1px solid var(--line);color:var(--ink);font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.12em;padding:10px 12px;border-radius:6px;transition:.18s;text-transform:uppercase;width:100%;}
+  .btn:hover{border-color:var(--acid);color:var(--acid);}
+  .btn.pri{background:var(--acid);color:#050505;font-weight:700;border-color:var(--acid);}
+  .btnrow{display:flex;gap:8px;margin-top:6px;}
+
+  /* documento */
+  .paperwrap{min-width:0;}
+  .doc{background:var(--paper);color:var(--pink);border-radius:6px;box-shadow:0 20px 60px rgba(0,0,0,.5);padding:52px 54px;font-size:13px;line-height:1.6;}
+  .doc .dhead{display:flex;justify-content:space-between;align-items:flex-start;gap:18px;border-bottom:2px solid var(--pink);padding-bottom:16px;margin-bottom:22px;flex-wrap:wrap;}
+  .doc .dbrand{font-family:'Bebas Neue',sans-serif;font-size:38px;letter-spacing:.02em;line-height:.85;}
+  .doc .dbrand em{font-style:normal;border-bottom:4px solid var(--acid);}
+  .doc .dbrand small{display:block;font-family:'Space Mono',monospace;font-size:9.5px;letter-spacing:.18em;color:var(--pmut);margin-top:8px;text-transform:uppercase;}
+  .doc .dmeta{text-align:right;font-size:11px;color:var(--pmut);line-height:1.7;} .doc .dmeta b{color:var(--pink);}
+  .doc .dtitle{font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:.02em;line-height:.95;margin-bottom:4px;}
+  .doc .dfor{font-size:13px;color:var(--pmut);margin-bottom:20px;} .doc .dfor b{color:var(--pink);}
+  .doc h3.sec{font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:.06em;text-transform:uppercase;margin:24px 0 12px;padding-bottom:5px;border-bottom:1px solid var(--pline);display:flex;align-items:baseline;gap:8px;}
+  .doc h3.sec .n{font-family:'Space Mono',monospace;font-size:10px;color:var(--acid);background:var(--pink);padding:2px 6px;border-radius:3px;letter-spacing:.1em;}
+
+  /* tiles de KPI */
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;}
+  .kpi{border:1px solid var(--pline);border-radius:6px;padding:13px 14px;page-break-inside:avoid;}
+  .kpi .kv{font-family:'Bebas Neue',sans-serif;font-size:34px;line-height:.9;color:var(--pink);}
+  .kpi .kl{font-size:10.5px;color:var(--pmut);margin-top:4px;letter-spacing:.02em;}
+  .kpi .kd{font-size:10px;margin-top:6px;font-weight:700;}
+  .kpi .kd.up{color:#1a8a3a;} .kpi .kd.down{color:var(--glitch);} .kpi .kd.flat{color:var(--pmut);}
+
+  .svcblock{border:1px solid var(--pline);border-radius:6px;padding:13px 15px;margin-bottom:10px;page-break-inside:avoid;}
+  .svcblock .sbt{font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:.03em;margin-bottom:8px;}
+  .svcblock table{width:100%;border-collapse:collapse;font-size:12px;}
+  .svcblock td{padding:5px 4px;border-bottom:1px solid #efece3;}
+  .svcblock td.lbl{color:#43403a;} .svcblock td.now{text-align:right;font-weight:700;} .svcblock td.prev{text-align:right;color:var(--pmut);width:80px;}
+  .svcblock td.chg{text-align:right;width:74px;font-weight:700;} .svcblock td.chg.up{color:#1a8a3a;} .svcblock td.chg.down{color:var(--glitch);} .svcblock td.chg.flat{color:var(--pmut);}
+  .doc .comentario{white-space:pre-wrap;font-size:12.5px;color:#2a2822;background:#f2efe6;border-left:3px solid var(--acid);padding:12px 14px;border-radius:0 4px 4px 0;}
+  .doc .prox{font-size:12.5px;color:#2a2822;} .doc .prox li{margin:5px 0 5px 18px;}
+  .dfoot{margin-top:26px;padding-top:14px;border-top:2px solid var(--pink);display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font-size:11.5px;color:var(--pmut);} .dfoot b{color:var(--pink);}
+  .empty{color:var(--pmut);font-size:13px;text-align:center;padding:40px 0;}
+
+  .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--acid);color:#050505;font-size:11px;font-weight:700;letter-spacing:.08em;padding:10px 18px;border-radius:6px;opacity:0;pointer-events:none;transition:.25s;z-index:9;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  .foot{font-size:10px;color:rgba(240,237,230,.35);letter-spacing:.1em;margin-top:36px;text-align:center;}
+
+  @media print{
+    @page{margin:14mm;}
+    body::before{display:none;} body{background:#fff;}
+    .wrap{max-width:none;padding:0;} header,.intro,.editor,.foot,.toast{display:none!important;}
+    .cols{display:block;} .doc{box-shadow:none;border-radius:0;padding:0;}
+  }
+</style></head><body>
+<div class="wrap">
+  <header>
+    <div class="brand"><b>REPORTE</b><span>el reporte mensual que justifica el abono</span></div>
+    <nav><a href="/labs/">← LABS</a><a href="/pipelines/">PIPELINES</a><a href="/propuesta/">PROPUESTA</a></nav>
+  </header>
+  <p class="intro">Media docena de pipelines (redes, ads, video, reputación, email, turnos) terminan en un <b>reporte mensual</b> — y ese reporte es lo que justifica que te sigan pagando el abono. Cargá los números del mes (y opcionalmente los del mes anterior para mostrar la variación) y sale un <b>reporte de una página con tu marca, listo para PDF</b>. Elegís qué servicios reportar; cada uno trae sus métricas. Todo corre en tu navegador y se guarda solo.</p>
+
+  <div class="cols">
+    <aside class="editor">
+      <h2>Armá el reporte</h2>
+      <div class="grp">
+        <div class="gl">Cliente + período</div>
+        <div class="fld"><label>Cargar negocio auditado (opcional)</label><select id="bizPick"><option value="">— a mano —</option></select></div>
+        <div class="fld"><label>Negocio</label><input id="cNeg" placeholder="Panadería La Tradición"></div>
+        <div class="row2">
+          <div class="fld"><label>Mes</label><select id="cMes"></select></div>
+          <div class="fld"><label>Año</label><input id="cAnio" type="number" placeholder="2026"></div>
+        </div>
+      </div>
+      <div class="grp">
+        <div class="gl">Servicios a reportar</div>
+        <div id="svcList"></div>
+      </div>
+      <div class="grp" id="metricsWrap">
+        <div class="gl">Métricas del mes</div>
+        <div id="metrics"></div>
+      </div>
+      <div class="grp">
+        <div class="gl">Comentario del mes (editable)</div>
+        <div class="fld"><textarea id="coment" placeholder="Se autocompleta con un resumen; editalo a gusto."></textarea></div>
+      </div>
+      <div class="grp">
+        <div class="gl">Próximo mes (una idea por línea)</div>
+        <div class="fld"><textarea id="prox" placeholder="Doblar el formato de reels que mejor rindió&#10;Probar campaña de turnos los martes"></textarea></div>
+      </div>
+      <div class="grp">
+        <div class="gl">Tu marca</div>
+        <div class="fld"><label>Nombre</label><input id="mMarca" value="Human Glitche"></div>
+        <div class="fld"><label>Contacto (pie)</label><input id="mCont" value="hola@hg-vl.com · hg-vl.com"></div>
+      </div>
+      <button class="btn pri" id="printBtn">🖨 Imprimir / Guardar PDF</button>
+      <div class="btnrow">
+        <button class="btn" id="copyBtn">📋 Copiar texto</button>
+        <button class="btn" id="resetBtn">↺ Limpiar</button>
+      </div>
+    </aside>
+    <div class="paperwrap"><div class="doc" id="doc"></div></div>
+  </div>
+  <div class="foot">HUMAN GLITCHE · VISUAL LAB · reporte mensual client-side · imprimí a PDF para enviar cada mes</div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+'use strict';
+const $=id=>document.getElementById(id);
+const MESES=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+
+// ── Servicios reportables + sus métricas ────────────────────────────────────
+// cada métrica: key, label, unidad, higherBetter (para colorear la variación)
+const SERVICIOS = [
+  {id:'social', ico:'📲', name:'REDES EN PILOTO', metrics:[
+    {k:'alcance', l:'Alcance (personas)', hb:true},
+    {k:'segNuevos', l:'Seguidores nuevos', hb:true},
+    {k:'clicksWA', l:'Clics a WhatsApp', hb:true},
+    {k:'posts', l:'Posteos publicados', hb:true},
+  ], kpis:['alcance','segNuevos','clicksWA']},
+  {id:'ads', ico:'📣', name:'PUBLICIDAD LOCAL', metrics:[
+    {k:'invertido', l:'Invertido en pauta ($)', hb:false},
+    {k:'contactos', l:'Contactos / mensajes', hb:true},
+    {k:'costoContacto', l:'Costo por contacto ($)', hb:false},
+    {k:'alcanceAds', l:'Alcance de campañas', hb:true},
+  ], kpis:['contactos','costoContacto','invertido']},
+  {id:'video', ico:'🎬', name:'PACK VIDEO / REELS', metrics:[
+    {k:'reels', l:'Reels publicados', hb:true},
+    {k:'vistas', l:'Reproducciones', hb:true},
+    {k:'guardados', l:'Guardados + compartidos', hb:true},
+  ], kpis:['reels','vistas','guardados']},
+  {id:'resenas', ico:'⭐', name:'REPUTACIÓN', metrics:[
+    {k:'nota', l:'Nota en Google (★)', hb:true},
+    {k:'reseñasNuevas', l:'Reseñas nuevas', hb:true},
+    {k:'respondidas', l:'Reseñas respondidas', hb:true},
+  ], kpis:['nota','reseñasNuevas']},
+  {id:'email', ico:'💌', name:'EMAIL + FIDELIZACIÓN', metrics:[
+    {k:'suscriptores', l:'Suscriptores', hb:true},
+    {k:'aperturas', l:'Aperturas (%)', hb:true},
+    {k:'canjes', l:'Cupones canjeados', hb:true},
+  ], kpis:['suscriptores','aperturas','canjes']},
+  {id:'turnos', ico:'📆', name:'AGENDA / TURNOS', metrics:[
+    {k:'reservas', l:'Reservas online', hb:true},
+    {k:'noShow', l:'Ausencias (no-show)', hb:false},
+    {k:'ocupacion', l:'Ocupación (%)', hb:true},
+  ], kpis:['reservas','noShow','ocupacion']},
+  {id:'leads', ico:'🧲', name:'CAPTURA DE LEADS', metrics:[
+    {k:'leads', l:'Leads captados', hb:true},
+    {k:'contactados', l:'Contactados', hb:true},
+    {k:'cerrados', l:'Cerrados / vendidos', hb:true},
+  ], kpis:['leads','contactados','cerrados']},
+  {id:'menu', ico:'🍽️', name:'MENÚ + PEDIDOS WHATSAPP', metrics:[
+    {k:'pedidos', l:'Pedidos por la carta', hb:true},
+    {k:'ticket', l:'Ticket promedio ($)', hb:true},
+  ], kpis:['pedidos','ticket']},
+  {id:'tienda', ico:'🛒', name:'TIENDA + PAGOS', metrics:[
+    {k:'ventas', l:'Ventas online', hb:true},
+    {k:'facturado', l:'Facturado ($)', hb:true},
+    {k:'ticketT', l:'Ticket promedio ($)', hb:true},
+  ], kpis:['ventas','facturado','ticketT']},
+];
+const BY_ID = Object.fromEntries(SERVICIOS.map(s=>[s.id,s]));
+
+// ── Estado ──────────────────────────────────────────────────────────────────
+const LS='hg_reporte_v1';
+let st = { neg:'', mes:new Date().getMonth(), anio:new Date().getFullYear(), sel:[], data:{}, coment:'', comentTouched:false, prox:'', marca:'Human Glitche', cont:'hola@hg-vl.com · hg-vl.com' };
+try{ const s=JSON.parse(localStorage.getItem(LS)||'null'); if(s) st=Object.assign(st,s); }catch(e){}
+
+function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function save(){ try{ localStorage.setItem(LS, JSON.stringify(st)); }catch(e){} }
+function fmt(n){ return (Math.round(n*100)/100).toLocaleString('es-AR'); }
+function val(sid,mk,which){ return (((st.data[sid]||{})[mk])||{})[which]; }
+function numOr(v){ const n=parseFloat(v); return isNaN(n)?null:n; }
+
+// variación % entre now y prev
+function delta(now, prev, hb){
+  if(now==null || prev==null || prev===0) return null;
+  const pct = (now-prev)/Math.abs(prev)*100;
+  const dir = pct>0?'up':(pct<0?'down':'flat');
+  const good = hb ? pct>=0 : pct<=0;   // baja el costo/no-show = bueno
+  return { pct, dir, cls: pct===0?'flat':(good?'up':'down'), arrow: pct>0?'▲':(pct<0?'▼':'=') };
+}
+
+// ── Selector ────────────────────────────────────────────────────────────────
+function renderSvcList(){
+  $('svcList').innerHTML = SERVICIOS.map(s=>{
+    const on=st.sel.includes(s.id);
+    return `<label class="svc ${on?'on':''}"><input type="checkbox" data-id="${s.id}" ${on?'checked':''}><span class="ic">${s.ico}</span><span class="nm">${esc(s.name)}</span></label>`;
+  }).join('');
+}
+function renderMetrics(){
+  const box=$('metrics');
+  const sel=st.sel.map(id=>BY_ID[id]).filter(Boolean);
+  if(!sel.length){ $('metricsWrap').style.display='none'; box.innerHTML=''; return; }
+  $('metricsWrap').style.display='';
+  box.innerHTML = sel.map(s=>`<div class="metric">
+      <div class="mh">${s.ico} ${esc(s.name)}</div>
+      <div class="mrow"><span class="ml"></span><span class="mcap">este mes</span><span class="mcap">mes ant.</span></div>
+      ${s.metrics.map(m=>`<div class="mrow">
+        <span class="ml">${esc(m.l)}</span>
+        <input type="number" step="any" data-s="${s.id}" data-m="${m.k}" data-w="now" value="${val(s.id,m.k,'now')??''}">
+        <input type="number" step="any" data-s="${s.id}" data-m="${m.k}" data-w="prev" value="${val(s.id,m.k,'prev')??''}">
+      </div>`).join('')}
+    </div>`).join('');
+}
+
+// ── Comentario por defecto ──────────────────────────────────────────────────
+function defaultComent(){
+  const negocio = st.neg || 'el negocio';
+  const highs=[];
+  for(const id of st.sel){ const s=BY_ID[id]; if(!s) continue;
+    for(const m of s.metrics){ const d=delta(numOr(val(id,m.k,'now')), numOr(val(id,m.k,'prev')), m.hb);
+      if(d && d.cls==='up' && Math.abs(d.pct)>=5) highs.push(m.l.replace(/\s*\(.*\)/,'').toLowerCase()); } }
+  const h = highs.slice(0,3);
+  if(!st.sel.length) return 'Elegí los servicios y cargá las métricas — este resumen se arma solo (podés editarlo).';
+  return 'Este mes en '+negocio+' el sistema siguió trabajando'
+    + (h.length ? ': mejoraron '+ (h.length===1?h[0]:h.slice(0,-1).join(', ')+' y '+h[h.length-1]) +'.' : '.')
+    + ' Abajo el detalle de cada servicio contra el mes anterior. Seguimos optimizando lo que rinde y ajustando lo que no.';
+}
+
+// ── Documento ───────────────────────────────────────────────────────────────
+function render(){
+  const doc=$('doc');
+  const sel=st.sel.map(id=>BY_ID[id]).filter(Boolean);
+  const marca=st.marca||'Human Glitche';
+  const mp=marca.trim().split(/\s+/);
+  const brandHtml = mp.length>1 ? esc(mp.slice(0,-1).join(' '))+' <em>'+esc(mp[mp.length-1])+'</em>' : '<em>'+esc(marca)+'</em>';
+  if(!sel.length){ doc.innerHTML=`<div class="empty">Elegí al menos un servicio a la izquierda y cargá sus métricas del mes.<br>Sale un reporte de una página listo para PDF.</div>`; return; }
+
+  // KPIs destacados: hasta 4, de los servicios elegidos
+  const kpiCells=[];
+  for(const s of sel){ for(const mk of s.kpis){ if(kpiCells.length>=4) break;
+    const m=s.metrics.find(x=>x.k===mk); if(!m) continue;
+    const now=numOr(val(s.id,mk,'now')); if(now==null) continue;
+    const d=delta(now, numOr(val(s.id,mk,'prev')), m.hb);
+    kpiCells.push(`<div class="kpi"><div class="kv">${fmt(now)}</div><div class="kl">${esc(m.l.replace(/\s*\(.*\)/,''))}</div>
+      ${d?`<div class="kd ${d.cls}">${d.arrow} ${fmt(Math.abs(d.pct))}% vs mes ant.</div>`:'<div class="kd flat">—</div>'}</div>`);
+  }}
+
+  const blocks = sel.map(s=>{
+    const rows = s.metrics.map(m=>{
+      const now=numOr(val(s.id,m.k,'now')), prev=numOr(val(s.id,m.k,'prev'));
+      const d=delta(now,prev,m.hb);
+      return `<tr><td class="lbl">${esc(m.l)}</td>
+        <td class="now">${now==null?'—':fmt(now)}</td>
+        <td class="prev">${prev==null?'—':fmt(prev)}</td>
+        <td class="chg ${d?d.cls:'flat'}">${d?d.arrow+' '+fmt(Math.abs(d.pct))+'%':'—'}</td></tr>`;
+    }).join('');
+    return `<div class="svcblock"><div class="sbt">${s.ico} ${esc(s.name)}</div>
+      <table><tr><td class="lbl" style="font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:#8a8578;">Métrica</td><td class="now" style="font-size:9px;color:#8a8578;">Este mes</td><td class="prev" style="font-size:9px;">Mes ant.</td><td class="chg" style="font-size:9px;color:#8a8578;">Var.</td></tr>${rows}</table></div>`;
+  }).join('');
+
+  const comentTxt = (st.comentTouched && st.coment) ? st.coment : defaultComent();
+  const proxItems = (st.prox||'').split('\n').map(x=>x.trim()).filter(Boolean);
+
+  doc.innerHTML = `
+    <div class="dhead">
+      <div class="dbrand">${brandHtml}<small>${esc(st.cont||'')}</small></div>
+      <div class="dmeta">Reporte mensual<br><b>${esc(MESES[st.mes]||'')} ${esc(String(st.anio||''))}</b></div>
+    </div>
+    <div class="dtitle">Reporte de resultados</div>
+    <div class="dfor">Para: <b>${esc(st.neg||'—')}</b></div>
+
+    <h3 class="sec"><span class="n">01</span> Lo más importante del mes</h3>
+    <div class="kpis">${kpiCells.join('') || '<div class="empty" style="padding:10px">Cargá métricas para ver los destacados.</div>'}</div>
+
+    <h3 class="sec"><span class="n">02</span> En una línea</h3>
+    <div class="comentario">${esc(comentTxt)}</div>
+
+    <h3 class="sec"><span class="n">03</span> Detalle por servicio</h3>
+    ${blocks}
+
+    ${proxItems.length?`<h3 class="sec"><span class="n">04</span> El mes que viene</h3><ul class="prox">${proxItems.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`:''}
+
+    <div class="dfoot"><div>Gracias por confiar.<br><b>${esc(marca)}</b></div><div style="text-align:right">${esc(st.cont||'')}</div></div>`;
+}
+function renderAll(){ renderSvcList(); renderMetrics(); render(); }
+
+// ── Texto plano ─────────────────────────────────────────────────────────────
+function asText(){
+  const sel=st.sel.map(id=>BY_ID[id]).filter(Boolean);
+  if(!sel.length) return '';
+  const out=[`REPORTE MENSUAL — ${st.marca||'Human Glitche'}`, `${st.neg||'—'} · ${MESES[st.mes]||''} ${st.anio||''}`, ``,
+    (st.comentTouched&&st.coment)?st.coment:defaultComent(), ``];
+  for(const s of sel){ out.push(`— ${s.name} —`);
+    for(const m of s.metrics){ const now=numOr(val(s.id,m.k,'now')), prev=numOr(val(s.id,m.k,'prev')); const d=delta(now,prev,m.hb);
+      out.push(`  ${m.l}: ${now==null?'—':fmt(now)}${prev!=null?' (mes ant. '+fmt(prev)+(d?', '+d.arrow+fmt(Math.abs(d.pct))+'%':'')+')':''}`); }
+    out.push(''); }
+  const prox=(st.prox||'').split('\n').map(x=>x.trim()).filter(Boolean);
+  if(prox.length){ out.push('EL MES QUE VIENE:'); prox.forEach(x=>out.push('  • '+x)); out.push(''); }
+  out.push(st.cont||'');
+  return out.join('\n');
+}
+
+function toast(t){ const el=$('toast'); el.textContent=t; el.classList.add('show'); setTimeout(()=>el.classList.remove('show'),1700); }
+
+// ── Bind ─────────────────────────────────────────────────────────────────────
+$('cMes').innerHTML = MESES.map((m,i)=>`<option value="${i}">${m}</option>`).join('');
+$('cMes').value = st.mes; $('cAnio').value = st.anio;
+$('cNeg').value=st.neg; $('coment').value=st.coment||''; $('prox').value=st.prox||''; $('mMarca').value=st.marca; $('mCont').value=st.cont;
+$('cNeg').addEventListener('input', ()=>{ st.neg=$('cNeg').value; save(); render(); });
+$('cMes').addEventListener('change', ()=>{ st.mes=parseInt($('cMes').value); save(); render(); });
+$('cAnio').addEventListener('input', ()=>{ st.anio=$('cAnio').value; save(); render(); });
+$('coment').addEventListener('input', ()=>{ st.coment=$('coment').value; st.comentTouched=true; save(); render(); });
+$('prox').addEventListener('input', ()=>{ st.prox=$('prox').value; save(); render(); });
+$('mMarca').addEventListener('input', ()=>{ st.marca=$('mMarca').value; save(); render(); });
+$('mCont').addEventListener('input', ()=>{ st.cont=$('mCont').value; save(); render(); });
+
+$('svcList').addEventListener('change', e=>{
+  const cb=e.target.closest('input[data-id]'); if(!cb) return;
+  const id=cb.getAttribute('data-id'); const i=st.sel.indexOf(id);
+  if(cb.checked && i<0) st.sel.push(id); else if(!cb.checked && i>=0) st.sel.splice(i,1);
+  save(); renderAll();
+});
+$('metrics').addEventListener('input', e=>{
+  const inp=e.target.closest('input[data-s]'); if(!inp) return;
+  const s=inp.getAttribute('data-s'), m=inp.getAttribute('data-m'), w=inp.getAttribute('data-w');
+  st.data[s]=st.data[s]||{}; st.data[s][m]=st.data[s][m]||{};
+  st.data[s][m][w]= inp.value===''?undefined:parseFloat(inp.value);
+  save(); render();
+});
+$('printBtn').addEventListener('click', ()=>{ if(!st.sel.length){ toast('Elegí al menos un servicio'); return; } window.print(); });
+$('copyBtn').addEventListener('click', ()=>{ const t=asText(); if(!t){ toast('Reporte vacío'); return; }
+  navigator.clipboard?.writeText(t).then(()=>toast('Texto copiado'),()=>prompt('Copiá el reporte:',t)); });
+$('resetBtn').addEventListener('click', ()=>{ if(!confirm('¿Limpiar el reporte actual?'))return;
+  st={ neg:'', mes:new Date().getMonth(), anio:new Date().getFullYear(), sel:[], data:{}, coment:'', comentTouched:false, prox:'', marca:'Human Glitche', cont:'hola@hg-vl.com · hg-vl.com' };
+  save(); location.reload(); });
+
+// ── Prefill Auditoría ───────────────────────────────────────────────────────
+async function loadBiz(){
+  const paths=['/seed_comercios_pba.json','/auditoria/seed_comercios_pba.json','../auditoria/seed_comercios_pba.json','seed_comercios_pba.json'];
+  for(const p of paths){ try{ const r=await fetch(p,{cache:'no-store'}); if(!r.ok) continue; const d=await r.json();
+    if(d && typeof d==='object' && Object.keys(d).length){ const sel=$('bizPick');
+      sel.innerHTML='<option value="">— a mano —</option>'+Object.entries(d).sort((a,b)=>(a[1].name||'').localeCompare(b[1].name||''))
+        .map(([id,b])=>`<option data-n="${esc(b.name||'')}">${esc(b.name||id)}${b.city?' · '+esc(b.city):''}</option>`).join('');
+      sel.addEventListener('change', ()=>{ const o=sel.options[sel.selectedIndex]; if(!o||!o.value&&sel.selectedIndex===0) return;
+        const n=o.getAttribute('data-n'); if(n){ st.neg=n; $('cNeg').value=n; save(); render(); } });
+      return; } }catch(e){} }
+}
+renderAll(); loadBiz();
+})();
+</script>
+</body></html>
