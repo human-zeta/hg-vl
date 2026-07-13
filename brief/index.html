@@ -1,0 +1,210 @@
+<!doctype html><html lang="es"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BRIEF — Human Glitche · el arranque de todo proyecto audiovisual</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{ --acid:#b8ff00; --glitch:#ff2d55; --cyan:#3ad0ff; --ink:#f0ede6; --line:rgba(240,237,230,.12); --bg:#050505; --pan:rgba(184,255,0,.015);
+         --paper:#faf9f6; --pink:#12100c; --pline:#e3ded2; --pmut:#6b6656; }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{min-height:100%;background:var(--bg);color:var(--ink);font-family:'Space Mono',monospace;}
+  body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");z-index:0;pointer-events:none;opacity:.4;}
+  .wrap{position:relative;z-index:1;max-width:1280px;margin:0 auto;padding:26px 20px 90px;}
+  header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;gap:16px;flex-wrap:wrap;}
+  .brand{font-family:'Bebas Neue',sans-serif;font-size:52px;letter-spacing:.03em;line-height:.82;}
+  .brand b{color:var(--acid);font-weight:400;}
+  .brand span{display:block;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.26em;color:rgba(240,237,230,.4);margin-top:8px;}
+  header nav a{font-size:10px;letter-spacing:.2em;color:rgba(240,237,230,.4);text-decoration:none;margin-left:16px;} header nav a:hover{color:var(--acid);}
+  .intro{font-size:12px;color:rgba(240,237,230,.55);line-height:1.8;max-width:76ch;margin:12px 0 22px;}
+  .intro b{color:var(--acid);font-weight:400;}
+
+  .cols{display:grid;grid-template-columns:360px 1fr;gap:24px;align-items:start;}
+  @media(max-width:980px){ .cols{grid-template-columns:1fr;} }
+  .editor{border:1px solid var(--line);border-radius:10px;background:var(--pan);padding:16px;position:sticky;top:16px;max-height:calc(100vh - 32px);overflow:auto;}
+  .editor h2{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:.04em;color:var(--acid);margin:2px 0 12px;}
+  .grp{margin-bottom:16px;} .grp>.gl{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:rgba(240,237,230,.4);margin-bottom:8px;display:flex;align-items:center;gap:8px;}
+  .grp>.gl::after{content:'';flex:1;height:1px;background:var(--line);}
+  .fld{display:flex;flex-direction:column;gap:4px;margin-bottom:9px;}
+  .fld label{font-size:8.5px;letter-spacing:.16em;text-transform:uppercase;color:rgba(240,237,230,.4);}
+  .fld input,.fld textarea{background:#0b0b0b;border:1px solid var(--line);color:var(--ink);font-family:'Space Mono',monospace;font-size:12px;padding:7px 9px;border-radius:6px;width:100%;}
+  .fld textarea{resize:vertical;min-height:56px;line-height:1.6;}
+  .fld input:focus,.fld textarea:focus{outline:none;border-color:var(--acid);}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;}
+  .chip{font-size:10px;padding:5px 9px;border:1px solid var(--line);border-radius:5px;cursor:pointer;transition:.12s;color:rgba(240,237,230,.7);}
+  .chip:hover{border-color:var(--acid);} .chip.on{border-color:var(--acid);color:var(--acid);background:rgba(184,255,0,.07);}
+  .btn{cursor:pointer;background:transparent;border:1px solid var(--line);color:var(--ink);font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.12em;padding:10px 12px;border-radius:6px;transition:.18s;text-transform:uppercase;width:100%;}
+  .btn:hover{border-color:var(--acid);color:var(--acid);}
+  .btn.pri{background:var(--acid);color:#050505;font-weight:700;border-color:var(--acid);} .btn.pri:hover{filter:brightness(1.08);}
+  .btnrow{display:flex;gap:8px;margin-top:6px;}
+
+  .paperwrap{min-width:0;}
+  .doc{background:var(--paper);color:var(--pink);border-radius:6px;box-shadow:0 20px 60px rgba(0,0,0,.5);padding:52px 54px;font-size:13px;line-height:1.65;}
+  .doc .dhead{display:flex;justify-content:space-between;align-items:flex-start;gap:18px;border-bottom:2px solid var(--pink);padding-bottom:16px;margin-bottom:22px;flex-wrap:wrap;}
+  .doc .dbrand{font-family:'Bebas Neue',sans-serif;font-size:38px;letter-spacing:.02em;line-height:.85;}
+  .doc .dbrand em{font-style:normal;border-bottom:4px solid var(--acid);}
+  .doc .dbrand small{display:block;font-family:'Space Mono',monospace;font-size:9.5px;letter-spacing:.18em;color:var(--pmut);margin-top:8px;text-transform:uppercase;}
+  .doc .dmeta{text-align:right;font-size:11px;color:var(--pmut);line-height:1.7;} .doc .dmeta b{color:var(--pink);}
+  .doc .dtitle{font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:.02em;line-height:.95;margin-bottom:4px;}
+  .doc .dfor{font-size:13px;color:var(--pmut);margin-bottom:18px;} .doc .dfor b{color:var(--pink);}
+  .doc h3.sec{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:.06em;text-transform:uppercase;margin:22px 0 8px;padding-bottom:5px;border-bottom:1px solid var(--pline);display:flex;align-items:baseline;gap:8px;page-break-after:avoid;}
+  .doc h3.sec .n{font-family:'Space Mono',monospace;font-size:10px;color:var(--acid);background:var(--pink);padding:2px 6px;border-radius:3px;letter-spacing:.1em;}
+  .doc .txt{font-size:12.5px;color:#2a2822;white-space:pre-wrap;} .doc .txt.mut{color:var(--pmut);font-style:italic;}
+  .doc .tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;} .doc .tags span{font-size:11px;background:#efece3;border:1px solid var(--pline);border-radius:4px;padding:3px 9px;color:#3a382f;}
+  .sec2{display:grid;grid-template-columns:1fr 1fr;gap:22px;} .sec2 .cl{margin:0;} @media print{.sec2{gap:14px;}}
+  .clause{page-break-inside:avoid;}
+  .dfoot{margin-top:26px;padding-top:14px;border-top:2px solid var(--pink);display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font-size:11.5px;color:var(--pmut);} .dfoot b{color:var(--pink);}
+  .empty{color:var(--pmut);font-size:13px;text-align:center;padding:40px 0;}
+
+  .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--acid);color:#050505;font-size:11px;font-weight:700;letter-spacing:.08em;padding:10px 18px;border-radius:6px;opacity:0;pointer-events:none;transition:.25s;z-index:9;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  .foot{font-size:10px;color:rgba(240,237,230,.35);letter-spacing:.1em;margin-top:36px;text-align:center;}
+
+  @media print{ @page{margin:15mm;} body::before{display:none;} body{background:#fff;}
+    .wrap{max-width:none;padding:0;} header,.intro,.editor,.foot,.toast{display:none!important;}
+    .cols{display:block;} .doc{box-shadow:none;border-radius:0;padding:0;} }
+</style></head><body>
+<div class="wrap">
+  <header>
+    <div class="brand"><b>BRIEF</b><span>el arranque de todo proyecto audiovisual</span></div>
+    <nav><a href="/labs/">← LABS</a><a href="/storyboard/">STORYBOARD</a><a href="/proyectos-av/">PROYECTOS</a></nav>
+  </header>
+  <p class="intro">El punto de partida de una producción: <b>qué</b> hay que hacer, para <b>quién</b>, con qué <b>estética</b> y para <b>cuándo</b>. Completá el brief y sale un documento con tu marca, listo para imprimir o guardar en PDF y confirmar con el cliente antes de empezar — así nadie rehace nada por un malentendido. Todo corre en tu navegador y se guarda solo.</p>
+
+  <div class="cols">
+    <aside class="editor">
+      <h2>Armá el brief</h2>
+      <div class="grp"><div class="gl">Proyecto</div>
+        <div class="fld"><label>Nombre del proyecto</label><input id="proy" placeholder="Aftermovie · Fiesta X"></div>
+        <div class="row2">
+          <div class="fld"><label>Cliente</label><input id="cli" placeholder="Marca / persona"></div>
+          <div class="fld"><label>Fecha</label><input id="fecha" type="date"></div>
+        </div>
+      </div>
+      <div class="grp"><div class="gl">Tipo de pieza</div><div class="chips" id="tipoChips"></div></div>
+      <div class="grp"><div class="gl">Qué y para quién</div>
+        <div class="fld"><label>Objetivo</label><textarea id="objetivo" placeholder="Qué tiene que lograr la pieza"></textarea></div>
+        <div class="fld"><label>Concepto / mensaje clave</label><textarea id="concepto" placeholder="La idea central en una o dos frases"></textarea></div>
+        <div class="fld"><label>Público</label><input id="publico" placeholder="A quién le habla"></div>
+      </div>
+      <div class="grp"><div class="gl">Entregables</div>
+        <div class="fld"><label>Duración, formatos y cantidad</label><textarea id="entregables" placeholder="1× 30s (16:9) + 3× 15s (9:16) · 1080p · master + versiones para redes"></textarea></div>
+      </div>
+      <div class="grp"><div class="gl">Estética</div>
+        <div class="fld"><label>Tono</label><div class="chips" id="tonoChips"></div></div>
+        <div class="fld"><label>Referencias (una por línea)</label><textarea id="refs" placeholder="Link o descripción de referencia&#10;Otra referencia"></textarea></div>
+      </div>
+      <div class="grp"><div class="gl">Distribución + audio</div>
+        <div class="fld"><label>Dónde se publica</label><div class="chips" id="platChips"></div></div>
+        <div class="fld"><label>Música / audio</label><input id="audio" placeholder="Tema, estilo, con o sin voz…"></div>
+      </div>
+      <div class="grp"><div class="gl">Logística</div>
+        <div class="fld"><label>Qué provee el cliente</label><textarea id="provee" placeholder="Logos, material filmado, textos, accesos, locación…"></textarea></div>
+        <div class="fld"><label>Cronograma / deadline</label><textarea id="crono" placeholder="Entrega final: 00/00 · v1 para revisión: 00/00"></textarea></div>
+      </div>
+      <div class="grp"><div class="gl">Tu marca</div>
+        <div class="fld"><label>Nombre</label><input id="marca" value="Human Glitche"></div>
+        <div class="fld"><label>Contacto (pie)</label><input id="cont" value="hola@hg-vl.com · hg-vl.com"></div>
+      </div>
+      <button class="btn pri" id="printBtn">🖨 Imprimir / Guardar PDF</button>
+      <div class="btnrow"><button class="btn" id="copyBtn">📋 Copiar texto</button><button class="btn" id="resetBtn">↺ Limpiar</button></div>
+    </aside>
+    <div class="paperwrap"><div class="doc" id="doc"></div></div>
+  </div>
+  <div class="foot">HUMAN GLITCHE · VISUAL LAB · brief client-side · imprimí a PDF y confirmá antes de producir · suite Producción AV</div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+'use strict';
+var $=function(id){return document.getElementById(id);};
+var TIPOS=['Reel / redes','Spot publicitario','Aftermovie','Video musical','VJ / visuales','Motion / animación','Explainer','Producto','Institucional','Documental corto'];
+var TONOS=['Enérgico','Elegante','Glitch','Minimal','Retro','Oscuro','Colorido','Cinematográfico','Under','Divertido','Épico','Íntimo'];
+var PLATS=['Instagram','TikTok','YouTube','Pantallas / evento','Web','LinkedIn','Cine / proyección'];
+var LS='hg_brief_v1';
+var st={ proy:'', cli:'', fecha:'', tipo:[], objetivo:'', concepto:'', publico:'', entregables:'', tono:[], refs:'', plat:[], audio:'', provee:'', crono:'', marca:'Human Glitche', cont:'hola@hg-vl.com · hg-vl.com' };
+try{ var s=JSON.parse(localStorage.getItem(LS)||'null'); if(s) st=Object.assign(st,s); }catch(e){}
+
+function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
+function save(){ try{ localStorage.setItem(LS, JSON.stringify(st)); }catch(e){} }
+function toast(t){ var el=$('toast'); el.textContent=t; el.classList.add('show'); setTimeout(function(){el.classList.remove('show');},1700); }
+function fechaTxt(){ var v=st.fecha; var d=v?new Date(v+'T00:00:00'):new Date(); return d.toLocaleDateString('es-AR',{day:'2-digit',month:'long',year:'numeric'}); }
+
+function chips(elId, list, key){
+  $(elId).innerHTML = list.map(function(t){ return '<span class="chip '+(st[key].indexOf(t)>=0?'on':'')+'" data-t="'+esc(t)+'">'+esc(t)+'</span>'; }).join('');
+  $(elId).addEventListener('click', function(e){ var c=e.target.closest('.chip'); if(!c) return;
+    var t=c.getAttribute('data-t'); var i=st[key].indexOf(t); if(i>=0) st[key].splice(i,1); else st[key].push(t);
+    c.classList.toggle('on'); save(); render(); });
+}
+function bind(id,key){ var el=$(id); if(!el) return; if(st[key]!=null&&st[key]!=='') el.value=st[key];
+  el.addEventListener('input', function(){ st[key]=el.value; save(); render(); }); }
+
+function secTxt(n,titulo,val,ph){ if(!val && !ph) return '';
+  return '<div class="clause"><h3 class="sec"><span class="n">'+n+'</span> '+titulo+'</h3><div class="txt'+(val?'':' mut')+'">'+esc(val||ph)+'</div></div>'; }
+
+function render(){
+  var doc=$('doc');
+  var any = st.proy||st.objetivo||st.concepto||st.tipo.length||st.entregables;
+  if(!any){ doc.innerHTML='<div class="empty">Completá el proyecto y el objetivo a la izquierda.<br>El brief se arma solo, listo para PDF.</div>'; return; }
+  var marca=st.marca||'Human Glitche'; var mp=marca.trim().split(/\s+/);
+  var brandHtml = mp.length>1 ? esc(mp.slice(0,-1).join(' '))+' <em>'+esc(mp[mp.length-1])+'</em>' : '<em>'+esc(marca)+'</em>';
+  var n=0; var N=function(){ n++; return (n<10?'0':'')+n; };
+
+  var refsList=(st.refs||'').split('\n').map(function(x){return x.trim();}).filter(Boolean);
+  var tipoTags = st.tipo.length ? '<div class="tags">'+st.tipo.map(function(t){return '<span>'+esc(t)+'</span>';}).join('')+'</div>' : '<div class="txt mut">Definir tipo de pieza</div>';
+  var tonoTags = st.tono.length ? '<div class="tags">'+st.tono.map(function(t){return '<span>'+esc(t)+'</span>';}).join('')+'</div>' : '';
+  var platTags = st.plat.length ? '<div class="tags">'+st.plat.map(function(t){return '<span>'+esc(t)+'</span>';}).join('')+'</div>' : '';
+
+  doc.innerHTML =
+    '<div class="dhead"><div class="dbrand">'+brandHtml+'<small>'+esc(st.cont||'')+'</small></div>'
+      +'<div class="dmeta">Brief de proyecto<br><b>'+esc(fechaTxt())+'</b></div></div>'
+    +'<div class="dtitle">'+esc(st.proy||'Proyecto audiovisual')+'</div>'
+    +'<div class="dfor">Cliente: <b>'+esc(st.cli||'—')+'</b></div>'
+    +'<div class="clause"><h3 class="sec"><span class="n">'+N()+'</span> Tipo de pieza</h3>'+tipoTags+'</div>'
+    +secTxt(N(),'Objetivo', st.objetivo, 'Qué tiene que lograr la pieza.')
+    +secTxt(N(),'Concepto / mensaje clave', st.concepto, 'La idea central.')
+    +secTxt(N(),'Público', st.publico, 'A quién le habla.')
+    +secTxt(N(),'Entregables', st.entregables, 'Duración, formatos, resoluciones y cantidad.')
+    +'<div class="clause"><h3 class="sec"><span class="n">'+N()+'</span> Estética</h3>'+tonoTags
+      +(refsList.length?'<div class="txt" style="margin-top:6px"><b>Referencias:</b>\n'+esc(refsList.map(function(r){return '· '+r;}).join('\n'))+'</div>':(tonoTags?'':'<div class="txt mut">Definir tono y referencias.</div>'))+'</div>'
+    +(platTags?'<div class="clause"><h3 class="sec"><span class="n">'+N()+'</span> Distribución</h3>'+platTags+'</div>':'')
+    +(st.audio?secTxt(N(),'Música / audio', st.audio,''):'')
+    +(st.provee?secTxt(N(),'Provee el cliente', st.provee,''):'')
+    +(st.crono?secTxt(N(),'Cronograma', st.crono,''):'')
+    +'<div class="dfoot"><div>Confirmado esto, arrancamos.<br><b>'+esc(marca)+'</b></div><div style="text-align:right">'+esc(st.cont||'')+'</div></div>';
+}
+
+function asText(){
+  if(!(st.proy||st.objetivo)) return '';
+  var L=['BRIEF — '+(st.proy||'Proyecto AV'), 'Cliente: '+(st.cli||'—')+' · '+fechaTxt(), ''];
+  if(st.tipo.length) L.push('Tipo: '+st.tipo.join(', '));
+  if(st.objetivo) L.push('Objetivo: '+st.objetivo);
+  if(st.concepto) L.push('Concepto: '+st.concepto);
+  if(st.publico) L.push('Público: '+st.publico);
+  if(st.entregables) L.push('Entregables: '+st.entregables);
+  if(st.tono.length) L.push('Tono: '+st.tono.join(', '));
+  var refs=(st.refs||'').split('\n').map(function(x){return x.trim();}).filter(Boolean);
+  if(refs.length) L.push('Referencias: '+refs.join(' · '));
+  if(st.plat.length) L.push('Distribución: '+st.plat.join(', '));
+  if(st.audio) L.push('Audio: '+st.audio);
+  if(st.provee) L.push('Provee el cliente: '+st.provee);
+  if(st.crono) L.push('Cronograma: '+st.crono);
+  L.push('', '— '+(st.marca||'Human Glitche')+' · '+(st.cont||''));
+  return L.join('\n');
+}
+
+// bind
+chips('tipoChips',TIPOS,'tipo'); chips('tonoChips',TONOS,'tono'); chips('platChips',PLATS,'plat');
+['proy','cli','fecha','objetivo','concepto','publico','entregables','refs','audio','provee','crono','marca','cont'].forEach(function(k){ bind(k,k); });
+$('printBtn').addEventListener('click', function(){ if(!(st.proy||st.objetivo)){ toast('Cargá al menos proyecto y objetivo'); return; } window.print(); });
+$('copyBtn').addEventListener('click', function(){ var t=asText(); if(!t){ toast('Brief vacío'); return; }
+  if(navigator.clipboard) navigator.clipboard.writeText(t).then(function(){toast('Texto copiado');},function(){prompt('Copiá:',t);}); else prompt('Copiá:',t); });
+$('resetBtn').addEventListener('click', function(){ if(!confirm('¿Limpiar el brief?'))return;
+  st={ proy:'', cli:'', fecha:'', tipo:[], objetivo:'', concepto:'', publico:'', entregables:'', tono:[], refs:'', plat:[], audio:'', provee:'', crono:'', marca:'Human Glitche', cont:'hola@hg-vl.com · hg-vl.com' };
+  save(); location.reload(); });
+
+render();
+})();
+</script>
+</body></html>
