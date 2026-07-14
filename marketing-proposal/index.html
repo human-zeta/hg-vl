@@ -1,0 +1,286 @@
+<!doctype html><html lang="es"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MARKETING PROPOSAL — Human Glitche · ideas locas para atraer clientes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{ --acid:#b8ff00; --glitch:#ff2d55; --cyan:#3ad0ff; --ink:#f0ede6; --line:rgba(240,237,230,.12); --bg:#050505; --pan:rgba(184,255,0,.015); }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{min-height:100%;background:var(--bg);color:var(--ink);font-family:'Space Mono',monospace;}
+  body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");z-index:0;pointer-events:none;opacity:.4;}
+  .wrap{position:relative;z-index:1;max-width:1080px;margin:0 auto;padding:26px 20px 90px;}
+  header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;gap:16px;flex-wrap:wrap;}
+  .brand{font-family:'Bebas Neue',sans-serif;font-size:48px;letter-spacing:.03em;line-height:.82;}
+  .brand b{color:var(--acid);font-weight:400;}
+  .brand span{display:block;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.2em;color:rgba(240,237,230,.4);margin-top:8px;}
+  header nav a{font-size:10px;letter-spacing:.2em;color:rgba(240,237,230,.4);text-decoration:none;margin-left:16px;} header nav a:hover{color:var(--acid);}
+  .intro{font-size:12px;color:rgba(240,237,230,.55);line-height:1.8;max-width:78ch;margin:12px 0 18px;} .intro b{color:var(--acid);font-weight:400;}
+  .tabs{display:flex;gap:8px;margin-bottom:18px;}
+  .tab{cursor:pointer;background:transparent;border:1px solid var(--line);color:rgba(240,237,230,.7);font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.08em;padding:10px 16px;border-radius:8px;transition:.15s;} .tab:hover{border-color:var(--acid);color:var(--acid);} .tab.on{border-color:var(--acid);color:var(--acid);background:rgba(184,255,0,.07);}
+  .panel{display:none;} .panel.on{display:block;}
+  .card0{border:1px solid var(--line);border-radius:10px;background:var(--pan);padding:18px;margin-bottom:16px;}
+  .fld{display:flex;flex-direction:column;gap:4px;margin-bottom:11px;} .fld label{font-size:8.5px;letter-spacing:.16em;text-transform:uppercase;color:rgba(240,237,230,.4);}
+  .fld input,.fld select{background:#0b0b0b;border:1px solid var(--line);color:var(--ink);font-family:'Space Mono',monospace;font-size:12px;padding:8px 10px;border-radius:6px;width:100%;} .fld input:focus,.fld select:focus{outline:none;border-color:var(--acid);}
+  .row2{display:grid;grid-template-columns:1fr 200px;gap:11px;} @media(max-width:640px){.row2{grid-template-columns:1fr;}}
+  .modes{display:flex;gap:8px;margin-bottom:11px;} .mode{cursor:pointer;flex:1;text-align:center;border:1px solid var(--line);border-radius:7px;padding:9px;font-size:11px;color:rgba(240,237,230,.7);transition:.15s;} .mode:hover{border-color:var(--acid);} .mode.on{border-color:var(--acid);color:var(--acid);background:rgba(184,255,0,.07);}
+  .slider{display:flex;align-items:center;gap:10px;} .slider input[type=range]{flex:1;accent-color:var(--acid);} .slider .lv{font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--acid);min-width:120px;}
+  .ai{border:1px solid var(--line);border-radius:8px;padding:12px;background:#0a0a0a;margin-bottom:11px;} .ai.hidden{display:none;}
+  .ai .note{font-size:9.5px;color:rgba(240,237,230,.4);line-height:1.6;margin-top:4px;} .ai .note a{color:var(--cyan);}
+  .btn{cursor:pointer;background:transparent;border:1px solid var(--line);color:var(--ink);font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.1em;padding:11px 14px;border-radius:6px;transition:.18s;text-transform:uppercase;} .btn:hover{border-color:var(--acid);color:var(--acid);} .btn.pri{background:var(--acid);color:#050505;font-weight:700;border-color:var(--acid);width:100%;} .btn.pri:hover{filter:brightness(1.08);} .btn.pri[disabled]{opacity:.5;cursor:wait;}
+  .status{font-size:11px;color:var(--cyan);margin-top:10px;min-height:16px;} .status.err{color:var(--glitch);}
+  .ideas{display:flex;flex-direction:column;gap:12px;}
+  .idea{border:1px solid var(--line);border-radius:10px;background:var(--pan);padding:16px;} .idea.new{animation:pop .3s;}
+  @keyframes pop{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+  .idea .it{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:.02em;color:var(--acid);line-height:.95;margin-bottom:7px;display:flex;justify-content:space-between;gap:10px;align-items:baseline;}
+  .idea .tac{font-family:'Space Mono',monospace;font-size:8.5px;letter-spacing:.14em;text-transform:uppercase;color:#050505;background:var(--cyan);padding:3px 7px;border-radius:4px;white-space:nowrap;}
+  .idea .ip{font-size:12.5px;color:rgba(240,237,230,.78);line-height:1.7;}
+  .idea .ir{font-size:10px;color:rgba(240,237,230,.4);margin-top:8px;} .idea .ir b{color:var(--cyan);font-weight:400;}
+  .idea .iact{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;} .idea .iact .btn{font-size:9.5px;padding:7px 10px;}
+  .idea .btn.saved{border-color:var(--acid);color:var(--acid);}
+  .empty{color:rgba(240,237,230,.4);font-size:12px;text-align:center;padding:36px 0;line-height:1.8;}
+
+  /* repo */
+  .repobar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:14px;}
+  .repobar select,.repobar input{background:#0b0b0b;border:1px solid var(--line);color:var(--ink);font-family:'Space Mono',monospace;font-size:12px;padding:8px 10px;border-radius:6px;} .repobar input{flex:1;min-width:140px;} .repobar select:focus,.repobar input:focus{outline:none;border-color:var(--acid);}
+  .repostat{font-size:10px;color:rgba(240,237,230,.5);} .repostat b{color:var(--cyan);}
+  .repo{display:flex;flex-direction:column;gap:10px;}
+  .ritem{border:1px solid var(--line);border-radius:9px;background:var(--pan);padding:13px 15px;}
+  .ritem .rh{display:flex;justify-content:space-between;gap:10px;align-items:baseline;flex-wrap:wrap;} .ritem .rt{font-family:'Bebas Neue',sans-serif;font-size:19px;letter-spacing:.02em;color:var(--ink);}
+  .ritem .rmeta{font-size:9px;color:rgba(240,237,230,.4);letter-spacing:.04em;} .ritem .rmeta b{color:var(--cyan);font-weight:400;}
+  .ritem .rp{font-size:12px;color:rgba(240,237,230,.72);line-height:1.65;margin-top:6px;}
+  .ritem .ract{display:flex;gap:7px;margin-top:9px;} .ritem .ract button{cursor:pointer;background:transparent;border:1px solid var(--line);color:rgba(240,237,230,.55);border-radius:5px;font-size:9px;padding:5px 9px;letter-spacing:.06em;text-transform:uppercase;} .ritem .ract button:hover{border-color:var(--acid);color:var(--acid);} .ritem .ract button.del:hover{border-color:var(--glitch);color:var(--glitch);}
+  .foot{font-size:10px;color:rgba(240,237,230,.35);letter-spacing:.1em;margin-top:36px;text-align:center;}
+  .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--acid);color:#050505;font-size:11px;font-weight:700;letter-spacing:.08em;padding:10px 18px;border-radius:6px;opacity:0;pointer-events:none;transition:.25s;z-index:9;} .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+</style></head><body>
+<div class="wrap">
+  <header>
+    <div class="brand"><b>MARKETING PROPOSAL</b><span>ideas locas para atraer clientes</span></div>
+    <nav><a href="/labs/">← LABS</a><a href="/pipelines/">PIPELINES</a><a href="/guia-venta/">GUÍA</a></nav>
+  </header>
+  <p class="intro">Un motor de <b>ideas de marketing fuera de serie</b> según el rubro o el servicio: guerrilla, retos virales, colaboraciones raras, stunts, gamificación. Funciona con el <b>banco local</b> (sin clave, siempre) o con <b>IA (Gemini)</b> poniendo tu propia clave — gratis, y queda solo en tu navegador. Cada idea que te gusta la guardás en el <b>repositorio</b>.</p>
+
+  <div class="tabs">
+    <button class="tab on" data-tab="gen">💡 Generador</button>
+    <button class="tab" data-tab="repo">📚 Repositorio <span id="repoCount"></span></button>
+  </div>
+
+  <!-- GENERADOR -->
+  <div class="panel on" id="panel-gen">
+    <div class="card0">
+      <div class="row2">
+        <div class="fld"><label>Rubro o servicio</label><input id="rubro" list="rubros" placeholder="Cafetería de especialidad, VJ para eventos, estudio de tatuajes…">
+          <datalist id="rubros"></datalist></div>
+        <div class="fld"><label>¿Cuántas ideas?</label><select id="cant"><option>3</option><option selected>4</option><option>6</option></select></div>
+      </div>
+      <div class="fld"><label>Nivel de locura</label><div class="slider"><input type="range" id="nivel" min="1" max="5" value="3"><span class="lv" id="nivelLbl"></span></div></div>
+      <div class="modes">
+        <div class="mode on" data-mode="banco">🎲 Banco local (sin clave)</div>
+        <div class="mode" data-mode="ia">✨ IA · Gemini</div>
+      </div>
+      <div class="ai hidden" id="aiBox">
+        <div class="fld"><label>Clave de Gemini (Google AI Studio)</label><input type="password" id="apikey" placeholder="Pegá tu API key" autocomplete="off"></div>
+        <div class="fld"><label>Modelo</label><input type="text" id="model" value="gemini-2.0-flash"></div>
+        <div class="note">Tu clave queda <b>solo en este navegador</b> (localStorage) y se usa para llamar directo a la API de Google — no se envía a ningún otro lado. Conseguí una gratis en <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com/apikey</a>.</div>
+      </div>
+      <button class="btn pri" id="genBtn">⚡ Generar ideas</button>
+      <div class="status" id="status"></div>
+    </div>
+    <div class="ideas" id="ideas"></div>
+  </div>
+
+  <!-- REPOSITORIO -->
+  <div class="panel" id="panel-repo">
+    <div class="repobar">
+      <select id="filterRubro"><option value="">Todos los rubros</option></select>
+      <input id="search" placeholder="Buscar en el repo…">
+      <div style="flex:1"></div>
+      <div class="repostat" id="repostat"></div>
+      <button class="btn" id="exportBtn" style="font-size:9.5px;padding:8px 11px">Exportar</button>
+    </div>
+    <div class="repo" id="repo"></div>
+  </div>
+
+  <div class="foot">HUMAN GLITCHE · VISUAL LAB · generador de ideas client-side · banco local + IA opcional (Gemini)</div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+'use strict';
+var $=function(id){return document.getElementById(id);};
+var NIVELES=['','Realista','Audaz','Fuera de serie','Delirante','Al límite'];
+var RUBROS=['Cafetería','Restaurante','Bar','Panadería','Heladería','Peluquería','Barbería','Gimnasio','Estética','Tienda de ropa','Ferretería','Inmobiliaria','Estudio de tatuajes','Fotografía','VJ / visuales','Productora audiovisual','Estudio de diseño','Academia / cursos','Veterinaria','Food truck','Local de deco','Estudio de yoga','Marca de indumentaria','Servicio freelance'];
+
+// ── Banco local de patrones (boldness 1-5) ──────────────────────────────────
+var PATRONES=[
+  {b:2,tac:'reto',t:'El reto del barrio',f:function(r){return 'Lanzá un desafío público ligado a '+r+': quien lo completa y lo sube con tu hashtag entra a un sorteo grande. La gente compite y te hace publicidad gratis.';}},
+  {b:3,tac:'stunt',t:'La instalación imposible',f:function(r){return 'Montá por un día algo absurdo y fotografiable en la puerta de tu '+r+' (una escultura gigante, una fila falsa, un personaje). La foto se comparte sola.';}},
+  {b:2,tac:'collab',t:'Cruce inesperado',f:function(r){return 'Aliáte con un negocio de rubro totalmente distinto al de '+r+' y armá un combo o experiencia conjunta. El cruce raro genera charla y se cruzan audiencias.';}},
+  {b:1,tac:'ugc',t:'Tu cliente, la estrella',f:function(r){return 'Diseñá un rincón/pared pensado para la foto perfecta en tu '+r+', con tu marca sutil. Cada foto que suben tus clientes es un aviso gratis.';}},
+  {b:3,tac:'gamificación',t:'La carta secreta',f:function(r){return 'Escondé premios o ítems secretos en '+r+': quien descubre el código o el objeto oculto gana algo. Se corre la voz y vuelven a buscar.';}},
+  {b:4,tac:'absurdo',t:'El día del revés',f:function(r){return 'Un día al mes, tu '+r+' hace todo al revés: precios de hace 20 años, atención disfrazada, menú/servicio secreto. Lo absurdo se cuenta solo.';}},
+  {b:2,tac:'experiencia',t:'La sorpresa incluida',f:function(r){return 'Sumá una sorpresa inesperada al pasar por '+r+' (un show relámpago, una degustación, un detalle personalizado). La sorpresa fideliza y genera relato.';}},
+  {b:3,tac:'guerrilla',t:'Stencil con QR',f:function(r){return 'Diseñá un sticker o stencil ingenioso con un guiño a '+r+' y sembralo por la ciudad con un QR. Curiosidad → escaneo → tu negocio.';}},
+  {b:4,tac:'stunt',t:'El récord ridículo',f:function(r){return 'Intentá batir un "récord" inventado y absurdo relacionado con '+r+', anunciado con bombos. Invitás prensa local y lo transmitís en vivo.';}},
+  {b:2,tac:'reto',t:'La pared de deseos',f:function(r){return 'Poné una pizarra pública donde la gente deja pedidos/deseos ligados a '+r+'; cada semana cumplís uno al azar y lo mostrás. Emoción + contenido.';}},
+  {b:3,tac:'collab',t:'Residencia de artistas',f:function(r){return 'Invitá a un artista/creador local a intervenir tu '+r+' por una semana (mural, playlist, pieza). Su comunidad viene a verlo y descubre tu marca.';}},
+  {b:1,tac:'ugc',t:'El detrás de escena',f:function(r){return 'Mostrá el proceso real y crudo de tu '+r+' en video corto, sin filtro: la gente se engancha con el "cómo se hace" y humaniza la marca.';}},
+  {b:4,tac:'gamificación',t:'La cacería urbana',f:function(r){return 'Armá una búsqueda del tesoro por el barrio con pistas ligadas a '+r+'; el premio final se retira en tu local. Foot traffic + viralidad.';}},
+  {b:5,tac:'absurdo',t:'El anti-anuncio',f:function(r){return 'Hacé una campaña que se burle de sí misma o "desaconseje" venir a '+r+' con ironía. Lo inesperado corta el scroll y genera captura y share.';}},
+  {b:2,tac:'experiencia',t:'Membresía secreta',f:function(r){return 'Creá un club "secreto" de tu '+r+' con beneficios y contraseña. La exclusividad genera deseo y boca en boca; el que entra invita.';}},
+  {b:3,tac:'guerrilla',t:'Proyección nocturna',f:function(r){return 'Proyectá de noche un mensaje/animación con tu marca en una pared bien vista cerca de tu '+r+'. Impacto visual gratis y muy fotografiable (¡tu fuerte si sos VJ!).';}},
+  {b:3,tac:'reto',t:'La colecta creativa',f:function(r){return 'Cada compra en '+r+' suma a una meta comunitaria (un mural, plantar árboles, ayudar a alguien). La causa moviliza y da orgullo de participar.';}},
+  {b:4,tac:'collab',t:'El menú de otro',f:function(r){return 'Por una semana, '+r+' presenta la "versión" de otro negocio famoso local (homenaje/parodia). El cruce genera revuelo y ambos ganan alcance.';}},
+  {b:5,tac:'stunt',t:'La mudanza falsa',f:function(r){return 'Anunciá con drama que '+r+' "cierra/se muda" y al final revelá que era un relanzamiento con algo nuevo. Manejá el suspenso (con cuidado de no quemar confianza).';}},
+  {b:2,tac:'gamificación',t:'Sellos y niveles',f:function(r){return 'Tarjeta de sellos con niveles y recompensas sorpresa en '+r+' (no solo "el 10º gratis"): premios random hacen que juntar sea adictivo.';}},
+  {b:1,tac:'experiencia',t:'El primer cliente',f:function(r){return 'Sorprendé al primer cliente de cada día en '+r+' con algo gratis y filmalo. Serie de contenido tierno + gente que llega temprano a propósito.';}},
+  {b:4,tac:'guerrilla',t:'El clon en la calle',f:function(r){return 'Un personaje/mascota de '+r+' aparece en lugares insólitos de la ciudad repartiendo algo con QR. La gente lo persigue para la foto.';}},
+  {b:3,tac:'ugc',t:'El concurso imposible',f:function(r){return 'Pedí a tus seguidores el uso más loco/creativo de tu producto o servicio de '+r+'; el ganador se lleva algo grande. Contenido generado infinito.';}},
+  {b:5,tac:'absurdo',t:'La subasta al revés',f:function(r){return 'El precio de algo en '+r+' baja con cada persona que llega, hasta que alguien lo frena y compra. Genera urgencia, juego y una multitud.';}}
+];
+
+var LS='hg_mktproposal_v1', LS_CFG='hg_mktproposal_cfg';
+var repo=[]; try{ repo=JSON.parse(localStorage.getItem(LS)||'[]')||[]; }catch(e){ repo=[]; }
+var cfg={ mode:'banco', nivel:3, apikey:'', model:'gemini-2.0-flash', rubro:'', cant:'4' };
+try{ var c=JSON.parse(localStorage.getItem(LS_CFG)||'null'); if(c) cfg=Object.assign(cfg,c); }catch(e){}
+var current=[];  // ideas mostradas ahora
+
+function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
+function saveRepo(){ try{ localStorage.setItem(LS, JSON.stringify(repo)); }catch(e){} }
+function saveCfg(){ try{ localStorage.setItem(LS_CFG, JSON.stringify(cfg)); }catch(e){} }
+function toast(t){ var el=$('toast'); el.textContent=t; el.classList.add('show'); setTimeout(function(){el.classList.remove('show');},1700); }
+function uid(){ return 'i'+Math.random().toString(36).slice(2,9); }
+function today(){ return new Date().toISOString().slice(0,10); }
+function inRepo(idea){ return repo.some(function(x){ return x.idea===idea; }); }
+
+// ── Generación local ────────────────────────────────────────────────────────
+function genBanco(rubro, n, nivel){
+  var pool=PATRONES.filter(function(p){ return Math.abs(p.b-nivel)<=2; });
+  if(pool.length<n) pool=PATRONES.slice();
+  // shuffle
+  for(var i=pool.length-1;i>0;i--){ var j=Math.floor((i+1)*(0.5+((Date.now()>>i)&7)/16 + (i%3)/7))%(i+1); var t=pool[i]; pool[i]=pool[j]; pool[j]=t; }
+  pool.sort(function(){ return Math.random()-0.5; });
+  return pool.slice(0,n).map(function(p){ return { titulo:p.t, idea:p.f(rubro||'tu negocio'), tactica:p.tac, fuente:'banco' }; });
+}
+
+// ── Gemini ──────────────────────────────────────────────────────────────────
+async function genIA(rubro, n, nivel, key, model){
+  var prompt='Sos un estratega de marketing de guerrilla, disruptivo y muy creativo, en Argentina. '
+    +'Generá '+n+' ideas de marketing LOCAS, originales y fuera de serie para atraer clientes a: "'+rubro+'". '
+    +'Contexto: presupuesto acotado, se busca viralidad, boca en boca y foto para redes. Nivel de audacia: '+nivel+'/5 (5 = delirante). '
+    +'Cada idea debe ser específica y accionable, nada genérico. '
+    +'Devolvé SOLO un array JSON válido, sin texto alrededor: '
+    +'[{"titulo":"3-5 palabras","idea":"2 a 3 frases concretas de qué hacer","tactica":"una palabra: guerrilla|reto|collab|stunt|ugc|gamificacion|experiencia|absurdo"}]';
+  var url='https://generativelanguage.googleapis.com/v1beta/models/'+encodeURIComponent(model)+':generateContent?key='+encodeURIComponent(key);
+  var resp=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+    contents:[{parts:[{text:prompt}]}], generationConfig:{temperature:1.15, maxOutputTokens:1200}
+  })});
+  if(!resp.ok){ var et=await resp.text().catch(function(){return '';}); throw new Error('Gemini '+resp.status+' — '+(et||'').slice(0,160)); }
+  var data=await resp.json();
+  var text=((((data.candidates||[])[0]||{}).content||{}).parts||[]).map(function(p){return p.text||'';}).join('');
+  return parseIdeas(text).map(function(o){ return { titulo:o.titulo||'Idea', idea:o.idea||'', tactica:(o.tactica||'idea').toLowerCase(), fuente:'ia' }; });
+}
+function parseIdeas(text){
+  if(!text) throw new Error('Respuesta vacía de la IA');
+  var m=text.match(/\[[\s\S]*\]/);
+  if(m){ try{ var arr=JSON.parse(m[0]); if(Array.isArray(arr)&&arr.length) return arr; }catch(e){} }
+  // fallback: líneas
+  var lines=text.split('\n').map(function(l){return l.replace(/^\s*[-*\d.]+\s*/,'').trim();}).filter(Boolean);
+  if(!lines.length) throw new Error('No se pudo interpretar la respuesta');
+  return lines.map(function(l){ return { titulo:l.split(/[:–—-]/)[0].slice(0,40), idea:l }; });
+}
+
+// ── Render generador ────────────────────────────────────────────────────────
+function renderIdeas(){
+  var box=$('ideas');
+  if(!current.length){ box.innerHTML='<div class="empty">Elegí un rubro y tocá <b>Generar</b>.<br>Las ideas que te gusten, guardalas al repositorio.</div>'; return; }
+  box.innerHTML=current.map(function(o,i){ var saved=inRepo(o.idea);
+    return '<div class="idea new" data-i="'+i+'"><div class="it">'+esc(o.titulo)+' <span class="tac">'+esc(o.tactica)+'</span></div>'
+      +'<div class="ip">'+esc(o.idea)+'</div>'
+      +'<div class="ir">rubro: <b>'+esc(o.rubro||cfg.rubro||'—')+'</b> · '+(o.fuente==='ia'?'IA':'banco')+'</div>'
+      +'<div class="iact"><button class="btn save '+(saved?'saved':'')+'" data-save="'+i+'">'+(saved?'✓ En el repo':'⭐ Guardar')+'</button>'
+      +'<button class="btn" data-copy="'+i+'">📋 Copiar</button></div></div>';
+  }).join('');
+}
+$('ideas').addEventListener('click', function(e){
+  var s=e.target.closest('[data-save]'), c=e.target.closest('[data-copy]');
+  if(s){ var o=current[+s.getAttribute('data-save')]; if(inRepo(o.idea)){ toast('Ya está en el repo'); return; }
+    repo.unshift({ id:uid(), rubro:o.rubro||cfg.rubro||'', titulo:o.titulo, idea:o.idea, tactica:o.tactica, fuente:o.fuente, fecha:today() });
+    saveRepo(); renderIdeas(); renderRepoCount(); toast('Guardada al repo'); return; }
+  if(c){ var o2=current[+c.getAttribute('data-copy')]; var t=o2.titulo+'\n'+o2.idea;
+    if(navigator.clipboard) navigator.clipboard.writeText(t).then(function(){toast('Copiada');}); return; }
+});
+
+async function generate(){
+  var rubro=($('rubro').value||'').trim(); if(!rubro){ toast('Escribí un rubro o servicio'); $('rubro').focus(); return; }
+  cfg.rubro=rubro; cfg.cant=$('cant').value; saveCfg();
+  var n=parseInt(cfg.cant,10)||4, nivel=cfg.nivel;
+  var st=$('status'), btn=$('genBtn');
+  st.className='status'; st.textContent='';
+  try{
+    if(cfg.mode==='ia'){
+      if(!cfg.apikey){ st.className='status err'; st.textContent='Pegá tu clave de Gemini o cambiá a Banco local.'; return; }
+      btn.disabled=true; st.textContent='Pensando ideas con IA…';
+      var ideas=await genIA(rubro,n,nivel,cfg.apikey,cfg.model);
+      current=ideas.map(function(o){ o.rubro=rubro; return o; });
+      st.textContent=current.length+' ideas de la IA ✨';
+    } else {
+      current=genBanco(rubro,n,nivel).map(function(o){ o.rubro=rubro; return o; });
+      st.textContent=current.length+' ideas del banco 🎲';
+    }
+    renderIdeas();
+  }catch(err){ st.className='status err'; st.textContent='Error: '+err.message+' — probá otro modelo, revisá la clave, o usá el banco local.'; }
+  finally{ btn.disabled=false; }
+}
+
+// ── Repositorio ─────────────────────────────────────────────────────────────
+function rubrosInRepo(){ var s={}; repo.forEach(function(x){ if(x.rubro) s[x.rubro]=1; }); return Object.keys(s).sort(); }
+function renderRepoCount(){ $('repoCount').textContent = repo.length?'('+repo.length+')':''; }
+function renderFilter(){ var cur=$('filterRubro').value; $('filterRubro').innerHTML='<option value="">Todos los rubros</option>'+rubrosInRepo().map(function(r){return '<option '+(cur===r?'selected':'')+'>'+esc(r)+'</option>';}).join(''); }
+function renderRepo(){
+  renderRepoCount();
+  var fr=$('filterRubro').value, q=($('search').value||'').toLowerCase();
+  var list=repo.filter(function(x){ if(fr&&x.rubro!==fr) return false; if(q&&(x.titulo+' '+x.idea+' '+x.rubro+' '+x.tactica).toLowerCase().indexOf(q)<0) return false; return true; });
+  $('repostat').innerHTML='<b>'+list.length+'</b> de '+repo.length+' ideas';
+  var box=$('repo');
+  if(!repo.length){ box.innerHTML='<div class="empty">Repo vacío. Generá ideas y guardá las que te gusten<br>para armar tu banco personal.</div>'; return; }
+  if(!list.length){ box.innerHTML='<div class="empty">Nada con ese filtro.</div>'; return; }
+  box.innerHTML=list.map(function(x){
+    return '<div class="ritem" data-id="'+x.id+'"><div class="rh"><div class="rt">'+esc(x.titulo)+'</div><div class="rmeta"><b>'+esc(x.rubro||'—')+'</b> · '+esc(x.tactica||'')+' · '+(x.fuente==='ia'?'IA':'banco')+' · '+esc(x.fecha||'')+'</div></div>'
+      +'<div class="rp">'+esc(x.idea)+'</div>'
+      +'<div class="ract"><button data-copy="'+x.id+'">Copiar</button><button class="del" data-del="'+x.id+'">Eliminar</button></div></div>';
+  }).join('');
+}
+$('repo').addEventListener('click', function(e){
+  var d=e.target.closest('[data-del]'), c=e.target.closest('[data-copy]');
+  if(d){ repo=repo.filter(function(x){return x.id!==d.getAttribute('data-del');}); saveRepo(); renderFilter(); renderRepo(); return; }
+  if(c){ var x=repo.find(function(y){return y.id===c.getAttribute('data-copy');}); if(x&&navigator.clipboard) navigator.clipboard.writeText(x.titulo+'\n'+x.idea).then(function(){toast('Copiada');}); }
+});
+$('filterRubro').addEventListener('change', renderRepo);
+$('search').addEventListener('input', renderRepo);
+$('exportBtn').addEventListener('click', function(){ if(!repo.length){ toast('Repo vacío'); return; }
+  var txt=repo.map(function(x){ return '['+x.rubro+' · '+x.tactica+'] '+x.titulo+'\n'+x.idea; }).join('\n\n');
+  if(navigator.clipboard) navigator.clipboard.writeText(txt).then(function(){toast('Repo copiado ('+repo.length+' ideas)');},function(){prompt('Copiá:',txt);}); else prompt('Copiá:',txt); });
+
+// ── Tabs + config ───────────────────────────────────────────────────────────
+document.querySelector('.tabs').addEventListener('click', function(e){ var t=e.target.closest('[data-tab]'); if(!t) return;
+  var tab=t.getAttribute('data-tab'); document.querySelectorAll('.tab').forEach(function(b){b.classList.toggle('on',b===t);});
+  $('panel-gen').classList.toggle('on',tab==='gen'); $('panel-repo').classList.toggle('on',tab==='repo');
+  if(tab==='repo'){ renderFilter(); renderRepo(); } });
+document.querySelector('.modes').addEventListener('click', function(e){ var m=e.target.closest('[data-mode]'); if(!m) return;
+  cfg.mode=m.getAttribute('data-mode'); saveCfg(); document.querySelectorAll('.mode').forEach(function(x){x.classList.toggle('on',x===m);}); $('aiBox').classList.toggle('hidden',cfg.mode!=='ia'); });
+$('nivel').addEventListener('input', function(){ cfg.nivel=+this.value; $('nivelLbl').textContent=cfg.nivel+' · '+NIVELES[cfg.nivel]; saveCfg(); });
+$('apikey').addEventListener('input', function(){ cfg.apikey=this.value; saveCfg(); });
+$('model').addEventListener('input', function(){ cfg.model=this.value; saveCfg(); });
+$('rubro').addEventListener('input', function(){ cfg.rubro=this.value; });
+$('genBtn').addEventListener('click', generate);
+
+// init
+$('rubros').innerHTML=RUBROS.map(function(r){return '<option value="'+esc(r)+'">';}).join('');
+$('rubro').value=cfg.rubro||''; $('cant').value=cfg.cant||'4'; $('nivel').value=cfg.nivel; $('nivelLbl').textContent=cfg.nivel+' · '+NIVELES[cfg.nivel];
+$('apikey').value=cfg.apikey||''; $('model').value=cfg.model||'gemini-2.0-flash';
+document.querySelectorAll('.mode').forEach(function(x){x.classList.toggle('on',x.getAttribute('data-mode')===cfg.mode);}); $('aiBox').classList.toggle('hidden',cfg.mode!=='ia');
+renderIdeas(); renderRepoCount();
+})();
+</script>
+</body></html>
