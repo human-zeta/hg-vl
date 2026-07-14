@@ -1,0 +1,106 @@
+<!doctype html><html lang="es"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MOODBOARD — Human Glitche · el tablero de referencias del proyecto</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{ --acid:#b8ff00; --glitch:#ff2d55; --cyan:#3ad0ff; --ink:#f0ede6; --line:rgba(240,237,230,.12); --bg:#050505; --pan:rgba(184,255,0,.015); }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{min-height:100%;background:var(--bg);color:var(--ink);font-family:'Space Mono',monospace;}
+  body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");z-index:0;pointer-events:none;opacity:.4;}
+  .wrap{position:relative;z-index:1;max-width:1200px;margin:0 auto;padding:26px 20px 90px;}
+  header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;gap:16px;flex-wrap:wrap;}
+  .brand{font-family:'Bebas Neue',sans-serif;font-size:50px;letter-spacing:.03em;line-height:.82;}
+  .brand b{color:var(--acid);font-weight:400;}
+  .brand span{display:block;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.24em;color:rgba(240,237,230,.4);margin-top:8px;}
+  header nav a{font-size:10px;letter-spacing:.2em;color:rgba(240,237,230,.4);text-decoration:none;margin-left:16px;} header nav a:hover{color:var(--acid);}
+  .intro{font-size:12px;color:rgba(240,237,230,.55);line-height:1.8;max-width:76ch;margin:12px 0 18px;} .intro b{color:var(--acid);font-weight:400;}
+  .bar{display:flex;flex-wrap:wrap;gap:9px;align-items:center;border:1px solid var(--line);border-radius:10px;padding:12px 14px;background:var(--pan);margin-bottom:18px;}
+  .bar input.title{background:#0b0b0b;border:1px solid var(--line);color:var(--ink);font-family:'Space Mono',monospace;font-size:13px;padding:8px 10px;border-radius:6px;flex:1;min-width:160px;} .bar input.title:focus{outline:none;border-color:var(--acid);}
+  .btn{cursor:pointer;background:transparent;border:1px solid var(--line);color:var(--ink);font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.1em;padding:9px 12px;border-radius:6px;transition:.18s;text-transform:uppercase;} .btn:hover{border-color:var(--acid);color:var(--acid);} .btn.pri{border-color:var(--acid);color:var(--acid);background:rgba(184,255,0,.06);}
+  .board{column-count:4;column-gap:12px;} @media(max-width:900px){.board{column-count:3;}} @media(max-width:620px){.board{column-count:2;}}
+  .tile{break-inside:avoid;margin-bottom:12px;border:1px solid var(--line);border-radius:8px;overflow:hidden;position:relative;background:#0a0a0a;}
+  .tile img{width:100%;display:block;}
+  .tile .color{height:120px;} .tile .clabel{font-size:10px;padding:6px 8px;color:rgba(240,237,230,.7);display:flex;justify-content:space-between;align-items:center;} .tile .clabel input[type=color]{width:22px;height:20px;border:none;background:none;padding:0;cursor:pointer;}
+  .tile .note{padding:14px;font-size:13px;line-height:1.6;color:var(--ink);min-height:60px;} .tile .note[contenteditable]:focus{outline:1px solid var(--acid);}
+  .tile .rm{position:absolute;top:6px;right:6px;background:rgba(5,5,5,.75);border:1px solid var(--line);color:var(--ink);width:22px;height:22px;border-radius:5px;cursor:pointer;font-size:12px;line-height:1;opacity:0;transition:.15s;} .tile:hover .rm{opacity:1;} .tile .rm:hover{border-color:var(--glitch);color:var(--glitch);}
+  .empty{text-align:center;color:rgba(240,237,230,.4);font-size:12px;padding:50px 0;line-height:1.8;}
+  .foot{font-size:10px;color:rgba(240,237,230,.35);letter-spacing:.1em;margin-top:36px;text-align:center;}
+  .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--acid);color:#050505;font-size:11px;font-weight:700;letter-spacing:.08em;padding:10px 18px;border-radius:6px;opacity:0;pointer-events:none;transition:.25s;z-index:9;} .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  .prtitle{display:none;}
+  @media print{ @page{margin:12mm;} body::before{display:none;} body{background:#fff;} .wrap{max-width:none;padding:0;} header,.intro,.bar,.foot,.toast,.tile .rm{display:none!important;}
+    .prtitle{display:block;font-family:'Bebas Neue',sans-serif;font-size:26px;color:#12100c;margin-bottom:14px;} .board{column-count:3;} .tile{border-color:#ddd;background:#fff;} .tile .note{color:#12100c;} .tile .clabel{color:#333;} }
+</style></head><body>
+<div class="wrap">
+  <header>
+    <div class="brand"><b>MOODBOARD</b><span>el tablero de referencias del proyecto</span></div>
+    <nav><a href="/labs/">← LABS</a><a href="/brand-kit/">BRAND KIT</a><a href="/paleta/">PALETA</a></nav>
+  </header>
+  <p class="intro">El tablero de referencias para arrancar un proyecto: sumá <b>imágenes</b> (se achican solas para no ocupar lugar), <b>colores</b> y <b>palabras clave</b>, y armá el clima visual antes de producir. Imprimís el board a PDF para presentarlo o guardarlo. Todo corre en tu navegador.</p>
+  <div class="bar">
+    <input class="title" id="title" placeholder="Nombre del proyecto / moodboard">
+    <button class="btn pri" id="addImg">🖼 Imagen</button>
+    <button class="btn" id="addColor">🎨 Color</button>
+    <button class="btn" id="addNote">✎ Nota</button>
+    <div style="flex:1"></div>
+    <button class="btn" id="printBtn">🖨 PDF</button>
+    <button class="btn" id="clearBtn">Vaciar</button>
+  </div>
+  <div class="prtitle" id="prtitle"></div>
+  <div class="board" id="board"></div>
+  <div class="foot">HUMAN GLITCHE · VISUAL LAB · moodboard client-side · suite Marca / Creador</div>
+</div>
+<div class="toast" id="toast"></div>
+<input type="file" id="fileInput" accept="image/*" multiple style="display:none">
+
+<script>
+(function(){
+'use strict';
+var $=function(id){return document.getElementById(id);};
+var LS='hg_moodboard_v1';
+var st={ title:'', tiles:[] };
+try{ var s=JSON.parse(localStorage.getItem(LS)||'null'); if(s) st=Object.assign(st,s); }catch(e){}
+function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
+function save(){ try{ localStorage.setItem(LS, JSON.stringify(st)); }catch(e){ toast('Sin espacio — quitá alguna imagen'); } }
+function toast(t){ var el=$('toast'); el.textContent=t; el.classList.add('show'); setTimeout(function(){el.classList.remove('show');},1700); }
+function uid(){ return 't'+Math.random().toString(36).slice(2,9); }
+
+// achica la imagen a un thumbnail para no reventar localStorage
+function downscale(file, cb){
+  var r=new FileReader(); r.onload=function(){ var img=new Image(); img.onload=function(){
+    var max=640, w=img.width, h=img.height; if(w>max||h>max){ if(w>h){ h=Math.round(h*max/w); w=max; } else { w=Math.round(w*max/h); h=max; } }
+    var cv=document.createElement('canvas'); cv.width=w; cv.height=h; cv.getContext('2d').drawImage(img,0,0,w,h);
+    cb(cv.toDataURL('image/jpeg',0.72)); }; img.onerror=function(){ toast('No se pudo leer la imagen'); }; img.src=r.result; };
+  r.readAsDataURL(file);
+}
+
+function render(){
+  $('prtitle').textContent = st.title||'Moodboard';
+  var b=$('board');
+  if(!st.tiles.length){ b.innerHTML='<div class="empty">Vacío. Sumá imágenes, colores y palabras clave<br>para armar el clima visual del proyecto.</div>'; return; }
+  b.innerHTML = st.tiles.map(function(t){
+    var inner='';
+    if(t.type==='img') inner='<img src="'+t.src+'" alt="">';
+    else if(t.type==='color') inner='<div class="color" style="background:'+esc(t.hex)+'"></div><div class="clabel"><span>'+esc((t.hex||'').toUpperCase())+'</span><input type="color" value="'+esc(t.hex)+'" data-color="'+t.id+'"></div>';
+    else inner='<div class="note" contenteditable="true" data-note="'+t.id+'">'+esc(t.txt||'')+'</div>';
+    return '<div class="tile" data-id="'+t.id+'">'+inner+'<button class="rm" data-rm="'+t.id+'">✕</button></div>';
+  }).join('');
+}
+
+$('board').addEventListener('click', function(e){ var rm=e.target.closest('[data-rm]'); if(!rm) return; st.tiles=st.tiles.filter(function(t){return t.id!==rm.getAttribute('data-rm');}); save(); render(); });
+$('board').addEventListener('input', function(e){ var c=e.target.closest('[data-color]'); if(c){ var t=st.tiles.find(function(x){return x.id===c.getAttribute('data-color');}); if(t){ t.hex=c.value; c.closest('.clabel').querySelector('span').textContent=c.value.toUpperCase(); c.closest('.tile').querySelector('.color').style.background=c.value; save(); } } });
+$('board').addEventListener('blur', function(e){ var n=e.target.closest('[data-note]'); if(n){ var t=st.tiles.find(function(x){return x.id===n.getAttribute('data-note');}); if(t){ t.txt=n.textContent; save(); } } }, true);
+
+$('addImg').addEventListener('click', function(){ $('fileInput').click(); });
+$('fileInput').addEventListener('change', function(e){ var files=Array.prototype.slice.call(e.target.files||[]);
+  files.forEach(function(f){ downscale(f, function(src){ st.tiles.push({id:uid(),type:'img',src:src}); save(); render(); }); }); e.target.value=''; });
+$('addColor').addEventListener('click', function(){ var pal=['#b8ff00','#ff2d55','#3ad0ff','#12100c','#faf9f6','#ff7a00','#7b5cff']; st.tiles.push({id:uid(),type:'color',hex:pal[st.tiles.length%pal.length]}); save(); render(); });
+$('addNote').addEventListener('click', function(){ st.tiles.push({id:uid(),type:'text',txt:'palabra clave'}); save(); render(); });
+$('title').addEventListener('input', function(){ st.title=this.value; save(); $('prtitle').textContent=st.title||'Moodboard'; });
+$('title').value=st.title;
+$('printBtn').addEventListener('click', function(){ if(!st.tiles.length){ toast('Sumá algo primero'); return; } window.print(); });
+$('clearBtn').addEventListener('click', function(){ if(!confirm('¿Vaciar el moodboard?'))return; st.tiles=[]; save(); render(); });
+render();
+})();
+</script>
+</body></html>

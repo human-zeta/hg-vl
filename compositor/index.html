@@ -1,0 +1,181 @@
+<!doctype html><html lang="es"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>COMPOSITOR — Human Glitche · posts con tu marca, listos para publicar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link id="dynfonts" href="" rel="stylesheet">
+<style>
+  :root{ --acid:#b8ff00; --glitch:#ff2d55; --cyan:#3ad0ff; --ink:#f0ede6; --line:rgba(240,237,230,.12); --bg:#050505; --pan:rgba(184,255,0,.015); }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{min-height:100%;background:var(--bg);color:var(--ink);font-family:'Space Mono',monospace;}
+  body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");z-index:0;pointer-events:none;opacity:.4;}
+  .wrap{position:relative;z-index:1;max-width:1180px;margin:0 auto;padding:26px 20px 90px;}
+  header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;gap:16px;flex-wrap:wrap;}
+  .brand{font-family:'Bebas Neue',sans-serif;font-size:50px;letter-spacing:.03em;line-height:.82;}
+  .brand b{color:var(--acid);font-weight:400;}
+  .brand span{display:block;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.24em;color:rgba(240,237,230,.4);margin-top:8px;}
+  header nav a{font-size:10px;letter-spacing:.2em;color:rgba(240,237,230,.4);text-decoration:none;margin-left:16px;} header nav a:hover{color:var(--acid);}
+  .intro{font-size:12px;color:rgba(240,237,230,.55);line-height:1.8;max-width:76ch;margin:12px 0 20px;} .intro b{color:var(--acid);font-weight:400;}
+  .cols{display:grid;grid-template-columns:340px 1fr;gap:24px;align-items:start;}
+  @media(max-width:900px){ .cols{grid-template-columns:1fr;} }
+  .editor{border:1px solid var(--line);border-radius:10px;background:var(--pan);padding:16px;}
+  .grp{margin-bottom:15px;} .grp>.gl{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:rgba(240,237,230,.4);margin-bottom:8px;display:flex;align-items:center;gap:8px;} .grp>.gl::after{content:'';flex:1;height:1px;background:var(--line);}
+  .fld{display:flex;flex-direction:column;gap:4px;margin-bottom:9px;} .fld label{font-size:8.5px;letter-spacing:.16em;text-transform:uppercase;color:rgba(240,237,230,.4);}
+  .fld input,.fld select,.fld textarea{background:#0b0b0b;border:1px solid var(--line);color:var(--ink);font-family:'Space Mono',monospace;font-size:12px;padding:7px 9px;border-radius:6px;width:100%;} .fld textarea{resize:vertical;min-height:44px;line-height:1.5;} .fld input:focus,.fld select:focus,.fld textarea:focus{outline:none;border-color:var(--acid);}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;} .chip{font-size:10px;padding:5px 9px;border:1px solid var(--line);border-radius:5px;cursor:pointer;transition:.12s;color:rgba(240,237,230,.7);} .chip:hover{border-color:var(--acid);} .chip.on{border-color:var(--acid);color:var(--acid);background:rgba(184,255,0,.07);}
+  .swatchpick{display:flex;gap:6px;flex-wrap:wrap;} .swp{width:26px;height:26px;border-radius:5px;cursor:pointer;border:2px solid transparent;} .swp.on{border-color:var(--acid);}
+  .btn{cursor:pointer;background:transparent;border:1px solid var(--line);color:var(--ink);font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.1em;padding:10px 12px;border-radius:6px;transition:.18s;text-transform:uppercase;width:100%;} .btn:hover{border-color:var(--acid);color:var(--acid);} .btn.pri{background:var(--acid);color:#050505;font-weight:700;border-color:var(--acid);} .btn.pri:hover{filter:brightness(1.08);} .btnrow{display:flex;gap:8px;margin-top:6px;}
+  .bkbtn{font-size:9px;letter-spacing:.06em;padding:8px 10px;text-transform:none;}
+  .stage{display:flex;flex-direction:column;align-items:center;gap:12px;position:sticky;top:16px;}
+  .preview{max-width:100%;box-shadow:0 20px 60px rgba(0,0,0,.55);border-radius:4px;overflow:hidden;display:flex;flex-direction:column;justify-content:center;position:relative;}
+  .preview .pv-text{width:100%;padding:8% 8%;display:flex;flex-direction:column;gap:.4em;z-index:2;}
+  .preview .pv-h{line-height:1.02;word-break:break-word;} .preview .pv-s{line-height:1.3;word-break:break-word;opacity:.95;}
+  .preview .pv-logo{position:absolute;left:0;right:0;bottom:6%;display:flex;justify-content:center;z-index:2;} .preview .pv-logo img{max-height:9%;max-width:34%;}
+  .pmeta{font-size:9.5px;color:rgba(240,237,230,.4);}
+  .foot{font-size:10px;color:rgba(240,237,230,.35);letter-spacing:.1em;margin-top:36px;text-align:center;}
+  .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--acid);color:#050505;font-size:11px;font-weight:700;letter-spacing:.08em;padding:10px 18px;border-radius:6px;opacity:0;pointer-events:none;transition:.25s;z-index:9;} .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+</style></head><body>
+<div class="wrap">
+  <header>
+    <div class="brand"><b>COMPOSITOR</b><span>posts con tu marca, listos para publicar</span></div>
+    <nav><a href="/labs/">← LABS</a><a href="/brand-kit/">BRAND KIT</a><a href="/calendario/">CALENDARIO</a></nav>
+  </header>
+  <p class="intro">Armá <b>posts con tu identidad</b> en segundos: elegí formato, fondo (colores de tu paleta), un titular y bajada en tus tipografías, y tu logo. Toma la <b>paleta, fuentes y logo del BRAND KIT</b> automáticamente. Vista en vivo y export <b>PNG</b> en alta para publicar. Todo en tu navegador.</p>
+  <div class="cols">
+    <aside class="editor">
+      <button class="btn bkbtn" id="loadBk">↺ Cargar paleta/fuentes/logo del Brand Kit</button>
+      <div class="grp" style="margin-top:14px"><div class="gl">Formato</div><div class="chips" id="fmtChips"></div></div>
+      <div class="grp"><div class="gl">Fondo</div>
+        <div class="fld"><label>Tipo</label><div class="chips" id="bgTypeChips"></div></div>
+        <div class="row2"><div class="fld"><label>Color 1</label><input type="color" id="bg1"></div><div class="fld" id="bg2wrap"><label>Color 2</label><input type="color" id="bg2"></div></div>
+        <div class="fld"><label>De la paleta</label><div class="swatchpick" id="paletteSw"></div></div>
+      </div>
+      <div class="grp"><div class="gl">Texto</div>
+        <div class="fld"><label>Titular</label><textarea id="headline">Tu titular acá</textarea></div>
+        <div class="fld"><label>Bajada (opcional)</label><textarea id="sub"></textarea></div>
+        <div class="row2"><div class="fld"><label>Color texto</label><input type="color" id="textColor"></div><div class="fld"><label>Tamaño</label><select id="size"><option value="0.07">Chico</option><option value="0.095" selected>Medio</option><option value="0.13">Grande</option></select></div></div>
+        <div class="row2"><div class="fld"><label>Alineación</label><select id="align"><option value="left">Izquierda</option><option value="center" selected>Centro</option></select></div><div class="fld"><label>Posición</label><select id="vpos"><option value="flex-start">Arriba</option><option value="center" selected>Centro</option><option value="flex-end">Abajo</option></select></div></div>
+      </div>
+      <div class="grp"><div class="gl">Tipografías + logo</div>
+        <div class="row2"><div class="fld"><label>Titular</label><select id="titleFont"></select></div><div class="fld"><label>Bajada</label><select id="bodyFont"></select></div></div>
+        <label class="chip" style="display:inline-flex;gap:6px;align-items:center" id="logoToggle"><span id="logoState">☐</span> Mostrar logo del Brand Kit</label>
+      </div>
+      <button class="btn pri" id="dlBtn">⬇ Descargar PNG</button>
+    </aside>
+    <div class="stage">
+      <div class="preview" id="preview"></div>
+      <div class="pmeta" id="pmeta"></div>
+    </div>
+  </div>
+  <div class="foot">HUMAN GLITCHE · VISUAL LAB · compositor de posts client-side · suite Marca / Creador</div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+'use strict';
+var $=function(id){return document.getElementById(id);};
+var FORMATS={ '1x1':[1080,1080,'1:1 feed'], '4x5':[1080,1350,'4:5 feed'], '9x16':[1080,1920,'9:16 reel/story'], '16x9':[1920,1080,'16:9'] };
+var TITLE_FONTS=['Bebas Neue','Anton','Archivo Black','Oswald','Montserrat','Poppins','Space Grotesk','Syne','Righteous','Teko'];
+var BODY_FONTS=['Space Mono','Inter','Roboto','Work Sans','IBM Plex Sans','Source Sans 3','DM Sans','Manrope','Lora','Bitter'];
+var LS='hg_compositor_v1', BK='hg_brandkit_v1';
+var st={ format:'1x1', bgType:'solid', bg1:'#12100c', bg2:'#b8ff00', headline:'Tu titular acá', sub:'', textColor:'#faf9f6', size:'0.095', align:'center', vpos:'center', titleFont:'Bebas Neue', bodyFont:'Space Mono', showLogo:false, logo:'', palette:['#b8ff00','#12100c','#faf9f6','#3ad0ff'] };
+try{ var s=JSON.parse(localStorage.getItem(LS)||'null'); if(s) st=Object.assign(st,s); }catch(e){}
+
+function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
+function save(){ try{ localStorage.setItem(LS, JSON.stringify(st)); }catch(e){} }
+function toast(t){ var el=$('toast'); el.textContent=t; el.classList.add('show'); setTimeout(function(){el.classList.remove('show');},1700); }
+function ff(n){ return "'"+n+"', sans-serif"; }
+
+function readBrandKit(){ try{ return JSON.parse(localStorage.getItem(BK)||'null'); }catch(e){ return null; } }
+function loadBrandKit(announce){
+  var bk=readBrandKit();
+  if(!bk){ if(announce) toast('No hay Brand Kit guardado — armalo primero'); return; }
+  if(bk.colors&&bk.colors.length){ st.palette=bk.colors.map(function(c){return c.hex;}); st.bg1=st.palette[1]||st.bg1; st.bg2=st.palette[0]||st.bg2; st.textColor=st.palette[2]||st.textColor; }
+  if(bk.titleFont) st.titleFont=bk.titleFont; if(bk.bodyFont) st.bodyFont=bk.bodyFont;
+  if(bk.logo){ st.logo=bk.logo; } if(announce) toast('Cargado del Brand Kit');
+  save(); syncInputs(); loadFonts(); render();
+}
+
+function loadFonts(){ var f=[]; if(TITLE_FONTS.indexOf(st.titleFont)>=0) f.push('family='+st.titleFont.replace(/ /g,'+')); if(BODY_FONTS.indexOf(st.bodyFont)>=0) f.push('family='+st.bodyFont.replace(/ /g,'+')+':wght@400;700'); $('dynfonts').href='https://fonts.googleapis.com/css2?'+f.join('&')+'&display=swap'; }
+
+function bgCss(){ return st.bgType==='grad' ? 'linear-gradient(135deg,'+st.bg1+','+st.bg2+')' : st.bg1; }
+
+function render(){
+  var F=FORMATS[st.format], W=F[0], H=F[1];
+  var maxH=460, maxW=380; var scale=Math.min(maxW/W, maxH/H); var pw=W*scale, ph=H*scale;
+  var pv=$('preview'); pv.style.width=pw+'px'; pv.style.height=ph+'px'; pv.style.background=bgCss(); pv.style.justifyContent=st.vpos;
+  var hSize=parseFloat(st.size)*pw, sSize=hSize*0.42;
+  var logoHtml = (st.showLogo&&st.logo)?'<div class="pv-logo"><img src="'+st.logo+'"></div>':'';
+  pv.innerHTML='<div class="pv-text" style="text-align:'+st.align+';align-items:'+(st.align==='center'?'center':'flex-start')+';color:'+st.textColor+'">'
+    +'<div class="pv-h" style="font-family:'+ff(st.titleFont)+';font-size:'+hSize+'px">'+esc(st.headline||'')+'</div>'
+    +(st.sub?'<div class="pv-s" style="font-family:'+ff(st.bodyFont)+';font-size:'+sSize+'px">'+esc(st.sub)+'</div>':'')
+    +'</div>'+logoHtml;
+  $('pmeta').textContent = W+'×'+H+' px · '+F[2];
+}
+
+/* ── export PNG (canvas, con fuentes cargadas) ── */
+function wrap(ctx, text, maxW){ var words=(text||'').split(/\s+/), lines=[], line='';
+  for(var i=0;i<words.length;i++){ var test=line?line+' '+words[i]:words[i]; if(ctx.measureText(test).width>maxW && line){ lines.push(line); line=words[i]; } else line=test; } if(line) lines.push(line); return lines; }
+function drawText(ctx, lines, x, y, lineH, align, W){ lines.forEach(function(l,i){ var lx = align==='center'?W/2:x; ctx.textAlign=align==='center'?'center':'left'; ctx.fillText(l, lx, y+i*lineH); }); }
+
+async function exportPng(){
+  var F=FORMATS[st.format], W=F[0], H=F[1];
+  var cv=document.createElement('canvas'); cv.width=W; cv.height=H; var ctx=cv.getContext('2d');
+  // fondo
+  if(st.bgType==='grad'){ var g=ctx.createLinearGradient(0,0,W,H); g.addColorStop(0,st.bg1); g.addColorStop(1,st.bg2); ctx.fillStyle=g; } else ctx.fillStyle=st.bg1;
+  ctx.fillRect(0,0,W,H);
+  // fuentes
+  var hSize=parseFloat(st.size)*W, sSize=hSize*0.42;
+  try{ await document.fonts.load('400 '+hSize+'px "'+st.titleFont+'"'); await document.fonts.load('400 '+sSize+'px "'+st.bodyFont+'"'); await document.fonts.load('700 '+sSize+'px "'+st.bodyFont+'"'); await document.fonts.ready; }catch(e){}
+  var pad=W*0.08, maxTextW=W-pad*2;
+  ctx.fillStyle=st.textColor; ctx.textBaseline='top';
+  ctx.font='400 '+hSize+'px "'+st.titleFont+'", sans-serif';
+  var hLines=wrap(ctx,st.headline,maxTextW), hLH=hSize*1.04;
+  ctx.font='400 '+sSize+'px "'+st.bodyFont+'", sans-serif';
+  var sLines=st.sub?wrap(ctx,st.sub,maxTextW):[], sLH=sSize*1.32;
+  var blockH=hLines.length*hLH + (sLines.length?(sSize*0.5 + sLines.length*sLH):0);
+  var startY; if(st.vpos==='flex-start') startY=pad; else if(st.vpos==='flex-end') startY=H-pad-blockH-(st.showLogo&&st.logo?H*0.10:0); else startY=(H-blockH)/2;
+  var x=pad;
+  ctx.font='400 '+hSize+'px "'+st.titleFont+'", sans-serif'; ctx.fillStyle=st.textColor;
+  drawText(ctx,hLines,x,startY,hLH,st.align,W);
+  if(sLines.length){ ctx.font='400 '+sSize+'px "'+st.bodyFont+'", sans-serif'; drawText(ctx,sLines,x,startY+hLines.length*hLH+sSize*0.5,sLH,st.align,W); }
+  function done(){ cv.toBlob(function(b){ var a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download='post-'+st.format+'.png'; a.click(); setTimeout(function(){URL.revokeObjectURL(a.href);},800); toast('PNG descargado'); }); }
+  if(st.showLogo&&st.logo){ var lg=new Image(); lg.onload=function(){ var lh=H*0.09, lw=lg.width*(lh/lg.height); if(lw>W*0.34){ lw=W*0.34; lh=lg.height*(lw/lg.width); } ctx.drawImage(lg,(W-lw)/2,H-H*0.06-lh,lw,lh); done(); }; lg.onerror=done; lg.src=st.logo; }
+  else done();
+}
+
+/* ── editor ── */
+function chips(elId,list,active,onPick){ $(elId).innerHTML=list.map(function(o){ var v=o[0],lbl=o[1]; return '<span class="chip '+(active()===v?'on':'')+'" data-v="'+esc(v)+'">'+esc(lbl)+'</span>'; }).join('');
+  $(elId).addEventListener('click',function(e){ var c=e.target.closest('.chip'); if(!c) return; onPick(c.getAttribute('data-v')); }); }
+function renderPalette(){ $('paletteSw').innerHTML=(st.palette||[]).map(function(h){return '<div class="swp" style="background:'+esc(h)+'" data-h="'+esc(h)+'" title="'+esc(h)+'"></div>';}).join(''); }
+function renderFmt(){ $('fmtChips').innerHTML=Object.keys(FORMATS).map(function(k){return '<span class="chip '+(st.format===k?'on':'')+'" data-v="'+k+'">'+FORMATS[k][2]+'</span>';}).join(''); }
+function renderBgType(){ $('bgTypeChips').innerHTML=[['solid','Sólido'],['grad','Degradé']].map(function(o){return '<span class="chip '+(st.bgType===o[0]?'on':'')+'" data-v="'+o[0]+'">'+o[1]+'</span>';}).join(''); $('bg2wrap').style.opacity=st.bgType==='grad'?'1':'.4'; }
+function fillFonts(){ $('titleFont').innerHTML=TITLE_FONTS.map(function(f){return '<option '+(st.titleFont===f?'selected':'')+'>'+f+'</option>';}).join(''); $('bodyFont').innerHTML=BODY_FONTS.map(function(f){return '<option '+(st.bodyFont===f?'selected':'')+'>'+f+'</option>';}).join(''); }
+function syncInputs(){ $('bg1').value=st.bg1; $('bg2').value=st.bg2; $('textColor').value=st.textColor; $('headline').value=st.headline; $('sub').value=st.sub; $('size').value=st.size; $('align').value=st.align; $('vpos').value=st.vpos; $('logoState').textContent=st.showLogo?'☑':'☐'; fillFonts(); renderFmt(); renderBgType(); renderPalette(); }
+
+$('fmtChips').addEventListener('click', function(e){ var c=e.target.closest('.chip'); if(!c)return; st.format=c.getAttribute('data-v'); save(); renderFmt(); render(); });
+$('bgTypeChips').addEventListener('click', function(e){ var c=e.target.closest('.chip'); if(!c)return; st.bgType=c.getAttribute('data-v'); save(); renderBgType(); render(); });
+$('paletteSw').addEventListener('click', function(e){ var s=e.target.closest('[data-h]'); if(!s)return; var h=s.getAttribute('data-h'); if(st.bgType==='grad'){ st.bg2=h; $('bg2').value=h; } else { st.bg1=h; $('bg1').value=h; } save(); render(); });
+$('bg1').addEventListener('input', function(){ st.bg1=this.value; save(); render(); });
+$('bg2').addEventListener('input', function(){ st.bg2=this.value; save(); render(); });
+$('textColor').addEventListener('input', function(){ st.textColor=this.value; save(); render(); });
+$('headline').addEventListener('input', function(){ st.headline=this.value; save(); render(); });
+$('sub').addEventListener('input', function(){ st.sub=this.value; save(); render(); });
+$('size').addEventListener('change', function(){ st.size=this.value; save(); render(); });
+$('align').addEventListener('change', function(){ st.align=this.value; save(); render(); });
+$('vpos').addEventListener('change', function(){ st.vpos=this.value; save(); render(); });
+$('titleFont').addEventListener('change', function(){ st.titleFont=this.value; save(); loadFonts(); render(); });
+$('bodyFont').addEventListener('change', function(){ st.bodyFont=this.value; save(); loadFonts(); render(); });
+$('logoToggle').addEventListener('click', function(){ if(!st.logo){ var bk=readBrandKit(); if(bk&&bk.logo) st.logo=bk.logo; } if(!st.logo){ toast('No hay logo en el Brand Kit'); return; } st.showLogo=!st.showLogo; $('logoState').textContent=st.showLogo?'☑':'☐'; save(); render(); });
+$('loadBk').addEventListener('click', function(){ loadBrandKit(true); });
+$('dlBtn').addEventListener('click', exportPng);
+
+// primer arranque: si no había estado guardado, intentar tomar del brand kit
+if(!localStorage.getItem(LS)){ var bk=readBrandKit(); if(bk) loadBrandKit(false); }
+syncInputs(); loadFonts(); render();
+})();
+</script>
+</body></html>
