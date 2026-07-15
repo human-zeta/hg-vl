@@ -300,7 +300,7 @@ $('resetBtn').addEventListener('click', ()=>{ if(!confirm('¿Limpiar el contrato
 
 // ── Prefill Auditoría ───────────────────────────────────────────────────────
 async function loadBiz(){
-  const paths=['/seed_comercios_pba.json','/auditoria/seed_comercios_pba.json','../auditoria/seed_comercios_pba.json','seed_comercios_pba.json'];
+  const paths=['https://hg-vl-shaders-default-rtdb.firebaseio.com/comercios.json','/seed_comercios_pba.json','/auditoria/seed_comercios_pba.json','../auditoria/seed_comercios_pba.json','seed_comercios_pba.json'];
   for(const p of paths){ try{ const r=await fetch(p,{cache:'no-store'}); if(!r.ok) continue; const d=await r.json();
     if(d && typeof d==='object' && Object.keys(d).length){ const sel=$('bizPick');
       sel.innerHTML='<option value="">— a mano —</option>'+Object.entries(d).sort((a,b)=>(a[1].name||'').localeCompare(b[1].name||''))

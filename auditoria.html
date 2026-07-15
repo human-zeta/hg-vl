@@ -314,6 +314,29 @@
     <button class="tab" id="tab-crm" onclick="switchTab('crm',this)" hidden>✎ Notas CRM</button>
   </div>
 
+  <style>
+    #audSearch{background:#0b0b0b;border:1px solid rgba(240,237,230,.14);color:#f0ede6;font-family:'Space Mono',monospace;font-size:12px;padding:6px 10px;border-radius:6px;min-width:140px;}
+    #audSearch:focus{outline:none;border-color:#b8ff00;}
+    .card{position:relative;} .card[draggable=true]{cursor:grab;} .card[draggable=true]:active{cursor:grabbing;}
+    .fav-star{position:absolute;top:8px;right:8px;background:transparent;border:none;color:rgba(240,237,230,.22);font-size:18px;cursor:pointer;line-height:1;z-index:3;transition:.15s;padding:2px;}
+    .fav-star:hover{color:#ffd23a;transform:scale(1.15);} .fav-star.on{color:#ffd23a;text-shadow:0 0 8px rgba(255,210,58,.55);}
+    .drop-dock{position:fixed;right:16px;bottom:16px;z-index:60;background:rgba(5,5,5,.92);border:1px solid rgba(240,237,230,.14);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:8px;backdrop-filter:blur(8px);opacity:.55;transition:.2s;width:186px;box-shadow:0 12px 40px rgba(0,0,0,.5);}
+    .drop-dock:hover,.drop-dock.active{opacity:1;border-color:#b8ff00;}
+    .drop-dock .dd-title{font-size:8.5px;letter-spacing:.14em;text-transform:uppercase;color:rgba(240,237,230,.5);}
+    .drop-dock .dd-zone{border:1px dashed rgba(240,237,230,.2);border-radius:8px;padding:11px;text-align:center;font-size:12px;color:rgba(240,237,230,.78);cursor:pointer;transition:.15s;}
+    .drop-dock .dd-zone:hover{border-color:#b8ff00;color:#b8ff00;}
+    .drop-dock .dd-zone.over{border-color:#b8ff00;background:rgba(184,255,0,.14);color:#b8ff00;transform:scale(1.04);}
+    .drop-dock .dd-hint{font-size:8px;color:rgba(240,237,230,.35);text-align:center;line-height:1.4;}
+    .side .side-apps{display:flex;gap:8px;margin-top:8px;}
+    @media(max-width:640px){ .drop-dock{position:static;width:auto;opacity:1;margin:12px 0;flex-direction:row;flex-wrap:wrap;align-items:center;} .drop-dock .dd-zone{flex:1;} .drop-dock .dd-title,.drop-dock .dd-hint{width:100%;} }
+  </style>
+  <div id="dropDock" class="drop-dock" title="Arrastrá una tarjeta de comercio acá">
+    <div class="dd-title">▸ Llevar comercio a</div>
+    <div class="dd-zone" data-app="pipelines">🔀 PIPELINES</div>
+    <div class="dd-zone" data-app="propuesta">📄 PROPUESTA</div>
+    <div class="dd-hint">arrastrá una tarjeta · o elegí un comercio y tocá acá</div>
+  </div>
+
   <!-- ════════ TABLERO PÚBLICO (sin login) ════════ -->
   <div id="panel-cards" class="panel active">
     <div class="city-scroll" id="cityBtns"></div>
@@ -323,6 +346,8 @@
       <button class="fbtn" onclick="setFilter('no-social',this)">Sin redes</button>
       <button class="fbtn" onclick="setFilter('no-both',this)">Sin web ni redes</button>
       <button class="fbtn" onclick="setFilter('con-nota',this)">Con nota</button>
+      <button class="fbtn" onclick="setFilter('fav',this)">★ Favoritos</button>
+      <input id="audSearch" placeholder="🔍 Buscar comercio…" oninput="doSearch(this.value)" autocomplete="off">
     </div>
     <div id="detailSide" class="side" style="display:none"></div>
     <div id="cardsArea"><div class="empty"><span class="ico">⌖</span><p>Todavía no hay comercios confirmados. Sé el primero en <b>sugerir uno</b> (pestaña Sugerir, requiere cuenta de comunidad).</p></div></div>
@@ -540,6 +565,25 @@ const CITIES = {
   'Saladillo':{lat:-35.638,lng:-59.780}
 };
 let currentCity='all', currentPage=1;
+// ── Upgrade: favoritos + búsqueda + drag a Pipelines/Propuesta ──────────────
+const FAV_LS='hg_aud_favs'; let favs=new Set(); try{ favs=new Set(JSON.parse(localStorage.getItem(FAV_LS)||'[]')); }catch(e){}
+let searchQ='', dragBiz=null;
+function saveFavs(){ try{ localStorage.setItem(FAV_LS, JSON.stringify([...favs])); }catch(e){} }
+function toggleFav(id, ev){ if(ev) ev.stopPropagation(); if(favs.has(id)) favs.delete(id); else favs.add(id); saveFavs(); renderCards(); }
+function doSearch(v){ searchQ=v; currentPage=1; renderCards(); }
+function goApp(app, name, city){ if(!name) return; const u='/'+app+'/?biz='+encodeURIComponent(name)+(city?'&city='+encodeURIComponent(city):''); window.open(u,'_blank'); }
+function goAppFor(app, id){ const b=bizList().find(x=>x.id===id); if(b) goApp(app, b.name, b.city||''); }
+function onCardDrag(ev){ const el=ev.currentTarget; dragBiz={ name:el.getAttribute('data-name')||'', city:el.getAttribute('data-city')||'' }; try{ ev.dataTransfer.setData('text/plain', dragBiz.name); ev.dataTransfer.effectAllowed='copy'; }catch(e){} const d=document.getElementById('dropDock'); if(d) d.classList.add('active'); }
+function initDropDock(){
+  const d=document.getElementById('dropDock'); if(!d) return;
+  d.querySelectorAll('.dd-zone').forEach(z=>{
+    z.addEventListener('dragover', e=>{ e.preventDefault(); z.classList.add('over'); });
+    z.addEventListener('dragleave', ()=>z.classList.remove('over'));
+    z.addEventListener('drop', e=>{ e.preventDefault(); z.classList.remove('over'); d.classList.remove('active'); if(dragBiz) goApp(z.getAttribute('data-app'), dragBiz.name, dragBiz.city); });
+    z.addEventListener('click', ()=>{ if(selectedId) goAppFor(z.getAttribute('data-app'), selectedId); else alert('Arrastrá una tarjeta acá, o elegí un comercio primero.'); });
+  });
+  document.addEventListener('dragend', ()=>{ d.classList.remove('active'); d.querySelectorAll('.dd-zone').forEach(z=>z.classList.remove('over')); });
+}
 const PER_PAGE=24;
 const CRM_LS_KEY='hg_auditoria_crm';
 const CRM_LABELS={prospect:'Prospecto', contactado:'Contactado', cliente:'Cliente', descartado:'Descartado'};
@@ -674,11 +718,14 @@ function filterCity(city, el){
 // TABLERO PÚBLICO — cards
 // ════════════════════════════════════════════════════════════════════
 function filteredList(){
+  const q=(searchQ||'').trim().toLowerCase();
   return poolList().filter(b=>{
-    if(currentFilter==='no-web') return !b.web;
-    if(currentFilter==='no-social') return !b.ig && !b.fb;
-    if(currentFilter==='no-both') return !b.web && !b.ig && !b.fb;
-    if(currentFilter==='con-nota') return !!(crmStore[b.id] && crmStore[b.id].note);
+    if(currentFilter==='no-web' && b.web) return false;
+    if(currentFilter==='no-social' && (b.ig||b.fb)) return false;
+    if(currentFilter==='no-both' && (b.web||b.ig||b.fb)) return false;
+    if(currentFilter==='con-nota' && !(crmStore[b.id] && crmStore[b.id].note)) return false;
+    if(currentFilter==='fav' && !favs.has(b.id)) return false;
+    if(q && (((b.name||'')+' '+(b.type||'')+' '+(b.city||'')).toLowerCase().indexOf(q)<0)) return false;
     return true;
   });
 }
@@ -694,7 +741,8 @@ function renderCards(){
   $('cardsArea').innerHTML = '<div class="grid">'+list.map(b=>{
     const ops = getOpp(b);
     const verifDate = fmtDate(b.verifiedAt);
-    return `<div class="card${selectedId===b.id?' sel':''}" onclick="selectBiz('${b.id}','confirmed')">
+    return `<div class="card${selectedId===b.id?' sel':''}" onclick="selectBiz('${b.id}','confirmed')" draggable="true" data-name="${escHtml(b.name)}" data-city="${escHtml(b.city||'')}" ondragstart="onCardDrag(event)">
+      <button class="fav-star ${favs.has(b.id)?'on':''}" onclick="toggleFav('${b.id}',event)" title="Favorito">★</button>
       <div class="card-top">
         <div class="biz-ico">🏬</div>
         <div style="flex:1;min-width:0">
@@ -743,6 +791,7 @@ function selectBiz(id, kind){
   <p class="field-lbl">Presencia digital (confirmada a mano)</p>
   <div class="svc-grid">${svcs.map(s=>`<div class="svc ${b[s.k]?'have':'need'}"><div class="svc-lbl">${b[s.k]?'✓':'✦'} ${s.l}</div><div class="svc-sub">${b[s.k]?'Confirmado':'Oportunidad'}</div></div>`).join('')}</div>
   <p class="verif" style="margin-bottom:.5rem;">${verifDate ? 'Última verificación: '+verifDate : 'Sin fecha de verificación todavía'}${b.notes?' · '+escHtml(b.notes):''}</p>
+  <div class="side-apps"><button class="btn ghost sm" onclick="goAppFor('pipelines','${id}')">🔀 Pipelines</button><button class="btn ghost sm" onclick="goAppFor('propuesta','${id}')">📄 Propuesta</button><button class="btn ghost sm" onclick="toggleFav('${id}',event)">${favs.has(id)?'★ Quitar fav':'☆ Favorito'}</button></div>
   ${kind!=='pending' && isModerator ? `<button class="btn ghost sm" onclick="openModEdit('${id}')">✎ EDITAR (moderador)</button>` : ''}
   ${kind==='pending' && isModerator ? `<div style="display:flex;gap:8px;"><button class="btn sm" onclick="approvePending('${id}')">✓ APROBAR</button><button class="btn danger sm" onclick="rejectPending('${id}')">✕ RECHAZAR</button></div>` : ''}`;
   side.scrollIntoView({behavior:'smooth', block:'nearest'});
@@ -1460,12 +1509,14 @@ function exportCSV(){
 window.selectBiz=selectBiz; window.closeSide=closeSide; window.setFilter=setFilter; window.switchTab=switchTab;
 window.approvePending=approvePending; window.rejectPending=rejectPending; window.openModEdit=openModEdit; window.saveModEdit=saveModEdit; window.googleSearchEdit=googleSearchEdit;
 window.filterCity=filterCity; window.changePage=changePage; window.saveCRMNote=saveCRMNote; window.exportCSV=exportCSV;
+window.toggleFav=toggleFav; window.doSearch=doSearch; window.onCardDrag=onCardDrag; window.goApp=goApp; window.goAppFor=goAppFor;
 window.searchGooglePlaces=searchGooglePlaces; window.addPlaceToPending=addPlaceToPending; window.searchAllCities=searchAllCities; window.saveAllSearchResults=saveAllSearchResults; window.relevarZona=relevarZona; window.googleSearchPlace=googleSearchPlace; window.googleSearchPending=googleSearchPending;
 
 // ── Boot ──
 async function boot(){
   buildCityBtns();
   loadCRM();
+  initDropDock();
   await Promise.all([loadComercios(), loadPendientes()]);
   updateStats();
   renderCards();

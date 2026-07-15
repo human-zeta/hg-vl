@@ -111,7 +111,7 @@
 <div class="wrap">
   <header>
     <div class="brand"><b>PIPELINES</b><span>automatización vendible por negocio</span></div>
-    <nav><a href="/labs/">← LABS</a><a href="/auditoria.html">AUDITORÍA</a></nav>
+    <nav><a href="/labs/">← LABS</a><a href="/auditoria/">AUDITORÍA</a></nav>
   </header>
   <p class="intro">Elegí un comercio de los que <b>auditamos</b> y la app detecta qué le falta (web, WhatsApp Business, redes, pedidos, turnos…) y arma el <b>pipeline de automatización</b> que le podés vender — paso a paso, con <b>tu costo</b> y el <b>presupuesto</b> al cliente. Recomienda por hueco de canal <i>y</i> por rubro. Todo corre en tu navegador; los precios los editás y se guardan acá.</p>
 
@@ -295,7 +295,9 @@ function savePrice(){ try{ localStorage.setItem(LS_PRICE, JSON.stringify(priceOv
 async function loadBiz(){
   // Rutas candidatas del seed: cubre staging (web/auditoria/) y el sitio vivo
   // (hg-vl es plano: auditoria.html en raíz + seed en raíz). Primera que responda gana.
-  const SEED_PATHS = ['/seed_comercios_pba.json','/auditoria/seed_comercios_pba.json','../auditoria/seed_comercios_pba.json','seed_comercios_pba.json'];
+  // Fuente única: primero el tablero VIVO de la Auditoría (Firebase /comercios,
+  // lectura pública), y solo si no responde, el seed estático como respaldo.
+  const SEED_PATHS = ['https://hg-vl-shaders-default-rtdb.firebaseio.com/comercios.json','/seed_comercios_pba.json','/auditoria/seed_comercios_pba.json','../auditoria/seed_comercios_pba.json','seed_comercios_pba.json'];
   let loaded=false;
   for(const path of SEED_PATHS){
     try{
@@ -528,7 +530,16 @@ function esc(s){ return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;',
 // ── Init ─────────────────────────────────────────────────────────────────────
 load();
 renderBiz(); renderCards(); renderQuote();
-loadBiz().then(()=>{ renderBiz(); renderCards(); });
+// Handoff desde la AUDITORÍA: /pipelines/?biz=Nombre&city=Ciudad → preselecciona el comercio
+function applyHandoff(){
+  const p=new URLSearchParams(location.search); const nm=(p.get('biz')||'').trim().toLowerCase(); if(!nm) return;
+  const cy=(p.get('city')||'').trim().toLowerCase();
+  const hit=Object.entries(BIZ).find(([id,b])=> (b.name||'').trim().toLowerCase()===nm && (!cy||(b.city||'').trim().toLowerCase()===cy));
+  if(!hit) return;
+  if(hit[1].city){ $('fCity').value=hit[1].city; fillBizSelect(); }
+  curBizId=hit[0]; $('fBiz').value=hit[0]; renderBiz(); renderCards();
+}
+loadBiz().then(()=>{ renderBiz(); renderCards(); applyHandoff(); });
 })();
 </script>
 </body></html>

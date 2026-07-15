@@ -370,7 +370,7 @@ $('resetBtn').addEventListener('click', ()=>{ if(!confirm('¿Limpiar la propuest
 
 // ── Prefill desde la Auditoría (opcional, robusto) ──────────────────────────
 async function loadBiz(){
-  const paths=['/seed_comercios_pba.json','/auditoria/seed_comercios_pba.json','../auditoria/seed_comercios_pba.json','seed_comercios_pba.json'];
+  const paths=['https://hg-vl-shaders-default-rtdb.firebaseio.com/comercios.json','/seed_comercios_pba.json','/auditoria/seed_comercios_pba.json','../auditoria/seed_comercios_pba.json','seed_comercios_pba.json'];
   for(const p of paths){
     try{ const r=await fetch(p,{cache:'no-store'}); if(!r.ok) continue; const d=await r.json();
       if(d && typeof d==='object' && Object.keys(d).length){
@@ -381,6 +381,9 @@ async function loadBiz(){
         sel.addEventListener('change', ()=>{ const o=sel.options[sel.selectedIndex]; if(!o||!o.value) return;
           st.neg=o.getAttribute('data-n')||''; st.ciu=o.getAttribute('data-c')||'';
           $('cNeg').value=st.neg; $('cCiu').value=st.ciu; save(); render(); });
+        // Handoff desde la AUDITORÍA: /propuesta/?biz=Nombre&city=Ciudad prellena el cliente
+        const hp=new URLSearchParams(location.search), hn=(hp.get('biz')||'').trim();
+        if(hn){ st.neg=hn; st.ciu=(hp.get('city')||'').trim(); $('cNeg').value=st.neg; $('cCiu').value=st.ciu; save(); render(); }
         return;
       }
     }catch(e){}
