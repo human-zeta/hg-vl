@@ -327,7 +327,23 @@
     .drop-dock .dd-zone:hover{border-color:#b8ff00;color:#b8ff00;}
     .drop-dock .dd-zone.over{border-color:#b8ff00;background:rgba(184,255,0,.14);color:#b8ff00;transform:scale(1.04);}
     .drop-dock .dd-hint{font-size:8px;color:rgba(240,237,230,.35);text-align:center;line-height:1.4;}
-    .side .side-apps{display:flex;gap:8px;margin-top:8px;}
+    .side .side-apps{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;}
+    .dash-score{margin:8px 0 10px;}
+    .dash-score .ds-top{display:flex;justify-content:space-between;align-items:baseline;font-size:10px;color:rgba(240,237,230,.55);margin-bottom:5px;}
+    .dash-score .ds-top b{font-family:'Bebas Neue',sans-serif;font-size:28px;color:#b8ff00;line-height:1;}
+    .dash-score .ds-bar{height:9px;background:#0b0b0b;border:1px solid rgba(240,237,230,.14);border-radius:20px;overflow:hidden;}
+    .dash-score .ds-fill{height:100%;background:linear-gradient(90deg,#ff2d55,#ffd23a,#b8ff00);transition:width .3s;}
+    .dash-metrics{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0;}
+    .dash-metrics .dm{border:1px solid rgba(240,237,230,.14);border-radius:8px;padding:7px 11px;flex:1;min-width:88px;}
+    .dash-metrics .dm .v{font-family:'Bebas Neue',sans-serif;font-size:21px;line-height:1;color:#f0ede6;}
+    .dash-metrics .dm .l{font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:rgba(240,237,230,.45);margin-top:3px;}
+    .dash-metrics .dm .delta{font-size:10px;margin-left:5px;} .dash-metrics .dm .delta.up{color:#5ad88a;} .dash-metrics .dm .delta.down{color:#ff2d55;}
+    .chart-box{margin:10px 0;border:1px solid rgba(240,237,230,.14);border-radius:8px;padding:10px;}
+    .chart-tabs{display:flex;gap:6px;margin-bottom:8px;}
+    .chart-tabs button{cursor:pointer;background:transparent;border:1px solid rgba(240,237,230,.14);color:rgba(240,237,230,.6);border-radius:5px;font-size:9px;padding:4px 8px;letter-spacing:.06em;text-transform:uppercase;font-family:'Space Mono',monospace;}
+    .chart-tabs button.on{border-color:#b8ff00;color:#b8ff00;}
+    .chart-box svg{width:100%;height:auto;display:block;} .chart-empty{font-size:11px;color:rgba(240,237,230,.4);text-align:center;padding:16px;}
+    .chart-note{font-size:8.5px;color:rgba(240,237,230,.35);text-align:center;margin-top:6px;line-height:1.4;}
     @media(max-width:640px){ .drop-dock{position:static;width:auto;opacity:1;margin:12px 0;flex-direction:row;flex-wrap:wrap;align-items:center;} .drop-dock .dd-zone{flex:1;} .drop-dock .dd-title,.drop-dock .dd-hint{width:100%;} }
   </style>
   <div id="dropDock" class="drop-dock" title="Arrastrá una tarjeta de comercio acá">
@@ -776,22 +792,69 @@ function changePage(delta){
   $('cardsArea').scrollIntoView({behavior:'smooth', block:'start'});
 }
 
+// ── Historial + dashboard de detalle ────────────────────────────────────────
+let HIST={}, curSnaps=[], curMetric='score';
+function normPart(s){ return String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim(); }
+function normKey(name,city){ return normPart(name)+'|'+normPart(city); }
+function scoreOf(b){ return (b.web?30:0)+(b.wa?25:0)+(b.ig?20:0)+(b.fb?15:0)+(b.tt?10:0); }
+function scoreLabel(s){ return s<30?'Débil':(s<60?'Media':'Fuerte'); }
+function histFor(b){ return HIST[normKey(b.name,b.city)]; }
+async function loadHist(){
+  for(const p of ['/historial.json','/auditoria/historial.json','../auditoria/historial.json','historial.json']){
+    try{ const r=await fetch(p,{cache:'no-store'}); if(!r.ok) continue; const d=await r.json(); if(d && typeof d==='object'){ HIST=d; return; } }catch(e){}
+  }
+}
+function chartSvg(snaps, metric){
+  const D={ score:{lbl:'score',max:100,color:'#b8ff00'}, rating:{lbl:'rating',max:5,color:'#ffd23a'}, reviews:{lbl:'reseñas',max:null,color:'#3ad0ff'} }[metric]||{lbl:'',max:100,color:'#b8ff00'};
+  const pts=(snaps||[]).map(s=>({d:s.d, v: metric==='score'?s.score : metric==='rating'?s.rating : s.reviews})).filter(p=>p.v!=null);
+  if(!pts.length) return '<div class="chart-empty">Sin datos de '+D.lbl+' todavía.</div>';
+  const W=320,H=120,padT=10,padB=20,padL=32,padR=8, n=pts.length;
+  const max = D.max!=null ? D.max : Math.max(1,...pts.map(p=>p.v))*1.15, min=0;
+  const X=i=> n<=1 ? (padL+(W-padL-padR)/2) : padL+i*(W-padL-padR)/(n-1);
+  const Y=v=> H-padB-(v-min)/((max-min)||1)*(H-padT-padB);
+  let grid=''; for(let t=0;t<=2;t++){ const gv=min+(max-min)*t/2, gy=Y(gv); grid+=`<line x1="${padL}" y1="${gy.toFixed(1)}" x2="${W-padR}" y2="${gy.toFixed(1)}" stroke="rgba(240,237,230,.08)"/><text x="${padL-4}" y="${(gy+3).toFixed(1)}" text-anchor="end" font-size="8" fill="rgba(240,237,230,.4)">${Math.round(gv*10)/10}</text>`; }
+  const poly=pts.map((p,i)=>X(i).toFixed(1)+','+Y(p.v).toFixed(1)).join(' ');
+  const area = n>1 ? `<polygon points="${padL},${H-padB} ${poly} ${X(n-1).toFixed(1)},${H-padB}" fill="${D.color}" opacity="0.09"/>` : '';
+  const line = n>1 ? `<polyline points="${poly}" fill="none" stroke="${D.color}" stroke-width="2"/>` : '';
+  const dots = pts.map((p,i)=>`<circle cx="${X(i).toFixed(1)}" cy="${Y(p.v).toFixed(1)}" r="${n<=1?4:3}" fill="${D.color}"/>`).join('');
+  const xl = pts.map((p,i)=> (i===0||i===n-1) ? `<text x="${X(i).toFixed(1)}" y="${H-6}" text-anchor="${n<=1?'middle':(i===0?'start':'end')}" font-size="8" fill="rgba(240,237,230,.45)">${(p.d||'').slice(5)}</text>` : '').join('');
+  return `<svg viewBox="0 0 ${W} ${H}">${grid}${area}${line}${dots}${xl}</svg>`;
+}
+function setChartMetric(m, el){ curMetric=m; document.querySelectorAll('.chart-tabs button').forEach(b=>b.classList.remove('on')); if(el) el.classList.add('on'); const c=document.getElementById('histChart'); if(c) c.innerHTML=chartSvg(curSnaps, m); }
+
 function selectBiz(id, kind){
   selectedId = id; selectedKind = kind || 'confirmed';
   renderCards();
   const b = (kind==='pending' ? pendList() : bizList()).find(x=>x.id===id);
   if(!b) return;
-  const ops = getOpp(b);
-  const svcs = [{k:'web',l:'Diseño web'},{k:'ig',l:'Instagram'},{k:'fb',l:'Facebook'},{k:'wa',l:'WhatsApp Biz'},{k:'tt',l:'TikTok'}];
+  const svcs = [{k:'web',l:'Web'},{k:'ig',l:'Instagram'},{k:'fb',l:'Facebook'},{k:'wa',l:'WhatsApp'},{k:'tt',l:'TikTok'}];
   const verifDate = fmtDate(b.verifiedAt);
+  const sc = scoreOf(b), chn = svcs.filter(s=>b[s.k]).length;
+  const h = histFor(b); curSnaps = h ? h.snaps : []; curMetric='score';
+  const nS = curSnaps.length;
+  const deltaHtml = (metric)=>{ if(nS<2) return ''; const f=curSnaps[0], l=curSnaps[nS-1]; const dv=(l[metric]??0)-(f[metric]??0); if(!dv) return ''; return ` <span class="delta ${dv>0?'up':'down'}">${dv>0?'▲':'▼'}${Math.round(Math.abs(dv)*10)/10}</span>`; };
+  const histNote = nS<=1
+    ? (nS===1 ? '1 registro ('+curSnaps[0].d+'). El gráfico se llena en cada snapshot.' : 'Sin historial todavía — corré snapshot_historial.py para empezar a registrar.')
+    : nS+' registros · del '+curSnaps[0].d+' al '+curSnaps[nS-1].d;
+  const gsearch = 'https://www.google.com/search?q='+encodeURIComponent((b.name||'')+' '+(b.city||''));
   const side = $('detailSide');
   side.style.display = 'block';
   side.innerHTML = `<h3>${escHtml(b.name)}${kind==='pending'?'<span class="pendtag">PENDIENTE</span>':''}<button onclick="closeSide()">✕ cerrar</button></h3>
-  <p style="font-size:11px;color:rgba(240,237,230,.5);margin-bottom:.5rem">📍 ${escHtml(b.address||'sin dirección')}${b.phone?' · ☎ '+escHtml(b.phone):''}</p>
-  <p class="field-lbl">Presencia digital (confirmada a mano)</p>
+  <p style="font-size:11px;color:rgba(240,237,230,.5);margin-bottom:.3rem">${escHtml(b.type||'Comercio')}${b.city?' · 🏙 '+escHtml(b.city):''} · 📍 ${escHtml(b.address||'sin dirección')}${b.phone?' · ☎ '+escHtml(b.phone):''}</p>
+  <div class="dash-score"><div class="ds-top"><span>Salud digital · <b style="font-size:11px;font-family:'Space Mono',monospace;color:rgba(240,237,230,.6)">${scoreLabel(sc)}</b></span><b>${sc}<span style="font-size:13px;color:rgba(240,237,230,.4)">/100</span></b></div><div class="ds-bar"><div class="ds-fill" style="width:${sc}%"></div></div></div>
+  <div class="dash-metrics">
+    <div class="dm"><div class="v">${b.rating!=null?'★ '+b.rating:'—'}${deltaHtml('rating')}</div><div class="l">Rating Google</div></div>
+    <div class="dm"><div class="v">${b.reviews!=null?b.reviews:'—'}${deltaHtml('reviews')}</div><div class="l">Reseñas</div></div>
+    <div class="dm"><div class="v">${chn}/5</div><div class="l">Canales activos</div></div>
+  </div>
   <div class="svc-grid">${svcs.map(s=>`<div class="svc ${b[s.k]?'have':'need'}"><div class="svc-lbl">${b[s.k]?'✓':'✦'} ${s.l}</div><div class="svc-sub">${b[s.k]?'Confirmado':'Oportunidad'}</div></div>`).join('')}</div>
+  <div class="chart-box">
+    <div class="chart-tabs"><button class="on" onclick="setChartMetric('score',this)">Score</button><button onclick="setChartMetric('rating',this)">Rating</button><button onclick="setChartMetric('reviews',this)">Reseñas</button></div>
+    <div id="histChart">${chartSvg(curSnaps,'score')}</div>
+    <div class="chart-note">📈 Evolución · ${histNote}</div>
+  </div>
   <p class="verif" style="margin-bottom:.5rem;">${verifDate ? 'Última verificación: '+verifDate : 'Sin fecha de verificación todavía'}${b.notes?' · '+escHtml(b.notes):''}</p>
-  <div class="side-apps"><button class="btn ghost sm" onclick="goAppFor('pipelines','${id}')">🔀 Pipelines</button><button class="btn ghost sm" onclick="goAppFor('propuesta','${id}')">📄 Propuesta</button><button class="btn ghost sm" onclick="toggleFav('${id}',event)">${favs.has(id)?'★ Quitar fav':'☆ Favorito'}</button></div>
+  <div class="side-apps"><button class="btn ghost sm" onclick="goAppFor('pipelines','${id}')">🔀 Pipelines</button><button class="btn ghost sm" onclick="goAppFor('propuesta','${id}')">📄 Propuesta</button>${b.website?`<a class="btn ghost sm" href="${escHtml(b.website)}" target="_blank" rel="noopener">🌐 Web</a>`:''}<a class="btn ghost sm" href="${gsearch}" target="_blank" rel="noopener">🔍 Google</a><button class="btn ghost sm" onclick="toggleFav('${id}',event)">${favs.has(id)?'★ Quitar fav':'☆ Favorito'}</button></div>
   ${kind!=='pending' && isModerator ? `<button class="btn ghost sm" onclick="openModEdit('${id}')">✎ EDITAR (moderador)</button>` : ''}
   ${kind==='pending' && isModerator ? `<div style="display:flex;gap:8px;"><button class="btn sm" onclick="approvePending('${id}')">✓ APROBAR</button><button class="btn danger sm" onclick="rejectPending('${id}')">✕ RECHAZAR</button></div>` : ''}`;
   side.scrollIntoView({behavior:'smooth', block:'nearest'});
@@ -1509,7 +1572,7 @@ function exportCSV(){
 window.selectBiz=selectBiz; window.closeSide=closeSide; window.setFilter=setFilter; window.switchTab=switchTab;
 window.approvePending=approvePending; window.rejectPending=rejectPending; window.openModEdit=openModEdit; window.saveModEdit=saveModEdit; window.googleSearchEdit=googleSearchEdit;
 window.filterCity=filterCity; window.changePage=changePage; window.saveCRMNote=saveCRMNote; window.exportCSV=exportCSV;
-window.toggleFav=toggleFav; window.doSearch=doSearch; window.onCardDrag=onCardDrag; window.goApp=goApp; window.goAppFor=goAppFor;
+window.toggleFav=toggleFav; window.doSearch=doSearch; window.onCardDrag=onCardDrag; window.goApp=goApp; window.goAppFor=goAppFor; window.setChartMetric=setChartMetric;
 window.searchGooglePlaces=searchGooglePlaces; window.addPlaceToPending=addPlaceToPending; window.searchAllCities=searchAllCities; window.saveAllSearchResults=saveAllSearchResults; window.relevarZona=relevarZona; window.googleSearchPlace=googleSearchPlace; window.googleSearchPending=googleSearchPending;
 
 // ── Boot ──
@@ -1517,7 +1580,7 @@ async function boot(){
   buildCityBtns();
   loadCRM();
   initDropDock();
-  await Promise.all([loadComercios(), loadPendientes()]);
+  await Promise.all([loadComercios(), loadPendientes(), loadHist()]);
   updateStats();
   renderCards();
   await checkSession();
