@@ -1,0 +1,300 @@
+<!doctype html><html lang="es"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>STINGERS — Human Glitche · transiciones .webm con alpha para OBS</title>
+<meta name="description" content="Generá transiciones de escena (stingers) para OBS: barrido de bloques, glitch, cortina, iris y swipe con tu logo. Se graban como .webm con canal alpha real y te da el punto de transición en ms. 100% en tu navegador.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{ --acid:#b8ff00; --glitch:#ff2d55; --cyan:#3ad0ff; --amber:#ffb020; --violet:#9b6bff; --ink:#f0ede6; --line:rgba(240,237,230,.12); --bg:#050505; }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{min-height:100%;background:var(--bg);color:var(--ink);font-family:'Space Mono',monospace;}
+  body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");z-index:0;pointer-events:none;opacity:.4;}
+  .wrap{position:relative;z-index:1;max-width:1180px;margin:0 auto;padding:28px 22px 90px;}
+  header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;gap:14px;}
+  .brand{font-family:'Bebas Neue',sans-serif;font-size:44px;letter-spacing:.03em;line-height:.82;}
+  .brand b{color:var(--amber);font-weight:400;}
+  .brand .sub{display:block;font-family:'Space Mono';font-size:10px;letter-spacing:.2em;color:rgba(240,237,230,.45);margin-top:8px;}
+  header .nav{display:flex;flex-direction:column;align-items:flex-end;gap:7px;padding-top:6px;}
+  header a{font-size:10px;letter-spacing:.2em;color:rgba(240,237,230,.4);text-decoration:none;} header a:hover{color:var(--amber);}
+  .intro{font-size:12px;color:rgba(240,237,230,.55);line-height:1.8;max-width:82ch;margin-bottom:22px;}
+  .intro b{color:var(--amber);font-weight:400;}
+  .layout{display:grid;grid-template-columns:340px 1fr;gap:22px;align-items:start;}
+  @media(max-width:900px){.layout{grid-template-columns:1fr;}}
+  .panel{border:1px solid var(--line);border-radius:8px;padding:18px 16px;background:rgba(255,176,32,.02);margin-bottom:16px;}
+  h2.sec{font-size:9px;letter-spacing:.22em;color:rgba(240,237,230,.45);text-transform:uppercase;margin:0 0 13px;}
+  h2.sec b{color:var(--amber);font-weight:400;}
+  .fld{margin-bottom:13px;} .fld:last-child{margin-bottom:0;}
+  .fld label{display:block;font-size:9px;letter-spacing:.16em;color:rgba(240,237,230,.5);text-transform:uppercase;margin-bottom:6px;}
+  .fld input[type=text],.fld select{width:100%;background:#0a0a0a;color:var(--ink);border:1px solid var(--line);font:inherit;font-size:13px;padding:9px 10px;border-radius:5px;}
+  .fld input:focus,.fld select:focus{outline:none;border-color:var(--amber);}
+  .fld input[type=range]{width:100%;accent-color:var(--amber);padding:0;}
+  .rangehead{display:flex;justify-content:space-between;font-size:9px;letter-spacing:.14em;color:rgba(240,237,230,.5);text-transform:uppercase;margin-bottom:5px;}
+  .rangehead b{color:var(--amber);font-weight:400;}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;}
+  .chip{font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;padding:7px 10px;border:1px solid var(--line);border-radius:20px;cursor:pointer;color:rgba(240,237,230,.55);user-select:none;transition:.15s;}
+  .chip.on{border-color:var(--amber);color:var(--amber);background:rgba(255,176,32,.1);}
+  .chip:hover{border-color:rgba(255,176,32,.5);}
+  .btn{background:transparent;border:1px solid var(--line);color:var(--ink);font:inherit;font-size:11px;letter-spacing:.1em;padding:11px 14px;cursor:pointer;border-radius:5px;transition:.15s;text-align:center;}
+  .btn:hover{border-color:var(--amber);color:var(--amber);}
+  .btn.primary{background:var(--amber);color:#050505;border-color:var(--amber);font-weight:700;}
+  .btn.primary:hover{opacity:.85;color:#050505;}
+  .btn.on{border-color:var(--amber);color:var(--amber);background:rgba(255,176,32,.1);}
+  .btn[disabled]{opacity:.4;cursor:not-allowed;}
+  .btnrow{display:flex;gap:8px;flex-wrap:wrap;} .btnrow .btn{flex:1;min-width:120px;}
+  .color-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+  .color-row input[type=color]{width:40px;height:34px;border:1px solid var(--line);border-radius:5px;background:#0a0a0a;cursor:pointer;padding:2px;}
+  .swatches{display:flex;gap:5px;}
+  .sw{width:22px;height:22px;border-radius:50%;cursor:pointer;border:1px solid rgba(255,255,255,.15);} .sw:hover{transform:scale(1.15);}
+  .stage-wrap{position:sticky;top:16px;}
+  .stagebar{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px;font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:rgba(240,237,230,.45);}
+  .stagebar b{color:var(--amber);font-weight:400;}
+  .checker{--c1:#1c2440;--c2:#0b1020;border:1px solid var(--line);border-radius:8px;overflow:hidden;position:relative;
+    background-image:linear-gradient(45deg,var(--c2) 25%,transparent 25%),linear-gradient(-45deg,var(--c2) 25%,transparent 25%),linear-gradient(45deg,transparent 75%,var(--c2) 75%),linear-gradient(-45deg,transparent 75%,var(--c2) 75%);
+    background-size:40px 40px;background-position:0 0,0 20px,20px -20px,-20px 0;background-color:var(--c1);}
+  .checker::after{content:'ESCENA A ↔ ESCENA B';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:12px;letter-spacing:.3em;color:rgba(255,255,255,.14);pointer-events:none;}
+  #stage{display:block;width:100%;height:auto;position:relative;}
+  .scrub{width:100%;accent-color:var(--amber);margin-top:10px;}
+  .gen-row{display:flex;gap:8px;margin-top:6px;} .gen-row .btn{flex:1;}
+  .genbig{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:.05em;}
+  .recinfo{font-size:10px;color:var(--amber);letter-spacing:.1em;margin-top:10px;min-height:14px;text-align:center;}
+  details{border:1px solid var(--line);border-radius:8px;padding:0 16px;margin-top:16px;background:rgba(255,176,32,.02);}
+  details summary{cursor:pointer;padding:15px 0;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--amber);list-style:none;}
+  details summary::-webkit-details-marker{display:none;}
+  details summary::before{content:'▸ ';} details[open] summary::before{content:'▾ ';}
+  details .body{padding:0 0 18px;font-size:12px;line-height:1.85;color:rgba(240,237,230,.62);}
+  details .body b{color:var(--ink);font-weight:700;}
+  details .body code{background:#0a0a0a;border:1px solid var(--line);border-radius:4px;padding:1px 6px;color:var(--amber);font-size:11px;}
+  details .body ol{margin:8px 0 8px 20px;} details .body li{margin-bottom:6px;}
+  .note{font-size:10px;color:rgba(240,237,230,.4);line-height:1.6;margin-top:9px;}
+  .bigms{font-family:'Bebas Neue',sans-serif;font-size:15px;color:var(--amber);}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(30px);background:var(--amber);color:#050505;font-size:12px;font-weight:700;letter-spacing:.05em;padding:12px 22px;border-radius:6px;opacity:0;transition:.25s;z-index:50;pointer-events:none;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  .foot{font-size:10px;color:rgba(240,237,230,.35);letter-spacing:.1em;margin-top:44px;text-align:center;line-height:1.9;}
+  .foot a{color:rgba(240,237,230,.5);text-decoration:none;} .foot a:hover{color:var(--amber);}
+</style></head><body>
+<div class="wrap">
+  <header>
+    <div class="brand"><b>STINGERS</b><span class="sub">Human Glitche · el taller</span></div>
+    <div class="nav"><a href="/labs/">← LABS</a><a href="/overlay/">OVERLAY →</a></div>
+  </header>
+  <p class="intro">Generá <b>transiciones de escena (stingers)</b> para OBS — barrido de bloques, glitch, cortina, iris y swipe con tu <b>logo/texto</b>. Se graban como <b>.webm con canal alpha real</b> (para que las escenas se vean a través) y te damos el <b>punto de transición en ms</b> para cargarlo en OBS. 100% en tu navegador — la grabación pasa en tu máquina, no sube nada.</p>
+
+  <div class="layout">
+    <div class="controls">
+      <div class="panel"><h2 class="sec"><b>Transición</b></h2><div class="chips" id="kinds"></div></div>
+
+      <div class="panel">
+        <h2 class="sec"><b>Logo / texto</b> · en el centro</h2>
+        <div class="fld"><label>Texto (aparece al cubrir la pantalla)</label><input type="text" id="logo" placeholder="HUMAN GLITCHE" maxlength="22"></div>
+        <div class="chips"><span class="chip on" id="chkLogo">mostrar en el cierre</span></div>
+      </div>
+
+      <div class="panel">
+        <h2 class="sec"><b>Color</b></h2>
+        <div class="color-row"><input type="color" id="accent" value="#ffb020"><div class="swatches" id="swatches"></div></div>
+        <div class="fld" style="margin-top:13px"><label>Segundo color (acento)</label><div class="color-row"><input type="color" id="accent2" value="#ff2d55"></div></div>
+      </div>
+
+      <div class="panel">
+        <h2 class="sec"><b>Tiempos</b></h2>
+        <div class="fld"><div class="rangehead"><span>Duración total</span><b id="durVal">1.2s</b></div><input type="range" id="dur" min="0.6" max="2.5" step="0.1" value="1.2"></div>
+        <div class="fld"><div class="rangehead"><span>Punto de transición</span><b id="tpVal">50%</b></div><input type="range" id="tp" min="35" max="65" step="1" value="50"></div>
+        <div class="note">El punto de transición es el instante en que la pantalla queda <b>totalmente cubierta</b> — ahí OBS cambia de escena. Te lo damos en ms para pegar en OBS.</div>
+      </div>
+
+      <div class="panel">
+        <h2 class="sec"><b>Salida</b></h2>
+        <div class="fld"><label>Resolución</label><select id="size"><option value="1920x1080">1920 × 1080</option><option value="1280x720">1280 × 720 — liviano</option><option value="1080x1920">1080 × 1920 — vertical</option></select></div>
+        <div class="fld"><label>FPS de grabación</label><select id="fps"><option value="60">60 fps</option><option value="30">30 fps</option></select></div>
+        <div class="note">Se graba con VP9 + alpha. Si tu navegador no soporta alpha, avisamos antes de grabar.</div>
+      </div>
+    </div>
+
+    <div class="stage-wrap">
+      <div class="stagebar"><span>PREVIEW · <b id="dims">1920×1080</b> · <b id="kindName">BLOQUES</b></span><span id="tpread">transición @ 600ms</span></div>
+      <div class="checker"><canvas id="stage"></canvas></div>
+      <input type="range" class="scrub" id="scrub" min="0" max="1000" value="0">
+      <div class="gen-row">
+        <button class="btn primary genbig" id="play">▶ PREVISUALIZAR</button>
+        <button class="btn" id="rec">⏺ GRABAR .webm</button>
+      </div>
+      <div class="recinfo" id="recinfo"></div>
+      <div class="btnrow" style="margin-top:10px">
+        <button class="btn" id="dlPngA">⬇ PNG cierre</button>
+      </div>
+
+      <details open>
+        <summary>Cómo cargarlo en OBS</summary>
+        <div class="body">
+          <ol>
+            <li>Grabá el <code>.webm</code> (botón <b>GRABAR</b>) — se descarga a tu carpeta.</li>
+            <li>En OBS: panel <b>Transiciones de escena → + → Stinger</b>.</li>
+            <li>Elegí el <code>.webm</code> como <b>Archivo de video</b>.</li>
+            <li>En <b>Punto de transición</b> elegí <b>Tiempo (ms)</b> y pegá el valor que te damos: <span class="bigms" id="tpMs">600 ms</span></li>
+            <li>Aceptá. Ahora al cambiar de escena con esa transición, se reproduce el stinger.</li>
+          </ol>
+          <div class="note">El alpha deja ver las dos escenas a través del stinger. Si necesitás también sonido de transición, se puede sumar después (OBS mezcla el audio del propio webm si lo tuviera). Este export es solo video con alpha.</div>
+        </div>
+      </details>
+    </div>
+  </div>
+  <div class="foot">HUMAN GLITCHE · el taller · corre 100% client-side<br><a href="/labs/">← volver a LABS</a></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const $=id=>document.getElementById(id);
+
+/* ============================================================
+   STINGER ENGINE — dibuja UN frame de la transición en progreso p∈[0..1].
+   p<tp: cubriendo (in) · p==tp: pantalla llena · p>tp: descubriendo (out).
+   Pura (sin refs externas) para poder grabarla frame a frame.
+   ============================================================ */
+function drawStinger(ctx, W, H, p, CFG){
+  const kind=CFG.kind||'blocks', tp=(CFG.tp||50)/100;
+  const A=CFG.accent||'#ffb020', B=CFG.accent2||'#ff2d55';
+  const min=Math.min(W,H), u=min/1080;
+  ctx.clearRect(0,0,W,H);
+  // cover 0..1: 0 vacío, 1 lleno
+  const cover = p<=tp ? p/tp : 1-(p-tp)/(1-tp);
+  const covering = p<=tp;
+  const e=x=>1-Math.pow(1-x,3), ei=x=>x*x*x;
+
+  function logo(){
+    if(!CFG.showLogo||!CFG.logo) return;
+    const a=Math.max(0,1-Math.abs(p-tp)/(0.16)); if(a<=0)return;
+    ctx.save();ctx.globalAlpha=a;ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.font=`400 ${Math.round(min*0.11)}px 'Bebas Neue','Space Mono',sans-serif`;
+    try{ctx.letterSpacing=(6*u).toFixed(1)+'px';}catch(_){}
+    ctx.fillStyle='#050505';ctx.fillText(CFG.logo.toUpperCase(),W/2,H/2);
+    ctx.restore();
+  }
+
+  if(kind==='blocks'){
+    const cols=16, rows=9, cw=W/cols, ch=H/rows;
+    for(let r=0;r<rows;r++)for(let c=0;c<cols;c++){
+      const d=(c+r)/(cols+rows); const local=Math.max(0,Math.min(1,(cover-d*0.5)/0.5));
+      if(local<=0)continue; const s=e(local); const w=cw*s, h=ch*s;
+      ctx.fillStyle=((c+r)%2)?A:B; ctx.fillRect(c*cw+(cw-w)/2, r*ch+(ch-h)/2, w+1, h+1);
+    }
+    logo();
+  } else if(kind==='curtain'){
+    // vertical bars closing from alternating sides
+    const bars=12, bw=W/bars;
+    for(let i=0;i<bars;i++){ const from=i%2?1:-1; const s=e(Math.min(1,cover*1.05));
+      const h=H*s; const y=from>0?0:H-h; ctx.fillStyle=i%2?A:B; ctx.fillRect(i*bw,y,bw+1,h);
+    }
+    logo();
+  } else if(kind==='iris'){
+    // expanding circle
+    const R=Math.hypot(W,H)/2 * e(Math.min(1,cover));
+    const g=ctx.createRadialGradient(W/2,H/2,R*0.4,W/2,H/2,R);
+    g.addColorStop(0,A);g.addColorStop(1,B);
+    ctx.fillStyle=g;ctx.beginPath();ctx.arc(W/2,H/2,R,0,6.283);ctx.fill();
+    logo();
+  } else if(kind==='swipe'){
+    // diagonal band sweeping across
+    const w=W*1.5, x=-w + (W+w*1.6)* (p); // moves left->right, fully clears by p=1
+    ctx.save();ctx.translate(x,0);ctx.transform(1,0,-0.35,1,0,0);
+    ctx.fillStyle=A;ctx.fillRect(0,-H*0.2,w*0.7,H*1.4);
+    ctx.fillStyle=B;ctx.fillRect(w*0.62,-H*0.2,w*0.12,H*1.4);
+    ctx.restore();
+    // ensure full cover around tp for the switch
+    if(covering && cover>0.98){ctx.fillStyle=A;ctx.fillRect(0,0,W,H);}
+    if(Math.abs(p-tp)<0.02){ctx.fillStyle=A;ctx.fillRect(0,0,W,H);}
+    logo();
+  } else if(kind==='glitch'){
+    // rgb-split slices filling in
+    const slices=26;
+    for(let i=0;i<slices;i++){ const d=Math.abs(i-slices/2)/(slices/2); const local=Math.max(0,Math.min(1,(cover-d*0.35)/0.65));
+      if(local<=0)continue; const y=i*(H/slices); const w=W*e(local); const off=(1-local)*min*0.06*(i%2?1:-1);
+      ctx.fillStyle=B; ctx.fillRect(off-4*u,y,w,H/slices+1);
+      ctx.fillStyle='#3ad0ff'; ctx.globalAlpha=0.5; ctx.fillRect(off+4*u,y,w,H/slices+1); ctx.globalAlpha=1;
+      ctx.fillStyle=A; ctx.fillRect(off,y,w,H/slices+1);
+    }
+    // scanlines when full
+    if(cover>0.9){ctx.fillStyle='rgba(0,0,0,0.12)';for(let y=0;y<H;y+=3*Math.max(1,u))ctx.fillRect(0,y,W,1.3*u);}
+    logo();
+  }
+}
+
+/* ============================================================
+   APP / UI
+   ============================================================ */
+const KINDS=[['blocks','▦ bloques'],['curtain','▤ cortina'],['iris','◉ iris'],['swipe','◹ swipe'],['glitch','▓ glitch']];
+const SWATCHES=['#ffb020','#b8ff00','#3ad0ff','#ff2d55','#9b6bff','#ff5edb','#ffffff'];
+
+let cfg={w:1920,h:1080,accent:'#ffb020',accent2:'#ff2d55',kind:'blocks',
+  logo:'HUMAN GLITCHE',showLogo:true,dur:1.2,tp:50,fps:60};
+let previewRAF=0, playing=false;
+const stage=$('stage');
+function fitCanvas(){stage.width=cfg.w;stage.height=cfg.h;}
+
+const kWrap=$('kinds');
+KINDS.forEach(([k,label])=>{const c=document.createElement('span');c.className='chip'+(cfg.kind===k?' on':'');c.textContent=label;c.dataset.k=k;c.onclick=()=>{cfg.kind=k;document.querySelectorAll('#kinds .chip').forEach(x=>x.classList.toggle('on',x.dataset.k===k));$('kindName').textContent=label.split(' ')[1].toUpperCase();renderAt(+$('scrub').value/1000);};kWrap.appendChild(c);});
+const swWrap=$('swatches');
+SWATCHES.forEach(c=>{const s=document.createElement('div');s.className='sw';s.style.background=c;s.onclick=()=>{cfg.accent=c;$('accent').value=c;renderAt(+$('scrub').value/1000);};swWrap.appendChild(s);});
+
+function readAll(){cfg.logo=$('logo').value.trim()||'HUMAN GLITCHE';cfg.dur=+$('dur').value;cfg.tp=+$('tp').value;cfg.fps=+$('fps').value;const[w,h]=$('size').value.split('x').map(Number);cfg.w=w;cfg.h=h;$('dims').textContent=w+'×'+h;const ms=Math.round(cfg.dur*cfg.tp/100*1000);$('tpread').textContent='transición @ '+ms+'ms';$('tpMs').textContent=ms+' ms';}
+
+function renderAt(p){fitCanvas();const ctx=stage.getContext('2d');drawStinger(ctx,cfg.w,cfg.h,Math.max(0,Math.min(1,p)),{...cfg});}
+function play(){readAll();playing=true;$('play').textContent='❚❚ ...';const t0=performance.now();cancelAnimationFrame(previewRAF);
+  (function step(){const t=(performance.now()-t0)/1000;let p=t/cfg.dur;if(p>=1){p=1;renderAt(1);$('scrub').value=1000;$('play').textContent='▶ PREVISUALIZAR';playing=false;setTimeout(()=>renderAt(0),300);return;}$('scrub').value=Math.round(p*1000);renderAt(p);previewRAF=requestAnimationFrame(step);})();
+}
+$('play').onclick=()=>{if(playing){playing=false;cancelAnimationFrame(previewRAF);$('play').textContent='▶ PREVISUALIZAR';return;}play();};
+$('scrub').oninput=e=>{if(playing){playing=false;cancelAnimationFrame(previewRAF);$('play').textContent='▶ PREVISUALIZAR';}renderAt(+e.target.value/1000);};
+['logo'].forEach(id=>$(id).oninput=()=>{readAll();renderAt(+$('scrub').value/1000);});
+$('size').onchange=()=>{readAll();renderAt(+$('scrub').value/1000);};
+$('dur').oninput=e=>{$('durVal').textContent=(+e.target.value).toFixed(1)+'s';readAll();};
+$('tp').oninput=e=>{$('tpVal').textContent=e.target.value+'%';readAll();renderAt(+$('scrub').value/1000);};
+$('accent').oninput=e=>{cfg.accent=e.target.value;renderAt(+$('scrub').value/1000);};
+$('accent2').oninput=e=>{cfg.accent2=e.target.value;renderAt(+$('scrub').value/1000);};
+$('fps').onchange=readAll;
+$('chkLogo').onclick=()=>{cfg.showLogo=!cfg.showLogo;$('chkLogo').classList.toggle('on',cfg.showLogo);renderAt(+$('scrub').value/1000);};
+
+// ---- RECORD to alpha webm ----
+async function record(){
+  readAll();
+  const type=['video/webm;codecs=vp9','video/webm;codecs=vp8'].find(t=>MediaRecorder.isTypeSupported(t));
+  if(!type){toast('tu navegador no soporta grabar webm');return;}
+  // alpha capability check
+  if(!await alphaOk(type)){ if(!confirm('Tu navegador no preservó el canal alpha en la prueba. El stinger puede salir con fondo negro. ¿Grabar igual?'))return; }
+  $('rec').disabled=true;$('play').disabled=true;$('rec').textContent='⏺ grabando…';
+  const rc=document.createElement('canvas');rc.width=cfg.w;rc.height=cfg.h;const rx=rc.getContext('2d');
+  const stream=rc.captureStream(cfg.fps);
+  const mr=new MediaRecorder(stream,{mimeType:type,videoBitsPerSecond:12_000_000});
+  const chunks=[];mr.ondataavailable=e=>{if(e.data.size)chunks.push(e.data);};
+  const done=new Promise(r=>mr.onstop=r);
+  const total=cfg.dur*1000, t0=performance.now(); mr.start();
+  await new Promise(res=>{function fr(){const t=performance.now()-t0;const p=Math.min(1,t/total);drawStinger(rx,cfg.w,cfg.h,p,{...cfg});$('recinfo').textContent='grabando '+Math.round(p*100)+'%';if(t<total){requestAnimationFrame(fr);}else res();}fr();});
+  // hold a couple extra clear frames so the tail flushes
+  drawStinger(rx,cfg.w,cfg.h,1,{...cfg});
+  await new Promise(r=>setTimeout(r,120));
+  mr.stop();await done;
+  const blob=new Blob(chunks,{type});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='hg-stinger-'+cfg.kind+'.webm';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),3000);
+  const ms=Math.round(cfg.dur*cfg.tp/100*1000);
+  $('recinfo').textContent='✓ listo · '+(blob.size/1024|0)+' KB · punto de transición '+ms+' ms';
+  $('rec').disabled=false;$('play').disabled=false;$('rec').textContent='⏺ GRABAR .webm';
+  toast('.webm grabado ⬇ · transición '+ms+'ms');
+}
+async function alphaOk(type){ try{
+  const cv=document.createElement('canvas');cv.width=cv.height=64;const cx=cv.getContext('2d');
+  const st=cv.captureStream(20);const mr=new MediaRecorder(st,{mimeType:type});const ch=[];mr.ondataavailable=e=>{if(e.data.size)ch.push(e.data);};
+  const done=new Promise(r=>mr.onstop=r);mr.start();const t0=performance.now();
+  await new Promise(res=>{function f(){cx.clearRect(0,0,64,64);cx.fillStyle='#f00';cx.beginPath();cx.arc(32,32,12,0,7);cx.fill();if(performance.now()-t0<350)requestAnimationFrame(f);else res();}f();});
+  mr.stop();await done;const blob=new Blob(ch,{type});const v=document.createElement('video');v.muted=true;v.src=URL.createObjectURL(blob);
+  await new Promise((r,j)=>{v.onloadeddata=r;v.onerror=()=>j();});await new Promise(r=>{v.onseeked=r;v.currentTime=0.2;});
+  const oc=document.createElement('canvas');oc.width=oc.height=64;const ox=oc.getContext('2d');ox.fillStyle='#0f0';ox.fillRect(0,0,64,64);ox.drawImage(v,0,0,64,64);
+  const c=ox.getImageData(2,2,1,1).data; return c[1]>150&&c[0]<120&&c[2]<120;
+}catch(e){return false;} }
+$('rec').onclick=record;
+$('play').setAttribute('title','previsualiza la transición completa');
+$('dlPngA').onclick=()=>{readAll();const off=document.createElement('canvas');off.width=cfg.w;off.height=cfg.h;drawStinger(off.getContext('2d'),cfg.w,cfg.h,cfg.tp/100,{...cfg});off.toBlob(b=>{const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='hg-stinger-'+cfg.kind+'.png';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000);toast('PNG del cierre ⬇');},'image/png');};
+
+function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),1800);}
+
+// init
+readAll();renderAt(0.5);$('scrub').value=500;
+</script>
+</body></html>

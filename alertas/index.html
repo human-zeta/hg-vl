@@ -1,0 +1,325 @@
+<!doctype html><html lang="es"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ALERTAS — Human Glitche · alertas de sub/follow/donación para OBS</title>
+<meta name="description" content="Generá alertas de seguidor, suscripción, donación, raid y bits para tu stream — con animación, confeti y sonido propio. Exportás un HTML que se dispara al cargar (parámetros de URL para nombre/monto) listo para Browser Source en OBS + PNG. 100% en tu navegador.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{ --acid:#b8ff00; --glitch:#ff2d55; --cyan:#3ad0ff; --amber:#ffb020; --violet:#9b6bff; --pink:#ff5edb; --ink:#f0ede6; --line:rgba(240,237,230,.12); --bg:#050505; }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{min-height:100%;background:var(--bg);color:var(--ink);font-family:'Space Mono',monospace;}
+  body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");z-index:0;pointer-events:none;opacity:.4;}
+  .wrap{position:relative;z-index:1;max-width:1180px;margin:0 auto;padding:28px 22px 90px;}
+  header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;gap:14px;}
+  .brand{font-family:'Bebas Neue',sans-serif;font-size:44px;letter-spacing:.03em;line-height:.82;}
+  .brand b{color:var(--pink);font-weight:400;}
+  .brand .sub{display:block;font-family:'Space Mono';font-size:10px;letter-spacing:.2em;color:rgba(240,237,230,.45);margin-top:8px;}
+  header .nav{display:flex;flex-direction:column;align-items:flex-end;gap:7px;padding-top:6px;}
+  header a{font-size:10px;letter-spacing:.2em;color:rgba(240,237,230,.4);text-decoration:none;} header a:hover{color:var(--pink);}
+  .intro{font-size:12px;color:rgba(240,237,230,.55);line-height:1.8;max-width:80ch;margin-bottom:22px;}
+  .intro b{color:var(--pink);font-weight:400;}
+  .layout{display:grid;grid-template-columns:340px 1fr;gap:22px;align-items:start;}
+  @media(max-width:900px){.layout{grid-template-columns:1fr;}}
+  .panel{border:1px solid var(--line);border-radius:8px;padding:18px 16px;background:rgba(255,94,219,.02);margin-bottom:16px;}
+  h2.sec{font-size:9px;letter-spacing:.22em;color:rgba(240,237,230,.45);text-transform:uppercase;margin:0 0 13px;}
+  h2.sec b{color:var(--pink);font-weight:400;}
+  .fld{margin-bottom:13px;} .fld:last-child{margin-bottom:0;}
+  .fld label{display:block;font-size:9px;letter-spacing:.16em;color:rgba(240,237,230,.5);text-transform:uppercase;margin-bottom:6px;}
+  .fld input[type=text],.fld select{width:100%;background:#0a0a0a;color:var(--ink);border:1px solid var(--line);font:inherit;font-size:13px;padding:9px 10px;border-radius:5px;}
+  .fld input:focus,.fld select:focus{outline:none;border-color:var(--pink);}
+  .fld input[type=range]{width:100%;accent-color:var(--pink);padding:0;}
+  .rangehead{display:flex;justify-content:space-between;font-size:9px;letter-spacing:.14em;color:rgba(240,237,230,.5);text-transform:uppercase;margin-bottom:5px;}
+  .rangehead b{color:var(--pink);font-weight:400;}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;}
+  .chip{font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;padding:7px 10px;border:1px solid var(--line);border-radius:20px;cursor:pointer;color:rgba(240,237,230,.55);user-select:none;transition:.15s;}
+  .chip.on{border-color:var(--pink);color:var(--pink);background:rgba(255,94,219,.1);}
+  .chip:hover{border-color:rgba(255,94,219,.5);}
+  .btn{background:transparent;border:1px solid var(--line);color:var(--ink);font:inherit;font-size:11px;letter-spacing:.1em;padding:11px 14px;cursor:pointer;border-radius:5px;transition:.15s;text-align:center;}
+  .btn:hover{border-color:var(--pink);color:var(--pink);}
+  .btn.primary{background:var(--pink);color:#050505;border-color:var(--pink);font-weight:700;}
+  .btn.primary:hover{opacity:.85;color:#050505;}
+  .btn.on{border-color:var(--pink);color:var(--pink);background:rgba(255,94,219,.1);}
+  .btnrow{display:flex;gap:8px;flex-wrap:wrap;} .btnrow .btn{flex:1;min-width:120px;}
+  .color-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+  .color-row input[type=color]{width:40px;height:34px;border:1px solid var(--line);border-radius:5px;background:#0a0a0a;cursor:pointer;padding:2px;}
+  .swatches{display:flex;gap:5px;}
+  .sw{width:22px;height:22px;border-radius:50%;cursor:pointer;border:1px solid rgba(255,255,255,.15);} .sw:hover{transform:scale(1.15);}
+  .stage-wrap{position:sticky;top:16px;}
+  .stagebar{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px;font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:rgba(240,237,230,.45);}
+  .stagebar b{color:var(--pink);font-weight:400;}
+  .checker{--c1:#141414;--c2:#0b0b0b;border:1px solid var(--line);border-radius:8px;overflow:hidden;position:relative;
+    background-image:linear-gradient(45deg,var(--c2) 25%,transparent 25%),linear-gradient(-45deg,var(--c2) 25%,transparent 25%),linear-gradient(45deg,transparent 75%,var(--c2) 75%),linear-gradient(-45deg,transparent 75%,var(--c2) 75%);
+    background-size:26px 26px;background-position:0 0,0 13px,13px -13px,-13px 0;background-color:var(--c1);}
+  #stage{display:block;width:100%;height:auto;}
+  .gen-row{display:flex;gap:8px;margin-top:10px;} .gen-row .btn{flex:1;}
+  .genbig{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:.05em;}
+  details{border:1px solid var(--line);border-radius:8px;padding:0 16px;margin-top:16px;background:rgba(255,94,219,.02);}
+  details summary{cursor:pointer;padding:15px 0;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--pink);list-style:none;}
+  details summary::-webkit-details-marker{display:none;}
+  details summary::before{content:'▸ ';} details[open] summary::before{content:'▾ ';}
+  details .body{padding:0 0 18px;font-size:12px;line-height:1.85;color:rgba(240,237,230,.62);}
+  details .body b{color:var(--ink);font-weight:700;}
+  details .body code{background:#0a0a0a;border:1px solid var(--line);border-radius:4px;padding:1px 6px;color:var(--pink);font-size:11px;word-break:break-all;}
+  details .body ol{margin:8px 0 8px 20px;} details .body li{margin-bottom:6px;}
+  .note{font-size:10px;color:rgba(240,237,230,.4);line-height:1.6;margin-top:9px;}
+  .urlbox{background:#0a0a0a;border:1px solid var(--line);border-radius:5px;padding:9px 10px;font-size:10px;color:var(--pink);word-break:break-all;line-height:1.6;margin-top:8px;}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(30px);background:var(--pink);color:#050505;font-size:12px;font-weight:700;letter-spacing:.05em;padding:12px 22px;border-radius:6px;opacity:0;transition:.25s;z-index:50;pointer-events:none;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  .foot{font-size:10px;color:rgba(240,237,230,.35);letter-spacing:.1em;margin-top:44px;text-align:center;line-height:1.9;}
+  .foot a{color:rgba(240,237,230,.5);text-decoration:none;} .foot a:hover{color:var(--pink);}
+</style></head><body>
+<div class="wrap">
+  <header>
+    <div class="brand"><b>ALERTAS</b><span class="sub">Human Glitche · el taller</span></div>
+    <div class="nav"><a href="/labs/">← LABS</a><a href="/overlay/">OVERLAY →</a></div>
+  </header>
+  <p class="intro">Generá <b>alertas de seguidor, suscripción, donación, raid y bits</b> para tu stream — con animación, confeti y <b>sonido propio</b> (sintetizado, sin archivos). Exportás un <b>HTML que se dispara al cargar</b> y acepta nombre/monto por <b>parámetros de URL</b>, listo para Browser Source en OBS (lo re-disparás desde un Stream Deck / al refrescar la fuente) + PNG. 100% en tu navegador — no sube nada.</p>
+
+  <div class="layout">
+    <div class="controls">
+      <div class="panel"><h2 class="sec"><b>Tipo</b> de alerta</h2><div class="chips" id="types"></div></div>
+
+      <div class="panel">
+        <h2 class="sec"><b>Contenido</b> · demo</h2>
+        <div class="fld"><label>Nombre</label><input type="text" id="name" placeholder="JUANCITO" maxlength="24"></div>
+        <div class="two">
+          <div class="fld"><label>Monto / dato</label><input type="text" id="amount" placeholder="$5 · 3 meses…" maxlength="16"></div>
+          <div class="fld"><label>Mensaje corto</label><input type="text" id="msg" placeholder="¡grande!" maxlength="24"></div>
+        </div>
+        <div class="note">En vivo, el nombre y el monto llegan por la URL de la fuente. Acá los editás para diseñar.</div>
+      </div>
+
+      <div class="panel">
+        <h2 class="sec"><b>Estilo</b></h2>
+        <div class="chips" id="styles"></div>
+        <div class="two" style="margin-top:13px">
+          <div class="fld"><label>Posición</label><select id="pos"><option value="top">Arriba</option><option value="center">Centro</option><option value="bottom">Abajo</option></select></div>
+          <div class="fld"><label>Sonido</label><select id="sound"><option value="chime">Chime</option><option value="coin">Coin</option><option value="blip">Blip</option><option value="none">Sin sonido</option></select></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2 class="sec"><b>Color</b></h2>
+        <div class="color-row"><input type="color" id="accent" value="#ff5edb"><div class="swatches" id="swatches"></div></div>
+        <div class="chips" style="margin-top:12px"><span class="chip on" id="chkConfetti">✧ confeti</span></div>
+      </div>
+
+      <div class="panel">
+        <h2 class="sec"><b>Ritmo</b></h2>
+        <div class="fld"><div class="rangehead"><span>Segundos en pantalla</span><b id="holdVal">4.0s</b></div><input type="range" id="hold" min="2" max="8" step="0.5" value="4"></div>
+        <div class="fld"><label>Formato (Browser Source)</label><select id="size"><option value="1920x1080">1920 × 1080</option><option value="800x600">800 × 600 — chico</option><option value="1080x1920">1080 × 1920 — vertical</option></select></div>
+      </div>
+    </div>
+
+    <div class="stage-wrap">
+      <div class="stagebar"><span>PREVIEW · <b id="dims">1920×1080</b> · <b id="typeName">SUB</b></span><span id="fpsread">— fps</span></div>
+      <div class="checker"><canvas id="stage"></canvas></div>
+      <div class="gen-row">
+        <button class="btn primary genbig" id="fire">▶ PROBAR alerta</button>
+        <button class="btn" id="demo">↻ demo loop</button>
+      </div>
+      <div class="btnrow" style="margin-top:10px">
+        <button class="btn on" id="dlHtml">⬇ alerta.html (OBS)</button>
+        <button class="btn" id="copyHtml">⧉ copiar HTML</button>
+        <button class="btn" id="dlPng">⬇ PNG transparente</button>
+      </div>
+
+      <details open>
+        <summary>Cómo dispararla en OBS / Stream Deck</summary>
+        <div class="body">
+          El HTML <b>reproduce la alerta al cargar</b> la página. Como una Browser Source carga una vez, para re-dispararla en vivo tenés dos caminos:
+          <ol>
+            <li><b>Stream Deck / hotkey</b> → acción <b>"Refresh Browser Source"</b>. Cada vez que la apretás, la alerta suena y se anima de nuevo.</li>
+            <li><b>Escena dedicada</b> con la fuente y la opción <b>"Actualizar el navegador cuando la escena se active"</b>; entrás y salís de la escena para dispararla.</li>
+          </ol>
+          <b>Nombre y monto dinámicos:</b> pasás datos por la URL de la fuente. Tu URL local (ejemplo con lo que tenés ahora):
+          <div class="urlbox" id="urlExample">alerta.html?name=JUANCITO&amount=$5&msg=¡grande!</div>
+          <div class="note">Marcá "Apagar la fuente cuando no está visible" + "Actualizar al activarse" para que el sonido no se adelante. El <b>PNG</b> es el cuadro fijo de la alerta (sin sonido). Para alertas automáticas conectadas a Twitch/YouTube hace falta un backend — esto es la capa visual, disparable a mano o por Stream Deck.</div>
+        </div>
+      </details>
+    </div>
+  </div>
+  <div class="foot">HUMAN GLITCHE · el taller · corre 100% client-side<br><a href="/labs/">← volver a LABS</a></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const $=id=>document.getElementById(id);
+
+/* ============================================================
+   ALERT ENGINE — pura, se serializa con toString() al exportar.
+   Sonido sintetizado con WebAudio (sin archivos externos).
+   ============================================================ */
+function runAlert(canvas, CFG, opts){
+  opts=opts||{};
+  const ctx=canvas.getContext('2d');
+  const W=CFG.w,H=CFG.h; canvas.width=W; canvas.height=H;
+  const AC=CFG.accent||'#ff5edb';
+  const INK='rgba(240,237,230,0.96)';
+  const min=Math.min(W,H), u=min/1080;
+  function hex2rgb(h){h=h.replace('#','');if(h.length===3)h=h.split('').map(c=>c+c).join('');return[parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)];}
+  const RGB=hex2rgb(AC); const ac=a=>`rgba(${RGB[0]},${RGB[1]},${RGB[2]},${a})`;
+  function setLS(px){try{ctx.letterSpacing=(px*u).toFixed(1)+'px';}catch(e){}}
+  const bebas=s=>`400 ${Math.round(s*u)}px 'Bebas Neue','Space Mono',sans-serif`;
+  const mono=(s,w)=>`${w||400} ${Math.round(s*u)}px 'Space Mono',ui-monospace,monospace`;
+  const TPL={
+    follow:{label:'NUEVO SEGUIDOR',icon:'❤',verb:'te sigue'},
+    sub:{label:'NUEVA SUSCRIPCIÓN',icon:'★',verb:'se suscribió'},
+    tip:{label:'DONACIÓN',icon:'◆',verb:'donó'},
+    raid:{label:'RAID',icon:'⚑',verb:'llegó con un raid de'},
+    bits:{label:'BITS',icon:'◈',verb:'envió'}
+  };
+  const style=CFG.style||'card', pos=CFG.pos||'top';
+  const inD=0.5, hold=CFG.hold||4, outD=0.5, total=inD+hold+outD;
+  const easeOutBack=x=>{const c1=1.70158,c3=c1+1;return 1+c3*Math.pow(x-1,3)+c1*Math.pow(x-1,2);};
+  const easeOut=x=>1-Math.pow(1-x,3);
+
+  let fireStart=null, data=null, parts=[];
+  let actx=null;
+  function audio(){ if(!actx){try{actx=new (window.AudioContext||window.webkitAudioContext)();}catch(e){}} if(actx&&actx.state==='suspended')actx.resume(); return actx; }
+  function beep(freq,t0,dur,type,gain){const a=audio();if(!a)return;const o=a.createOscillator(),g=a.createGain();o.type=type||'sine';o.frequency.value=freq;o.connect(g);g.connect(a.destination);const t=a.currentTime+t0;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(gain||0.18,t+0.01);g.gain.exponentialRampToValueAtTime(0.0001,t+dur);o.start(t);o.stop(t+dur+0.02);}
+  function playSound(kind){ if(kind==='none')return;
+    if(kind==='chime'){[523.25,659.25,783.99].forEach((f,i)=>beep(f,i*0.09,0.35,'sine',0.16));}
+    else if(kind==='coin'){beep(987.77,0,0.08,'square',0.12);beep(1318.5,0.08,0.5,'square',0.12);}
+    else if(kind==='blip'){beep(880,0,0.07,'square',0.14);beep(1200,0.06,0.12,'square',0.1);}
+  }
+  function spawn(){ parts=[]; if(!CFG.confetti)return; const cx=W/2, cy=posY()+min*0.02;
+    for(let i=0;i<70;i++){const a=Math.random()*6.283,sp=(0.4+Math.random())*min*0.012;parts.push({x:cx+(Math.random()-.5)*min*0.3,y:cy,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp-min*0.008,life:1,c:Math.random()>0.5?ac(1):'rgba(240,237,230,0.9)',s:(1+Math.random()*2.2)*u,rot:Math.random()*6.283,vr:(Math.random()-.5)*0.3});}
+  }
+  function posY(){ if(pos==='top')return H*0.2; if(pos==='bottom')return H*0.8; return H*0.5; }
+
+  function fire(d){ data=Object.assign({type:CFG.type||'sub',name:'JUANCITO',amount:'',msg:''}, d||{}); fireStart=performance.now(); spawn(); playSound(CFG.sound); }
+
+  function drawParticles(t){ ctx.save(); parts.forEach(p=>{ if(p.life<=0)return; p.x+=p.vx;p.y+=p.vy;p.vy+=min*0.0004;p.vx*=0.99;p.rot+=p.vr;p.life-=0.012; ctx.globalAlpha=Math.max(0,p.life);ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rot);ctx.fillStyle=p.c;ctx.fillRect(-p.s,-p.s*0.4,p.s*2,p.s*0.8);ctx.restore(); }); ctx.restore(); }
+
+  function drawAlert(t){
+    const tp=TPL[data.type]||TPL.sub, ap = t<inD?easeOutBack(t/inD): (t<inD+hold?1: easeOut(1-(t-inD-hold)/outD));
+    const alpha = t<inD? Math.min(1,t/inD*1.4) : (t<inD+hold?1: Math.max(0,1-(t-inD-hold)/outD));
+    const cy=posY(); const scale=0.85+0.15*Math.min(1,ap); const slide=(1-Math.min(1,alpha))*min*0.03*(pos==='bottom'?1:-1);
+
+    // measure
+    ctx.font=bebas(52);setLS(1.5); const nameW=ctx.measureText(data.name).width;
+    const cw=Math.max(min*0.42, nameW+min*0.22), ch=min*0.17;
+    const cx=W/2;
+    ctx.save(); ctx.globalAlpha=alpha; ctx.translate(cx, cy+slide); ctx.scale(scale,scale); ctx.translate(-cx,-cy);
+    const bx=cx-cw/2, by=cy-ch/2;
+
+    // background / border by style
+    if(style==='card'){
+      ctx.save();ctx.shadowColor=ac(.5);ctx.shadowBlur=40*u;
+      ctx.fillStyle='rgba(8,9,12,0.9)'; roundRect(bx,by,cw,ch,14*u); ctx.fill(); ctx.restore();
+      ctx.strokeStyle=ac(.9);ctx.lineWidth=2.5*u; roundRect(bx,by,cw,ch,14*u); ctx.stroke();
+      ctx.fillStyle=ac(.95); roundRect(bx,by,cw,6*u,3*u); ctx.fill();
+    } else if(style==='bar'){
+      ctx.fillStyle='rgba(8,9,12,0.88)'; ctx.fillRect(bx,by,cw,ch);
+      ctx.fillStyle=ac(.95); ctx.fillRect(bx,by,min*0.01,ch);
+    } else if(style==='glitch'){
+      ctx.fillStyle='rgba(255,45,85,.28)';ctx.fillRect(bx-4*u,by,cw,ch);
+      ctx.fillStyle='rgba(58,208,255,.28)';ctx.fillRect(bx+4*u,by,cw,ch);
+      ctx.fillStyle='rgba(8,9,12,0.9)';ctx.fillRect(bx,by,cw,ch);
+      ctx.strokeStyle=ac(.9);ctx.lineWidth=2*u;ctx.strokeRect(bx,by,cw,ch);
+    }
+
+    // icon
+    const ix=bx+min*0.06, iy=cy;
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.font=bebas(64); ctx.fillStyle=ac(1);
+    const pop=t<inD?easeOutBack(Math.min(1,t/inD*1.3)):1;
+    ctx.save();ctx.translate(ix,iy);ctx.scale(pop,pop);ctx.fillText(tp.icon,0,2*u);ctx.restore();
+
+    // texts
+    const tx=ix+min*0.06;
+    ctx.textAlign='left';
+    ctx.font=mono(15,700);setLS(3);ctx.fillStyle=ac(.95);ctx.textBaseline='alphabetic';
+    ctx.fillText(tp.label, tx, cy-min*0.035);
+    ctx.font=bebas(52);setLS(1.5);ctx.fillStyle=INK;ctx.textBaseline='middle';
+    ctx.fillText(data.name, tx, cy+min*0.004);
+    // sub line: verb + amount + msg
+    let sub=tp.verb; if(data.amount)sub+=' '+data.amount; if(data.msg)sub+=' · '+data.msg;
+    ctx.font=mono(15,400);setLS(1.5);ctx.fillStyle='rgba(240,237,230,0.72)';ctx.textBaseline='alphabetic';
+    ctx.fillText(sub, tx, cy+min*0.05);
+    ctx.restore();
+  }
+  function roundRect(x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
+
+  function frame(){
+    ctx.clearRect(0,0,W,H);
+    if(fireStart==null)return;
+    const t=(performance.now()-fireStart)/1000;
+    if(t>total+0.3){fireStart=null;parts=[];return;}
+    if(t<=total) drawAlert(t);
+    drawParticles(t);
+  }
+  function frameStatic(t){ ctx.clearRect(0,0,W,H); const save=fireStart; fireStart=performance.now()-t*1000; data=data||{type:CFG.type||'sub',name:'JUANCITO',amount:CFG.demoAmount||'',msg:''}; drawAlert(t); }
+
+  let raf=0,running=true;
+  function loop(){if(!running)return;frame();raf=requestAnimationFrame(loop);}
+  raf=requestAnimationFrame(loop);
+
+  let demoTimer=null;
+  if(opts.demoLoop){ const cyc=['sub','tip','follow','bits','raid']; let i=0; const go=()=>{fire(Object.assign({type:cyc[i%cyc.length]},opts.data||{})); i++; demoTimer=setTimeout(go,(total+1.4)*1000);}; go(); }
+  else if(opts.autofire){ setTimeout(()=>fire(opts.data||{}), 250); }
+
+  return {fire, stop(){running=false;cancelAnimationFrame(raf);if(demoTimer)clearTimeout(demoTimer);}, frameStatic};
+}
+
+/* ============================================================
+   APP / UI
+   ============================================================ */
+const TYPES=[['sub','★ sub'],['follow','❤ follow'],['tip','◆ donación'],['raid','⚑ raid'],['bits','◈ bits']];
+const STYLES=[['card','▢ card'],['bar','▬ barra'],['glitch','▓ glitch']];
+const SWATCHES=['#ff5edb','#b8ff00','#3ad0ff','#ffb020','#9b6bff','#ff2d55','#00ffa3'];
+
+let cfg={w:1920,h:1080,accent:'#ff5edb',type:'sub',style:'card',pos:'top',sound:'chime',
+  hold:4,confetti:true, name:'JUANCITO',amount:'',msg:''};
+let handle=null,demoOn=false;
+
+const tWrap=$('types');
+TYPES.forEach(([k,label])=>{const c=document.createElement('span');c.className='chip'+(cfg.type===k?' on':'');c.textContent=label;c.dataset.k=k;c.onclick=()=>{cfg.type=k;document.querySelectorAll('#types .chip').forEach(x=>x.classList.toggle('on',x.dataset.k===k));$('typeName').textContent=k.toUpperCase();fireOnce();};tWrap.appendChild(c);});
+const sWrap=$('styles');
+STYLES.forEach(([k,label])=>{const c=document.createElement('span');c.className='chip'+(cfg.style===k?' on':'');c.textContent=label;c.dataset.k=k;c.onclick=()=>{cfg.style=k;document.querySelectorAll('#styles .chip').forEach(x=>x.classList.toggle('on',x.dataset.k===k));fireOnce();};sWrap.appendChild(c);});
+const swWrap=$('swatches');
+SWATCHES.forEach(c=>{const s=document.createElement('div');s.className='sw';s.style.background=c;s.onclick=()=>{cfg.accent=c;$('accent').value=c;rebuild();};swWrap.appendChild(s);});
+
+function readAll(){cfg.name=$('name').value.trim()||'JUANCITO';cfg.amount=$('amount').value.trim();cfg.msg=$('msg').value.trim();cfg.pos=$('pos').value;cfg.sound=$('sound').value;cfg.hold=+$('hold').value;const[w,h]=$('size').value.split('x').map(Number);cfg.w=w;cfg.h=h;$('dims').textContent=w+'×'+h;updateUrl();}
+function fireData(){return {type:cfg.type,name:cfg.name,amount:cfg.amount,msg:cfg.msg};}
+function rebuild(){readAll();if(handle)handle.stop();handle=runAlert($('stage'),{...cfg},{});demoOn=false;$('demo').classList.remove('on');}
+function fireOnce(){readAll();if(handle)handle.stop();demoOn=false;$('demo').classList.remove('on');handle=runAlert($('stage'),{...cfg},{});handle.fire(fireData());}
+
+$('fire').onclick=fireOnce;
+$('demo').onclick=()=>{demoOn=!demoOn;$('demo').classList.toggle('on',demoOn);readAll();if(handle)handle.stop();handle=runAlert($('stage'),{...cfg},demoOn?{demoLoop:true,data:fireData()}:{});if(!demoOn)handle.fire(fireData());};
+['name','amount','msg'].forEach(id=>$(id).oninput=()=>{readAll();});
+$('pos').onchange=fireOnce;$('sound').onchange=readAll;$('size').onchange=fireOnce;
+$('accent').oninput=e=>{cfg.accent=e.target.value;fireOnce();};
+$('hold').oninput=e=>{$('holdVal').textContent=(+e.target.value).toFixed(1)+'s';cfg.hold=+e.target.value;};
+$('chkConfetti').onclick=()=>{cfg.confetti=!cfg.confetti;$('chkConfetti').classList.toggle('on',cfg.confetti);};
+
+let fc=0,ft=performance.now();(function fps(){fc++;const n=performance.now();if(n-ft>500){$('fpsread').textContent=Math.round(fc/((n-ft)/1000))+' fps';fc=0;ft=n;}requestAnimationFrame(fps);})();
+
+function updateUrl(){const q=new URLSearchParams();q.set('name',cfg.name);if(cfg.amount)q.set('amount',cfg.amount);if(cfg.msg)q.set('msg',cfg.msg);$('urlExample').textContent='alerta.html?'+q.toString().replace(/\+/g,'%20');}
+
+function buildHTML(){readAll();const c={...cfg};
+  return ['<!doctype html><html><head><meta charset="utf-8"><title>HG Alerta</title>',
+   '<link rel="preconnect" href="https://fonts.googleapis.com">',
+   '<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">',
+   '<style>html,body{margin:0;height:100%;background:transparent;overflow:hidden}canvas{position:fixed;inset:0;width:100vw;height:100vh}</style>',
+   '</head><body><canvas id="c"></canvas><script>',
+   'const CFG='+JSON.stringify(c)+';',
+   'const P=new URLSearchParams(location.search);',
+   'const DATA={type:P.get("type")||CFG.type,name:P.get("name")||CFG.name||"JUANCITO",amount:P.get("amount")||CFG.amount||"",msg:P.get("msg")||CFG.msg||""};',
+   'const DEMO=P.get("demo")==="1";',
+   'const runAlert='+runAlert.toString()+';',
+   'runAlert(document.getElementById("c"),CFG, DEMO?{demoLoop:true,data:DATA}:{autofire:true,data:DATA});',
+   '<\/script></body></html>'].join('\n');}
+function download(name,content){const b=new Blob([content],{type:'text/html'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000);}
+$('dlHtml').onclick=()=>{download('hg-alerta-'+cfg.type+'.html',buildHTML());toast('alerta.html ⬇');};
+$('copyHtml').onclick=async()=>{try{await navigator.clipboard.writeText(buildHTML());toast('HTML copiado ⧉');}catch(e){toast('no se pudo copiar');}};
+$('dlPng').onclick=()=>{readAll();const off=document.createElement('canvas');const h=runAlert(off,{...cfg},{});h.frameStatic(0.5+ (cfg.hold*0.2));h.stop();off.toBlob(b=>{const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='hg-alerta-'+cfg.type+'.png';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000);toast('PNG transparente ⬇');},'image/png');};
+
+function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),1600);}
+
+// init
+rebuild(); setTimeout(()=>{if(handle)handle.fire(fireData());},400);
+</script>
+</body></html>

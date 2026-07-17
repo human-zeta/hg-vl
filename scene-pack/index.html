@@ -1,0 +1,335 @@
+<!doctype html><html lang="es"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SCENE PACK — Human Glitche · pantallas de escena para OBS</title>
+<meta name="description" content="Generá el set completo de pantallas de escena para tu stream: Starting Soon, Ya vuelvo (BRB), Cerrando y Dificultades técnicas — coordinadas en un color, con fondo animado, countdown y barra de redes. Exportás un HTML para Browser Source en OBS (?scene=) + PNG. 100% en tu navegador.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{ --acid:#b8ff00; --glitch:#ff2d55; --cyan:#3ad0ff; --amber:#ffb020; --violet:#9b6bff; --ink:#f0ede6; --line:rgba(240,237,230,.12); --bg:#050505; }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{min-height:100%;background:var(--bg);color:var(--ink);font-family:'Space Mono',monospace;}
+  body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");z-index:0;pointer-events:none;opacity:.4;}
+  .wrap{position:relative;z-index:1;max-width:1180px;margin:0 auto;padding:28px 22px 90px;}
+  header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;gap:14px;}
+  .brand{font-family:'Bebas Neue',sans-serif;font-size:44px;letter-spacing:.03em;line-height:.82;}
+  .brand b{color:var(--violet);font-weight:400;}
+  .brand .sub{display:block;font-family:'Space Mono';font-size:10px;letter-spacing:.2em;color:rgba(240,237,230,.45);margin-top:8px;}
+  header .nav{display:flex;flex-direction:column;align-items:flex-end;gap:7px;padding-top:6px;}
+  header a{font-size:10px;letter-spacing:.2em;color:rgba(240,237,230,.4);text-decoration:none;} header a:hover{color:var(--violet);}
+  .intro{font-size:12px;color:rgba(240,237,230,.55);line-height:1.8;max-width:80ch;margin-bottom:22px;}
+  .intro b{color:var(--violet);font-weight:400;}
+  .layout{display:grid;grid-template-columns:340px 1fr;gap:22px;align-items:start;}
+  @media(max-width:900px){.layout{grid-template-columns:1fr;}}
+  .panel{border:1px solid var(--line);border-radius:8px;padding:18px 16px;background:rgba(155,107,255,.03);margin-bottom:16px;}
+  h2.sec{font-size:9px;letter-spacing:.22em;color:rgba(240,237,230,.45);text-transform:uppercase;margin:0 0 13px;}
+  h2.sec b{color:var(--violet);font-weight:400;}
+  .fld{margin-bottom:13px;} .fld:last-child{margin-bottom:0;}
+  .fld label{display:block;font-size:9px;letter-spacing:.16em;color:rgba(240,237,230,.5);text-transform:uppercase;margin-bottom:6px;}
+  .fld input[type=text],.fld select,.fld textarea{width:100%;background:#0a0a0a;color:var(--ink);border:1px solid var(--line);font:inherit;font-size:13px;padding:9px 10px;border-radius:5px;}
+  .fld textarea{resize:vertical;min-height:60px;line-height:1.6;}
+  .fld input:focus,.fld select:focus,.fld textarea:focus{outline:none;border-color:var(--violet);}
+  .fld input[type=range]{width:100%;accent-color:var(--violet);padding:0;}
+  .rangehead{display:flex;justify-content:space-between;font-size:9px;letter-spacing:.14em;color:rgba(240,237,230,.5);text-transform:uppercase;margin-bottom:5px;}
+  .rangehead b{color:var(--violet);font-weight:400;}
+  .scenetabs{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;}
+  .scenetabs .btn{padding:10px 6px;font-size:10px;}
+  .scenetabs .btn.on{border-color:var(--violet);color:var(--violet);background:rgba(155,107,255,.12);}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;}
+  .chip{font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;padding:7px 10px;border:1px solid var(--line);border-radius:20px;cursor:pointer;color:rgba(240,237,230,.55);user-select:none;transition:.15s;}
+  .chip.on{border-color:var(--violet);color:var(--violet);background:rgba(155,107,255,.12);}
+  .chip:hover{border-color:rgba(155,107,255,.5);}
+  .btn{background:transparent;border:1px solid var(--line);color:var(--ink);font:inherit;font-size:11px;letter-spacing:.1em;padding:11px 14px;cursor:pointer;border-radius:5px;transition:.15s;text-align:center;}
+  .btn:hover{border-color:var(--violet);color:var(--violet);}
+  .btn.primary{background:var(--violet);color:#050505;border-color:var(--violet);font-weight:700;}
+  .btn.primary:hover{opacity:.85;color:#050505;}
+  .btn.on{border-color:var(--violet);color:var(--violet);background:rgba(155,107,255,.12);}
+  .btnrow{display:flex;gap:8px;flex-wrap:wrap;} .btnrow .btn{flex:1;min-width:120px;}
+  .color-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+  .color-row input[type=color]{width:40px;height:34px;border:1px solid var(--line);border-radius:5px;background:#0a0a0a;cursor:pointer;padding:2px;}
+  .swatches{display:flex;gap:5px;}
+  .sw{width:22px;height:22px;border-radius:50%;cursor:pointer;border:1px solid rgba(255,255,255,.15);} .sw:hover{transform:scale(1.15);}
+  .stage-wrap{position:sticky;top:16px;}
+  .stagebar{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px;font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:rgba(240,237,230,.45);}
+  .stagebar b{color:var(--violet);font-weight:400;}
+  .frameborder{border:1px solid var(--line);border-radius:8px;overflow:hidden;background:#000;}
+  #stage{display:block;width:100%;height:auto;}
+  .gen-row{display:flex;gap:8px;margin-top:10px;} .gen-row .btn{flex:1;}
+  .genbig{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:.05em;}
+  details{border:1px solid var(--line);border-radius:8px;padding:0 16px;margin-top:16px;background:rgba(155,107,255,.03);}
+  details summary{cursor:pointer;padding:15px 0;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--violet);list-style:none;}
+  details summary::-webkit-details-marker{display:none;}
+  details summary::before{content:'▸ ';} details[open] summary::before{content:'▾ ';}
+  details .body{padding:0 0 18px;font-size:12px;line-height:1.85;color:rgba(240,237,230,.62);}
+  details .body b{color:var(--ink);font-weight:700;}
+  details .body code{background:#0a0a0a;border:1px solid var(--line);border-radius:4px;padding:1px 6px;color:var(--violet);font-size:11px;}
+  details .body ol{margin:8px 0 8px 20px;} details .body li{margin-bottom:6px;}
+  .note{font-size:10px;color:rgba(240,237,230,.4);line-height:1.6;margin-top:9px;}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(30px);background:var(--violet);color:#050505;font-size:12px;font-weight:700;letter-spacing:.05em;padding:12px 22px;border-radius:6px;opacity:0;transition:.25s;z-index:50;pointer-events:none;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  .foot{font-size:10px;color:rgba(240,237,230,.35);letter-spacing:.1em;margin-top:44px;text-align:center;line-height:1.9;}
+  .foot a{color:rgba(240,237,230,.5);text-decoration:none;} .foot a:hover{color:var(--violet);}
+</style></head><body>
+<div class="wrap">
+  <header>
+    <div class="brand"><b>SCENE PACK</b><span class="sub">Human Glitche · el taller</span></div>
+    <div class="nav"><a href="/labs/">← LABS</a><a href="/overlay/">OVERLAY →</a></div>
+  </header>
+  <p class="intro">Generá el <b>set completo de pantallas de escena</b> para tu stream — Starting Soon, Ya vuelvo (BRB), Cerrando y Dificultades técnicas — coordinadas en <b>un color</b>, con fondo animado, <b>countdown</b> y barra de redes. Exportás <b>un solo HTML</b> que sirve las 4 escenas por parámetro (<code style="color:var(--violet)">?scene=</code>): en OBS ponés 4 Browser Sources del mismo archivo. + PNG por escena. 100% en tu navegador.</p>
+
+  <div class="layout">
+    <div class="controls">
+      <div class="panel"><h2 class="sec"><b>Escena</b> · previsualizar</h2><div class="scenetabs" id="scenetabs"></div></div>
+
+      <div class="panel">
+        <h2 class="sec"><b>Textos</b> · de esta escena</h2>
+        <div class="fld"><label>Título grande</label><input type="text" id="title" maxlength="26"></div>
+        <div class="fld"><label>Subtítulo</label><input type="text" id="sub" maxlength="48"></div>
+        <div class="note">Cada escena guarda sus propios textos. Cambiá de pestaña arriba para editar las otras.</div>
+      </div>
+
+      <div class="panel">
+        <h2 class="sec"><b>Marca</b> · en todas las escenas</h2>
+        <div class="fld"><label>Nombre / logo (texto)</label><input type="text" id="brandName" placeholder="HUMAN GLITCHE" maxlength="24"></div>
+        <div class="fld"><label>Redes (barra inferior) — separá con coma</label><input type="text" id="socials" placeholder="@humanglitche, twitch.tv/hg, youtube/@hg"></div>
+      </div>
+
+      <div class="panel">
+        <h2 class="sec"><b>Fondo</b> · animado</h2>
+        <div class="chips" id="bgs"></div>
+      </div>
+
+      <div class="panel">
+        <h2 class="sec"><b>Color</b></h2>
+        <div class="color-row"><input type="color" id="accent" value="#9b6bff"><div class="swatches" id="swatches"></div></div>
+        <div class="chips" style="margin-top:12px"><span class="chip on" id="chkDeco">HUD decorativo</span><span class="chip on" id="chkClock">⏱ reloj</span></div>
+      </div>
+
+      <div class="panel">
+        <h2 class="sec"><b>Countdown</b> · "empezamos en…"</h2>
+        <div class="chips"><span class="chip on" id="chkCd">mostrar en Starting</span></div>
+        <div class="fld" style="margin-top:12px"><div class="rangehead"><span>Minutos</span><b id="cdVal">5 min</b></div><input type="range" id="cd" min="1" max="30" value="5"></div>
+        <div class="note">El contador arranca al cargar la fuente en OBS. Reiniciás con clic derecho → Actualizar caché.</div>
+      </div>
+    </div>
+
+    <div class="stage-wrap">
+      <div class="stagebar"><span>PREVIEW · <b id="dims">1920×1080</b> · <b id="scnName">STARTING</b></span><span id="fpsread">— fps</span></div>
+      <div class="frameborder"><canvas id="stage"></canvas></div>
+      <div class="gen-row">
+        <select id="size" class="btn" style="flex:2"><option value="1920x1080">1920 × 1080 — horizontal</option><option value="1080x1920">1080 × 1920 — vertical</option><option value="2560x1440">2560 × 1440 — QHD</option></select>
+        <button class="btn" id="freeze" style="flex:1">❚❚ pausa</button>
+      </div>
+      <div class="btnrow" style="margin-top:10px">
+        <button class="btn primary" id="dlPack">⬇ scene-pack.html (las 4)</button>
+        <button class="btn" id="copyHtml">⧉ copiar HTML</button>
+        <button class="btn" id="dlPng">⬇ PNG de esta escena</button>
+      </div>
+
+      <details open>
+        <summary>Cómo usar el pack en OBS</summary>
+        <div class="body">
+          Un solo archivo sirve las 4 escenas según <code>?scene=</code>. En OBS creás una <b>escena por cada una</b> (Starting / BRB / Ending / Technical) y en cada una agregás un <b>Navegador → Archivo local</b> apuntando al mismo <code>scene-pack.html</code>, y le agregás el parámetro en el campo URL local — o usás estos valores:
+          <ol>
+            <li><b>Starting Soon</b> → <code>scene-pack.html?scene=starting</code></li>
+            <li><b>Ya vuelvo / BRB</b> → <code>scene-pack.html?scene=brb</code></li>
+            <li><b>Cerrando</b> → <code>scene-pack.html?scene=ending</code></li>
+            <li><b>Dificultades técnicas</b> → <code>scene-pack.html?scene=technical</code></li>
+          </ol>
+          Ancho / Alto = el formato elegido. Si tu OBS no deja pasar <code>?scene=</code> en archivo local, descargá también los PNG o subí el HTML a un hosting y usá la URL con el parámetro.
+          <div class="note">Tip: el <b>countdown</b> arranca al mostrar la fuente. Para reiniciarlo antes de salir en vivo, clic derecho en la fuente → Actualizar caché.</div>
+        </div>
+      </details>
+    </div>
+  </div>
+  <div class="foot">HUMAN GLITCHE · el taller · corre 100% client-side<br><a href="/labs/">← volver a LABS</a></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const $=id=>document.getElementById(id);
+
+/* ============================================================
+   SCENE ENGINE — pura, se serializa con toString() al exportar.
+   CFG.scene ∈ starting|brb|ending|technical
+   ============================================================ */
+function runScene(canvas, CFG, opts){
+  opts=opts||{};
+  const animate=opts.animate!==false;
+  const ctx=canvas.getContext('2d');
+  const W=CFG.w,H=CFG.h; canvas.width=W; canvas.height=H;
+  const AC=CFG.accent||'#9b6bff';
+  const INK='rgba(240,237,230,0.9)';
+  const min=Math.min(W,H), u=min/1080, mg=min*0.06;
+  function hex2rgb(h){h=h.replace('#','');if(h.length===3)h=h.split('').map(c=>c+c).join('');return[parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)];}
+  const RGB=hex2rgb(AC); const ac=a=>`rgba(${RGB[0]},${RGB[1]},${RGB[2]},${a})`;
+  function setLS(px){try{ctx.letterSpacing=(px*u).toFixed(1)+'px';}catch(e){}}
+  const bebas=s=>`400 ${Math.round(s*u)}px 'Bebas Neue','Space Mono',sans-serif`;
+  const mono=(s,w)=>`${w||400} ${Math.round(s*u)}px 'Space Mono',ui-monospace,monospace`;
+  const scene=CFG.scene||'starting';
+  const S=(CFG.scenes&&CFG.scenes[scene])||{title:scene.toUpperCase(),sub:''};
+  const bg=CFG.bg||'grid';
+
+  // seeded stars for particles
+  const stars=[]; let sd=99;const rnd=()=>{sd=(sd*16807)%2147483647;return sd/2147483647;};
+  for(let i=0;i<140;i++)stars.push({x:rnd(),y:rnd(),z:rnd()*0.8+0.2,s:rnd()});
+
+  function background(t){
+    // base gradient
+    const g=ctx.createRadialGradient(W/2,H*0.42,min*0.1,W/2,H*0.5,min*0.9);
+    g.addColorStop(0,`rgba(${RGB[0]*0.10|0},${RGB[1]*0.10|0},${RGB[2]*0.10|0},1)`);
+    g.addColorStop(1,'rgba(4,4,6,1)'); ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+
+    if(bg==='grid'){ // perspective floor
+      ctx.strokeStyle=ac(.16); ctx.lineWidth=1.4*u; const hz=H*0.62;
+      for(let i=-10;i<=10;i++){const x=W/2+i*min*0.12;ctx.beginPath();ctx.moveTo(W/2+i*min*0.02,hz);ctx.lineTo(x,H);ctx.stroke();}
+      const scroll=(t*0.35)%1;
+      for(let i=0;i<16;i++){const f=(i+scroll)/16;const y=hz+(H-hz)*f*f;ctx.globalAlpha=Math.min(1,f*1.4);ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+      ctx.globalAlpha=1;
+    } else if(bg==='rays'){
+      ctx.save();ctx.translate(W/2,H*0.42);
+      for(let i=0;i<24;i++){const a=i/24*6.283+t*0.06;ctx.globalAlpha=0.05+0.04*(i%2);ctx.fillStyle=ac(1);ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(Math.cos(a-0.03)*min*1.2,Math.sin(a-0.03)*min*1.2);ctx.lineTo(Math.cos(a+0.03)*min*1.2,Math.sin(a+0.03)*min*1.2);ctx.fill();}
+      ctx.restore();ctx.globalAlpha=1;
+    } else if(bg==='particles'){
+      stars.forEach(s=>{const y=(s.y+t*0.02*s.z)%1; ctx.globalAlpha=0.2+0.6*s.z; ctx.fillStyle=ac(1); const r=(0.5+s.z*1.8)*u; ctx.beginPath();ctx.arc(s.x*W,y*H,r,0,6.283);ctx.fill();});
+      ctx.globalAlpha=1;
+    } else if(bg==='waves'){
+      for(let l=0;l<4;l++){ctx.strokeStyle=ac(0.06+l*0.03);ctx.lineWidth=1.4*u;ctx.beginPath();for(let x=0;x<=W;x+=8*u){const y=H*0.5+Math.sin(x/min*3+t*(0.6+l*0.2)+l)*min*(0.05+l*0.02);x?ctx.lineTo(x,y):ctx.moveTo(x,y);}ctx.stroke();}
+    }
+  }
+
+  function deco(t){
+    if(!CFG.deco)return;
+    ctx.save();ctx.globalAlpha=0.9;ctx.strokeStyle=ac(.7);ctx.lineWidth=2*u;const L=min*0.05;
+    [[mg,mg,1,1],[W-mg,mg,-1,1],[mg,H-mg,1,-1],[W-mg,H-mg,-1,-1]].forEach(c=>{ctx.beginPath();ctx.moveTo(c[0]+L*c[2],c[1]);ctx.lineTo(c[0],c[1]);ctx.lineTo(c[0],c[1]+L*c[3]);ctx.stroke();});
+    // top ticks
+    ctx.strokeStyle=ac(.35);ctx.lineWidth=1*u;const step=min*0.04;for(let i=0,x=mg;x<W-mg;x+=step,i++){const big=i%5===0;ctx.beginPath();ctx.moveTo(x,mg);ctx.lineTo(x,mg+(big?11:6)*u);ctx.stroke();}
+    // status pill top-left
+    ctx.fillStyle=ac(.9);ctx.font=mono(13,700);setLS(2);ctx.textBaseline='middle';ctx.textAlign='left';
+    const blink=Math.sin(t*4)>-.3;ctx.globalAlpha=blink?1:0.4;ctx.fillText('● '+(S.tag||scene.toUpperCase()),mg+min*0.02,mg+min*0.028);ctx.globalAlpha=1;
+    // clock top-right
+    if(CFG.clock){const d=new Date();const hh=String(d.getHours()).padStart(2,'0'),mm=String(d.getMinutes()).padStart(2,'0'),ss=String(d.getSeconds()).padStart(2,'0');ctx.fillStyle=INK;ctx.font=mono(14,700);setLS(2);ctx.textAlign='right';ctx.fillText(hh+':'+mm+':'+ss,W-mg-min*0.02,mg+min*0.028);}
+    ctx.restore();
+  }
+
+  function centerBlock(t){
+    const cx=W/2, cy=H*0.44;
+    // eyebrow
+    ctx.textAlign='center';
+    if(CFG.brandName){ctx.fillStyle=ac(.9);ctx.font=mono(15,700);setLS(4);ctx.textBaseline='alphabetic';ctx.fillText(CFG.brandName.toUpperCase(),cx,cy-min*0.09);}
+    // title (subtle glitch flicker)
+    ctx.font=bebas(96);setLS(3);ctx.textBaseline='middle';
+    const flick=Math.sin(t*33)>0.94;
+    if(flick){ctx.fillStyle='rgba(255,45,85,.5)';ctx.fillText((S.title||'').toUpperCase(),cx-4*u,cy);ctx.fillStyle=ac(.5);ctx.fillText((S.title||'').toUpperCase(),cx+4*u,cy);}
+    ctx.fillStyle=INK;ctx.fillText((S.title||'').toUpperCase(),cx,cy);
+    // subtitle with dots
+    if(S.sub){ctx.fillStyle=ac(.85);ctx.font=mono(19,400);setLS(3);ctx.textBaseline='alphabetic';const dots='.'.repeat(1+Math.floor(t*1.5)%3);ctx.fillText(S.sub.replace(/\.*$/,'')+' '+dots,cx,cy+min*0.075);}
+
+    // countdown (starting scene)
+    let by=cy+min*0.13;
+    if(scene==='starting'&&CFG.countdown){
+      const total=(CFG.cdMin||5)*60; const rem=Math.max(0,total-t); const mm=String(Math.floor(rem/60)).padStart(2,'0'),ss=String(Math.floor(rem%60)).padStart(2,'0');
+      ctx.fillStyle=ac(.98);ctx.font=bebas(56);setLS(4);ctx.textBaseline='middle';ctx.textAlign='center';
+      ctx.fillText(rem>0?(mm+':'+ss):'¡EMPEZAMOS!',cx,by+min*0.02);
+      by+=min*0.06;
+    }
+    // progress bar (indeterminate feel)
+    const bw=min*0.26,bx=cx-bw/2; ctx.strokeStyle=ac(.35);ctx.lineWidth=1*u;ctx.strokeRect(bx,by,bw,6*u);
+    ctx.fillStyle=ac(.85); const p=(Math.sin(t*0.7)*0.5+0.5); ctx.fillRect(bx,by,bw*p,6*u);
+  }
+
+  function socialsBar(t){
+    const list=(CFG.socials||[]).filter(Boolean); if(!list.length)return;
+    const y=H-mg-min*0.005; ctx.textAlign='center';ctx.textBaseline='alphabetic';
+    ctx.font=mono(16,700);setLS(2);
+    const sep='      ▸  '; const line=list.map(s=>s).join(sep);
+    // measure & draw with accent bullets
+    ctx.fillStyle=INK; ctx.fillText(list.join('     •     '),W/2,y);
+  }
+
+  function scan(){ctx.save();ctx.globalAlpha=0.4;ctx.fillStyle='rgba(0,0,0,0.10)';for(let y=0;y<H;y+=3*Math.max(1,u))ctx.fillRect(0,y,W,1.2*u);const rg=ctx.createRadialGradient(W/2,H/2,min*0.35,W/2,H/2,min*0.8);rg.addColorStop(0,'rgba(0,0,0,0)');rg.addColorStop(1,'rgba(0,0,0,0.45)');ctx.fillStyle=rg;ctx.fillRect(0,0,W,H);ctx.restore();}
+
+  function frame(t){
+    ctx.clearRect(0,0,W,H);
+    background(t);
+    deco(t);
+    centerBlock(t);
+    socialsBar(t);
+    scan();
+  }
+
+  let raf=0,running=true,t0=null;
+  function loop(ts){if(!running)return;if(t0==null)t0=ts;frame((ts-t0)/1000);raf=requestAnimationFrame(loop);}
+  frame(animate?0:2.0);
+  if(animate) raf=requestAnimationFrame(loop);
+  return {stop(){running=false;cancelAnimationFrame(raf);}, redraw(t){frame(t||0);}};
+}
+
+/* ============================================================
+   APP / UI
+   ============================================================ */
+const SCENES=[['starting','▶ Starting Soon'],['brb','☕ Ya vuelvo'],['ending','◼ Cerrando'],['technical','⚠ Técnico']];
+const SCENE_DEFAULTS={
+  starting:{title:'EMPEZAMOS YA',sub:'preparando todo',tag:'STARTING'},
+  brb:{title:'YA VUELVO',sub:'no te vayas',tag:'BRB'},
+  ending:{title:'GRACIAS POR VENIR',sub:'nos vemos la próxima',tag:'ENDING'},
+  technical:{title:'DIFICULTADES TÉCNICAS',sub:'estamos resolviendo',tag:'TECH'}
+};
+const BGS=[['grid','▦ grid'],['rays','✷ rays'],['particles','∴ partículas'],['waves','∿ waves']];
+const SWATCHES=['#9b6bff','#3ad0ff','#b8ff00','#ff2d55','#ffb020','#00ffa3','#ff5edb'];
+
+let cfg={w:1920,h:1080,accent:'#9b6bff',bg:'grid',scene:'starting',
+  scenes:JSON.parse(JSON.stringify(SCENE_DEFAULTS)),
+  brandName:'HUMAN GLITCHE',socials:['@humanglitche','twitch.tv/hg'],
+  deco:true,clock:true,countdown:true,cdMin:5};
+let handle=null,frozen=false;
+
+const tabWrap=$('scenetabs');
+SCENES.forEach(([k,label])=>{const b=document.createElement('button');b.className='btn'+(cfg.scene===k?' on':'');b.textContent=label;b.dataset.k=k;b.onclick=()=>selScene(k);tabWrap.appendChild(b);});
+const bgWrap=$('bgs');
+BGS.forEach(([k,label])=>{const c=document.createElement('span');c.className='chip'+(cfg.bg===k?' on':'');c.textContent=label;c.dataset.k=k;c.onclick=()=>{cfg.bg=k;document.querySelectorAll('#bgs .chip').forEach(x=>x.classList.toggle('on',x.dataset.k===k));restart();};bgWrap.appendChild(c);});
+const swWrap=$('swatches');
+SWATCHES.forEach(c=>{const s=document.createElement('div');s.className='sw';s.style.background=c;s.onclick=()=>{cfg.accent=c;$('accent').value=c;restart();};swWrap.appendChild(s);});
+
+function loadSceneFields(){const s=cfg.scenes[cfg.scene];$('title').value=s.title;$('sub').value=s.sub;$('scnName').textContent=cfg.scene.toUpperCase();}
+function selScene(k){cfg.scene=k;document.querySelectorAll('#scenetabs .btn').forEach(b=>b.classList.toggle('on',b.dataset.k===k));loadSceneFields();restart();}
+
+function readGlobals(){cfg.brandName=$('brandName').value.trim();cfg.socials=$('socials').value.split(',').map(s=>s.trim()).filter(Boolean);cfg.cdMin=+$('cd').value;const[w,h]=$('size').value.split('x').map(Number);cfg.w=w;cfg.h=h;$('dims').textContent=w+'×'+h;}
+
+function restart(){readGlobals();if(handle)handle.stop();const c=JSON.parse(JSON.stringify(cfg));handle=runScene($('stage'),c,{animate:!frozen});if(frozen)handle.redraw(performance.now()/1000);}
+
+$('title').oninput=()=>{cfg.scenes[cfg.scene].title=$('title').value;restart();};
+$('sub').oninput=()=>{cfg.scenes[cfg.scene].sub=$('sub').value;restart();};
+['brandName','socials'].forEach(id=>$(id).oninput=restart);
+$('size').onchange=restart;
+$('accent').oninput=e=>{cfg.accent=e.target.value;restart();};
+$('cd').oninput=e=>{$('cdVal').textContent=e.target.value+' min';restart();};
+$('chkDeco').onclick=()=>{cfg.deco=!cfg.deco;$('chkDeco').classList.toggle('on',cfg.deco);restart();};
+$('chkClock').onclick=()=>{cfg.clock=!cfg.clock;$('chkClock').classList.toggle('on',cfg.clock);restart();};
+$('chkCd').onclick=()=>{cfg.countdown=!cfg.countdown;$('chkCd').classList.toggle('on',cfg.countdown);restart();};
+$('freeze').onclick=()=>{frozen=!frozen;$('freeze').classList.toggle('on',frozen);$('freeze').textContent=frozen?'▶ reanudar':'❚❚ pausa';restart();};
+
+let fc=0,ft=performance.now();(function fps(){fc++;const n=performance.now();if(n-ft>500){$('fpsread').textContent=Math.round(fc/((n-ft)/1000))+' fps';fc=0;ft=n;}requestAnimationFrame(fps);})();
+
+function buildHTML(){readGlobals();const base=JSON.parse(JSON.stringify(cfg));
+  return ['<!doctype html><html><head><meta charset="utf-8"><title>HG Scene Pack</title>',
+   '<link rel="preconnect" href="https://fonts.googleapis.com">',
+   '<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">',
+   '<style>html,body{margin:0;height:100%;background:#040406;overflow:hidden}canvas{position:fixed;inset:0;width:100vw;height:100vh}</style>',
+   '</head><body><canvas id="c"></canvas><script>',
+   'const CFG='+JSON.stringify(base)+';',
+   'const q=new URLSearchParams(location.search).get("scene"); if(q) CFG.scene=q;',
+   'const runScene='+runScene.toString()+';',
+   'runScene(document.getElementById("c"),CFG,{animate:true});',
+   '<\/script></body></html>'].join('\n');}
+function download(name,content){const b=new Blob([content],{type:'text/html'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000);}
+$('dlPack').onclick=()=>{download('hg-scene-pack.html',buildHTML());toast('scene-pack.html (4 escenas) ⬇');};
+$('copyHtml').onclick=async()=>{try{await navigator.clipboard.writeText(buildHTML());toast('HTML copiado ⧉');}catch(e){toast('no se pudo copiar');}};
+$('dlPng').onclick=()=>{const off=document.createElement('canvas');const c=JSON.parse(JSON.stringify(cfg));const h=runScene(off,c,{animate:false});h.stop();off.toBlob(b=>{const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='hg-scene-'+cfg.scene+'.png';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000);toast('PNG '+cfg.scene+' ⬇');},'image/png');};
+
+function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),1600);}
+
+// init
+$('brandName').value=cfg.brandName;$('socials').value=cfg.socials.join(', ');
+loadSceneFields();restart();
+</script>
+</body></html>

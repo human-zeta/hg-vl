@@ -1,0 +1,342 @@
+<!doctype html><html lang="es"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LOWER THIRD — Human Glitche · placas animadas para OBS</title>
+<meta name="description" content="Generá lower thirds / chyrons animados para tus streams: nombre + rol, placas con entrada animada, glitch, ticker y mensajes rotativos. Exportás un HTML transparente listo para Browser Source en OBS + PNG. 100% en tu navegador.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{ --acid:#b8ff00; --glitch:#ff2d55; --cyan:#3ad0ff; --amber:#ffb020; --ink:#f0ede6; --line:rgba(240,237,230,.12); --bg:#050505; }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{min-height:100%;background:var(--bg);color:var(--ink);font-family:'Space Mono',monospace;}
+  body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");z-index:0;pointer-events:none;opacity:.4;}
+  .wrap{position:relative;z-index:1;max-width:1180px;margin:0 auto;padding:28px 22px 90px;}
+  header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;gap:14px;}
+  .brand{font-family:'Bebas Neue',sans-serif;font-size:44px;letter-spacing:.03em;line-height:.82;}
+  .brand b{color:var(--cyan);font-weight:400;}
+  .brand .sub{display:block;font-family:'Space Mono';font-size:10px;letter-spacing:.2em;color:rgba(240,237,230,.45);margin-top:8px;}
+  header .nav{display:flex;flex-direction:column;align-items:flex-end;gap:7px;padding-top:6px;}
+  header a{font-size:10px;letter-spacing:.2em;color:rgba(240,237,230,.4);text-decoration:none;} header a:hover{color:var(--cyan);}
+  .intro{font-size:12px;color:rgba(240,237,230,.55);line-height:1.8;max-width:78ch;margin-bottom:22px;}
+  .intro b{color:var(--cyan);font-weight:400;}
+  .layout{display:grid;grid-template-columns:340px 1fr;gap:22px;align-items:start;}
+  @media(max-width:900px){.layout{grid-template-columns:1fr;}}
+  .panel{border:1px solid var(--line);border-radius:8px;padding:18px 16px;background:rgba(58,208,255,.02);margin-bottom:16px;}
+  h2.sec{font-size:9px;letter-spacing:.22em;color:rgba(240,237,230,.45);text-transform:uppercase;margin:0 0 13px;}
+  h2.sec b{color:var(--cyan);font-weight:400;}
+  .fld{margin-bottom:13px;} .fld:last-child{margin-bottom:0;}
+  .fld label{display:block;font-size:9px;letter-spacing:.16em;color:rgba(240,237,230,.5);text-transform:uppercase;margin-bottom:6px;}
+  .fld input[type=text],.fld select,.fld textarea{width:100%;background:#0a0a0a;color:var(--ink);border:1px solid var(--line);font:inherit;font-size:13px;padding:9px 10px;border-radius:5px;}
+  .fld textarea{resize:vertical;min-height:66px;line-height:1.6;}
+  .fld input:focus,.fld select:focus,.fld textarea:focus{outline:none;border-color:var(--cyan);}
+  .fld input[type=range]{width:100%;accent-color:var(--cyan);padding:0;}
+  .rangehead{display:flex;justify-content:space-between;font-size:9px;letter-spacing:.14em;color:rgba(240,237,230,.5);text-transform:uppercase;margin-bottom:5px;}
+  .rangehead b{color:var(--cyan);font-weight:400;}
+  .presets{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;}
+  .presets .btn{padding:9px 4px;font-size:10px;}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;}
+  .chip{font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;padding:7px 10px;border:1px solid var(--line);border-radius:20px;cursor:pointer;color:rgba(240,237,230,.55);user-select:none;transition:.15s;}
+  .chip.on{border-color:var(--cyan);color:var(--cyan);background:rgba(58,208,255,.1);}
+  .chip:hover{border-color:rgba(58,208,255,.5);}
+  .btn{background:transparent;border:1px solid var(--line);color:var(--ink);font:inherit;font-size:11px;letter-spacing:.1em;padding:11px 14px;cursor:pointer;border-radius:5px;transition:.15s;text-align:center;}
+  .btn:hover{border-color:var(--cyan);color:var(--cyan);}
+  .btn.primary{background:var(--cyan);color:#050505;border-color:var(--cyan);font-weight:700;}
+  .btn.primary:hover{opacity:.85;color:#050505;}
+  .btn.on{border-color:var(--cyan);color:var(--cyan);background:rgba(58,208,255,.1);}
+  .btnrow{display:flex;gap:8px;flex-wrap:wrap;} .btnrow .btn{flex:1;min-width:120px;}
+  .color-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+  .color-row input[type=color]{width:40px;height:34px;border:1px solid var(--line);border-radius:5px;background:#0a0a0a;cursor:pointer;padding:2px;}
+  .swatches{display:flex;gap:5px;}
+  .sw{width:22px;height:22px;border-radius:50%;cursor:pointer;border:1px solid rgba(255,255,255,.15);} .sw:hover{transform:scale(1.15);}
+  .stage-wrap{position:sticky;top:16px;}
+  .stagebar{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px;font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:rgba(240,237,230,.45);}
+  .stagebar b{color:var(--cyan);font-weight:400;}
+  .checker{--c1:#141414;--c2:#0b0b0b;border:1px solid var(--line);border-radius:8px;overflow:hidden;position:relative;
+    background-image:linear-gradient(45deg,var(--c2) 25%,transparent 25%),linear-gradient(-45deg,var(--c2) 25%,transparent 25%),linear-gradient(45deg,transparent 75%,var(--c2) 75%),linear-gradient(-45deg,transparent 75%,var(--c2) 75%);
+    background-size:26px 26px;background-position:0 0,0 13px,13px -13px,-13px 0;background-color:var(--c1);}
+  #stage{display:block;width:100%;height:auto;}
+  .gen-row{display:flex;gap:8px;margin-top:10px;} .gen-row .btn{flex:1;}
+  .genbig{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:.05em;}
+  details{border:1px solid var(--line);border-radius:8px;padding:0 16px;margin-top:16px;background:rgba(58,208,255,.02);}
+  details summary{cursor:pointer;padding:15px 0;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--cyan);list-style:none;}
+  details summary::-webkit-details-marker{display:none;}
+  details summary::before{content:'▸ ';} details[open] summary::before{content:'▾ ';}
+  details .body{padding:0 0 18px;font-size:12px;line-height:1.85;color:rgba(240,237,230,.62);}
+  details .body b{color:var(--ink);font-weight:700;}
+  details .body code{background:#0a0a0a;border:1px solid var(--line);border-radius:4px;padding:1px 6px;color:var(--cyan);font-size:11px;}
+  details .body ol{margin:8px 0 8px 20px;} details .body li{margin-bottom:6px;}
+  .note{font-size:10px;color:rgba(240,237,230,.4);line-height:1.6;margin-top:9px;}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(30px);background:var(--cyan);color:#050505;font-size:12px;font-weight:700;letter-spacing:.05em;padding:12px 22px;border-radius:6px;opacity:0;transition:.25s;z-index:50;pointer-events:none;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  .foot{font-size:10px;color:rgba(240,237,230,.35);letter-spacing:.1em;margin-top:44px;text-align:center;line-height:1.9;}
+  .foot a{color:rgba(240,237,230,.5);text-decoration:none;} .foot a:hover{color:var(--cyan);}
+</style></head><body>
+<div class="wrap">
+  <header>
+    <div class="brand"><b>LOWER THIRD</b><span class="sub">Human Glitche · el taller</span></div>
+    <div class="nav"><a href="/labs/">← LABS</a><a href="/overlay/">OVERLAY →</a></div>
+  </header>
+  <p class="intro">Generá <b>placas / chyrons animados</b> (lower thirds) para tus streams — nombre + rol, con entrada animada, estilo glitch, o <b>ticker</b> que scrollea. Cargás varios <b>mensajes rotativos</b> y van pasando solos. Exportás un <b>HTML transparente listo para Browser Source en OBS</b> (animado, en loop) o un PNG. 100% en tu navegador — no sube nada.</p>
+
+  <div class="layout">
+    <div class="controls">
+      <div class="panel"><h2 class="sec"><b>Preset</b></h2><div class="presets" id="presets"></div></div>
+
+      <div class="panel">
+        <h2 class="sec"><b>Contenido</b></h2>
+        <div class="fld"><label>Principal (nombre / handle)</label><input type="text" id="primary" placeholder="HUMAN GLITCHE" maxlength="32"></div>
+        <div class="fld"><label>Secundario (rol / tema)</label><input type="text" id="secondary" placeholder="VJ · LIVE VISUALS" maxlength="42"></div>
+        <div class="fld"><label>Mensajes rotativos (opcional) — 1 por línea · <code style="color:var(--cyan)">principal | secundario</code></label>
+          <textarea id="messages" placeholder="HUMAN GLITCHE | VJ · live visuals&#10;¡NUEVO SUB! | gracias por el apoyo&#10;@humanglitche | seguime en todas"></textarea></div>
+        <div class="chips"><span class="chip on" id="chkDot">● indicador LIVE</span></div>
+      </div>
+
+      <div class="panel">
+        <h2 class="sec"><b>Estilo</b></h2>
+        <div class="chips" id="styles"></div>
+        <div class="fld" style="margin-top:13px"><label>Posición</label>
+          <select id="pos">
+            <option value="bl">Abajo izquierda</option>
+            <option value="bc">Abajo centro</option>
+            <option value="br">Abajo derecha</option>
+            <option value="tl">Arriba izquierda</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2 class="sec"><b>Color</b></h2>
+        <div class="color-row"><input type="color" id="accent" value="#3ad0ff"><div class="swatches" id="swatches"></div></div>
+      </div>
+
+      <div class="panel">
+        <h2 class="sec"><b>Ritmo</b></h2>
+        <div class="fld"><div class="rangehead"><span>Segundos en pantalla</span><b id="holdVal">4.5s</b></div><input type="range" id="hold" min="2" max="10" step="0.5" value="4.5"></div>
+        <div class="fld"><label>Formato (Browser Source)</label>
+          <select id="size"><option value="1920x1080">1920 × 1080 — horizontal</option><option value="1080x1920">1080 × 1920 — vertical</option><option value="1280x720">1280 × 720 — HD liviano</option></select>
+        </div>
+      </div>
+    </div>
+
+    <div class="stage-wrap">
+      <div class="stagebar"><span>PREVIEW · <b id="dims">1920×1080</b></span><span id="fpsread">— fps</span></div>
+      <div class="checker"><canvas id="stage"></canvas></div>
+      <div class="gen-row">
+        <button class="btn primary genbig" id="replay">↻ REPRODUCIR entrada</button>
+        <button class="btn" id="freeze">❚❚ pausa</button>
+      </div>
+      <div class="btnrow" style="margin-top:10px">
+        <button class="btn on" id="dlHtml">⬇ lower-third.html (OBS)</button>
+        <button class="btn" id="copyHtml">⧉ copiar HTML</button>
+        <button class="btn" id="dlPng">⬇ PNG transparente</button>
+      </div>
+
+      <details open>
+        <summary>Cómo usarlo en OBS / Streamlabs</summary>
+        <div class="body">
+          <ol>
+            <li>Descargá <code>lower-third.html</code> a una carpeta tuya.</li>
+            <li>En OBS: <b>Fuentes → + → Navegador</b>, marcá <b>"Archivo local"</b> y elegilo.</li>
+            <li>Ancho / Alto = el formato elegido (ej. 1920×1080). Fondo transparente.</li>
+            <li>La placa <b>entra animada</b> al cargar. Con varios mensajes, rotan solos en loop.</li>
+          </ol>
+          <b>Trucos:</b> para reaparecerla en vivo, en la fuente hacé clic derecho → <b>Actualizar caché</b> (re-dispara la entrada). Para mostrarla/ocultarla, poné la fuente en una escena y usá el ojo 👁. El <b>PNG</b> es la placa fija sin animación.
+        </div>
+      </details>
+    </div>
+  </div>
+  <div class="foot">HUMAN GLITCHE · el taller · corre 100% client-side<br><a href="/labs/">← volver a LABS</a></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const $=id=>document.getElementById(id);
+
+/* ============================================================
+   LOWER THIRD ENGINE — pura, se serializa con toString() al exportar
+   ============================================================ */
+function runLowerThird(canvas, CFG, opts){
+  opts=opts||{};
+  const animate=opts.animate!==false;
+  const ctx=canvas.getContext('2d');
+  const W=CFG.w,H=CFG.h; canvas.width=W; canvas.height=H;
+  const AC=CFG.accent||'#3ad0ff';
+  const INK='rgba(240,237,230,0.92)';
+  const min=Math.min(W,H), u=min/1080, mg=min*0.06;
+  function hex2rgb(h){h=h.replace('#','');if(h.length===3)h=h.split('').map(c=>c+c).join('');return[parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)];}
+  const RGB=hex2rgb(AC); const ac=a=>`rgba(${RGB[0]},${RGB[1]},${RGB[2]},${a})`;
+  function setLS(px){try{ctx.letterSpacing=(px*u).toFixed(1)+'px';}catch(e){}}
+  const bebas=s=>`400 ${Math.round(s*u)}px 'Bebas Neue','Space Mono',sans-serif`;
+  const mono=(s,w)=>`${w||400} ${Math.round(s*u)}px 'Space Mono',ui-monospace,monospace`;
+
+  const msgs=(CFG.messages&&CFG.messages.length)?CFG.messages:[{p:(CFG.primary||'HUMAN GLITCHE'),s:(CFG.secondary||'')}];
+  const single=msgs.length<=1;
+  const hold=CFG.hold||4.5, inD=0.6, outD=0.45;
+  const easeOut=x=>1-Math.pow(1-x,3), easeIn=x=>x*x*x;
+  const style=CFG.style||'bar', pos=CFG.pos||'bl';
+
+  function stateAt(t){
+    if(style==='ticker'){return {msg:0, appear: t<inD?easeOut(t/inD):1};}
+    if(single){return {msg:0, appear: t<inD?easeOut(t/inD):1};}
+    const cd=inD+hold+outD; const idx=Math.floor(t/cd)%msgs.length; const lt=t%cd;
+    let ap; if(lt<inD)ap=easeOut(lt/inD); else if(lt<inD+hold)ap=1; else ap=1-easeIn((lt-inD-hold)/outD);
+    return {msg:idx, appear:ap};
+  }
+
+  function drawTicker(t){
+    const stripH=min*0.052, y=H-stripH, label=(msgs[0].p||'LIVE');
+    // strip bg
+    ctx.save(); ctx.globalAlpha=(t<inD?easeOut(t/inD):1);
+    ctx.translate(0,(1-(t<inD?easeOut(t/inD):1))*stripH);
+    ctx.fillStyle='rgba(6,7,9,0.82)'; ctx.fillRect(0,y,W,stripH);
+    ctx.fillStyle=ac(.14); ctx.fillRect(0,y,W,stripH);
+    ctx.strokeStyle=ac(.7); ctx.lineWidth=2*u; ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke();
+    // label chip
+    ctx.font=mono(16,700); setLS(2); const lw=ctx.measureText(label).width+min*0.05;
+    ctx.fillStyle=ac(.95); ctx.fillRect(0,y,lw,stripH);
+    ctx.fillStyle='#050505'; ctx.textBaseline='middle'; ctx.textAlign='left'; ctx.fillText(label,min*0.025,y+stripH/2);
+    // scrolling items
+    const items=(msgs.length>1?msgs.map(m=>m.s||m.p):[(msgs[0].s||msgs[0].p)]);
+    const sep='     ◆     '; const line=items.join(sep)+sep;
+    ctx.beginPath(); ctx.rect(lw,y,W-lw,stripH); ctx.clip();
+    ctx.font=mono(16,400); setLS(1.5); ctx.fillStyle=INK;
+    const oneW=ctx.measureText(line).width; const speed=min*0.13;
+    let ox=lw+min*0.02 - ((t*speed)%oneW);
+    while(ox<W){ ctx.fillText(line, ox, y+stripH/2); ox+=oneW; }
+    ctx.restore();
+  }
+
+  function drawPlaque(t,st){
+    const m=msgs[st.msg], ap=st.appear; if(ap<=0.001)return;
+    const hasDot=CFG.dot, hasSec=!!m.s;
+    const pad=min*0.026, barW=min*0.008, gap=min*0.006;
+    // metrics
+    ctx.font=bebas(58); setLS(1.5); const pW=ctx.measureText(m.p).width + (hasDot? min*0.03:0);
+    ctx.font=mono(16,700); setLS(2); const sW=hasSec?ctx.measureText(m.s).width:0;
+    const primaryH=min*0.058, secH=hasSec?min*0.026:0;
+    const textW=Math.max(pW,sW);
+    const boxW=textW+pad*2+barW, boxH=pad*1.6+primaryH+(hasSec?gap+secH:0);
+    let bx,by;
+    if(pos==='bl'){bx=mg;by=H-mg-boxH;}
+    else if(pos==='bc'){bx=(W-boxW)/2;by=H-mg-boxH;}
+    else if(pos==='br'){bx=W-mg-boxW;by=H-mg-boxH;}
+    else {bx=mg;by=mg;}
+
+    ctx.save();
+    // entrance transform: slide + fade
+    const dx=(1-ap)*(-min*0.03); ctx.globalAlpha=Math.min(1,ap*1.15); ctx.translate(dx,0);
+
+    // wipe clip for bar/glitch
+    if(style==='bar'||style==='glitch'){ctx.save(); ctx.beginPath(); ctx.rect(bx-barW,by-4*u,(boxW+barW)*Math.min(1,ap*1.1),boxH+8*u); ctx.clip();}
+
+    if(style==='bar'||style==='glitch'){
+      ctx.fillStyle='rgba(6,7,9,0.74)'; ctx.fillRect(bx,by,boxW,boxH);
+      ctx.fillStyle=ac(.95); ctx.fillRect(bx,by,barW,boxH); // accent bar
+    }
+    if(style==='bracket'){
+      ctx.strokeStyle=ac(.9); ctx.lineWidth=2*u; const L=min*0.028;
+      [[bx,by,1,1],[bx+boxW,by,-1,1],[bx,by+boxH,1,-1],[bx+boxW,by+boxH,-1,-1]].forEach(c=>{ctx.beginPath();ctx.moveTo(c[0]+L*c[2],c[1]);ctx.lineTo(c[0],c[1]);ctx.lineTo(c[0],c[1]+L*c[3]);ctx.stroke();});
+    }
+
+    const tx=bx+pad+ (style==='bar'||style==='glitch'?barW:0);
+    let ty=by+pad*0.8;
+    // dot
+    let px=tx;
+    if(hasDot){const blink=Math.sin(t*4)>-.3; ctx.fillStyle=blink?'rgba(255,45,85,.95)':'rgba(255,45,85,.3)'; ctx.beginPath(); ctx.arc(tx+min*0.008, ty+primaryH*0.5, 6*u,0,6.283); ctx.fill(); px=tx+min*0.03;}
+    // primary
+    ctx.textBaseline='top'; ctx.textAlign='left';
+    ctx.font=bebas(58); setLS(1.5);
+    if(style==='glitch'){
+      ctx.fillStyle='rgba(255,45,85,.75)'; ctx.fillText(m.p,px-3*u,ty+ (Math.sin(t*30)>0.9?2:0));
+      ctx.fillStyle='rgba(58,208,255,.75)'; ctx.fillText(m.p,px+3*u,ty);
+    }
+    ctx.fillStyle=(style==='minimal')?INK:ac(.98);
+    if(style==='bar'||style==='bracket') ctx.fillStyle=INK;
+    ctx.fillText(m.p,px,ty);
+    // secondary
+    if(hasSec){ty+=primaryH+gap; ctx.font=mono(16,700); setLS(2.5); ctx.fillStyle=ac(.92); ctx.fillText(m.s,tx,ty);}
+    // minimal underline
+    if(style==='minimal'){ctx.strokeStyle=ac(.9);ctx.lineWidth=2.5*u;ctx.beginPath();ctx.moveTo(tx,by+primaryH+pad*0.7);ctx.lineTo(tx+pW*Math.min(1,ap*1.1),by+primaryH+pad*0.7);ctx.stroke();}
+
+    if(style==='bar'||style==='glitch'){
+      if(style==='glitch'){ctx.globalAlpha*=0.5;ctx.fillStyle='rgba(0,0,0,0.15)';for(let yy=by;yy<by+boxH;yy+=3*Math.max(1,u))ctx.fillRect(bx,yy,boxW,1.2*u);}
+      ctx.restore(); // clip
+    }
+    ctx.restore();
+  }
+
+  function frame(t){
+    ctx.clearRect(0,0,W,H);
+    if(style==='ticker') drawTicker(t); else drawPlaque(t, stateAt(t));
+  }
+
+  let raf=0,running=true,t0=null;
+  function loop(ts){if(!running)return;if(t0==null)t0=ts;frame((ts-t0)/1000);raf=requestAnimationFrame(loop);}
+  const settle=animate?0:(inD+ (single?0.4:hold*0.4));
+  frame(settle);
+  if(animate) raf=requestAnimationFrame(loop);
+  return {stop(){running=false;cancelAnimationFrame(raf);}, redraw(t){frame(t||0);}};
+}
+
+/* ============================================================
+   APP / UI
+   ============================================================ */
+const STYLES=[['bar','▬ barra'],['bracket','⌐ brackets'],['glitch','▓ glitch'],['minimal','— minimal'],['ticker','⇄ ticker']];
+const SWATCHES=['#3ad0ff','#b8ff00','#ff2d55','#ffb020','#ffffff','#ff5edb','#00ffa3'];
+const PRESETS={
+  'BROADCAST':{style:'bar',accent:'#3ad0ff',pos:'bl'},
+  'HUD':{style:'bracket',accent:'#b8ff00',pos:'bl'},
+  'GLITCH':{style:'glitch',accent:'#ff2d55',pos:'bl'},
+  'MINIMAL':{style:'minimal',accent:'#ffffff',pos:'bl'},
+  'TICKER':{style:'ticker',accent:'#ffb020',pos:'bl'},
+  'VERTICAL':{style:'bar',accent:'#00ffa3',pos:'bc'}
+};
+
+let cfg={w:1920,h:1080,accent:'#3ad0ff',style:'bar',pos:'bl',
+  primary:'HUMAN GLITCHE',secondary:'VJ · LIVE VISUALS',messages:null,dot:true,hold:4.5};
+let handle=null,frozen=false;
+
+const pWrap=$('presets');
+Object.keys(PRESETS).forEach(n=>{const b=document.createElement('button');b.className='btn';b.textContent=n;b.onclick=()=>applyPreset(n);pWrap.appendChild(b);});
+const swWrap=$('swatches');
+SWATCHES.forEach(c=>{const s=document.createElement('div');s.className='sw';s.style.background=c;s.onclick=()=>{cfg.accent=c;$('accent').value=c;restart();};swWrap.appendChild(s);});
+const stWrap=$('styles');
+STYLES.forEach(([k,label])=>{const c=document.createElement('span');c.className='chip'+(cfg.style===k?' on':'');c.textContent=label;c.dataset.k=k;c.onclick=()=>{cfg.style=k;document.querySelectorAll('#styles .chip').forEach(x=>x.classList.toggle('on',x.dataset.k===k));restart();};stWrap.appendChild(c);});
+
+function parseMessages(){const raw=$('messages').value.trim();if(!raw)return null;const lines=raw.split('\n').map(l=>l.trim()).filter(Boolean);if(!lines.length)return null;return lines.map(l=>{const [p,s]=l.split('|');return {p:(p||'').trim(),s:(s||'').trim()};});}
+function readAll(){cfg.primary=$('primary').value.trim()||'HUMAN GLITCHE';cfg.secondary=$('secondary').value.trim();cfg.messages=parseMessages();cfg.hold=+$('hold').value;cfg.pos=$('pos').value;const[w,h]=$('size').value.split('x').map(Number);cfg.w=w;cfg.h=h;$('dims').textContent=w+'×'+h;}
+
+function applyPreset(n){const p=PRESETS[n];cfg.style=p.style;cfg.accent=p.accent;cfg.pos=p.pos;
+  $('accent').value=p.accent;$('pos').value=p.pos;
+  document.querySelectorAll('#styles .chip').forEach(x=>x.classList.toggle('on',x.dataset.k===p.style));
+  restart();}
+
+function restart(){readAll();if(handle)handle.stop();const c={...cfg,messages:cfg.messages?cfg.messages.map(m=>({...m})):null};handle=runLowerThird($('stage'),c,{animate:!frozen});if(frozen)handle.redraw(performance.now()/1000);}
+
+$('size').onchange=restart;$('pos').onchange=restart;$('hold').oninput=e=>{$('holdVal').textContent=(+e.target.value).toFixed(1)+'s';restart();};
+$('accent').oninput=e=>{cfg.accent=e.target.value;restart();};
+['primary','secondary','messages'].forEach(id=>$(id).oninput=restart);
+$('chkDot').onclick=()=>{cfg.dot=!cfg.dot;$('chkDot').classList.toggle('on',cfg.dot);restart();};
+$('replay').onclick=()=>{if(handle)handle.stop();frozen=false;$('freeze').classList.remove('on');$('freeze').textContent='❚❚ pausa';restart();toast('entrada ↻');};
+$('freeze').onclick=()=>{frozen=!frozen;$('freeze').classList.toggle('on',frozen);$('freeze').textContent=frozen?'▶ reanudar':'❚❚ pausa';restart();};
+
+let fc=0,ft=performance.now();(function fps(){fc++;const n=performance.now();if(n-ft>500){$('fpsread').textContent=Math.round(fc/((n-ft)/1000))+' fps';fc=0;ft=n;}requestAnimationFrame(fps);})();
+
+function buildHTML(){readAll();const c={...cfg,messages:cfg.messages?cfg.messages.map(m=>({...m})):null};
+  return ['<!doctype html><html><head><meta charset="utf-8"><title>HG Lower Third</title>',
+   '<link rel="preconnect" href="https://fonts.googleapis.com">',
+   '<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">',
+   '<style>html,body{margin:0;height:100%;background:transparent;overflow:hidden}canvas{position:fixed;inset:0;width:100vw;height:100vh}</style>',
+   '</head><body><canvas id="c"></canvas><script>',
+   'const CFG='+JSON.stringify(c)+';',
+   'const runLowerThird='+runLowerThird.toString()+';',
+   'runLowerThird(document.getElementById("c"),CFG,{animate:true});',
+   '<\/script></body></html>'].join('\n');}
+function download(name,content){const b=new Blob([content],{type:'text/html'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000);}
+$('dlHtml').onclick=()=>{download('hg-lower-third.html',buildHTML());toast('lower-third.html ⬇');};
+$('copyHtml').onclick=async()=>{try{await navigator.clipboard.writeText(buildHTML());toast('HTML copiado ⧉');}catch(e){toast('no se pudo copiar');}};
+$('dlPng').onclick=()=>{const off=document.createElement('canvas');const c={...cfg,messages:cfg.messages?cfg.messages.map(m=>({...m})):null};const h=runLowerThird(off,c,{animate:false});h.stop();off.toBlob(b=>{const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='hg-lower-third.png';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000);toast('PNG transparente ⬇');},'image/png');};
+
+function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),1600);}
+restart();
+</script>
+</body></html>

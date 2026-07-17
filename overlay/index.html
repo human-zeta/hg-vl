@@ -1,0 +1,479 @@
+<!doctype html><html lang="es"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>OVERLAY — Human Glitche · generador de overlays científicos/HUD para OBS</title>
+<meta name="description" content="Generá overlays estilo HUD / telemetría científica para tus streams: corner brackets, reticle, radar, waveform, telemetría en vivo y scanlines. Exportás un HTML transparente listo para Browser Source en OBS + PNG. 100% en tu navegador.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{ --acid:#b8ff00; --glitch:#ff2d55; --cyan:#3ad0ff; --amber:#ffb020; --ink:#f0ede6; --line:rgba(240,237,230,.12); --bg:#050505; }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{min-height:100%;background:var(--bg);color:var(--ink);font-family:'Space Mono',monospace;}
+  body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");z-index:0;pointer-events:none;opacity:.4;}
+  .wrap{position:relative;z-index:1;max-width:1180px;margin:0 auto;padding:28px 22px 90px;}
+  header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;gap:14px;}
+  .brand{font-family:'Bebas Neue',sans-serif;font-size:44px;letter-spacing:.03em;line-height:.82;}
+  .brand b{color:var(--acid);font-weight:400;}
+  .brand .sub{display:block;font-family:'Space Mono';font-size:10px;letter-spacing:.2em;color:rgba(240,237,230,.45);margin-top:8px;}
+  header .nav{display:flex;flex-direction:column;align-items:flex-end;gap:7px;padding-top:6px;}
+  header a{font-size:10px;letter-spacing:.2em;color:rgba(240,237,230,.4);text-decoration:none;} header a:hover{color:var(--acid);}
+  .intro{font-size:12px;color:rgba(240,237,230,.55);line-height:1.8;max-width:78ch;margin-bottom:22px;}
+  .intro b{color:var(--acid);font-weight:400;}
+  .layout{display:grid;grid-template-columns:340px 1fr;gap:22px;align-items:start;}
+  @media(max-width:900px){.layout{grid-template-columns:1fr;}}
+  .panel{border:1px solid var(--line);border-radius:8px;padding:18px 16px;background:rgba(184,255,0,.015);margin-bottom:16px;}
+  h2.sec{font-size:9px;letter-spacing:.22em;color:rgba(240,237,230,.45);text-transform:uppercase;margin:0 0 13px;display:flex;justify-content:space-between;align-items:center;}
+  h2.sec b{color:var(--acid);font-weight:400;}
+  .fld{margin-bottom:13px;}
+  .fld:last-child{margin-bottom:0;}
+  .fld label{display:block;font-size:9px;letter-spacing:.16em;color:rgba(240,237,230,.5);text-transform:uppercase;margin-bottom:6px;}
+  .fld input[type=text],.fld select{width:100%;background:#0a0a0a;color:var(--ink);border:1px solid var(--line);font:inherit;font-size:13px;padding:9px 10px;border-radius:5px;}
+  .fld input:focus,.fld select:focus{outline:none;border-color:var(--acid);}
+  .fld input[type=range]{width:100%;accent-color:var(--acid);}
+  .rangehead{display:flex;justify-content:space-between;font-size:9px;letter-spacing:.14em;color:rgba(240,237,230,.5);text-transform:uppercase;margin-bottom:5px;}
+  .rangehead b{color:var(--cyan);font-weight:400;}
+  .presets{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;}
+  .presets .btn{padding:9px 4px;font-size:10px;}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;}
+  .chip{font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;padding:7px 10px;border:1px solid var(--line);border-radius:20px;cursor:pointer;color:rgba(240,237,230,.55);user-select:none;transition:.15s;}
+  .chip.on{border-color:var(--acid);color:var(--acid);background:rgba(184,255,0,.08);}
+  .chip:hover{border-color:rgba(184,255,0,.5);}
+  .btn{background:transparent;border:1px solid var(--line);color:var(--ink);font:inherit;font-size:11px;letter-spacing:.1em;padding:11px 14px;cursor:pointer;border-radius:5px;transition:.15s;text-align:center;}
+  .btn:hover{border-color:var(--acid);color:var(--acid);}
+  .btn.primary{background:var(--acid);color:#050505;border-color:var(--acid);font-weight:700;}
+  .btn.primary:hover{opacity:.85;color:#050505;}
+  .btn.on{border-color:var(--cyan);color:var(--cyan);background:rgba(58,208,255,.1);}
+  .btnrow{display:flex;gap:8px;flex-wrap:wrap;}
+  .btnrow .btn{flex:1;min-width:120px;}
+  .color-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+  .color-row input[type=color]{width:40px;height:34px;border:1px solid var(--line);border-radius:5px;background:#0a0a0a;cursor:pointer;padding:2px;}
+  .swatches{display:flex;gap:5px;}
+  .sw{width:22px;height:22px;border-radius:50%;cursor:pointer;border:1px solid rgba(255,255,255,.15);}
+  .sw:hover{transform:scale(1.15);}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  /* stage */
+  .stage-wrap{position:sticky;top:16px;}
+  .stagebar{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px;font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:rgba(240,237,230,.45);}
+  .stagebar b{color:var(--cyan);font-weight:400;}
+  .checker{--c1:#141414;--c2:#0b0b0b;border:1px solid var(--line);border-radius:8px;overflow:hidden;position:relative;
+    background-image:linear-gradient(45deg,var(--c2) 25%,transparent 25%),linear-gradient(-45deg,var(--c2) 25%,transparent 25%),linear-gradient(45deg,transparent 75%,var(--c2) 75%),linear-gradient(-45deg,transparent 75%,var(--c2) 75%);
+    background-size:26px 26px;background-position:0 0,0 13px,13px -13px,-13px 0;background-color:var(--c1);}
+  #stage{display:block;width:100%;height:auto;}
+  .gen-row{display:flex;gap:8px;margin-top:10px;}
+  .gen-row .btn{flex:1;}
+  .genbig{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:.05em;}
+  details{border:1px solid var(--line);border-radius:8px;padding:0 16px;margin-top:16px;background:rgba(58,208,255,.02);}
+  details summary{cursor:pointer;padding:15px 0;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--cyan);list-style:none;}
+  details summary::-webkit-details-marker{display:none;}
+  details summary::before{content:'▸ ';}
+  details[open] summary::before{content:'▾ ';}
+  details .body{padding:0 0 18px;font-size:12px;line-height:1.85;color:rgba(240,237,230,.62);}
+  details .body b{color:var(--ink);font-weight:700;}
+  details .body code{background:#0a0a0a;border:1px solid var(--line);border-radius:4px;padding:1px 6px;color:var(--acid);font-size:11px;}
+  details .body ol{margin:8px 0 8px 20px;} details .body li{margin-bottom:6px;}
+  .note{font-size:10px;color:rgba(240,237,230,.4);line-height:1.6;margin-top:9px;}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(30px);background:var(--acid);color:#050505;font-size:12px;font-weight:700;letter-spacing:.05em;padding:12px 22px;border-radius:6px;opacity:0;transition:.25s;z-index:50;pointer-events:none;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  .foot{font-size:10px;color:rgba(240,237,230,.35);letter-spacing:.1em;margin-top:44px;text-align:center;line-height:1.9;}
+  .foot a{color:rgba(240,237,230,.5);text-decoration:none;} .foot a:hover{color:var(--acid);}
+</style></head><body>
+<div class="wrap">
+  <header>
+    <div class="brand"><b>OVERLAY</b><span class="sub">Human Glitche · el taller</span></div>
+    <div class="nav">
+      <a href="/labs/">← LABS</a>
+      <a href="/home.html">HUMAN GLITCHE</a>
+    </div>
+  </header>
+  <p class="intro">Generá <b>overlays científicos / HUD</b> para tus streams — corner brackets, reticle, radar, waveform, telemetría en vivo, tracking boxes y scanlines. Ajustás módulos, color y texto, <b>GENERAR</b> re-rollea la composición, y exportás un <b>HTML transparente listo para poner como Browser Source en OBS</b> (animado, en vivo) o un PNG transparente. 100% en tu navegador — no sube nada.</p>
+
+  <div class="layout">
+    <!-- CONTROLS -->
+    <div class="controls">
+      <div class="panel">
+        <h2 class="sec"><b>Preset</b></h2>
+        <div class="presets" id="presets"></div>
+      </div>
+
+      <div class="panel">
+        <h2 class="sec"><b>Formato</b> · lienzo</h2>
+        <div class="fld">
+          <label>Tamaño (Browser Source)</label>
+          <select id="size">
+            <option value="1920x1080">1920 × 1080 — 16:9 horizontal</option>
+            <option value="2560x1440">2560 × 1440 — QHD</option>
+            <option value="1280x720">1280 × 720 — HD liviano</option>
+            <option value="1080x1920">1080 × 1920 — vertical / TikTok</option>
+            <option value="1080x1080">1080 × 1080 — cuadrado</option>
+          </select>
+        </div>
+        <div class="fld">
+          <div class="rangehead"><span>Opacidad</span><b id="opVal">85%</b></div>
+          <input type="range" id="op" min="20" max="100" value="85">
+        </div>
+        <div class="fld">
+          <div class="rangehead"><span>Densidad</span><b id="denVal">3</b></div>
+          <input type="range" id="den" min="1" max="5" value="3">
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2 class="sec"><b>Color</b></h2>
+        <div class="color-row">
+          <input type="color" id="accent" value="#b8ff00">
+          <div class="swatches" id="swatches"></div>
+        </div>
+        <div class="note">El acento pinta todo el HUD. Los presets ya traen su color.</div>
+      </div>
+
+      <div class="panel">
+        <h2 class="sec"><b>Módulos</b> · qué se dibuja</h2>
+        <div class="chips" id="modules"></div>
+      </div>
+
+      <div class="panel">
+        <h2 class="sec"><b>Texto</b> · lo tuyo</h2>
+        <div class="fld"><label>Título / handle (arriba izq.)</label><input type="text" id="txtTitle" placeholder="@TU_STREAM" maxlength="28"></div>
+        <div class="two">
+          <div class="fld"><label>Etiqueta REC</label><input type="text" id="txtRec" placeholder="LIVE" maxlength="10"></div>
+          <div class="fld"><label>Pie (abajo der.)</label><input type="text" id="txtFoot" placeholder="SECTOR-07" maxlength="18"></div>
+        </div>
+        <div class="chips" style="margin-top:4px">
+          <span class="chip on" id="chkRec">● REC/LIVE</span>
+          <span class="chip on" id="chkClock">⏱ reloj en vivo</span>
+        </div>
+      </div>
+
+      <div class="panel" id="scenePanel">
+        <h2 class="sec"><b>Modo escena</b> · BRB / arrancando</h2>
+        <div class="chips"><span class="chip" id="chkScene">pantalla de escena</span></div>
+        <div class="fld" style="margin-top:12px"><label>Título grande</label><input type="text" id="scnTitle" placeholder="STARTING SOON" maxlength="24"></div>
+        <div class="fld"><label>Subtítulo</label><input type="text" id="scnSub" placeholder="calibrando sensores…" maxlength="40"></div>
+        <div class="note">Convierte el overlay en una pantalla completa (fondo casi opaco + texto centrado) para el arranque, pausas o el "ya vuelvo". El HUD queda de decoración.</div>
+      </div>
+    </div>
+
+    <!-- STAGE -->
+    <div class="stage-wrap">
+      <div class="stagebar"><span>PREVIEW · <b id="dims">1920×1080</b></span><span id="fpsread">— fps</span></div>
+      <div class="checker"><canvas id="stage"></canvas></div>
+      <div class="gen-row">
+        <button class="btn primary genbig" id="gen">⟳ GENERAR</button>
+        <button class="btn" id="freeze" title="Pausar/reanudar la animación de la preview">❚❚ pausa</button>
+      </div>
+      <div class="btnrow" style="margin-top:10px">
+        <button class="btn on" id="dlHtml">⬇ overlay.html (OBS)</button>
+        <button class="btn" id="copyHtml">⧉ copiar HTML</button>
+        <button class="btn" id="dlPng">⬇ PNG transparente</button>
+      </div>
+
+      <details open>
+        <summary>Cómo usarlo en OBS / Streamlabs</summary>
+        <div class="body">
+          <ol>
+            <li>Descargá <code>overlay.html</code> (botón de arriba) a una carpeta tuya.</li>
+            <li>En OBS: <b>Fuentes → +  → Navegador (Browser)</b>.</li>
+            <li>Marcá <b>"Archivo local"</b> y elegí tu <code>overlay.html</code>.</li>
+            <li>Poné <b>Ancho / Alto</b> iguales al tamaño que elegiste acá (ej. 1920×1080).</li>
+            <li>Aceptá. El fondo es <b>transparente</b> — el overlay flota sobre tu cámara/juego.</li>
+          </ol>
+          <b>Tips:</b> el overlay es en vivo (reloj, telemetría y radar animados). Si querés cambiarlo, re-exportás y en la fuente hacés clic derecho → <b>Actualizar caché</b>. También sirve como fuente en <b>Streamlabs, vMix, Resolume o VDMX</b> (Web/HTML source). ¿Sin animación? Usá el <b>PNG transparente</b> como imagen fija.
+          <div class="note">Nota: los ticks de telemetría/coordenadas son decorativos (estética "científica"), no datos reales.</div>
+        </div>
+      </details>
+    </div>
+  </div>
+
+  <div class="foot">HUMAN GLITCHE · el taller · corre 100% client-side<br><a href="/labs/">← volver a LABS</a></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const $=id=>document.getElementById(id);
+
+/* ============================================================
+   OVERLAY ENGINE — pura, sin refs externas (se serializa con
+   toString() al exportar, así el HTML de OBS es idéntico a la preview).
+   ============================================================ */
+function runOverlay(canvas, CFG, opts){
+  opts = opts || {};
+  const animate = opts.animate !== false;
+  const ctx = canvas.getContext('2d');
+  const W = CFG.w, H = CFG.h;
+  canvas.width = W; canvas.height = H;
+  const M = CFG.modules || {};
+  const AC = CFG.accent || '#b8ff00';
+  const OP = (CFG.opacity==null?85:CFG.opacity)/100;
+  const D  = CFG.density || 3;
+  const INK = 'rgba(240,237,230,0.72)';
+
+  // seeded rng
+  function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+  const seed = CFG.seed||1;
+  const rnd = mulberry32(seed);
+  const rr=(a,b)=>a+(b-a)*rnd();
+  const ri=(a,b)=>Math.floor(rr(a,b+1));
+  const pick=arr=>arr[Math.floor(rnd()*arr.length)];
+
+  // color helpers
+  function hex2rgb(h){h=h.replace('#','');if(h.length===3)h=h.split('').map(c=>c+c).join('');return [parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)];}
+  const RGB = hex2rgb(AC);
+  const ac=(a)=>`rgba(${RGB[0]},${RGB[1]},${RGB[2]},${a})`;
+
+  const min=Math.min(W,H), mg=Math.round(min*0.045);
+  const u = min/1080; // scale unit vs 1080p
+  const FONT=(s,w)=>`${w||400} ${Math.round(s*u)}px 'Space Mono', ui-monospace, monospace`;
+  function setLS(px){ try{ctx.letterSpacing=(px*u).toFixed(1)+'px';}catch(e){} }
+
+  // ---- pre-generated layout from seed ----
+  const LABELS=['LAT','LON','ALT','VEL','TMP','SIG','SNR','BITRATE','PWR','FREQ','AZ','EL','RNG','FLUX','ISO','GAIN','SYNC','O2','CO2','PH','REF','DPR'];
+  function makeTele(n){const out=[];const used={};for(let i=0;i<n;i++){let l=pick(LABELS);let g=0;while(used[l]&&g++<8)l=pick(LABELS);used[l]=1;out.push({l,base:rr(0,1),amp:rr(.15,.9),spd:rr(.2,1.4),ph:rr(0,6.28),dec:ri(0,2),unit:pick(['','°','%','dB','kHz','ms','m','V',' u'])});}return out;}
+  const nTele = 2+D;              // telemetry lines
+  const teleA = makeTele(Math.ceil(nTele/2));
+  const teleB = makeTele(Math.floor(nTele/2));
+  const nTrack = Math.max(0,D-1);  // tracking boxes
+  const tracks=[];for(let i=0;i<nTrack;i++){tracks.push({x:rr(.18,.82),y:rr(.2,.8),w:rr(.06,.13),h:rr(.06,.14),ph:rr(0,6.28),tag:pick(['TGT','OBJ','ID','TRK','NODE'])+'-'+ri(10,99),lock:rnd()>.4});}
+  const nBlip=2+D;const blips=[];for(let i=0;i<nBlip;i++)blips.push({a:rr(0,6.28),r:rr(.2,.95),spd:rr(.05,.25)*(rnd()>.5?1:-1)});
+  const gridStep = [140,120,100,84,70][D-1];
+
+  function fmt(it,t){let v=it.base+it.amp*(Math.sin(t*it.spd+it.ph)*.5+.5);let num;if(it.l==='LAT')num=(v*180-90).toFixed(3)+(v>.5?'N':'S');else if(it.l==='LON')num=(v*360-180).toFixed(3)+(v>.5?'E':'W');else num=(v*(it.dec?100:9999)).toFixed(it.dec)+it.unit;return num;}
+
+  // ---- module draws ----
+  function mBackScene(){ // opaque backdrop for scene mode
+    ctx.fillStyle='rgba(6,7,9,0.9)';ctx.fillRect(0,0,W,H);
+    // faint big grid
+    ctx.strokeStyle=ac(.05);ctx.lineWidth=1;const gs=90*u;
+    ctx.beginPath();for(let x=0;x<W;x+=gs){ctx.moveTo(x,0);ctx.lineTo(x,H);}for(let y=0;y<H;y+=gs){ctx.moveTo(0,y);ctx.lineTo(W,y);}ctx.stroke();
+  }
+  function mGrid(){ctx.save();ctx.globalAlpha=OP*.5;ctx.strokeStyle=ac(.06);ctx.lineWidth=1;const gs=gridStep*u;ctx.beginPath();for(let x=gs;x<W;x+=gs){ctx.moveTo(x,0);ctx.lineTo(x,H);}for(let y=gs;y<H;y+=gs){ctx.moveTo(0,y);ctx.lineTo(W,y);}ctx.stroke();ctx.restore();}
+
+  function mBrackets(){ctx.save();ctx.globalAlpha=OP;ctx.strokeStyle=ac(.9);ctx.lineWidth=2*u;const L=min*0.055,m=mg;
+    const corners=[[m,m,1,1],[W-m,m,-1,1],[m,H-m,1,-1],[W-m,H-m,-1,-1]];
+    corners.forEach(c=>{ctx.beginPath();ctx.moveTo(c[0]+L*c[2],c[1]);ctx.lineTo(c[0],c[1]);ctx.lineTo(c[0],c[1]+L*c[3]);ctx.stroke();
+      // tick
+      ctx.beginPath();ctx.moveTo(c[0]+L*c[2]*.55,c[1]+8*u*c[3]);ctx.lineTo(c[0]+L*c[2]*.55,c[1]-4*u*c[3]);ctx.stroke();});
+    ctx.restore();}
+
+  function mReticle(t){ctx.save();ctx.globalAlpha=OP;const cx=W/2,cy=H/2,r=min*0.11,g=min*0.02;
+    ctx.strokeStyle=ac(.85);ctx.lineWidth=1.4*u;
+    ctx.beginPath();ctx.moveTo(cx-r,cy);ctx.lineTo(cx-g,cy);ctx.moveTo(cx+g,cy);ctx.lineTo(cx+r,cy);ctx.moveTo(cx,cy-r);ctx.lineTo(cx,cy-g);ctx.moveTo(cx,cy+g);ctx.lineTo(cx,cy+r);ctx.stroke();
+    ctx.beginPath();ctx.arc(cx,cy,min*0.045,0,6.283);ctx.stroke();
+    // tick ring
+    const rr2=min*0.062;ctx.lineWidth=1*u;for(let i=0;i<24;i++){const a=i/24*6.283+t*.05;const big=i%6===0;const l=(big?12:6)*u;ctx.beginPath();ctx.moveTo(cx+Math.cos(a)*rr2,cy+Math.sin(a)*rr2);ctx.lineTo(cx+Math.cos(a)*(rr2+l),cy+Math.sin(a)*(rr2+l));ctx.strokeStyle=ac(big?.8:.35);ctx.stroke();}
+    // center dot
+    ctx.fillStyle=ac(.9);ctx.beginPath();ctx.arc(cx,cy,2*u,0,6.283);ctx.fill();
+    ctx.restore();}
+
+  function mRulers(){ctx.save();ctx.globalAlpha=OP*.8;ctx.strokeStyle=ac(.5);ctx.fillStyle=ac(.55);ctx.lineWidth=1*u;ctx.font=FONT(9);setLS(0);ctx.textBaseline='top';ctx.textAlign='center';
+    const step=min*0.035,top=mg*0.7,left=mg*0.7;
+    for(let i=0,x=mg;x<W-mg;x+=step,i++){const big=i%5===0;ctx.beginPath();ctx.moveTo(x,top);ctx.lineTo(x,top+(big?12:6)*u);ctx.stroke();if(big){ctx.fillText(String(i*10).padStart(3,'0'),x,top+15*u);}}
+    ctx.textAlign='right';
+    for(let i=0,y=mg;y<H-mg;y+=step,i++){const big=i%5===0;ctx.beginPath();ctx.moveTo(left,y);ctx.lineTo(left+(big?12:6)*u,y);ctx.stroke();}
+    ctx.restore();}
+
+  function teleLine(x,y,it,t,align){ctx.font=FONT(15,700);ctx.textBaseline='middle';setLS(1);
+    ctx.textAlign=align;ctx.fillStyle=INK;ctx.fillText(it.l,x,y);
+    const lw=ctx.measureText(it.l).width;
+    ctx.fillStyle=ac(.95);ctx.font=FONT(15,700);
+    const vx = align==='left'? x+lw+14*u : x-lw-14*u;
+    ctx.textAlign=align;ctx.fillText(fmt(it,t),vx,y);
+  }
+  function mTele(t){ctx.save();ctx.globalAlpha=OP;const lh=min*0.03;
+    // top-right stack
+    let y=mg+8*u;const xr=W-mg;
+    ctx.strokeStyle=ac(.6);ctx.lineWidth=2*u;ctx.beginPath();ctx.moveTo(xr,y-6*u);ctx.lineTo(xr,y-6*u+lh*teleA.length);ctx.stroke();
+    teleA.forEach(it=>{teleLine(xr-10*u,y+ +6*u,it,t,'right');y+=lh;});
+    // bottom-left stack
+    let y2=H-mg-lh*teleB.length;const xl=mg;
+    ctx.strokeStyle=ac(.6);ctx.beginPath();ctx.moveTo(xl,y2-2*u);ctx.lineTo(xl,y2-2*u+lh*teleB.length);ctx.stroke();
+    teleB.forEach(it=>{teleLine(xl+12*u,y2+6*u,it,t,'left');y2+=lh;});
+    ctx.restore();}
+
+  function mRadar(t){ctx.save();ctx.globalAlpha=OP;const R=min*0.1,cx=W-mg-R,cy=H-mg-R;
+    ctx.strokeStyle=ac(.4);ctx.lineWidth=1*u;
+    for(let k=1;k<=3;k++){ctx.beginPath();ctx.arc(cx,cy,R*k/3,0,6.283);ctx.stroke();}
+    ctx.beginPath();ctx.moveTo(cx-R,cy);ctx.lineTo(cx+R,cy);ctx.moveTo(cx,cy-R);ctx.lineTo(cx,cy+R);ctx.stroke();
+    // sweep
+    const sa=t*1.1%6.283;const grad=ctx.createConicGradient?ctx.createConicGradient(sa,cx,cy):null;
+    if(grad){grad.addColorStop(0,ac(.35));grad.addColorStop(.12,ac(0));grad.addColorStop(1,ac(0));ctx.fillStyle=grad;ctx.beginPath();ctx.arc(cx,cy,R,0,6.283);ctx.fill();}
+    ctx.strokeStyle=ac(.9);ctx.lineWidth=1.5*u;ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+Math.cos(sa)*R,cy+Math.sin(sa)*R);ctx.stroke();
+    // blips
+    blips.forEach(b=>{const a=b.a+t*b.spd;const bx=cx+Math.cos(a)*R*b.r,by=cy+Math.sin(a)*R*b.r;let da=((sa-a)%6.283+6.283)%6.283;const fade=Math.max(0,1-da/2.2);ctx.fillStyle=ac(.3+.7*fade);ctx.beginPath();ctx.arc(bx,by,3*u,0,6.283);ctx.fill();});
+    ctx.restore();}
+
+  function mWave(t){ctx.save();ctx.globalAlpha=OP;const y0=H-mg-min*0.02,w=min*0.26,x0=W/2-w/2;
+    ctx.strokeStyle=ac(.8);ctx.lineWidth=1.6*u;ctx.beginPath();
+    for(let i=0;i<=120;i++){const px=x0+w*i/120;const ph=i/120*Math.PI*8;let v=Math.sin(ph-t*4)*0.4+Math.sin(ph*2.3-t*2)*0.25;
+      // ecg blips
+      const bp=(i/120*4-t*.5)%1;if(bp>0&&bp<0.05)v+=Math.sin(bp/0.05*Math.PI)*1.1;
+      const py=y0+v*min*0.028;i?ctx.lineTo(px,py):ctx.moveTo(px,py);}
+    ctx.stroke();
+    ctx.strokeStyle=ac(.25);ctx.lineWidth=1*u;ctx.beginPath();ctx.moveTo(x0,y0);ctx.lineTo(x0+w,y0);ctx.stroke();
+    ctx.restore();}
+
+  function mTracks(t){ctx.save();ctx.globalAlpha=OP;ctx.font=FONT(11,700);setLS(1);ctx.textBaseline='alphabetic';
+    tracks.forEach(tr=>{const jx=Math.sin(t*.8+tr.ph)*6*u,jy=Math.cos(t*.7+tr.ph)*6*u;
+      const x=tr.x*W-tr.w*W/2+jx,y=tr.y*H-tr.h*H/2+jy,w=tr.w*W,h=tr.h*H,c=8*u;
+      ctx.strokeStyle=ac(tr.lock?.9:.5);ctx.lineWidth=1.6*u;
+      // corner ticks
+      [[x,y,1,1],[x+w,y,-1,1],[x,y+h,1,-1],[x+w,y+h,-1,-1]].forEach(p=>{ctx.beginPath();ctx.moveTo(p[0]+c*p[2],p[1]);ctx.lineTo(p[0],p[1]);ctx.lineTo(p[0],p[1]+c*p[3]);ctx.stroke();});
+      // label
+      ctx.fillStyle=ac(.9);ctx.fillText((tr.lock?'◉ ':'○ ')+tr.tag,x,y-6*u);
+      // crosshair center
+      ctx.strokeStyle=ac(.4);ctx.lineWidth=1*u;const mx=x+w/2,my=y+h/2,g=5*u,r=10*u;ctx.beginPath();ctx.moveTo(mx-r,my);ctx.lineTo(mx-g,my);ctx.moveTo(mx+g,my);ctx.lineTo(mx+r,my);ctx.moveTo(mx,my-r);ctx.lineTo(mx,my-g);ctx.moveTo(mx,my+g);ctx.lineTo(mx,my+r);ctx.stroke();
+    });ctx.restore();}
+
+  function mHeader(t){ctx.save();ctx.globalAlpha=OP;const x=mg+min*0.06,y=mg+min*0.005;
+    // REC dot
+    let dx=x;
+    if(CFG.showRec){const blink=(Math.sin(t*4)>-.3);ctx.fillStyle=blink?'rgba(255,45,85,0.95)':'rgba(255,45,85,0.25)';ctx.beginPath();ctx.arc(dx,y+min*0.006,6*u,0,6.283);ctx.fill();
+      ctx.fillStyle='rgba(255,45,85,0.95)';ctx.font=FONT(15,700);setLS(2);ctx.textBaseline='middle';ctx.textAlign='left';ctx.fillText((CFG.recText||'REC'),dx+14*u,y+min*0.006);dx+=14*u+ctx.measureText(CFG.recText||'REC').width+22*u;}
+    // title
+    if(CFG.title){ctx.fillStyle=ac(.95);ctx.font=FONT(19,700);setLS(2.5);ctx.textBaseline='middle';ctx.textAlign='left';ctx.fillText(CFG.title,dx,y+min*0.006);}
+    // clock top-right
+    if(CFG.showClock){const d=new Date();const hh=String(d.getHours()).padStart(2,'0'),mm=String(d.getMinutes()).padStart(2,'0'),ss=String(d.getSeconds()).padStart(2,'0');
+      ctx.fillStyle=INK;ctx.font=FONT(15,700);setLS(2);ctx.textAlign='right';ctx.textBaseline='middle';ctx.fillText(hh+':'+mm+':'+ss,W-mg-min*0.06,y+min*0.006);
+      ctx.fillStyle=ac(.5);ctx.font=FONT(9);setLS(1);ctx.fillText('UTC'+(-d.getTimezoneOffset()/60>=0?'+':'')+(-d.getTimezoneOffset()/60),W-mg-min*0.06,y+min*0.028);}
+    // foot bottom-right
+    if(CFG.foot){ctx.fillStyle=ac(.6);ctx.font=FONT(11,700);setLS(2);ctx.textAlign='right';ctx.textBaseline='alphabetic';ctx.fillText(CFG.foot,W-mg-min*0.115,H-mg-2*u);}
+    ctx.restore();}
+
+  function mScan(t){ctx.save();ctx.globalAlpha=OP*.5;
+    // horizontal scanlines
+    ctx.fillStyle='rgba(0,0,0,0.16)';for(let y=0;y<H;y+=3*Math.max(1,u)){ctx.fillRect(0,y,W,1.4*u);}
+    // moving highlight band
+    const by=((t*0.08)%1)*H;const g=ctx.createLinearGradient(0,by-min*0.05,0,by+min*0.05);g.addColorStop(0,ac(0));g.addColorStop(.5,ac(.06));g.addColorStop(1,ac(0));ctx.fillStyle=g;ctx.fillRect(0,by-min*0.05,W,min*0.1);
+    ctx.restore();
+    // vignette
+    ctx.save();const rg=ctx.createRadialGradient(W/2,H/2,min*0.3,W/2,H/2,min*0.75);rg.addColorStop(0,'rgba(0,0,0,0)');rg.addColorStop(1,'rgba(0,0,0,0.35)');ctx.fillStyle=rg;ctx.fillRect(0,0,W,H);ctx.restore();}
+
+  function mScene(t){ctx.save();const cx=W/2,cy=H/2;
+    ctx.textAlign='center';ctx.fillStyle=ac(.98);ctx.font=`700 ${Math.round(min*0.075)}px 'Bebas Neue','Space Mono',sans-serif`;setLS(4);ctx.textBaseline='middle';
+    ctx.fillText((CFG.sceneTitle||'STARTING SOON').toUpperCase(),cx,cy-min*0.01);
+    if(CFG.sceneSub){ctx.fillStyle=INK;ctx.font=FONT(18,400);setLS(3);const dots='.'.repeat(1+Math.floor(t*2)%3);ctx.fillText(CFG.sceneSub.replace(/…$|\.\.\.$/,'')+' '+dots,cx,cy+min*0.055);}
+    // progress bar
+    const bw=min*0.24,bx=cx-bw/2,by=cy+min*0.1;ctx.strokeStyle=ac(.4);ctx.lineWidth=1*u;ctx.strokeRect(bx,by,bw,6*u);ctx.fillStyle=ac(.85);const p=(Math.sin(t*.6)*.5+.5);ctx.fillRect(bx,by,bw*p,6*u);
+    ctx.restore();}
+
+  // ---- frame ----
+  function frame(t){
+    ctx.clearRect(0,0,W,H);
+    ctx.textBaseline='alphabetic';ctx.textAlign='left';
+    if(CFG.scene) mBackScene();
+    if(M.grid) mGrid();
+    if(M.rulers) mRulers();
+    if(M.brackets) mBrackets();
+    if(M.reticle && !CFG.scene) mReticle(t);
+    if(M.tracks) mTracks(t);
+    if(M.tele) mTele(t);
+    if(M.radar) mRadar(t);
+    if(M.wave) mWave(t);
+    if(M.header) mHeader(t);
+    if(CFG.scene) mScene(t);
+    if(M.scan) mScan(t);
+  }
+
+  let raf=0,running=true,t0=null;
+  function loop(ts){if(!running)return;if(t0==null)t0=ts;frame((ts-t0)/1000);raf=requestAnimationFrame(loop);}
+  frame(0); // synchronous first frame (para PNG y arranque)
+  if(animate) raf=requestAnimationFrame(loop);
+  return {stop(){running=false;cancelAnimationFrame(raf);}, redraw(t){frame(t||0);}};
+}
+
+/* ============================================================
+   APP / UI  (esto NO se exporta)
+   ============================================================ */
+const MODULES=[
+  ['brackets','⌐ corner brackets'],['reticle','⊹ reticle'],['rulers','▏ridge rulers'],
+  ['tele','◧ telemetría'],['radar','◎ radar'],['wave','∿ waveform'],
+  ['tracks','⊡ tracking'],['grid','▦ grid'],['scan','▤ scanlines']
+];
+const SWATCHES=['#b8ff00','#3ad0ff','#ff2d55','#ffb020','#ffffff','#ff5edb','#00ffa3'];
+const PRESETS={
+  'LAB':      {accent:'#b8ff00',density:3,opacity:85,modules:['brackets','reticle','rulers','tele','radar','header'],recText:'LIVE'},
+  'TÁCTICO':  {accent:'#3ad0ff',density:4,opacity:90,modules:['brackets','tracks','tele','rulers','header','grid'],recText:'REC'},
+  'CRT':      {accent:'#ffb020',density:3,opacity:80,modules:['brackets','wave','grid','tele','scan','header'],recText:'ON AIR'},
+  'MÍNIMO':   {accent:'#ffffff',density:1,opacity:70,modules:['brackets','tele','header'],recText:'LIVE'},
+  'GLITCH':   {accent:'#ff2d55',density:5,opacity:88,modules:['brackets','reticle','tracks','tele','radar','wave','scan','header'],recText:'REC'},
+  'RECON':    {accent:'#00ffa3',density:4,opacity:85,modules:['brackets','reticle','radar','tracks','rulers','tele','header'],recText:'LIVE'}
+};
+
+let cfg={
+  w:1920,h:1080,accent:'#b8ff00',opacity:85,density:3,seed:1234,
+  modules:{brackets:1,reticle:1,rulers:1,tele:1,radar:1,wave:0,tracks:0,grid:0,scan:0,header:1},
+  title:'@TU_STREAM',showRec:true,recText:'LIVE',showClock:true,foot:'',
+  scene:false,sceneTitle:'STARTING SOON',sceneSub:'calibrando sensores…'
+};
+let handle=null,frozen=false;
+
+// build preset buttons
+const pWrap=$('presets');
+Object.keys(PRESETS).forEach(name=>{const b=document.createElement('button');b.className='btn';b.textContent=name;b.onclick=()=>applyPreset(name);pWrap.appendChild(b);});
+// swatches
+const swWrap=$('swatches');
+SWATCHES.forEach(c=>{const s=document.createElement('div');s.className='sw';s.style.background=c;s.onclick=()=>{cfg.accent=c;$('accent').value=c;restart();};swWrap.appendChild(s);});
+// module chips
+const mWrap=$('modules');
+MODULES.forEach(([k,label])=>{const c=document.createElement('span');c.className='chip'+(cfg.modules[k]?' on':'');c.textContent=label;c.dataset.k=k;c.onclick=()=>{cfg.modules[k]=cfg.modules[k]?0:1;c.classList.toggle('on');restart();};mWrap.appendChild(c);});
+
+function applyPreset(name){const p=PRESETS[name];cfg.accent=p.accent;cfg.density=p.density;cfg.opacity=p.opacity;cfg.recText=p.recText;
+  Object.keys(cfg.modules).forEach(k=>cfg.modules[k]=0);cfg.modules.header=1;p.modules.forEach(k=>cfg.modules[k]=1);
+  // sync UI
+  $('accent').value=p.accent;$('op').value=p.opacity;$('opVal').textContent=p.opacity+'%';$('den').value=p.density;$('denVal').textContent=p.density;
+  document.querySelectorAll('#modules .chip').forEach(c=>c.classList.toggle('on',!!cfg.modules[c.dataset.k]));
+  $('txtRec').value=p.recText;
+  restart();
+}
+
+function syncSize(){const [w,h]=$('size').value.split('x').map(Number);cfg.w=w;cfg.h=h;$('dims').textContent=w+'×'+h;}
+
+function readText(){cfg.title=$('txtTitle').value.trim()||'';cfg.recText=$('txtRec').value.trim()||'LIVE';cfg.foot=$('txtFoot').value.trim()||'';cfg.sceneTitle=$('scnTitle').value.trim()||'STARTING SOON';cfg.sceneSub=$('scnSub').value.trim()||'';}
+
+function restart(){readText();if(handle)handle.stop();
+  const c={...cfg,modules:{...cfg.modules}};
+  handle=runOverlay($('stage'),c,{animate:!frozen});
+  if(frozen)handle.redraw(performance.now()/1000);
+}
+
+// events
+$('size').onchange=()=>{syncSize();restart();};
+$('op').oninput=e=>{cfg.opacity=+e.target.value;$('opVal').textContent=cfg.opacity+'%';restart();};
+$('den').oninput=e=>{cfg.density=+e.target.value;$('denVal').textContent=cfg.density;restart();};
+$('accent').oninput=e=>{cfg.accent=e.target.value;restart();};
+['txtTitle','txtRec','txtFoot','scnTitle','scnSub'].forEach(id=>$(id).oninput=restart);
+$('chkRec').onclick=()=>{cfg.showRec=!cfg.showRec;$('chkRec').classList.toggle('on',cfg.showRec);restart();};
+$('chkClock').onclick=()=>{cfg.showClock=!cfg.showClock;$('chkClock').classList.toggle('on',cfg.showClock);restart();};
+$('chkScene').onclick=()=>{cfg.scene=!cfg.scene;$('chkScene').classList.toggle('on',cfg.scene);restart();};
+$('gen').onclick=()=>{cfg.seed=Math.floor(Math.random()*1e9);restart();toast('nueva composición ⟳');};
+$('freeze').onclick=()=>{frozen=!frozen;$('freeze').classList.toggle('on',frozen);$('freeze').textContent=frozen?'▶ reanudar':'❚❚ pausa';restart();};
+
+// fps read
+let fc=0,ft=performance.now();
+(function fps(){fc++;const n=performance.now();if(n-ft>500){$('fpsread').textContent=Math.round(fc/((n-ft)/1000))+' fps';fc=0;ft=n;}requestAnimationFrame(fps);})();
+
+// ---- export ----
+function buildHTML(){readText();const c={...cfg,modules:{...cfg.modules}};
+  const parts=[
+   '<!doctype html><html><head><meta charset="utf-8">',
+   '<title>HG Overlay</title>',
+   '<link rel="preconnect" href="https://fonts.googleapis.com">',
+   '<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">',
+   '<style>html,body{margin:0;height:100%;background:transparent;overflow:hidden}canvas{position:fixed;inset:0;width:100vw;height:100vh}</style>',
+   '</head><body><canvas id="c"></canvas><script>',
+   'const CFG='+JSON.stringify(c)+';',
+   'const runOverlay='+runOverlay.toString()+';',
+   'runOverlay(document.getElementById("c"),CFG,{animate:true});',
+   '<\/script></body></html>'
+  ];
+  return parts.join('\n');
+}
+function download(name,content,type){const b=new Blob([content],{type:type||'text/html'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000);}
+$('dlHtml').onclick=()=>{download('hg-overlay.html',buildHTML());toast('overlay.html descargado ⬇');};
+$('copyHtml').onclick=async()=>{try{await navigator.clipboard.writeText(buildHTML());toast('HTML copiado ⧉');}catch(e){toast('no se pudo copiar');}};
+$('dlPng').onclick=()=>{const off=document.createElement('canvas');const c={...cfg,modules:{...cfg.modules}};const h=runOverlay(off,c,{animate:false});h.stop();off.toBlob(b=>{const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='hg-overlay.png';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000);toast('PNG transparente ⬇');},'image/png');};
+
+function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),1600);}
+
+// init
+syncSize();restart();
+</script>
+</body></html>
