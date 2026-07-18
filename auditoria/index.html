@@ -303,6 +303,14 @@
   .foot{font-size:10px;color:rgba(240,237,230,.35);letter-spacing:.1em;margin-top:30px;text-align:center;font-family:'Space Mono',monospace;}
   @media (max-width:600px){ .map-area{height:360px;} .svc-grid{grid-template-columns:1fr;} }
 
+  /* ══ categorías + orden + foto Google (extensión ítem 31) ══ */
+  .toolsel{background:#0b0b0b;border:1px solid rgba(240,237,230,.14);color:rgba(240,237,230,.75);font-family:'Space Mono',monospace;font-size:11px;padding:5px 8px;border-radius:20px;cursor:pointer;max-width:200px;}
+  .toolsel:focus{outline:none;border-color:var(--acid);}
+  .toolsel option{background:#0b0b0b;color:var(--ink);}
+  .biz-ico{overflow:hidden;}
+  .biz-ico img{width:100%;height:100%;object-fit:cover;border-radius:inherit;display:block;}
+  .side-photo{width:100%;height:150px;object-fit:cover;border-radius:10px;border:1px solid var(--line);margin-bottom:.7rem;display:block;background:#0b0b0b;}
+
   /* ══ workspace de 3 columnas — lista | mapa | detalle (item 31, rediseño disposición) ══ */
   .ws-toolbar{position:sticky;top:0;z-index:20;background:var(--bg);padding-top:2px;margin-bottom:.9rem;}
   .ws-toolbar .filters{margin-bottom:0;}
@@ -414,6 +422,16 @@
         <button class="fbtn" onclick="setFilter('no-both',this)">Sin web ni redes</button>
         <button class="fbtn" onclick="setFilter('con-nota',this)">Con nota</button>
         <button class="fbtn" onclick="setFilter('fav',this)">★ Favoritos</button>
+        <select id="typeSel" class="toolsel" onchange="setType(this.value)" title="Filtrar por rubro"><option value="all">Rubro: todos</option></select>
+        <select id="sortSel" class="toolsel" onchange="setSort(this.value)" title="Ordenar comercios">
+          <option value="none">Orden original</option>
+          <option value="reviews-desc">Más reseñas Google</option>
+          <option value="reviews-asc">Menos reseñas Google</option>
+          <option value="rating-desc">Mejor rating</option>
+          <option value="rating-asc">Peor rating</option>
+          <option value="score-asc">Peor salud digital (leads)</option>
+          <option value="name">Nombre A–Z</option>
+        </select>
         <input id="audSearch" placeholder="🔍 Buscar comercio…" oninput="doSearch(this.value)" autocomplete="off">
       </div>
     </div>
@@ -657,6 +675,7 @@ const CITIES = {
   'Saladillo':{lat:-35.638,lng:-59.780}
 };
 let currentCity='all', currentPage=1;
+let currentType='all', currentSort='none'; // categoría (campo type) + orden del tablero
 // ── Upgrade: favoritos + búsqueda + drag a Pipelines/Propuesta ──────────────
 const FAV_LS='hg_aud_favs'; let favs=new Set(); try{ favs=new Set(JSON.parse(localStorage.getItem(FAV_LS)||'[]')); }catch(e){}
 let searchQ='', dragBiz=null;
@@ -801,6 +820,7 @@ function filterCity(city, el){
   currentCity = city; currentPage = 1;
   document.querySelectorAll('.citybtn').forEach(b=>b.classList.remove('active'));
   el.classList.add('active');
+  buildTypeSel(); // los rubros y sus conteos cambian con la ciudad
   updateStats(); renderCards();
   if(gmap) renderMapMarkers();
   if($('panel-crm').classList.contains('active')) renderCRMPanel();
@@ -811,15 +831,55 @@ function filterCity(city, el){
 // ════════════════════════════════════════════════════════════════════
 function filteredList(){
   const q=(searchQ||'').trim().toLowerCase();
-  return poolList().filter(b=>{
+  const list = poolList().filter(b=>{
     if(currentFilter==='no-web' && b.web) return false;
     if(currentFilter==='no-social' && (b.ig||b.fb)) return false;
     if(currentFilter==='no-both' && (b.web||b.ig||b.fb)) return false;
     if(currentFilter==='con-nota' && !(crmStore[b.id] && crmStore[b.id].note)) return false;
     if(currentFilter==='fav' && !favs.has(b.id)) return false;
+    if(currentType!=='all' && (b.type||'').trim().toLowerCase()!==currentType) return false;
     if(q && (((b.name||'')+' '+(b.type||'')+' '+(b.city||'')).toLowerCase().indexOf(q)<0)) return false;
     return true;
   });
+  return sortList(list);
+}
+// Ordena una copia según currentSort. reviews/rating null van al final (-1);
+// score asc = peor salud digital primero (los mejores leads arriba).
+function sortList(list){
+  if(currentSort==='none') return list;
+  const nv=(v)=> (typeof v==='number' ? v : -1);
+  const cmp={
+    'reviews-desc':(a,b)=> nv(b.reviews)-nv(a.reviews),
+    'reviews-asc' :(a,b)=> nv(a.reviews)-nv(b.reviews),
+    'rating-desc' :(a,b)=> nv(b.rating)-nv(a.rating),
+    'rating-asc'  :(a,b)=> nv(a.rating)-nv(b.rating),
+    'score-asc'   :(a,b)=> scoreOf(a)-scoreOf(b),
+    'name'        :(a,b)=> (a.name||'').localeCompare(b.name||'', 'es')
+  }[currentSort];
+  return cmp ? list.slice().sort(cmp) : list;
+}
+function setType(v){ currentType=v; currentPage=1; renderCards(); }
+function setSort(v){ currentSort=v; currentPage=1; renderCards(); }
+// Rellena el select de rubros con los valores reales del campo `type` de la
+// ciudad activa (agrupados sin distinguir mayúsculas), con conteo. Conserva la
+// selección si el rubro sigue existiendo; si no, vuelve a "todos".
+function buildTypeSel(){
+  const sel = $('typeSel');
+  if(!sel) return;
+  const groups = {};
+  poolList().forEach(b=>{
+    const t=(b.type||'').trim();
+    if(!t) return;
+    const k=t.toLowerCase();
+    if(!groups[k]) groups[k]={label:t,n:0};
+    groups[k].n++;
+  });
+  const keys = Object.keys(groups).sort((a,b)=>groups[b].n-groups[a].n || a.localeCompare(b,'es'));
+  const prev = currentType;
+  sel.innerHTML = '<option value="all">Rubro: todos</option>' +
+    keys.map(k=>`<option value="${escHtml(k)}">${escHtml(groups[k].label)} (${groups[k].n})</option>`).join('');
+  if(prev!=='all' && groups[prev]) sel.value = prev;
+  else { sel.value='all'; currentType='all'; }
 }
 function renderCards(){
   const all = filteredList();
@@ -836,7 +896,7 @@ function renderCards(){
     return `<div class="card${selectedId===b.id?' sel':''}" onclick="selectBiz('${b.id}','confirmed')" onmouseenter="highlightMarker('${b.id}',true)" onmouseleave="highlightMarker('${b.id}',false)" draggable="true" data-name="${escHtml(b.name)}" data-city="${escHtml(b.city||'')}" ondragstart="onCardDrag(event)">
       <button class="fav-star ${favs.has(b.id)?'on':''}" onclick="toggleFav('${b.id}',event)" title="Favorito">★</button>
       <div class="card-top">
-        <div class="biz-ico">🏬</div>
+        <div class="biz-ico">${b.photo ? `<img src="${escHtml(b.photo)}" alt="" loading="lazy" onerror="this.parentNode.textContent='🏬'">` : '🏬'}</div>
         <div style="flex:1;min-width:0">
           <div class="biz-name">${escHtml(b.name)}</div>
           <div class="biz-type">${escHtml(b.type||'Comercio')}${b.city?' · 🏙 '+escHtml(b.city):''}</div>
@@ -917,6 +977,7 @@ function selectBiz(id, kind){
   side.style.display = 'block';
   { const de=$('detailEmpty'); if(de) de.style.display='none'; }
   side.innerHTML = `<h3>${escHtml(b.name)}${kind==='pending'?'<span class="pendtag">PENDIENTE</span>':''}<button onclick="closeSide()">✕ cerrar</button></h3>
+  ${b.photo ? `<img class="side-photo" src="${escHtml(b.photo)}" alt="Foto de ${escHtml(b.name)} (Google)" loading="lazy" onerror="this.remove()">` : ''}
   <p style="font-size:11px;color:rgba(240,237,230,.5);margin-bottom:.3rem">${escHtml(b.type||'Comercio')}${b.city?' · 🏙 '+escHtml(b.city):''} · 📍 ${escHtml(b.address||'sin dirección')}${b.phone?' · ☎ '+escHtml(b.phone):''}</p>
   <div class="dash-score"><div class="ds-top"><span>Salud digital · <b style="font-size:11px;font-family:'Space Mono',monospace;color:rgba(240,237,230,.6)">${scoreLabel(sc)}</b></span><b>${sc}<span style="font-size:13px;color:rgba(240,237,230,.4)">/100</span></b></div><div class="ds-bar"><div class="ds-fill" style="width:${sc}%"></div></div></div>
   <div class="dash-metrics">
@@ -933,6 +994,7 @@ function selectBiz(id, kind){
   <p class="verif" style="margin-bottom:.5rem;">${verifDate ? 'Última verificación: '+verifDate : 'Sin fecha de verificación todavía'}${b.notes?' · '+escHtml(b.notes):''}</p>
   <div class="side-apps"><button class="btn ghost sm" onclick="goAppFor('pipelines','${id}')">🔀 Pipelines</button><button class="btn ghost sm" onclick="goAppFor('propuesta','${id}')">📄 Propuesta</button>${b.website?`<a class="btn ghost sm" href="${escHtml(b.website)}" target="_blank" rel="noopener">🌐 Web</a>`:''}<a class="btn ghost sm" href="${gsearch}" target="_blank" rel="noopener">🔍 Google</a><button class="btn ghost sm" onclick="toggleFav('${id}',event)">${favs.has(id)?'★ Quitar fav':'☆ Favorito'}</button></div>
   ${kind!=='pending' && isModerator ? `<button class="btn ghost sm" onclick="openModEdit('${id}')">✎ EDITAR (moderador)</button>` : ''}
+  ${kind!=='pending' && isModerator && !b.photo ? `<button class="btn ghost sm" id="fetch-photo-btn" onclick="fetchPhotoFor('${id}')">📷 TRAER FOTO (Google)</button>` : ''}
   ${kind==='pending' && isModerator ? `<div style="display:flex;gap:8px;"><button class="btn sm" onclick="approvePending('${id}')">✓ APROBAR</button><button class="btn danger sm" onclick="rejectPending('${id}')">✕ RECHAZAR</button></div>` : ''}`;
   // sincronizar mapa: paneo al marcador seleccionado y resalto (solo comercios confirmados tienen marcador)
   if(gmap && !mapFailed && kind!=='pending'){ refreshMarkerHighlights(); const m=gMarkerById[id]; if(m) gmap.panTo(m.getPosition()); }
@@ -1198,10 +1260,68 @@ function getPlaceDetails(placeId){
   });
 }
 
+// Foto del negocio: textSearch ya la trae gratis en r.photos (Basic Data) — hasta
+// ahora se descartaba. getUrl() devuelve una URL de googleusercontent hosteada por
+// Google. Dato provisto por Google, mismo estatus que rating/reviews (la presencia
+// digital sigue siendo 100% manual).
+function placePhotoUrl(r){
+  try{ return (r && r.photos && r.photos[0]) ? r.photos[0].getUrl({maxWidth:640}) : ''; }
+  catch(e){ return ''; }
+}
+// POST a /comercios_pending con fallback: si las reglas vivas todavía no aceptan
+// el campo `photo` ($other:false hasta pegar las reglas nuevas en Console), el
+// write entero fallaría — reintenta una vez sin la foto para no romper el flujo.
+async function postPending(record, token){
+  let resp = await fetch(`${FB_URL}/comercios_pending.json?auth=${token}`, {
+    method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(record)
+  });
+  if(!resp.ok && record.photo){
+    const sin = {...record}; delete sin.photo;
+    resp = await fetch(`${FB_URL}/comercios_pending.json?auth=${token}`, {
+      method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(sin)
+    });
+  }
+  return resp;
+}
+// BACKFILL de foto para un comercio YA confirmado (los 147 existentes se importaron
+// sin foto). Manual y por comercio, disparado por un moderador desde la ficha:
+// 1 findPlaceFromQuery (Basic Data, incluye photos) + 1 PUT del campo photo.
+// Si las reglas vivas todavía no aceptan `photo`, el PUT falla → aviso honesto.
+async function fetchPhotoFor(id){
+  const b = comercios[id];
+  const btn = $('fetch-photo-btn');
+  if(!b || !session || !placesService) { alert('Google Maps todavía no cargó — sin eso no se puede buscar la foto.'); return; }
+  if(btn){ btn.disabled = true; btn.textContent = 'BUSCANDO FOTO…'; }
+  try{
+    const url = await new Promise((resolve)=>{
+      placesService.findPlaceFromQuery(
+        { query: (b.name||'')+' '+(b.city||''), fields:['photos','name'] },
+        (results, status)=>{
+          if(status === google.maps.places.PlacesServiceStatus.OK && results && results[0])
+            resolve(placePhotoUrl(results[0]));
+          else resolve('');
+        });
+    });
+    if(!url) throw new Error('Google no tiene foto para este negocio (o no lo encontró por nombre+ciudad).');
+    const token = await freshToken(session);
+    const resp = await fetch(`${FB_URL}/comercios/${id}/photo.json?auth=${token}`, {
+      method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(url)
+    });
+    if(!resp.ok) throw new Error('Firebase rechazó el campo photo ('+resp.status+') — probablemente faltan pegar las reglas nuevas (auditoria.rules.json) en Firebase Console. Está encolado en cola_aprobacion.md.');
+    comercios[id].photo = url;
+    selectBiz(id, 'confirmed'); // re-render de la ficha con la foto
+    renderCards();
+  }catch(e){
+    if(btn){ btn.disabled = false; btn.textContent = '📷 TRAER FOTO (Google)'; }
+    alert('No se pudo traer la foto: '+e.message);
+  }
+}
+
 function buildPlaceRecord(r, city, website, phone){
   const loc = r.geometry && r.geometry.location;
   return {
     name: r.name || '', type: guessTypeFromPlace(r), city: city || '',
+    photo: placePhotoUrl(r),
     address: r.formatted_address || '', phone: phone || '', website: website || '',
     web: !!website, ig:false, fb:false, wa:false, tt:false,
     lat: loc ? loc.lat() : null, lng: loc ? loc.lng() : null,
@@ -1308,9 +1428,7 @@ async function addPlaceToPending(i){
     const record = buildPlaceRecord(r, city, details.website, details.phone);
     await enrichRedes(record);  // detecta redes escaneando su web (Worker)
     const token = await freshToken(session);
-    const resp = await fetch(`${FB_URL}/comercios_pending.json?auth=${token}`, {
-      method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(record)
-    });
+    const resp = await postPending(record, token);
     if(!resp.ok) throw new Error('Firebase respondió '+resp.status);
     btn.textContent = '✓ AGREGADO';
     await loadPendientes(); updateStats(); renderModPanel();
@@ -1342,9 +1460,7 @@ async function saveAllSearchResults(){
       const record = buildPlaceRecord(r, city, details.website, details.phone);
       await enrichRedes(record);  // detecta redes escaneando su web (Worker)
       const token = await freshToken(session);
-      const resp = await fetch(`${FB_URL}/comercios_pending.json?auth=${token}`, {
-        method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(record)
-      });
+      const resp = await postPending(record, token);
       if(resp.ok) saved++;
     }catch(e){}
     if(btn){ btn.textContent = 'GUARDANDO… '+saved+'/'+fresh.length; }
@@ -1416,6 +1532,7 @@ async function searchAllCities(){
       const loc = place.geometry && place.geometry.location;
       const record = {
         name, type: guessTypeFromPlace(place), city,
+        photo: placePhotoUrl(place),
         address, phone: '', website: '',
         web:false, ig:false, fb:false, wa:false, tt:false,
         lat: loc ? loc.lat() : null, lng: loc ? loc.lng() : null,
@@ -1430,9 +1547,7 @@ async function searchAllCities(){
       };
       try{
         const token = await freshToken(session);
-        const resp = await fetch(`${FB_URL}/comercios_pending.json?auth=${token}`, {
-          method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(record)
-        });
+        const resp = await postPending(record, token);
         if(!resp.ok) throw new Error('Firebase respondió '+resp.status);
         added++; addedHere++;
       }catch(e){ errors++; }
@@ -1505,9 +1620,7 @@ async function relevarZona(){
         record.suggestedByName = (session.name || session.email || 'Moderador') + ' (relevo de zona)';
         await enrichRedes(record);  // detecta redes escaneando su web (Worker)
         const token = await freshToken(session);
-        const resp = await fetch(`${FB_URL}/comercios_pending.json?auth=${token}`, {
-          method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(record)
-        });
+        const resp = await postPending(record, token);
         if(!resp.ok) throw new Error('Firebase respondió '+resp.status);
         added++; addedHere++;
       }catch(e){ errors++; }
@@ -1562,7 +1675,13 @@ async function approvePending(id){
       rating: typeof p.rating==='number' ? p.rating : null, reviews: typeof p.reviews==='number' ? p.reviews : null,
       notes:p.notes||'', verifiedAt: Date.now(), verifiedBy: session.uid
     };
-    await fetch(`${FB_URL}/comercios/${id}.json?auth=${token}`, { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(merged) });
+    if(p.photo) merged.photo = p.photo; // solo si existe — con reglas viejas el campo haría fallar el PUT entero
+    let putResp = await fetch(`${FB_URL}/comercios/${id}.json?auth=${token}`, { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(merged) });
+    if(!putResp.ok && merged.photo){ // reglas vivas sin `photo` todavía: reintentar sin la foto
+      delete merged.photo;
+      putResp = await fetch(`${FB_URL}/comercios/${id}.json?auth=${token}`, { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(merged) });
+    }
+    if(!putResp.ok) throw new Error('Firebase respondió '+putResp.status);
     await fetch(`${FB_URL}/comercios_pending/${id}/status.json?auth=${token}`, { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify('approved') });
     await loadComercios(); await loadPendientes();
     updateStats(); renderCards(); renderModPanel(); if(gmap) renderMapMarkers();
@@ -1691,6 +1810,7 @@ function exportCSV(){
 }
 
 window.selectBiz=selectBiz; window.closeSide=closeSide; window.setFilter=setFilter; window.switchTab=switchTab; window.highlightMarker=highlightMarker;
+window.setType=setType; window.setSort=setSort; window.fetchPhotoFor=fetchPhotoFor;
 window.approvePending=approvePending; window.rejectPending=rejectPending; window.openModEdit=openModEdit; window.saveModEdit=saveModEdit; window.googleSearchEdit=googleSearchEdit;
 window.filterCity=filterCity; window.changePage=changePage; window.saveCRMNote=saveCRMNote; window.exportCSV=exportCSV;
 window.toggleFav=toggleFav; window.doSearch=doSearch; window.onCardDrag=onCardDrag; window.goApp=goApp; window.goAppFor=goAppFor; window.setChartMetric=setChartMetric;
@@ -1702,6 +1822,7 @@ async function boot(){
   loadCRM();
   initDropDock();
   await Promise.all([loadComercios(), loadPendientes(), loadHist()]);
+  buildTypeSel();
   updateStats();
   renderCards();
   if(gmap) renderMapMarkers(); // si el mapa cargó antes que los comercios, refrescar marcadores + estado
