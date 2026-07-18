@@ -529,14 +529,17 @@
         ubicación y rating confirmados</b> — pero <b>no</b> dice nada de presencia en Instagram,
         Facebook, WhatsApp Business o TikTok: eso sigue siendo 100% manual, igual que siempre.
         Cada resultado que agregués cae a <b>pendientes</b>, nunca se confirma solo — lo aprobás o
-        rechazás como cualquier otra sugerencia. Es una búsqueda manual por ciudad (vos elegís
-        cuándo disparar), no automática, porque cada búsqueda consume cuota pagada de la cuenta de
-        Google Cloud del proyecto.
+        rechazás como cualquier otra sugerencia. Es una búsqueda manual (vos elegís cuándo
+        disparar), no automática, porque cada búsqueda consume cuota pagada de la cuenta de
+        Google Cloud del proyecto. El lugar es <b>texto libre</b>: escribí cualquier ciudad,
+        barrio o zona (se ubica con OpenStreetMap/Nominatim, gratis) — las 25 ciudades de
+        siempre aparecen como sugerencias al tipear.
       </p>
       <div style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;margin-bottom:.7rem;">
-        <div class="f-field" style="max-width:190px;">
-          <label for="mod-search-city">Ciudad</label>
-          <select id="mod-search-city"></select>
+        <div class="f-field" style="max-width:230px;">
+          <label for="mod-search-lugar">Lugar a auditar (libre)</label>
+          <input type="text" id="mod-search-lugar" list="lugares-list" maxlength="80" placeholder="Ensenada, Berisso, Córdoba…">
+          <datalist id="lugares-list"></datalist>
         </div>
         <div class="f-field" style="max-width:220px;">
           <label for="mod-search-query">Qué buscar</label>
@@ -547,12 +550,12 @@
         <button class="btn sm" onclick="searchAllCities()">🌎 BUSCAR LAS 25 CIUDADES</button>
       </div>
       <p style="font-size:.7rem;color:rgba(240,237,230,.4);margin:-.3rem 0 .5rem;">
-        "Buscar en Google Maps" (una ciudad) trae hasta ~60 resultados y, al guardar,
+        "Buscar en Google Maps" (un lugar, el que escribas) trae hasta ~60 resultados y, al guardar,
         completa <b>web y teléfono</b> desde la ficha de Google automáticamente (las redes
         IG/FB/WhatsApp/TikTok no las da Google: quedan para confirmar a mano). Con
         "💾 GUARDAR TODOS" volcás la búsqueda entera a pendientes de una, sin duplicar lo
         que ya está en la base — así cada búsqueda va armando la base de datos.
-        "⟲ Relevar zona" hace el relevo automático de la ciudad elegida: una búsqueda por
+        "⟲ Relevar zona" hace el relevo automático del lugar escrito: una búsqueda por
         cada uno de los 12 rubros estándar (los que venden los PIPELINES) y cada negocio
         nuevo cae solo a pendientes con web y teléfono de su ficha de Google.
         "Buscar las 25 ciudades" recorre todas las ciudades solo y manda los nuevos directo
@@ -810,11 +813,19 @@ function updateStats(){
 // ════════════════════════════════════════════════════════════════════
 // SELECTOR DE CIUDAD — filtra tablero/stats/mapa por el campo 'city' (item 31)
 // ════════════════════════════════════════════════════════════════════
+// Los chips de ciudad salen de los DATOS REALES (no de la lista fija CITIES):
+// desde que el lugar a auditar es texto libre, cualquier ciudad nueva que entre
+// por búsqueda/relevo tiene que aparecer acá para poder filtrarla. Orden: más
+// comercios primero. Si todavía no hay datos, cae a CITIES como esqueleto.
 function buildCityBtns(){
   const wrap = $('cityBtns');
-  const names = Object.keys(CITIES);
-  wrap.innerHTML = `<button class="citybtn active" onclick="filterCity('all',this)">Todas (${names.length})</button>` +
-    names.map(c=>`<button class="citybtn" onclick="filterCity('${c.replace(/'/g,"\\'")}',this)">${escHtml(c)}</button>`).join('');
+  const counts = {};
+  bizList().forEach(b=>{ const c=(b.city||'').trim(); if(c) counts[c]=(counts[c]||0)+1; });
+  let names = Object.keys(counts).sort((a,b)=>counts[b]-counts[a] || a.localeCompare(b,'es'));
+  if(!names.length) names = Object.keys(CITIES);
+  if(currentCity!=='all' && !names.includes(currentCity)){ currentCity='all'; }
+  wrap.innerHTML = `<button class="citybtn${currentCity==='all'?' active':''}" onclick="filterCity('all',this)">Todas (${names.length})</button>` +
+    names.map(c=>`<button class="citybtn${currentCity===c?' active':''}" onclick="filterCity('${c.replace(/'/g,"\\'")}',this)">${escHtml(c)}${counts[c]?' ('+counts[c]+')':''}</button>`).join('');
 }
 function filterCity(city, el){
   currentCity = city; currentPage = 1;
@@ -1224,11 +1235,26 @@ function guessTypeFromPlace(place){
   for(const t of (place.types||[])){ if(PLACE_TYPE_MAP[t]) return PLACE_TYPE_MAP[t]; }
   return 'Comercio';
 }
+// El lugar a auditar ahora es TEXTO LIBRE (pedido del usuario 2026-07-18): las 25
+// ciudades de CITIES quedan solo como sugerencias del datalist y como atajo sin
+// red. Cualquier otro lugar se resuelve con geocode() (Nominatim, gratis, ya
+// usado por el form de sugerencias) — así se puede auditar cualquier zona.
 function buildModSearchCitySelect(){
-  const sel = $('mod-search-city');
-  if(!sel || sel.options.length) return;
-  sel.innerHTML = Object.keys(CITIES).map(c=>`<option value="${escHtml(c)}">${escHtml(c)}</option>`).join('');
-  if(currentCity!=='all' && CITIES[currentCity]) sel.value = currentCity;
+  const dl = $('lugares-list');
+  if(!dl || dl.options.length) return;
+  dl.innerHTML = Object.keys(CITIES).map(c=>`<option value="${escHtml(c)}">`).join('');
+  const inp = $('mod-search-lugar');
+  if(inp && !inp.value && currentCity!=='all') inp.value = currentCity;
+}
+// nombre → {name, lat, lng, label}. Ciudad conocida = coords locales sin red;
+// desconocida = Nominatim. Lanza Error con mensaje usable si no se encuentra.
+async function resolveLugar(nombre){
+  const q = (nombre||'').trim();
+  if(!q) throw new Error('Escribí un lugar a auditar (ej. "Ensenada" o "Villa Elisa, La Plata").');
+  const known = Object.keys(CITIES).find(c=>c.toLowerCase()===q.toLowerCase());
+  if(known) return { name: known, lat: CITIES[known].lat, lng: CITIES[known].lng, label: known+' (ciudad conocida)' };
+  const geo = await geocode(q); // Nominatim — mismo helper del form de sugerencias
+  return { name: q, lat: geo.lat, lng: geo.lng, label: geo.label };
 }
 function gpDedupKey(name, city){ return (name||'').trim().toLowerCase()+'|'+(city||'').trim().toLowerCase(); }
 
@@ -1359,19 +1385,27 @@ async function enrichRedes(record){
   }catch(e){ /* fallo transitorio: redes quedan como estaban */ }
 }
 
-function searchGooglePlaces(){
-  const city = $('mod-search-city').value;
-  const c = CITIES[city];
+async function searchGooglePlaces(){
   const statusEl = $('mod-search-status');
   const resultsEl = $('mod-search-results');
   resultsEl.innerHTML = '';
-  if(!placesService || !c){
-    statusEl.textContent = 'Google Maps todavía no cargó (esperá unos segundos o abrí primero la pestaña Mapa) — sin eso no se puede buscar.';
+  if(!placesService){
+    statusEl.textContent = 'Google Maps todavía no cargó (esperá unos segundos) — sin eso no se puede buscar.';
     statusEl.className = 'status-msg err';
     return;
   }
+  let lugar;
+  try{
+    statusEl.textContent = 'Ubicando el lugar…'; statusEl.className = 'status-msg';
+    lugar = await resolveLugar($('mod-search-lugar').value);
+  }catch(e){
+    statusEl.textContent = e.message; statusEl.className = 'status-msg err';
+    return;
+  }
+  const city = lugar.name;
+  const c = { lat: lugar.lat, lng: lugar.lng };
   const query = ($('mod-search-query').value || '').trim() || 'comercios';
-  statusEl.textContent = 'Buscando en Google Maps…';
+  statusEl.textContent = 'Buscando en Google Maps cerca de: '+lugar.label+'…';
   statusEl.className = 'status-msg';
   // Paginamos hasta el tope de Google (~60 = 3 páginas de 20). nextPage() exige
   // ~2s de espera entre páginas, si no devuelve INVALID_REQUEST.
@@ -1473,8 +1507,10 @@ async function saveAllSearchResults(){
 }
 
 function sleep(ms){ return new Promise(r=>setTimeout(r, ms)); }
-function textSearchOne(query, city){
-  const c = CITIES[city];
+// coords es opcional: si no viene, cae a CITIES[city] (flujo de las 25 ciudades).
+// Con coords explícitas sirve para cualquier lugar tipeado (resolveLugar).
+function textSearchOne(query, city, coords){
+  const c = coords || CITIES[city];
   if(!placesService || !c) return Promise.resolve({ city, status:'NO_SERVICE', results:[] });
   return new Promise(resolve=>{
     placesService.textSearch({ query, location: new google.maps.LatLng(c.lat, c.lng), radius: 6000 }, (results, status)=>{
@@ -1574,17 +1610,23 @@ const RUBROS_RELEVO = ['panadería','peluquería','restaurante','ferretería','f
   'cafetería','gimnasio','veterinaria','taller mecánico','tienda de ropa','inmobiliaria','heladería'];
 async function relevarZona(){
   if(bulkSearchRunning || !session) return;
-  const city = $('mod-search-city').value;
   const statusEl = $('mod-search-status');
   const resultsEl = $('mod-search-results');
-  if(!placesService || !CITIES[city]){
-    statusEl.textContent = !placesService
-      ? 'Google Maps todavía no cargó (esperá unos segundos o abrí primero la pestaña Mapa) — sin eso no se puede relevar.'
-      : 'Elegí una ciudad para relevar la zona.';
+  if(!placesService){
+    statusEl.textContent = 'Google Maps todavía no cargó (esperá unos segundos) — sin eso no se puede relevar.';
     statusEl.className = 'status-msg err';
     return;
   }
-  const ok = confirm(`Relevo automático de ${city}: ${RUBROS_RELEVO.length} búsquedas en Google Places (una por rubro: ${RUBROS_RELEVO.join(', ')}) + una consulta de ficha (web/teléfono) por cada negocio NUEVO. Todo consume cuota paga de Google Cloud. Los nuevos caen a pendientes — ninguno se confirma solo. ¿Relevar?`);
+  let lugar;
+  try{
+    statusEl.textContent = 'Ubicando el lugar…'; statusEl.className = 'status-msg';
+    lugar = await resolveLugar($('mod-search-lugar').value);
+  }catch(e){
+    statusEl.textContent = e.message; statusEl.className = 'status-msg err';
+    return;
+  }
+  const city = lugar.name, lugarCoords = { lat: lugar.lat, lng: lugar.lng };
+  const ok = confirm(`Relevo automático de ${city} (${lugar.label}): ${RUBROS_RELEVO.length} búsquedas en Google Places (una por rubro: ${RUBROS_RELEVO.join(', ')}) + una consulta de ficha (web/teléfono) por cada negocio NUEVO. Todo consume cuota paga de Google Cloud. Los nuevos caen a pendientes — ninguno se confirma solo. ¿Relevar?`);
   if(!ok) return;
 
   bulkSearchRunning = true;
@@ -1598,7 +1640,7 @@ async function relevarZona(){
     statusEl.textContent = `Relevando ${city}: "${rubro}" (${i+1}/${RUBROS_RELEVO.length}) — nuevos hasta ahora: ${added}`;
     statusEl.className = 'status-msg';
     let r;
-    try{ r = await textSearchOne(rubro, city); }
+    try{ r = await textSearchOne(rubro, city, lugarCoords); }
     catch(e){ errors++; summary.push(`${rubro}: error de red`); await sleep(350); continue; }
     if(r.status !== google.maps.places.PlacesServiceStatus.OK || !r.results.length){
       summary.push(`${rubro}: 0 resultados (${r.status})`);
@@ -1684,6 +1726,7 @@ async function approvePending(id){
     if(!putResp.ok) throw new Error('Firebase respondió '+putResp.status);
     await fetch(`${FB_URL}/comercios_pending/${id}/status.json?auth=${token}`, { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify('approved') });
     await loadComercios(); await loadPendientes();
+    buildCityBtns(); buildTypeSel(); // el aprobado puede traer una ciudad/rubro nuevos
     updateStats(); renderCards(); renderModPanel(); if(gmap) renderMapMarkers();
   }catch(e){ alert('No se pudo aprobar — backend de Firebase todavía no activado en producción.'); }
 }
@@ -1822,6 +1865,7 @@ async function boot(){
   loadCRM();
   initDropDock();
   await Promise.all([loadComercios(), loadPendientes(), loadHist()]);
+  buildCityBtns(); // re-armar con los datos reales (la 1ª pasada fue solo esqueleto)
   buildTypeSel();
   updateStats();
   renderCards();
