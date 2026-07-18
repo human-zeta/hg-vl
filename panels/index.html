@@ -1,0 +1,180 @@
+<!doctype html><html lang="es"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PANELS — Human Glitche · paneles de Twitch/about</title>
+<meta name="description" content="Generá los paneles 'about/info' de tu canal (sobre mí, horarios, redes, donar, reglas, specs) como imágenes PNG con tu marca. Estilos, íconos y color. 100% en tu navegador.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&family=Anton&display=swap" rel="stylesheet">
+<style>
+  :root{ --acid:#b8ff00; --glitch:#ff2d55; --cyan:#3ad0ff; --amber:#ffb020; --violet:#9b6bff; --ink:#f0ede6; --line:rgba(240,237,230,.12); --bg:#050505; }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{min-height:100%;background:var(--bg);color:var(--ink);font-family:'Space Mono',monospace;}
+  body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");z-index:0;pointer-events:none;opacity:.4;}
+  .wrap{position:relative;z-index:1;max-width:1180px;margin:0 auto;padding:28px 22px 90px;}
+  header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;gap:14px;}
+  .brand{font-family:'Bebas Neue',sans-serif;font-size:44px;letter-spacing:.03em;line-height:.82;}
+  .brand b{color:var(--violet);font-weight:400;}
+  .brand .sub{display:block;font-family:'Space Mono';font-size:10px;letter-spacing:.2em;color:rgba(240,237,230,.45);margin-top:8px;}
+  header .nav{display:flex;flex-direction:column;align-items:flex-end;gap:7px;padding-top:6px;}
+  header a{font-size:10px;letter-spacing:.2em;color:rgba(240,237,230,.4);text-decoration:none;} header a:hover{color:var(--violet);}
+  .intro{font-size:12px;color:rgba(240,237,230,.55);line-height:1.8;max-width:78ch;margin-bottom:22px;}
+  .intro b{color:var(--violet);font-weight:400;}
+  .layout{display:grid;grid-template-columns:340px 1fr;gap:22px;align-items:start;}
+  @media(max-width:900px){.layout{grid-template-columns:1fr;}}
+  .panel{border:1px solid var(--line);border-radius:8px;padding:18px 16px;background:rgba(155,107,255,.03);margin-bottom:16px;}
+  h2.sec{font-size:9px;letter-spacing:.22em;color:rgba(240,237,230,.45);text-transform:uppercase;margin:0 0 13px;}
+  h2.sec b{color:var(--violet);font-weight:400;}
+  .fld{margin-bottom:13px;} .fld:last-child{margin-bottom:0;}
+  .fld label{display:block;font-size:9px;letter-spacing:.16em;color:rgba(240,237,230,.5);text-transform:uppercase;margin-bottom:6px;}
+  .fld input[type=text],.fld select{width:100%;background:#0a0a0a;color:var(--ink);border:1px solid var(--line);font:inherit;font-size:13px;padding:9px 10px;border-radius:5px;}
+  .fld input:focus,.fld select:focus{outline:none;border-color:var(--violet);}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;}
+  .chip{font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;padding:7px 10px;border:1px solid var(--line);border-radius:20px;cursor:pointer;color:rgba(240,237,230,.55);user-select:none;transition:.15s;}
+  .chip.on{border-color:var(--violet);color:var(--violet);background:rgba(155,107,255,.12);}
+  .color-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+  .color-row input[type=color]{width:40px;height:34px;border:1px solid var(--line);border-radius:5px;background:#0a0a0a;cursor:pointer;padding:2px;}
+  .swatches{display:flex;gap:5px;} .sw{width:22px;height:22px;border-radius:50%;cursor:pointer;border:1px solid rgba(255,255,255,.15);} .sw:hover{transform:scale(1.15);}
+  .btn{background:transparent;border:1px solid var(--line);color:var(--ink);font:inherit;font-size:11px;letter-spacing:.1em;padding:11px 14px;cursor:pointer;border-radius:5px;transition:.15s;text-align:center;}
+  .btn:hover{border-color:var(--violet);color:var(--violet);}
+  .btn.primary{background:var(--violet);color:#050505;border-color:var(--violet);font-weight:700;}
+  .btn.primary:hover{opacity:.85;color:#050505;}
+  .btnrow{display:flex;gap:8px;flex-wrap:wrap;} .btnrow .btn{flex:1;min-width:120px;}
+  .plist{display:flex;flex-direction:column;gap:7px;}
+  .prow{display:flex;align-items:center;gap:8px;}
+  .prow input[type=text]{flex:1;background:#0a0a0a;color:var(--ink);border:1px solid var(--line);font:inherit;font-size:12px;padding:8px 9px;border-radius:5px;}
+  .prow .pico{width:30px;text-align:center;background:#0a0a0a;border:1px solid var(--line);border-radius:5px;padding:8px 0;font-size:14px;cursor:pointer;}
+  .prow .del{cursor:pointer;color:rgba(240,237,230,.4);font-size:13px;padding:0 3px;} .prow .del:hover{color:var(--glitch);}
+  .stage-wrap{position:sticky;top:16px;}
+  .stagebar{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px;font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:rgba(240,237,230,.45);}
+  .stagebar b{color:var(--violet);font-weight:400;}
+  .preview{background:#0e0e12;border:1px solid var(--line);border-radius:10px;padding:22px;display:flex;flex-direction:column;align-items:center;gap:14px;max-height:640px;overflow:auto;}
+  .pcard{position:relative;width:320px;cursor:pointer;transition:.15s;border-radius:4px;}
+  .pcard:hover{transform:scale(1.03);outline:2px solid var(--violet);}
+  .pcard canvas{display:block;width:320px;height:auto;border-radius:4px;}
+  .pcard .dl{position:absolute;top:6px;right:6px;background:rgba(0,0,0,.6);color:#fff;font-size:9px;padding:3px 7px;border-radius:4px;opacity:0;transition:.15s;}
+  .pcard:hover .dl{opacity:1;}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(30px);background:var(--violet);color:#050505;font-size:12px;font-weight:700;letter-spacing:.05em;padding:12px 22px;border-radius:6px;opacity:0;transition:.25s;z-index:50;pointer-events:none;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  .hint{font-size:10px;color:rgba(240,237,230,.4);line-height:1.6;margin-top:9px;}
+  .foot{font-size:10px;color:rgba(240,237,230,.35);letter-spacing:.1em;margin-top:44px;text-align:center;line-height:1.9;}
+  .foot a{color:rgba(240,237,230,.5);text-decoration:none;} .foot a:hover{color:var(--violet);}
+</style></head><body>
+<div class="wrap">
+  <header>
+    <div class="brand"><b>PANELS</b><span class="sub">Human Glitche · el taller</span></div>
+    <div class="nav"><a href="/labs/">← LABS</a><a href="/brand-kit/">BRAND KIT →</a></div>
+  </header>
+  <p class="intro">Generá los <b>paneles "about/info"</b> que van debajo de tu stream (sobre mí, horarios, redes, donar, reglas, specs) como <b>imágenes PNG con tu marca</b>. Editás títulos e íconos, elegís estilo y color, y descargás cada uno — o todos. Ancho 320px (el que pide Twitch), en alta 2×. 100% en tu navegador.</p>
+
+  <div class="layout">
+    <div class="controls">
+      <div class="panel"><h2 class="sec"><b>Estilo</b></h2><div class="chips" id="styles"></div></div>
+      <div class="panel">
+        <h2 class="sec"><b>Color</b> y fuente</h2>
+        <div class="color-row"><input type="color" id="accent" value="#9b6bff"><div class="swatches" id="swatches"></div></div>
+        <div class="fld" style="margin-top:13px"><label>Tipografía del título</label><select id="font"><option value="Bebas Neue">Bebas Neue</option><option value="Anton">Anton</option><option value="Space Mono">Space Mono</option></select></div>
+        <div class="chips"><span class="chip on" id="chkIcon">mostrar íconos</span></div>
+      </div>
+      <div class="panel">
+        <h2 class="sec"><b>Paneles</b></h2>
+        <div class="plist" id="plist"></div>
+        <button class="btn" id="add" style="width:100%;margin-top:10px">+ agregar panel</button>
+        <div class="hint">Tocá el ícono para cambiarlo. El texto es el título del panel. En Twitch, subís cada imagen y ponés el link/descripción abajo.</div>
+      </div>
+    </div>
+
+    <div class="stage-wrap">
+      <div class="stagebar"><span>PREVIEW · <b id="count">0</b> paneles · 320px</span><span>toca uno para bajarlo</span></div>
+      <div class="preview" id="preview"></div>
+      <div class="btnrow" style="margin-top:12px">
+        <button class="btn primary" id="dlAll">⬇ descargar todos (PNG)</button>
+      </div>
+    </div>
+  </div>
+  <div class="foot">HUMAN GLITCHE · el taller · corre 100% client-side<br><a href="/labs/">← volver a LABS</a></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const $=id=>document.getElementById(id);
+const STYLES=[['bar','▬ barra'],['bracket','⌐ brackets'],['glitch','▓ glitch'],['minimal','— minimal']];
+const SWATCHES=['#9b6bff','#b8ff00','#3ad0ff','#ff2d55','#ffb020','#ffffff','#ff5edb'];
+const ICONS=['👤','📅','🔗','💜','📜','🖥️','🎮','🎵','💬','⭐','🏆','📷','🎁','⚡','🔥','☕'];
+
+let cfg={style:'bar',accent:'#9b6bff',font:'Bebas Neue',icons:true};
+let panels=[
+  {ico:'👤',title:'SOBRE MÍ'},{ico:'📅',title:'HORARIOS'},{ico:'🔗',title:'REDES'},
+  {ico:'💜',title:'DONAR'},{ico:'📜',title:'REGLAS'},{ico:'🖥️',title:'SETUP'}
+];
+const W=640,H=180; // 2x de 320x90
+
+function hex2rgb(h){h=h.replace('#','');if(h.length===3)h=h.split('').map(c=>c+c).join('');return[parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)];}
+function drawPanel(ctx,p){
+  const AC=cfg.accent,RGB=hex2rgb(AC),ac=a=>`rgba(${RGB[0]},${RGB[1]},${RGB[2]},${a})`;
+  ctx.clearRect(0,0,W,H);
+  const st=cfg.style;
+  // bg
+  ctx.fillStyle='#0e0f14'; roundRect(ctx,0,0,W,H,14); ctx.fill();
+  const pad=44, iconW=cfg.icons?96:0, tx=pad+iconW;
+  if(st==='bar'){ ctx.fillStyle=ac(.95); roundRect(ctx,0,0,16,H,0); ctx.fillRect(0,0,16,H); }
+  else if(st==='bracket'){ ctx.strokeStyle=ac(.9);ctx.lineWidth=4;const L=40;
+    [[10,10,1,1],[W-10,10,-1,1],[10,H-10,1,-1],[W-10,H-10,-1,-1]].forEach(c=>{ctx.beginPath();ctx.moveTo(c[0]+L*c[2],c[1]);ctx.lineTo(c[0],c[1]);ctx.lineTo(c[0],c[1]+L*c[3]);ctx.stroke();}); }
+  else if(st==='glitch'){ ctx.fillStyle='rgba(255,45,85,.25)';roundRect(ctx,-6,0,W,H,14);ctx.fill();ctx.fillStyle='rgba(58,208,255,.25)';roundRect(ctx,6,0,W,H,14);ctx.fill();ctx.fillStyle='#0e0f14';roundRect(ctx,0,0,W,H,14);ctx.fill();ctx.strokeStyle=ac(.9);ctx.lineWidth=3;roundRect(ctx,0,0,W,H,14);ctx.stroke(); }
+  else if(st==='minimal'){ /* just underline later */ }
+  // icon
+  if(cfg.icons){ ctx.font='54px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(p.ico,pad+40,H/2); }
+  // title
+  ctx.textAlign='left';ctx.textBaseline='middle';
+  ctx.fillStyle=(st==='minimal')?'#f0ede6':ac(.98);
+  if(st==='bar'||st==='bracket'||st==='glitch')ctx.fillStyle='#f0ede6';
+  const fs = cfg.font==='Space Mono'?40:60;
+  ctx.font=`${cfg.font==='Space Mono'?700:400} ${fs}px '${cfg.font}','Bebas Neue',sans-serif`;
+  try{ctx.letterSpacing='2px';}catch(e){}
+  ctx.fillText(p.title.toUpperCase(), tx, H/2 + (st==='minimal'?-6:0));
+  try{ctx.letterSpacing='0px';}catch(e){}
+  if(st==='minimal'){ ctx.strokeStyle=ac(.9);ctx.lineWidth=4;const tw=ctx.measureText(p.title.toUpperCase()).width;ctx.beginPath();ctx.moveTo(tx,H/2+34);ctx.lineTo(tx+tw,H/2+34);ctx.stroke(); }
+}
+function roundRect(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
+
+/* ---------- UI ---------- */
+const stWrap=$('styles');
+STYLES.forEach(([k,label])=>{const c=document.createElement('span');c.className='chip'+(cfg.style===k?' on':'');c.textContent=label;c.dataset.k=k;c.onclick=()=>{cfg.style=k;document.querySelectorAll('#styles .chip').forEach(x=>x.classList.toggle('on',x.dataset.k===k));renderAll();};stWrap.appendChild(c);});
+const swWrap=$('swatches');
+SWATCHES.forEach(c=>{const s=document.createElement('div');s.className='sw';s.style.background=c;s.onclick=()=>{cfg.accent=c;$('accent').value=c;renderAll();};swWrap.appendChild(s);});
+$('accent').oninput=e=>{cfg.accent=e.target.value;renderAll();};
+$('font').onchange=e=>{cfg.font=e.target.value;renderAll();};
+$('chkIcon').onclick=()=>{cfg.icons=!cfg.icons;$('chkIcon').classList.toggle('on',cfg.icons);renderAll();};
+
+function renderList(){
+  const wrap=$('plist');wrap.innerHTML='';
+  panels.forEach((p,i)=>{
+    const row=document.createElement('div');row.className='prow';
+    row.innerHTML=`<div class="pico">${p.ico}</div><input type="text" value="${p.title.replace(/"/g,'&quot;')}"><span class="del">✕</span>`;
+    const [ico,inp,del]=row.children;
+    ico.onclick=()=>{const cur=ICONS.indexOf(p.ico);p.ico=ICONS[(cur+1)%ICONS.length];ico.textContent=p.ico;renderAll();};
+    inp.oninput=e=>{p.title=e.target.value;renderAll();};
+    del.onclick=()=>{if(panels.length>1){panels.splice(i,1);renderList();renderAll();}};
+    wrap.appendChild(row);
+  });
+}
+function renderAll(){
+  const pv=$('preview');pv.innerHTML='';$('count').textContent=panels.length;
+  panels.forEach((p,i)=>{
+    const card=document.createElement('div');card.className='pcard';
+    const cv=document.createElement('canvas');cv.width=W;cv.height=H;drawPanel(cv.getContext('2d'),p);
+    card.appendChild(cv);const dl=document.createElement('div');dl.className='dl';dl.textContent='⬇ bajar';card.appendChild(dl);
+    card.onclick=()=>dlOne(p,i);
+    pv.appendChild(card);
+  });
+}
+function dlOne(p,i){const cv=document.createElement('canvas');cv.width=W;cv.height=H;drawPanel(cv.getContext('2d'),p);cv.toBlob(b=>{const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='panel-'+String(i+1).padStart(2,'0')+'-'+p.title.toLowerCase().replace(/[^a-z0-9]+/g,'-')+'.png';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000);toast('panel "'+p.title+'" ⬇');},'image/png');}
+$('add').onclick=()=>{panels.push({ico:ICONS[panels.length%ICONS.length],title:'NUEVO'});renderList();renderAll();};
+$('dlAll').onclick=async()=>{for(let i=0;i<panels.length;i++){dlOne(panels[i],i);await new Promise(r=>setTimeout(r,350));}toast(panels.length+' paneles descargados ⬇');};
+
+function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),1500);}
+
+// init — esperar fuentes para medir bien
+function boot(){renderList();renderAll();}
+if(document.fonts&&document.fonts.ready){document.fonts.ready.then(renderAll);}
+boot();
+</script>
+</body></html>

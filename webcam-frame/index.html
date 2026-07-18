@@ -1,0 +1,274 @@
+<!doctype html><html lang="es"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>WEBCAM FRAME — Human Glitche · marco animado de cámara para OBS</title>
+<meta name="description" content="Marco animado para tu cámara: brackets HUD, borde neón, marcha de puntos, scan y placa con tu nombre. Exportás un HTML transparente listo para Browser Source en OBS + PNG. 100% en tu navegador.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{ --acid:#b8ff00; --glitch:#ff2d55; --cyan:#3ad0ff; --amber:#ffb020; --violet:#9b6bff; --ink:#f0ede6; --line:rgba(240,237,230,.12); --bg:#050505; }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{min-height:100%;background:var(--bg);color:var(--ink);font-family:'Space Mono',monospace;}
+  body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");z-index:0;pointer-events:none;opacity:.4;}
+  .wrap{position:relative;z-index:1;max-width:1180px;margin:0 auto;padding:28px 22px 90px;}
+  header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;gap:14px;}
+  .brand{font-family:'Bebas Neue',sans-serif;font-size:44px;letter-spacing:.03em;line-height:.82;}
+  .brand b{color:var(--cyan);font-weight:400;}
+  .brand .sub{display:block;font-family:'Space Mono';font-size:10px;letter-spacing:.2em;color:rgba(240,237,230,.45);margin-top:8px;}
+  header .nav{display:flex;flex-direction:column;align-items:flex-end;gap:7px;padding-top:6px;}
+  header a{font-size:10px;letter-spacing:.2em;color:rgba(240,237,230,.4);text-decoration:none;} header a:hover{color:var(--cyan);}
+  .intro{font-size:12px;color:rgba(240,237,230,.55);line-height:1.8;max-width:78ch;margin-bottom:22px;}
+  .intro b{color:var(--cyan);font-weight:400;}
+  .layout{display:grid;grid-template-columns:340px 1fr;gap:22px;align-items:start;}
+  @media(max-width:900px){.layout{grid-template-columns:1fr;}}
+  .panel{border:1px solid var(--line);border-radius:8px;padding:18px 16px;background:rgba(58,208,255,.02);margin-bottom:16px;}
+  h2.sec{font-size:9px;letter-spacing:.22em;color:rgba(240,237,230,.45);text-transform:uppercase;margin:0 0 13px;}
+  h2.sec b{color:var(--cyan);font-weight:400;}
+  .fld{margin-bottom:13px;} .fld:last-child{margin-bottom:0;}
+  .fld label{display:block;font-size:9px;letter-spacing:.16em;color:rgba(240,237,230,.5);text-transform:uppercase;margin-bottom:6px;}
+  .fld input[type=text],.fld select{width:100%;background:#0a0a0a;color:var(--ink);border:1px solid var(--line);font:inherit;font-size:13px;padding:9px 10px;border-radius:5px;}
+  .fld input:focus,.fld select:focus{outline:none;border-color:var(--cyan);}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;}
+  .chip{font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;padding:7px 10px;border:1px solid var(--line);border-radius:20px;cursor:pointer;color:rgba(240,237,230,.55);user-select:none;transition:.15s;}
+  .chip.on{border-color:var(--cyan);color:var(--cyan);background:rgba(58,208,255,.1);}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .btn{background:transparent;border:1px solid var(--line);color:var(--ink);font:inherit;font-size:11px;letter-spacing:.1em;padding:11px 14px;cursor:pointer;border-radius:5px;transition:.15s;text-align:center;}
+  .btn:hover{border-color:var(--cyan);color:var(--cyan);}
+  .btn.primary{background:var(--cyan);color:#050505;border-color:var(--cyan);font-weight:700;}
+  .btn.primary:hover{opacity:.85;color:#050505;}
+  .btnrow{display:flex;gap:8px;flex-wrap:wrap;} .btnrow .btn{flex:1;min-width:120px;}
+  .color-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+  .color-row input[type=color]{width:40px;height:34px;border:1px solid var(--line);border-radius:5px;background:#0a0a0a;cursor:pointer;padding:2px;}
+  .swatches{display:flex;gap:5px;} .sw{width:22px;height:22px;border-radius:50%;cursor:pointer;border:1px solid rgba(255,255,255,.15);} .sw:hover{transform:scale(1.15);}
+  .stage-wrap{position:sticky;top:16px;}
+  .stagebar{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px;font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:rgba(240,237,230,.45);}
+  .stagebar b{color:var(--cyan);font-weight:400;}
+  /* checker + fake cam gradient so ves el marco sobre "algo" */
+  .checker{--c1:#141414;--c2:#0b0b0b;border:1px solid var(--line);border-radius:10px;overflow:hidden;position:relative;
+    background-image:linear-gradient(45deg,var(--c2) 25%,transparent 25%),linear-gradient(-45deg,var(--c2) 25%,transparent 25%),linear-gradient(45deg,transparent 75%,var(--c2) 75%),linear-gradient(-45deg,transparent 75%,var(--c2) 75%);
+    background-size:26px 26px;background-position:0 0,0 13px,13px -13px,-13px 0;background-color:var(--c1);}
+  .checker::before{content:'CÁMARA';position:absolute;inset:8%;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;letter-spacing:.3em;color:rgba(255,255,255,.16);background:radial-gradient(circle at 50% 35%,rgba(90,110,140,.35),rgba(20,24,34,.5));}
+  #stage{display:block;width:100%;height:auto;position:relative;}
+  .gen-row{display:flex;gap:8px;margin-top:10px;} .gen-row .btn{flex:1;}
+  .genbig{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:.05em;}
+  details{border:1px solid var(--line);border-radius:8px;padding:0 16px;margin-top:16px;background:rgba(58,208,255,.02);}
+  details summary{cursor:pointer;padding:15px 0;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--cyan);list-style:none;}
+  details summary::-webkit-details-marker{display:none;}
+  details summary::before{content:'▸ ';} details[open] summary::before{content:'▾ ';}
+  details .body{padding:0 0 18px;font-size:12px;line-height:1.8;color:rgba(240,237,230,.62);}
+  details .body b{color:var(--ink);font-weight:700;} details .body ol{margin:8px 0 0 20px;} details .body li{margin-bottom:6px;}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(30px);background:var(--cyan);color:#050505;font-size:12px;font-weight:700;letter-spacing:.05em;padding:12px 22px;border-radius:6px;opacity:0;transition:.25s;z-index:50;pointer-events:none;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  .foot{font-size:10px;color:rgba(240,237,230,.35);letter-spacing:.1em;margin-top:44px;text-align:center;line-height:1.9;}
+  .foot a{color:rgba(240,237,230,.5);text-decoration:none;} .foot a:hover{color:var(--cyan);}
+</style></head><body>
+<div class="wrap">
+  <header>
+    <div class="brand"><b>WEBCAM FRAME</b><span class="sub">Human Glitche · el taller</span></div>
+    <div class="nav"><a href="/labs/">← LABS</a><a href="/overlay/">OVERLAY →</a></div>
+  </header>
+  <p class="intro">Un <b>marco animado para tu cámara</b> — brackets HUD, borde neón, marcha de puntos, scan que recorre el borde y una <b>placa con tu nombre</b>. El centro es transparente (ahí se ve tu cam). Exportás un <b>HTML transparente listo para Browser Source en OBS</b> + PNG. 100% en tu navegador.</p>
+
+  <div class="layout">
+    <div class="controls">
+      <div class="panel"><h2 class="sec"><b>Estilo</b></h2><div class="chips" id="styles"></div></div>
+
+      <div class="panel">
+        <h2 class="sec"><b>Forma</b> y formato</h2>
+        <div class="two">
+          <div class="fld"><label>Forma</label><select id="shape"><option value="rect">Rectángulo</option><option value="round">Redondeado</option><option value="circle">Círculo</option></select></div>
+          <div class="fld"><label>Aspecto</label><select id="size"><option value="1280x720">16:9 (1280×720)</option><option value="720x720">1:1 (720×720)</option><option value="720x1280">9:16 (720×1280)</option><option value="960x720">4:3 (960×720)</option></select></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2 class="sec"><b>Placa</b> · nombre</h2>
+        <div class="fld"><input type="text" id="name" placeholder="@TU_HANDLE" maxlength="22"></div>
+        <div class="chips">
+          <span class="chip on" id="chkPlate">mostrar placa</span>
+          <span class="chip on" id="chkLive">● LIVE</span>
+          <span class="chip on" id="chkAnim">animación</span>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2 class="sec"><b>Color</b></h2>
+        <div class="color-row"><input type="color" id="accent" value="#3ad0ff"><div class="swatches" id="swatches"></div></div>
+        <div class="chips" style="margin-top:12px"><span class="chip" id="chkGlow">glow</span></div>
+      </div>
+    </div>
+
+    <div class="stage-wrap">
+      <div class="stagebar"><span>PREVIEW · <b id="styleName">BRACKETS</b></span><span id="dims">1280×720</span></div>
+      <div class="checker" id="checker"><canvas id="stage"></canvas></div>
+      <div class="gen-row">
+        <button class="btn" id="freeze">❚❚ pausa</button>
+      </div>
+      <div class="btnrow" style="margin-top:10px">
+        <button class="btn primary" id="dlHtml">⬇ webcam-frame.html (OBS)</button>
+        <button class="btn" id="copyHtml">⧉ copiar HTML</button>
+        <button class="btn" id="dlPng">⬇ PNG transparente</button>
+      </div>
+
+      <details open>
+        <summary>Cómo usarlo en OBS</summary>
+        <div class="body">
+          <ol>
+            <li>Descargá <code>webcam-frame.html</code> y en OBS agregá <b>Navegador → Archivo local</b>, con el mismo tamaño que elegiste.</li>
+            <li>Ponelo <b>arriba</b> de tu fuente de cámara en la lista y alineá/escalá los dos igual (mismo tamaño y posición).</li>
+            <li>El centro es transparente → tu cámara se ve, con el marco encima.</li>
+          </ol>
+          <b>Cámara redonda:</b> elegí forma "Círculo" y recortá tu cam a círculo en OBS (filtro máscara). El <b>PNG</b> sirve si querés un marco fijo sin animación.
+        </div>
+      </details>
+    </div>
+  </div>
+  <div class="foot">HUMAN GLITCHE · el taller · corre 100% client-side<br><a href="/labs/">← volver a LABS</a></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const $=id=>document.getElementById(id);
+
+/* ============================================================
+   WEBCAM FRAME ENGINE — pura, se serializa con toString() al exportar
+   ============================================================ */
+function runFrame(canvas, CFG, opts){
+  opts=opts||{};
+  const animate=opts.animate!==false;
+  const ctx=canvas.getContext('2d');
+  const W=CFG.w,H=CFG.h; canvas.width=W; canvas.height=H;
+  const AC=CFG.accent||'#3ad0ff';
+  const min=Math.min(W,H), u=min/720;
+  function hex2rgb(h){h=h.replace('#','');if(h.length===3)h=h.split('').map(c=>c+c).join('');return[parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)];}
+  const RGB=hex2rgb(AC); const ac=a=>`rgba(${RGB[0]},${RGB[1]},${RGB[2]},${a})`;
+  function setLS(px){try{ctx.letterSpacing=(px*u).toFixed(1)+'px';}catch(e){}}
+  const mono=(s,w)=>`${w||400} ${Math.round(s*u)}px 'Space Mono',ui-monospace,monospace`;
+  const style=CFG.style||'brackets', shape=CFG.shape||'rect';
+  const inset=Math.round(6*u), R=Math.round(22*u);
+  const bx=inset, by=inset, bw=W-inset*2, bh=H-inset*2;
+
+  function pathBody(){
+    ctx.beginPath();
+    if(shape==='circle'){ const r=Math.min(bw,bh)/2; ctx.arc(W/2,H/2,r,0,6.283); }
+    else if(shape==='round'){ roundRect(bx,by,bw,bh,R); }
+    else { ctx.rect(bx,by,bw,bh); }
+  }
+  function roundRect(x,y,w,h,r){ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
+
+  function glow(on){ if(CFG.glow&&on){ctx.shadowColor=ac(.9);ctx.shadowBlur=18*u;} else {ctx.shadowBlur=0;} }
+
+  // perimeter point for scan (rect/round approx by rect perimeter)
+  function perim(t){
+    if(shape==='circle'){const r=Math.min(bw,bh)/2,a=t*6.283-1.57;return [W/2+Math.cos(a)*r,H/2+Math.sin(a)*r];}
+    const P=2*(bw+bh); let d=(t%1)*P;
+    if(d<bw)return[bx+d,by]; d-=bw;
+    if(d<bh)return[bx+bw,by+d]; d-=bh;
+    if(d<bw)return[bx+bw-d,by+bh]; d-=bw;
+    return[bx,by+bh-d];
+  }
+
+  function draw(t){
+    ctx.clearRect(0,0,W,H);
+    ctx.lineJoin='round';
+
+    if(style==='border'||style==='neon'){
+      glow(true); ctx.strokeStyle=ac(.95); ctx.lineWidth=(style==='neon'?4:3)*u; pathBody(); ctx.stroke();
+      if(style==='neon'){ctx.globalAlpha=.4;ctx.lineWidth=9*u;ctx.stroke();ctx.globalAlpha=1;}
+      glow(false);
+    } else if(style==='dashes'){
+      glow(true); ctx.strokeStyle=ac(.95); ctx.lineWidth=3*u; ctx.setLineDash([16*u,12*u]);
+      ctx.lineDashOffset=-(t*60*u)% (28*u); pathBody(); ctx.stroke(); ctx.setLineDash([]); glow(false);
+    } else if(style==='ticks'){
+      // faint border + ruler ticks + corner brackets
+      ctx.strokeStyle=ac(.3);ctx.lineWidth=1.5*u;pathBody();ctx.stroke();
+      ctx.strokeStyle=ac(.6);ctx.lineWidth=1.5*u;const step=min*0.05;
+      for(let x=bx+step;x<bx+bw;x+=step){ctx.beginPath();ctx.moveTo(x,by);ctx.lineTo(x,by+8*u);ctx.moveTo(x,by+bh);ctx.lineTo(x,by+bh-8*u);ctx.stroke();}
+      for(let y=by+step;y<by+bh;y+=step){ctx.beginPath();ctx.moveTo(bx,y);ctx.lineTo(bx+8*u,y);ctx.moveTo(bx+bw,y);ctx.lineTo(bx+bw-8*u,y);ctx.stroke();}
+      corners();
+    } else { // brackets (default)
+      corners();
+    }
+
+    // corner brackets helper used by brackets/ticks
+    function corners(){
+      const L=min*0.09; ctx.strokeStyle=ac(.95); ctx.lineWidth=3.5*u; glow(true);
+      const cs=[[bx,by,1,1],[bx+bw,by,-1,1],[bx,by+bh,1,-1],[bx+bw,by+bh,-1,-1]];
+      cs.forEach(c=>{ctx.beginPath();ctx.moveTo(c[0]+L*c[2],c[1]);ctx.lineTo(c[0],c[1]);ctx.lineTo(c[0],c[1]+L*c[3]);ctx.stroke();});
+      glow(false);
+    }
+    // (call corners after definition for brackets/ticks handled above via hoisting)
+
+    // animated scan dot traveling the border
+    if(CFG.animate && style!=='dashes'){
+      const [sx,sy]=perim((t*0.12)%1);
+      glow(true); ctx.fillStyle=ac(1); ctx.beginPath(); ctx.arc(sx,sy,4*u,0,6.283); ctx.fill();
+      const [sx2,sy2]=perim((t*0.12+0.5)%1); ctx.beginPath(); ctx.arc(sx2,sy2,3*u,0,6.283); ctx.fill(); glow(false);
+    }
+
+    // nameplate
+    if(CFG.plate && CFG.name){
+      const py=shape==='circle'? H/2+Math.min(bw,bh)/2-min*0.02 : by+bh-min*0.02;
+      ctx.font=mono(15,700); setLS(2); const tw=ctx.measureText(CFG.name).width;
+      let px=W/2; ctx.textAlign='center'; ctx.textBaseline='middle';
+      const liveW=CFG.live? min*0.05:0;
+      const pw=tw+min*0.08+liveW, ph=min*0.05, plx=W/2-pw/2, ply=py-ph/2;
+      ctx.fillStyle='rgba(8,9,12,0.82)'; ctx.beginPath(); roundRect(plx,ply,pw,ph,ph/2); ctx.fill();
+      ctx.strokeStyle=ac(.7);ctx.lineWidth=1.5*u;ctx.stroke();
+      let tx=W/2 - (liveW/2);
+      if(CFG.live){const dx=plx+min*0.03; const blink=Math.sin(t*4)>-.3; ctx.fillStyle=blink?'rgba(255,45,85,.95)':'rgba(255,45,85,.3)'; ctx.beginPath();ctx.arc(dx,py,4.5*u,0,6.283);ctx.fill(); tx=W/2+min*0.02;}
+      ctx.fillStyle=ac(.98); ctx.font=mono(15,700); ctx.textAlign='center'; ctx.fillText(CFG.name, tx, py);
+    }
+  }
+
+  let raf=0,running=true,t0=null;
+  function loop(ts){if(!running)return;if(t0==null)t0=ts;draw((ts-t0)/1000);raf=requestAnimationFrame(loop);}
+  draw(0);
+  if(animate) raf=requestAnimationFrame(loop);
+  return {stop(){running=false;cancelAnimationFrame(raf);}, redraw(t){draw(t||0);}};
+}
+
+/* ============================================================
+   APP / UI
+   ============================================================ */
+const STYLES=[['brackets','⌐ brackets'],['border','▭ borde'],['neon','✦ neón'],['dashes','┈ marcha'],['ticks','▤ ticks']];
+const SWATCHES=['#3ad0ff','#b8ff00','#ff2d55','#ffb020','#9b6bff','#ffffff','#ff5edb'];
+let cfg={w:1280,h:720,accent:'#3ad0ff',style:'brackets',shape:'rect',name:'@TU_HANDLE',plate:true,live:true,animate:true,glow:false};
+let handle=null,frozen=false;
+
+const stWrap=$('styles');
+STYLES.forEach(([k,label])=>{const c=document.createElement('span');c.className='chip'+(cfg.style===k?' on':'');c.textContent=label;c.dataset.k=k;c.onclick=()=>{cfg.style=k;document.querySelectorAll('#styles .chip').forEach(x=>x.classList.toggle('on',x.dataset.k===k));$('styleName').textContent=label.split(' ')[1].toUpperCase();restart();};stWrap.appendChild(c);});
+const swWrap=$('swatches');
+SWATCHES.forEach(c=>{const s=document.createElement('div');s.className='sw';s.style.background=c;s.onclick=()=>{cfg.accent=c;$('accent').value=c;restart();};swWrap.appendChild(s);});
+
+function readAll(){cfg.name=$('name').value.trim()||'@TU_HANDLE';cfg.shape=$('shape').value;const[w,h]=$('size').value.split('x').map(Number);cfg.w=w;cfg.h=h;$('dims').textContent=w+'×'+h;
+  const ch=$('checker');ch.style.aspectRatio=w+'/'+h;}
+function restart(){readAll();if(handle)handle.stop();handle=runFrame($('stage'),{...cfg},{animate:!frozen});if(frozen)handle.redraw(1.0);}
+
+$('shape').onchange=restart;$('size').onchange=restart;
+$('name').oninput=restart;
+$('accent').oninput=e=>{cfg.accent=e.target.value;restart();};
+$('chkPlate').onclick=()=>{cfg.plate=!cfg.plate;$('chkPlate').classList.toggle('on',cfg.plate);restart();};
+$('chkLive').onclick=()=>{cfg.live=!cfg.live;$('chkLive').classList.toggle('on',cfg.live);restart();};
+$('chkAnim').onclick=()=>{cfg.animate=!cfg.animate;$('chkAnim').classList.toggle('on',cfg.animate);restart();};
+$('chkGlow').onclick=()=>{cfg.glow=!cfg.glow;$('chkGlow').classList.toggle('on',cfg.glow);restart();};
+$('freeze').onclick=()=>{frozen=!frozen;$('freeze').classList.toggle('on',frozen);$('freeze').textContent=frozen?'▶ reanudar':'❚❚ pausa';restart();};
+
+function buildHTML(){readAll();const c={...cfg};
+  return ['<!doctype html><html><head><meta charset="utf-8"><title>HG Webcam Frame</title>',
+   '<link rel="preconnect" href="https://fonts.googleapis.com">',
+   '<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">',
+   '<style>html,body{margin:0;height:100%;background:transparent;overflow:hidden}canvas{position:fixed;inset:0;width:100vw;height:100vh}</style>',
+   '</head><body><canvas id="c"></canvas><script>',
+   'const CFG='+JSON.stringify(c)+';',
+   'const runFrame='+runFrame.toString()+';',
+   'runFrame(document.getElementById("c"),CFG,{animate:'+(cfg.animate)+'});',
+   '<\/script></body></html>'].join('\n');}
+function download(name,content){const b=new Blob([content],{type:'text/html'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000);}
+$('dlHtml').onclick=()=>{download('hg-webcam-frame.html',buildHTML());toast('webcam-frame.html ⬇');};
+$('copyHtml').onclick=async()=>{try{await navigator.clipboard.writeText(buildHTML());toast('HTML copiado ⧉');}catch(e){toast('no se pudo copiar');}};
+$('dlPng').onclick=()=>{const off=document.createElement('canvas');const h=runFrame(off,{...cfg},{animate:false});h.redraw(1.0);h.stop();off.toBlob(b=>{const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='hg-webcam-frame.png';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000);toast('PNG transparente ⬇');},'image/png');};
+
+function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),1500);}
+restart();
+</script>
+</body></html>
