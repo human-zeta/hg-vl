@@ -1,0 +1,264 @@
+<!doctype html><html lang="es"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TEST PATTERNS — Human Glitche · cartas de ajuste para calibrar</title>
+<meta name="description" content="Cartas de ajuste para calibrar proyectores y pantallas: barras SMPTE, grilla de convergencia, foco, geometría, escala de grises, campos sólidos para píxeles muertos y más. Pantalla completa + detección de resolución y refresh. 100% en tu navegador.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{ --acid:#b8ff00; --glitch:#ff2d55; --cyan:#3ad0ff; --ink:#f0ede6; --line:rgba(240,237,230,.12); --bg:#050505; }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{min-height:100%;background:var(--bg);color:var(--ink);font-family:'Space Mono',monospace;}
+  body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");z-index:0;pointer-events:none;opacity:.4;}
+  .wrap{position:relative;z-index:1;max-width:1180px;margin:0 auto;padding:28px 22px 90px;}
+  header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;gap:14px;}
+  .brand{font-family:'Bebas Neue',sans-serif;font-size:44px;letter-spacing:.03em;line-height:.82;}
+  .brand b{color:var(--acid);font-weight:400;}
+  .brand .sub{display:block;font-family:'Space Mono';font-size:10px;letter-spacing:.2em;color:rgba(240,237,230,.45);margin-top:8px;}
+  header .nav{display:flex;flex-direction:column;align-items:flex-end;gap:7px;padding-top:6px;}
+  header a{font-size:10px;letter-spacing:.2em;color:rgba(240,237,230,.4);text-decoration:none;} header a:hover{color:var(--acid);}
+  .intro{font-size:12px;color:rgba(240,237,230,.55);line-height:1.8;max-width:78ch;margin-bottom:22px;}
+  .intro b{color:var(--acid);font-weight:400;}
+  .layout{display:grid;grid-template-columns:320px 1fr;gap:22px;align-items:start;}
+  @media(max-width:900px){.layout{grid-template-columns:1fr;}}
+  .panel{border:1px solid var(--line);border-radius:8px;padding:18px 16px;background:rgba(184,255,0,.015);margin-bottom:16px;}
+  h2.sec{font-size:9px;letter-spacing:.22em;color:rgba(240,237,230,.45);text-transform:uppercase;margin:0 0 13px;}
+  h2.sec b{color:var(--acid);font-weight:400;}
+  .plist{display:flex;flex-direction:column;gap:4px;}
+  .pbtn{display:flex;align-items:center;gap:10px;text-align:left;background:rgba(10,10,10,.4);border:1px solid transparent;border-left:2px solid transparent;border-radius:6px;padding:9px 11px;cursor:pointer;color:rgba(240,237,230,.7);font:inherit;font-size:11.5px;transition:.14s;}
+  .pbtn:hover{background:rgba(184,255,0,.06);color:var(--ink);}
+  .pbtn.on{background:rgba(184,255,0,.1);border-color:rgba(184,255,0,.3);border-left-color:var(--acid);color:var(--ink);}
+  .pbtn .pi{font-size:14px;width:18px;text-align:center;flex:0 0 auto;}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;}
+  .chip{font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;padding:7px 10px;border:1px solid var(--line);border-radius:20px;cursor:pointer;color:rgba(240,237,230,.55);user-select:none;transition:.15s;}
+  .chip.on{border-color:var(--acid);color:var(--acid);background:rgba(184,255,0,.1);}
+  .fld{margin-bottom:13px;} .fld label{display:block;font-size:9px;letter-spacing:.16em;color:rgba(240,237,230,.5);text-transform:uppercase;margin-bottom:6px;}
+  .fld select{width:100%;background:#0a0a0a;color:var(--ink);border:1px solid var(--line);font:inherit;font-size:13px;padding:9px 10px;border-radius:5px;}
+  .btn{background:transparent;border:1px solid var(--line);color:var(--ink);font:inherit;font-size:11px;letter-spacing:.1em;padding:11px 14px;cursor:pointer;border-radius:5px;transition:.15s;text-align:center;}
+  .btn:hover{border-color:var(--acid);color:var(--acid);}
+  .btn.primary{background:var(--acid);color:#050505;border-color:var(--acid);font-weight:700;}
+  .btn.primary:hover{opacity:.85;color:#050505;}
+  .btnrow{display:flex;gap:8px;flex-wrap:wrap;} .btnrow .btn{flex:1;min-width:110px;}
+  .genbig{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:.05em;}
+  .stage-wrap{position:sticky;top:16px;}
+  .stagebar{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px;font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:rgba(240,237,230,.45);}
+  .stagebar b{color:var(--acid);font-weight:400;}
+  .frameborder{border:1px solid var(--line);border-radius:10px;overflow:hidden;position:relative;background:#000;}
+  #stage{display:block;width:100%;height:auto;}
+  .info{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px;}
+  .info div{background:rgba(10,10,10,.5);border:1px solid var(--line);border-radius:6px;padding:9px 10px;}
+  .info div span{display:block;font-size:8px;letter-spacing:.16em;text-transform:uppercase;color:rgba(240,237,230,.4);margin-bottom:3px;}
+  .info div b{font-family:'Bebas Neue',sans-serif;font-size:19px;color:var(--cyan);font-weight:400;letter-spacing:.03em;}
+  .hint{font-size:10px;color:rgba(240,237,230,.4);margin-top:9px;line-height:1.6;}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(30px);background:var(--acid);color:#050505;font-size:12px;font-weight:700;letter-spacing:.05em;padding:12px 22px;border-radius:6px;opacity:0;transition:.25s;z-index:50;pointer-events:none;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  .foot{font-size:10px;color:rgba(240,237,230,.35);letter-spacing:.1em;margin-top:44px;text-align:center;line-height:1.9;}
+  .foot a{color:rgba(240,237,230,.5);text-decoration:none;} .foot a:hover{color:var(--acid);}
+  /* fullscreen overlay */
+  #fs{position:fixed;inset:0;z-index:100;background:#000;display:none;}
+  #fs.on{display:block;}
+  #fsCanvas{width:100vw;height:100vh;display:block;}
+  #fsHud{position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:101;display:none;gap:8px;background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.2);border-radius:8px;padding:8px 12px;backdrop-filter:blur(4px);}
+  #fs:hover #fsHud{display:flex;}
+  #fsHud button{background:transparent;border:1px solid rgba(255,255,255,.25);color:#fff;font:inherit;font-size:11px;padding:7px 12px;border-radius:5px;cursor:pointer;}
+  #fsHud button:hover{border-color:var(--acid);color:var(--acid);}
+  #fsHud .lbl{color:rgba(255,255,255,.6);font-size:10px;align-self:center;letter-spacing:.1em;}
+</style></head><body>
+<div class="wrap">
+  <header>
+    <div class="brand"><b>TEST PATTERNS</b><span class="sub">Human Glitche · el taller</span></div>
+    <div class="nav"><a href="/labs/">← LABS</a><a href="/smpte/">SMPTE →</a></div>
+  </header>
+  <p class="intro">Cartas de ajuste para <b>calibrar proyectores y pantallas</b> en el venue: barras SMPTE, grilla de convergencia, foco, geometría/overscan, escala de grises, campos sólidos para <b>píxeles muertos</b> y más. Mandás a <b>pantalla completa</b> sobre la salida real, con detección de resolución y refresh. + PNG. 100% en tu navegador.</p>
+
+  <div class="layout">
+    <div class="controls">
+      <div class="panel"><h2 class="sec"><b>Carta</b></h2><div class="plist" id="plist"></div></div>
+      <div class="panel">
+        <h2 class="sec"><b>Overlays</b></h2>
+        <div class="chips">
+          <span class="chip" id="chkSafe">áreas seguras</span>
+          <span class="chip" id="chkCross">centro / cruz</span>
+          <span class="chip on" id="chkInfo">datos de pantalla</span>
+        </div>
+      </div>
+      <div class="panel">
+        <h2 class="sec"><b>Campo sólido</b> · píxeles</h2>
+        <div class="chips" id="fields"></div>
+        <div class="hint">Para el patrón "campo sólido": buscás píxeles muertos/atascados y uniformidad. También hay un modo que cicla R/G/B/W/K solo.</div>
+      </div>
+      <div class="panel">
+        <h2 class="sec"><b>Salida PNG</b></h2>
+        <div class="fld"><label>Resolución</label><select id="size"><option value="auto">Auto (tu pantalla)</option><option value="1920x1080">1920 × 1080</option><option value="3840x2160">3840 × 2160 (4K)</option><option value="1280x720">1280 × 720</option></select></div>
+      </div>
+    </div>
+
+    <div class="stage-wrap">
+      <div class="stagebar"><span>PREVIEW · <b id="patName">SMPTE</b></span><span id="rez">—</span></div>
+      <div class="frameborder"><canvas id="stage"></canvas></div>
+      <div class="btnrow" style="margin-top:12px">
+        <button class="btn primary genbig" id="full">⛶ PANTALLA COMPLETA</button>
+        <button class="btn" id="cycle">↻ ciclar R/G/B/W/K</button>
+        <button class="btn" id="dlPng">⬇ PNG</button>
+      </div>
+      <div class="info">
+        <div><span>Resolución</span><b id="iRes">—</b></div>
+        <div><span>Aspecto</span><b id="iAsp">—</b></div>
+        <div><span>Refresh</span><b id="iRef">— Hz</b></div>
+      </div>
+      <div class="hint">Tip para un show: extendé el escritorio al proyector, arrastrá esta ventana ahí, <b>PANTALLA COMPLETA</b> y ajustás foco/convergencia/geometría desde el proyector. Movés de carta con ← → y salís con Esc.</div>
+    </div>
+  </div>
+  <div class="foot">HUMAN GLITCHE · el taller · corre 100% client-side<br><a href="/labs/">← volver a LABS</a></div>
+</div>
+
+<div id="fs"><canvas id="fsCanvas"></canvas>
+  <div id="fsHud"><span class="lbl" id="fsLbl">SMPTE</span><button id="fsPrev">← ant</button><button id="fsNext">sig →</button><button id="fsExit">✕ salir (Esc)</button></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const $=id=>document.getElementById(id);
+const PATTERNS=[
+  ['smpte','▤','Barras SMPTE'],
+  ['bars','▥','Barras de color'],
+  ['grays','◫','Escala de grises'],
+  ['pluge','◐','PLUGE (negros)'],
+  ['grid','▦','Convergencia (grilla)'],
+  ['focus','◉','Foco / nitidez'],
+  ['geometry','⬚','Geometría / overscan'],
+  ['solid','■','Campo sólido'],
+  ['checker','▚','Damero'],
+  ['lines','☰','Líneas 1px (moiré)'],
+];
+const FIELDS=[['#ffffff','blanco'],['#ff0000','rojo'],['#00ff00','verde'],['#0000ff','azul'],['#000000','negro'],['#808080','gris']];
+
+let cur='smpte', field='#ffffff', cycleTimer=null;
+let overlays={safe:false,cross:false,info:true};
+
+/* ---------- draw patterns ---------- */
+function draw(ctx,W,H,pat){
+  ctx.clearRect(0,0,W,H);
+  if(pat==='smpte') drawSMPTE(ctx,W,H);
+  else if(pat==='bars') drawBars(ctx,W,H);
+  else if(pat==='grays') drawGrays(ctx,W,H);
+  else if(pat==='pluge') drawPluge(ctx,W,H);
+  else if(pat==='grid') drawGrid(ctx,W,H);
+  else if(pat==='focus') drawFocus(ctx,W,H);
+  else if(pat==='geometry') drawGeometry(ctx,W,H);
+  else if(pat==='solid'){ctx.fillStyle=field;ctx.fillRect(0,0,W,H);}
+  else if(pat==='checker') drawChecker(ctx,W,H);
+  else if(pat==='lines') drawLines(ctx,W,H);
+  // overlays
+  if(overlays.safe) drawSafe(ctx,W,H);
+  if(overlays.cross) drawCross(ctx,W,H);
+  if(overlays.info) drawInfo(ctx,W,H);
+}
+function drawBars(ctx,W,H){const cols=['#ffffff','#ffff00','#00ffff','#00ff00','#ff00ff','#ff0000','#0000ff','#000000'];const bw=W/cols.length;cols.forEach((c,i)=>{ctx.fillStyle=c;ctx.fillRect(i*bw,0,bw+1,H);});}
+function drawSMPTE(ctx,W,H){
+  // top 67%: 7 color bars at 75%
+  const top=['#c0c0c0','#c0c000','#00c0c0','#00c000','#c000c0','#c00000','#0000c0'];
+  const bw=W/7, h1=H*0.67;
+  top.forEach((c,i)=>{ctx.fillStyle=c;ctx.fillRect(i*bw,0,bw+1,h1);});
+  // middle 8%: reverse blue castellation
+  const h2=H*0.075, y2=h1; const mid=['#0000c0','#131313','#c000c0','#131313','#00c0c0','#131313','#c0c0c0'];
+  mid.forEach((c,i)=>{ctx.fillStyle=c;ctx.fillRect(i*bw,y2,bw+1,h2);});
+  // bottom: -I, white, +Q, black, PLUGE
+  const y3=y2+h2, h3=H-y3;
+  ctx.fillStyle='#00214c';ctx.fillRect(0,y3,W*0.2083,h3);
+  ctx.fillStyle='#ffffff';ctx.fillRect(W*0.2083,y3,W*0.2083,h3);
+  ctx.fillStyle='#32006a';ctx.fillRect(W*0.4166,y3,W*0.2083,h3);
+  ctx.fillStyle='#131313';ctx.fillRect(W*0.625,y3,W*0.1666,h3);
+  // pluge sub-black / black / super-black
+  const px=W*0.7916, pw=W*0.2084/3;
+  ctx.fillStyle='#0a0a0a';ctx.fillRect(px,y3,pw,h3);
+  ctx.fillStyle='#131313';ctx.fillRect(px+pw,y3,pw,h3);
+  ctx.fillStyle='#1c1c1c';ctx.fillRect(px+pw*2,y3,pw,h3);
+}
+function drawGrays(ctx,W,H){const n=11;const bw=W/n;for(let i=0;i<n;i++){const v=Math.round(i/(n-1)*255);ctx.fillStyle=`rgb(${v},${v},${v})`;ctx.fillRect(i*bw,0,bw+1,H);}
+  // continuous ramp strip at bottom
+  const g=ctx.createLinearGradient(0,0,W,0);g.addColorStop(0,'#000');g.addColorStop(1,'#fff');ctx.fillStyle=g;ctx.fillRect(0,H*0.8,W,H*0.2);}
+function drawPluge(ctx,W,H){ctx.fillStyle='#0d0d0d';ctx.fillRect(0,0,W,H);
+  const bars=[['#000000',''],['#0a0a0a',''],['#141414',''],['#1e1e1e','']];const bw=W*0.11;const x0=W*0.28;
+  bars.forEach((b,i)=>{ctx.fillStyle=b[0];ctx.fillRect(x0+i*bw,H*0.3,bw*0.85,H*0.4);});
+  ctx.fillStyle='#3a3a3a';ctx.font=`${Math.round(H*0.02)}px 'Space Mono',monospace`;ctx.textAlign='center';ctx.fillText('subís brillo hasta apenas ver la 2da barra',W/2,H*0.78);}
+function drawGrid(ctx,W,H){ctx.fillStyle='#000';ctx.fillRect(0,0,W,H);ctx.strokeStyle='#fff';ctx.lineWidth=Math.max(1,W/1920);
+  const step=Math.round(W/32);
+  ctx.beginPath();for(let x=0;x<=W;x+=step){ctx.moveTo(x,0);ctx.lineTo(x,H);}for(let y=0;y<=H;y+=step){ctx.moveTo(0,y);ctx.lineTo(W,y);}ctx.stroke();
+  // border
+  ctx.lineWidth=Math.max(2,W/640);ctx.strokeRect(0,0,W,H);
+  // diagonals
+  ctx.strokeStyle='rgba(255,255,255,.4)';ctx.lineWidth=Math.max(1,W/1920);ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(W,H);ctx.moveTo(W,0);ctx.lineTo(0,H);ctx.stroke();}
+function drawFocus(ctx,W,H){ctx.fillStyle='#808080';ctx.fillRect(0,0,W,H);
+  // fine crosshatch + concentric circles for focus
+  ctx.strokeStyle='#000';ctx.lineWidth=1;const s=Math.max(2,Math.round(W/400));
+  for(let x=0;x<W;x+=s*2){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
+  ctx.strokeStyle='#fff';for(let r=W*0.06;r<W*0.5;r+=W*0.06){ctx.beginPath();ctx.arc(W/2,H/2,r,0,6.283);ctx.stroke();}
+  // corner resolution wedges
+  [[0.12,0.12],[0.88,0.12],[0.12,0.88],[0.88,0.88]].forEach(p=>{const cx=p[0]*W,cy=p[1]*H;ctx.strokeStyle='#000';for(let i=0;i<10;i++){const g=1+i*0.6;ctx.lineWidth=g;ctx.beginPath();ctx.moveTo(cx-30+i*7,cy-25);ctx.lineTo(cx-30+i*7,cy+25);ctx.stroke();}});}
+function drawGeometry(ctx,W,H){ctx.fillStyle='#000';ctx.fillRect(0,0,W,H);ctx.strokeStyle='#fff';
+  ctx.lineWidth=Math.max(2,W/640);ctx.strokeRect(W*0.01,H*0.01,W*0.98,H*0.98);
+  // perfect circle (debe verse redondo si el aspecto está bien)
+  const r=Math.min(W,H)*0.45;ctx.beginPath();ctx.arc(W/2,H/2,r,0,6.283);ctx.stroke();
+  ctx.beginPath();ctx.arc(W/2,H/2,r*0.5,0,6.283);ctx.stroke();
+  // center cross + safe circles at corners
+  ctx.beginPath();ctx.moveTo(W/2,0);ctx.lineTo(W/2,H);ctx.moveTo(0,H/2);ctx.lineTo(W,H/2);ctx.stroke();
+  [[0.06,0.06],[0.94,0.06],[0.06,0.94],[0.94,0.94]].forEach(p=>{ctx.beginPath();ctx.arc(p[0]*W,p[1]*H,Math.min(W,H)*0.04,0,6.283);ctx.stroke();});}
+function drawChecker(ctx,W,H){const n=16,cw=W/n,ch=H/Math.round(n*H/W);const rows=Math.round(H/ch);for(let r=0;r<rows;r++)for(let c=0;c<n;c++){ctx.fillStyle=(r+c)%2?'#fff':'#000';ctx.fillRect(c*cw,r*ch,cw+1,ch+1);}}
+function drawLines(ctx,W,H){for(let y=0;y<H;y+=2){ctx.fillStyle=(y/2|0)%2?'#fff':'#000';ctx.fillRect(0,y,W,1);}
+  ctx.fillStyle='#ff0000';ctx.fillRect(W*0.7,0,1,H); // reference vertical
+  for(let x=W/2;x<W*0.65;x+=2){ctx.fillStyle=((x/2|0)%2)?'#fff':'#000';ctx.fillRect(x,H*0.3,1,H*0.4);}}
+function drawSafe(ctx,W,H){ctx.strokeStyle='rgba(255,80,80,.8)';ctx.lineWidth=Math.max(1,W/960);ctx.setLineDash([W/120,W/120]);
+  ctx.strokeRect(W*0.05,H*0.05,W*0.9,H*0.9);ctx.strokeStyle='rgba(255,220,80,.8)';ctx.strokeRect(W*0.1,H*0.1,W*0.8,H*0.8);ctx.setLineDash([]);}
+function drawCross(ctx,W,H){ctx.strokeStyle='rgba(0,255,180,.9)';ctx.lineWidth=Math.max(1,W/960);const g=W*0.02;
+  ctx.beginPath();ctx.moveTo(W/2-W*0.06,H/2);ctx.lineTo(W/2-g,H/2);ctx.moveTo(W/2+g,H/2);ctx.lineTo(W/2+W*0.06,H/2);ctx.moveTo(W/2,H/2-W*0.06);ctx.lineTo(W/2,H/2-g);ctx.moveTo(W/2,H/2+g);ctx.lineTo(W/2,H/2+W*0.06);ctx.stroke();
+  ctx.beginPath();ctx.arc(W/2,H/2,W*0.03,0,6.283);ctx.stroke();}
+function drawInfo(ctx,W,H){const s=Math.max(11,Math.round(H*0.018));ctx.font=`700 ${s}px 'Space Mono',monospace`;ctx.textAlign='left';ctx.textBaseline='top';
+  const txt=`${W} × ${H}  ·  ${aspect(W,H)}  ·  ${refreshHz||'—'} Hz`;
+  const pad=s*0.6;const tw=ctx.measureText(txt).width;
+  ctx.fillStyle='rgba(0,0,0,.55)';ctx.fillRect(W*0.5-tw/2-pad,H*0.92,tw+pad*2,s+pad*1.4);
+  ctx.fillStyle='#b8ff00';ctx.fillText(txt,W*0.5-tw/2,H*0.92+pad*0.7);}
+function aspect(W,H){const g=(a,b)=>b?g(b,a%b):a;const d=g(W,H);const r=`${W/d}:${H/d}`;const common={'16:9':'16:9','4:3':'4:3','21:9':'21:9','1:1':'1:1'};return common[r]|| (W/H).toFixed(2)+':1';}
+
+/* ---------- refresh detection ---------- */
+let refreshHz=0;(function(){let last=performance.now(),samples=[];function tick(t){const dt=t-last;last=t;if(dt>0&&dt<100)samples.push(1000/dt);if(samples.length>60){refreshHz=Math.round(samples.slice(-40).reduce((a,b)=>a+b,0)/40);$('iRef').textContent=refreshHz+' Hz';samples=samples.slice(-40);}requestAnimationFrame(tick);}requestAnimationFrame(tick);})();
+
+/* ---------- preview ---------- */
+function outSize(){const v=$('size').value;if(v==='auto')return[Math.round(screen.width*devicePixelRatio),Math.round(screen.height*devicePixelRatio)];return v.split('x').map(Number);}
+function preview(){const [W,H]=[1920,1080];stage.width=W;stage.height=H;draw(stage.getContext('2d'),W,H,cur);
+  $('rez').textContent=W+'×'+H;$('iRes').textContent=screen.width*devicePixelRatio+'×'+screen.height*devicePixelRatio;$('iAsp').textContent=aspect(screen.width,screen.height);}
+const stage=$('stage');
+
+const plist=$('plist');
+PATTERNS.forEach(([k,ic,label])=>{const b=document.createElement('button');b.className='pbtn'+(cur===k?' on':'');b.dataset.k=k;b.innerHTML=`<span class="pi">${ic}</span>${label}`;b.onclick=()=>setPat(k);plist.appendChild(b);});
+function setPat(k){cur=k;document.querySelectorAll('.pbtn').forEach(b=>b.classList.toggle('on',b.dataset.k===k));$('patName').textContent=(PATTERNS.find(p=>p[0]===k)[2]).toUpperCase();stopCycle();preview();if($('fs').classList.contains('on'))drawFS();$('fsLbl').textContent=PATTERNS.find(p=>p[0]===k)[2];}
+const fieldsWrap=$('fields');
+FIELDS.forEach(([c,n])=>{const chip=document.createElement('span');chip.className='chip'+(field===c?' on':'');chip.textContent=n;chip.style.borderLeft=`10px solid ${c}`;chip.onclick=()=>{field=c;document.querySelectorAll('#fields .chip').forEach(x=>x.classList.remove('on'));chip.classList.add('on');if(cur!=='solid')setPat('solid');else{preview();if($('fs').classList.contains('on'))drawFS();}};fieldsWrap.appendChild(chip);});
+
+$('chkSafe').onclick=()=>{overlays.safe=!overlays.safe;$('chkSafe').classList.toggle('on',overlays.safe);preview();if($('fs').classList.contains('on'))drawFS();};
+$('chkCross').onclick=()=>{overlays.cross=!overlays.cross;$('chkCross').classList.toggle('on',overlays.cross);preview();if($('fs').classList.contains('on'))drawFS();};
+$('chkInfo').onclick=()=>{overlays.info=!overlays.info;$('chkInfo').classList.toggle('on',overlays.info);preview();if($('fs').classList.contains('on'))drawFS();};
+
+/* ---------- fullscreen ---------- */
+const fs=$('fs'),fsc=$('fsCanvas');
+function drawFS(){const W=Math.round(innerWidth*devicePixelRatio),H=Math.round(innerHeight*devicePixelRatio);fsc.width=W;fsc.height=H;draw(fsc.getContext('2d'),W,H,cur);}
+function enterFS(){fs.classList.add('on');drawFS();if(fs.requestFullscreen)fs.requestFullscreen().catch(()=>{});}
+function exitFS(){fs.classList.remove('on');stopCycle();if(document.fullscreenElement)document.exitFullscreen().catch(()=>{});}
+$('full').onclick=enterFS;$('fsExit').onclick=exitFS;
+$('fsPrev').onclick=()=>navPat(-1);$('fsNext').onclick=()=>navPat(1);
+function navPat(d){const i=PATTERNS.findIndex(p=>p[0]===cur);setPat(PATTERNS[(i+d+PATTERNS.length)%PATTERNS.length][0]);}
+addEventListener('resize',()=>{if(fs.classList.contains('on'))drawFS();});
+document.addEventListener('keydown',e=>{if(!fs.classList.contains('on'))return;if(e.key==='Escape')exitFS();if(e.key==='ArrowRight')navPat(1);if(e.key==='ArrowLeft')navPat(-1);});
+document.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement&&fs.classList.contains('on'))fs.classList.remove('on');});
+
+/* ---------- cycle R/G/B/W/K ---------- */
+function stopCycle(){if(cycleTimer){clearInterval(cycleTimer);cycleTimer=null;$('cycle').classList.remove('primary');}}
+$('cycle').onclick=()=>{ if(cycleTimer){stopCycle();return;} setPat('solid');$('cycle').classList.add('primary');const seq=['#ff0000','#00ff00','#0000ff','#ffffff','#000000'];let i=0;
+  const step=()=>{field=seq[i%seq.length];i++;preview();if($('fs').classList.contains('on'))drawFS();};step();cycleTimer=setInterval(step,1500); };
+
+$('size').onchange=preview;
+$('dlPng').onclick=()=>{const[W,H]=outSize();const off=document.createElement('canvas');off.width=W;off.height=H;draw(off.getContext('2d'),W,H,cur);off.toBlob(b=>{const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='hg-testpattern-'+cur+'.png';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000);toast('PNG '+W+'×'+H+' ⬇');},'image/png');};
+
+function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),1500);}
+preview();
+</script>
+</body></html>

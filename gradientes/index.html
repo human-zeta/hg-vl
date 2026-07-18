@@ -1,0 +1,289 @@
+<!doctype html><html lang="es"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>GRADIENTES — Human Glitche · generador de degradés</title>
+<meta name="description" content="Generá degradés linear, radial, conic y mesh. Editás stops, ángulo y posición, GENERAR re-rollea combinaciones armónicas, y exportás CSS, SVG y PNG. 100% en tu navegador.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{ --acid:#b8ff00; --glitch:#ff2d55; --cyan:#3ad0ff; --ink:#f0ede6; --line:rgba(240,237,230,.12); --bg:#050505; }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{min-height:100%;background:var(--bg);color:var(--ink);font-family:'Space Mono',monospace;}
+  body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");z-index:0;pointer-events:none;opacity:.4;}
+  .wrap{position:relative;z-index:1;max-width:1180px;margin:0 auto;padding:28px 22px 90px;}
+  header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;gap:14px;}
+  .brand{font-family:'Bebas Neue',sans-serif;font-size:44px;letter-spacing:.03em;line-height:.82;}
+  .brand b{color:var(--cyan);font-weight:400;}
+  .brand .sub{display:block;font-family:'Space Mono';font-size:10px;letter-spacing:.2em;color:rgba(240,237,230,.45);margin-top:8px;}
+  header .nav{display:flex;flex-direction:column;align-items:flex-end;gap:7px;padding-top:6px;}
+  header a{font-size:10px;letter-spacing:.2em;color:rgba(240,237,230,.4);text-decoration:none;} header a:hover{color:var(--cyan);}
+  .intro{font-size:12px;color:rgba(240,237,230,.55);line-height:1.8;max-width:78ch;margin-bottom:22px;}
+  .intro b{color:var(--cyan);font-weight:400;}
+  .layout{display:grid;grid-template-columns:340px 1fr;gap:22px;align-items:start;}
+  @media(max-width:900px){.layout{grid-template-columns:1fr;}}
+  .panel{border:1px solid var(--line);border-radius:8px;padding:18px 16px;background:rgba(58,208,255,.02);margin-bottom:16px;}
+  h2.sec{font-size:9px;letter-spacing:.22em;color:rgba(240,237,230,.45);text-transform:uppercase;margin:0 0 13px;}
+  h2.sec b{color:var(--cyan);font-weight:400;}
+  .fld{margin-bottom:13px;} .fld:last-child{margin-bottom:0;}
+  .fld label{display:block;font-size:9px;letter-spacing:.16em;color:rgba(240,237,230,.5);text-transform:uppercase;margin-bottom:6px;}
+  .fld select{width:100%;background:#0a0a0a;color:var(--ink);border:1px solid var(--line);font:inherit;font-size:13px;padding:9px 10px;border-radius:5px;}
+  .fld input[type=range]{width:100%;accent-color:var(--cyan);padding:0;}
+  .rangehead{display:flex;justify-content:space-between;font-size:9px;letter-spacing:.14em;color:rgba(240,237,230,.5);text-transform:uppercase;margin-bottom:5px;}
+  .rangehead b{color:var(--cyan);font-weight:400;}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;}
+  .chip{font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;padding:7px 11px;border:1px solid var(--line);border-radius:20px;cursor:pointer;color:rgba(240,237,230,.55);user-select:none;transition:.15s;}
+  .chip.on{border-color:var(--cyan);color:var(--cyan);background:rgba(58,208,255,.1);}
+  .chip:hover{border-color:rgba(58,208,255,.5);}
+  .btn{background:transparent;border:1px solid var(--line);color:var(--ink);font:inherit;font-size:11px;letter-spacing:.1em;padding:11px 14px;cursor:pointer;border-radius:5px;transition:.15s;text-align:center;}
+  .btn:hover{border-color:var(--cyan);color:var(--cyan);}
+  .btn.primary{background:var(--cyan);color:#050505;border-color:var(--cyan);font-weight:700;}
+  .btn.primary:hover{opacity:.85;color:#050505;}
+  .btnrow{display:flex;gap:8px;flex-wrap:wrap;} .btnrow .btn{flex:1;min-width:90px;}
+  .stop{display:flex;align-items:center;gap:9px;margin-bottom:9px;}
+  .stop input[type=color]{width:34px;height:30px;border:1px solid var(--line);border-radius:5px;background:#0a0a0a;cursor:pointer;padding:2px;flex:0 0 auto;}
+  .stop input[type=range]{flex:1;accent-color:var(--cyan);}
+  .stop .pos{font-size:10px;color:rgba(240,237,230,.5);width:34px;text-align:right;flex:0 0 auto;}
+  .stop .del{cursor:pointer;color:rgba(240,237,230,.4);font-size:14px;flex:0 0 auto;padding:0 3px;} .stop .del:hover{color:var(--glitch);}
+  .stage-wrap{position:sticky;top:16px;}
+  .stagebar{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px;font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:rgba(240,237,230,.45);}
+  .stagebar b{color:var(--cyan);font-weight:400;}
+  .frameborder{border:1px solid var(--line);border-radius:10px;overflow:hidden;position:relative;background:#000;}
+  #stage{display:block;width:100%;height:auto;cursor:crosshair;}
+  .gen-row{display:flex;gap:8px;margin-top:10px;} .gen-row .btn{flex:1;}
+  .genbig{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:.05em;}
+  .codebox{background:#0a0a0a;border:1px solid var(--line);border-radius:6px;padding:12px 13px;font-size:11px;color:var(--cyan);line-height:1.7;margin-top:12px;word-break:break-all;max-height:120px;overflow:auto;white-space:pre-wrap;}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(30px);background:var(--cyan);color:#050505;font-size:12px;font-weight:700;letter-spacing:.05em;padding:12px 22px;border-radius:6px;opacity:0;transition:.25s;z-index:50;pointer-events:none;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  .foot{font-size:10px;color:rgba(240,237,230,.35);letter-spacing:.1em;margin-top:44px;text-align:center;line-height:1.9;}
+  .foot a{color:rgba(240,237,230,.5);text-decoration:none;} .foot a:hover{color:var(--cyan);}
+  .hint{font-size:10px;color:rgba(240,237,230,.4);margin-top:8px;line-height:1.6;}
+</style></head><body>
+<div class="wrap">
+  <header>
+    <div class="brand"><b>GRADIENTES</b><span class="sub">Human Glitche · el taller</span></div>
+    <div class="nav"><a href="/labs/">← LABS</a><a href="/paleta/">PALETA →</a></div>
+  </header>
+  <p class="intro">Generá <b>degradés</b> linear, radial, conic y <b>mesh</b> (mezcla de varios puntos de color). Editás los stops, el ángulo y la posición, <b>GENERAR</b> re-rollea combinaciones armónicas, y exportás <b>CSS</b>, <b>SVG</b> y <b>PNG</b> en el tamaño que quieras. 100% en tu navegador.</p>
+
+  <div class="layout">
+    <div class="controls">
+      <div class="panel"><h2 class="sec"><b>Tipo</b></h2><div class="chips" id="modes"></div></div>
+
+      <div class="panel" id="stopsPanel">
+        <h2 class="sec"><b>Colores</b> · stops</h2>
+        <div id="stops"></div>
+        <button class="btn" id="addStop" style="width:100%;margin-top:4px">+ agregar color</button>
+      </div>
+
+      <div class="panel" id="meshPanel" style="display:none">
+        <h2 class="sec"><b>Puntos</b> · mesh</h2>
+        <div id="meshStops"></div>
+        <div class="hint">Arrastrá los puntos sobre la preview para moverlos. GENERAR los reubica.</div>
+      </div>
+
+      <div class="panel" id="geomPanel">
+        <h2 class="sec"><b>Geometría</b></h2>
+        <div class="fld" id="angleFld"><div class="rangehead"><span>Ángulo</span><b id="angleVal">90°</b></div><input type="range" id="angle" min="0" max="360" value="90"></div>
+        <div class="fld" id="posFld" style="display:none">
+          <div class="rangehead"><span>Centro X</span><b id="cxVal">50%</b></div><input type="range" id="cx" min="0" max="100" value="50">
+          <div class="rangehead" style="margin-top:8px"><span>Centro Y</span><b id="cyVal">50%</b></div><input type="range" id="cy" min="0" max="100" value="50">
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2 class="sec"><b>Salida</b></h2>
+        <div class="fld"><label>Tamaño PNG</label><select id="size"><option value="1920x1080">1920 × 1080</option><option value="1080x1080">1080 × 1080</option><option value="1080x1920">1080 × 1920</option><option value="2560x1440">2560 × 1440</option></select></div>
+      </div>
+    </div>
+
+    <div class="stage-wrap">
+      <div class="stagebar"><span>PREVIEW · <b id="modeName">LINEAR</b></span><span id="dims">1920×1080</span></div>
+      <div class="frameborder"><canvas id="stage"></canvas></div>
+      <div class="gen-row">
+        <button class="btn primary genbig" id="gen">⟳ GENERAR</button>
+        <button class="btn" id="flip">⇄ invertir</button>
+      </div>
+      <div class="codebox" id="code"></div>
+      <div class="btnrow" style="margin-top:12px">
+        <button class="btn" id="copyCss">⧉ copiar CSS</button>
+        <button class="btn" id="dlSvg">⬇ SVG</button>
+        <button class="btn primary" id="dlPng">⬇ PNG</button>
+      </div>
+    </div>
+  </div>
+  <div class="foot">HUMAN GLITCHE · el taller · corre 100% client-side<br><a href="/labs/">← volver a LABS</a></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const $=id=>document.getElementById(id);
+const MODES=[['linear','▤ linear'],['radial','◉ radial'],['conic','◠ conic'],['mesh','▚ mesh']];
+
+let cfg={
+  mode:'linear',
+  stops:[{c:'#3ad0ff',p:0},{c:'#b8ff00',p:100}],
+  angle:90, cx:50, cy:50,
+  mesh:[{x:20,y:25,c:'#3ad0ff'},{x:80,y:20,c:'#ff2d55'},{x:70,y:80,c:'#b8ff00'},{x:20,y:75,c:'#9b6bff'},{x:50,y:50,c:'#0a0f14'}],
+  w:1920,h:1080
+};
+const stage=$('stage');
+
+/* ---------- render ---------- */
+function hex(h){h=h.replace('#','');if(h.length===3)h=h.split('').map(c=>c+c).join('');return[parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)];}
+function renderTo(ctx,W,H){
+  ctx.clearRect(0,0,W,H);
+  const s=[...cfg.stops].sort((a,b)=>a.p-b.p);
+  if(cfg.mode==='linear'){
+    const a=(cfg.angle-90)*Math.PI/180; const cx=W/2,cy=H/2; const len=Math.abs(W*Math.cos(a))+Math.abs(H*Math.sin(a));
+    const dx=Math.cos(a)*len/2, dy=Math.sin(a)*len/2;
+    const g=ctx.createLinearGradient(cx-dx,cy-dy,cx+dx,cy+dy);
+    s.forEach(st=>g.addColorStop(Math.min(1,Math.max(0,st.p/100)),st.c));
+    ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+  } else if(cfg.mode==='radial'){
+    const cx=cfg.cx/100*W, cy=cfg.cy/100*H; const r=Math.hypot(Math.max(cx,W-cx),Math.max(cy,H-cy));
+    const g=ctx.createRadialGradient(cx,cy,0,cx,cy,r);
+    s.forEach(st=>g.addColorStop(Math.min(1,Math.max(0,st.p/100)),st.c));
+    ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+  } else if(cfg.mode==='conic'){
+    const cx=cfg.cx/100*W, cy=cfg.cy/100*H;
+    if(ctx.createConicGradient){
+      const g=ctx.createConicGradient((cfg.angle)*Math.PI/180,cx,cy);
+      s.forEach(st=>g.addColorStop(Math.min(1,Math.max(0,st.p/100)),st.c));
+      ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+    } else { ctx.fillStyle=s[0].c;ctx.fillRect(0,0,W,H); }
+  } else if(cfg.mode==='mesh'){
+    // base = darkest-ish avg
+    ctx.fillStyle=cfg.mesh[cfg.mesh.length-1].c; ctx.fillRect(0,0,W,H);
+    ctx.globalCompositeOperation='lighter';
+    cfg.mesh.forEach(pt=>{
+      const px=pt.x/100*W, py=pt.y/100*H, r=Math.max(W,H)*0.6;
+      const g=ctx.createRadialGradient(px,py,0,px,py,r);
+      const [R,G,B]=hex(pt.c);
+      g.addColorStop(0,`rgba(${R},${G},${B},0.9)`);
+      g.addColorStop(1,`rgba(${R},${G},${B},0)`);
+      ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+    });
+    ctx.globalCompositeOperation='source-over';
+  }
+}
+function preview(){ stage.width=cfg.w; stage.height=cfg.h; renderTo(stage.getContext('2d'),cfg.w,cfg.h); updateCode(); }
+
+/* ---------- CSS / SVG ---------- */
+function stopsStr(){ return [...cfg.stops].sort((a,b)=>a.p-b.p).map(s=>`${s.c} ${Math.round(s.p)}%`).join(', '); }
+function buildCSS(){
+  if(cfg.mode==='linear') return `linear-gradient(${cfg.angle}deg, ${stopsStr()})`;
+  if(cfg.mode==='radial') return `radial-gradient(circle at ${cfg.cx}% ${cfg.cy}%, ${stopsStr()})`;
+  if(cfg.mode==='conic') return `conic-gradient(from ${cfg.angle}deg at ${cfg.cx}% ${cfg.cy}%, ${stopsStr()})`;
+  // mesh → layered radial-gradients
+  const base=cfg.mesh[cfg.mesh.length-1].c;
+  const layers=cfg.mesh.map(p=>`radial-gradient(at ${p.x}% ${p.y}%, ${p.c} 0px, transparent 55%)`).join(',\n    ');
+  return `${base};\n  background-image:\n    ${layers}`;
+}
+function updateCode(){ $('code').textContent='background: '+buildCSS()+';'; }
+
+function buildSVG(){
+  const W=cfg.w,H=cfg.h; const s=[...cfg.stops].sort((a,b)=>a.p-b.p);
+  let def='',fill='';
+  if(cfg.mode==='linear'){
+    const a=(cfg.angle-90)*Math.PI/180; const x1=50-Math.cos(a)*50,y1=50-Math.sin(a)*50,x2=50+Math.cos(a)*50,y2=50+Math.sin(a)*50;
+    def=`<linearGradient id="g" x1="${x1}%" y1="${y1}%" x2="${x2}%" y2="${y2}%">${s.map(st=>`<stop offset="${st.p}%" stop-color="${st.c}"/>`).join('')}</linearGradient>`;
+    fill='url(#g)';
+  } else if(cfg.mode==='radial'||cfg.mode==='mesh'){
+    if(cfg.mode==='mesh'){
+      // approximate mesh with overlaid radial gradients
+      const defs=cfg.mesh.map((p,i)=>{const [R,G,B]=hex(p.c);return `<radialGradient id="m${i}" cx="${p.x}%" cy="${p.y}%" r="60%"><stop offset="0%" stop-color="${p.c}"/><stop offset="100%" stop-color="rgba(${R},${G},${B},0)"/></radialGradient>`;}).join('');
+      const rects=cfg.mesh.map((p,i)=>`<rect width="100%" height="100%" fill="url(#m${i})" style="mix-blend-mode:screen"/>`).join('');
+      return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}"><defs>${defs}</defs><rect width="100%" height="100%" fill="${cfg.mesh[cfg.mesh.length-1].c}"/>${rects}</svg>`;
+    }
+    def=`<radialGradient id="g" cx="${cfg.cx}%" cy="${cfg.cy}%" r="75%">${s.map(st=>`<stop offset="${st.p}%" stop-color="${st.c}"/>`).join('')}</radialGradient>`;
+    fill='url(#g)';
+  } else { // conic — SVG no soporta conic nativo; export como PNG-fallback message via linear approx
+    def=`<linearGradient id="g">${s.map(st=>`<stop offset="${st.p}%" stop-color="${st.c}"/>`).join('')}</linearGradient>`;
+    fill='url(#g)';
+  }
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}"><defs>${def}</defs><rect width="100%" height="100%" fill="${fill}"/></svg>`;
+}
+
+/* ---------- UI ---------- */
+const modesWrap=$('modes');
+MODES.forEach(([k,label])=>{const c=document.createElement('span');c.className='chip'+(cfg.mode===k?' on':'');c.textContent=label;c.dataset.k=k;c.onclick=()=>setMode(k);modesWrap.appendChild(c);});
+function setMode(k){cfg.mode=k;document.querySelectorAll('#modes .chip').forEach(x=>x.classList.toggle('on',x.dataset.k===k));$('modeName').textContent=k.toUpperCase();
+  $('stopsPanel').style.display=(k==='mesh')?'none':'';
+  $('meshPanel').style.display=(k==='mesh')?'':'none';
+  $('geomPanel').style.display=(k==='mesh')?'none':'';
+  $('angleFld').style.display=(k==='linear'||k==='conic')?'':'none';
+  $('posFld').style.display=(k==='radial'||k==='conic')?'':'none';
+  preview();}
+
+function renderStops(){
+  const wrap=$('stops');wrap.innerHTML='';
+  cfg.stops.forEach((st,i)=>{
+    const row=document.createElement('div');row.className='stop';
+    row.innerHTML=`<input type="color" value="${st.c}"><input type="range" min="0" max="100" value="${st.p}"><span class="pos">${Math.round(st.p)}%</span><span class="del">✕</span>`;
+    const [col,rng,pos,del]=row.children;
+    col.oninput=e=>{st.c=e.target.value;preview();};
+    rng.oninput=e=>{st.p=+e.target.value;pos.textContent=Math.round(st.p)+'%';preview();};
+    del.onclick=()=>{if(cfg.stops.length>2){cfg.stops.splice(i,1);renderStops();preview();}};
+    wrap.appendChild(row);
+  });
+}
+function renderMeshStops(){
+  const wrap=$('meshStops');wrap.innerHTML='';
+  cfg.mesh.forEach((pt,i)=>{
+    const row=document.createElement('div');row.className='stop';
+    const label=i===cfg.mesh.length-1?'fondo':('P'+(i+1));
+    row.innerHTML=`<input type="color" value="${pt.c}"><span class="pos" style="width:auto;flex:1;text-align:left">${label}</span>`;
+    row.children[0].oninput=e=>{pt.c=e.target.value;preview();};
+    wrap.appendChild(row);
+  });
+}
+$('addStop').onclick=()=>{cfg.stops.push({c:'#ffffff',p:50});renderStops();preview();};
+
+$('angle').oninput=e=>{cfg.angle=+e.target.value;$('angleVal').textContent=cfg.angle+'°';preview();};
+$('cx').oninput=e=>{cfg.cx=+e.target.value;$('cxVal').textContent=cfg.cx+'%';preview();};
+$('cy').oninput=e=>{cfg.cy=+e.target.value;$('cyVal').textContent=cfg.cy+'%';preview();};
+$('size').onchange=e=>{const[w,h]=e.target.value.split('x').map(Number);cfg.w=w;cfg.h=h;$('dims').textContent=w+'×'+h;preview();};
+
+// GENERAR — armonías
+function hsl2hex(h,s,l){s/=100;l/=100;const k=n=>(n+h/30)%12;const a=s*Math.min(l,1-l);const f=n=>l-a*Math.max(-1,Math.min(k(n)-3,Math.min(9-k(n),1)));const to=x=>Math.round(x*255).toString(16).padStart(2,'0');return '#'+to(f(0))+to(f(8))+to(f(4));}
+function generar(){
+  const baseH=Math.random()*360; const scheme=Math.floor(Math.random()*4);
+  const hues=[baseH];
+  if(scheme===0){hues.push((baseH+30)%360,(baseH+60)%360);} // análoga
+  else if(scheme===1){hues.push((baseH+180)%360);} // complementaria
+  else if(scheme===2){hues.push((baseH+120)%360,(baseH+240)%360);} // triádica
+  else {hues.push((baseH+150)%360,(baseH+210)%360);} // split
+  const sat=55+Math.random()*40, lig=45+Math.random()*20;
+  if(cfg.mode==='mesh'){
+    cfg.mesh=cfg.mesh.map((p,i)=>({x:i===cfg.mesh.length-1?50:10+Math.random()*80, y:i===cfg.mesh.length-1?50:10+Math.random()*80,
+      c: i===cfg.mesh.length-1? hsl2hex(baseH,40,10) : hsl2hex(hues[i%hues.length],sat,lig+ (Math.random()*20-10))}));
+    renderMeshStops();
+  } else {
+    const n=2+Math.floor(Math.random()*2);
+    cfg.stops=[]; for(let i=0;i<n;i++){cfg.stops.push({c:hsl2hex(hues[i%hues.length],sat,lig-i*8),p:Math.round(i/(n-1)*100)});}
+    renderStops();
+  }
+  cfg.angle=Math.floor(Math.random()*360); $('angle').value=cfg.angle;$('angleVal').textContent=cfg.angle+'°';
+  preview();
+}
+$('gen').onclick=()=>{generar();toast('nuevo degradé ⟳');};
+$('flip').onclick=()=>{ if(cfg.mode==='mesh'){cfg.mesh.reverse();renderMeshStops();} else {cfg.stops.forEach(s=>s.p=100-s.p);renderStops();} preview();};
+
+// drag mesh points on preview
+let dragIdx=-1;
+function pointerPos(e){const r=stage.getBoundingClientRect();const cxp=((e.touches?e.touches[0].clientX:e.clientX)-r.left)/r.width*100;const cyp=((e.touches?e.touches[0].clientY:e.clientY)-r.top)/r.height*100;return[cxp,cyp];}
+stage.addEventListener('pointerdown',e=>{ if(cfg.mode!=='mesh')return; const[px,py]=pointerPos(e); let best=-1,bd=1e9; cfg.mesh.forEach((p,i)=>{const d=Math.hypot(p.x-px,p.y-py);if(d<bd){bd=d;best=i;}}); if(bd<18){dragIdx=best;stage.setPointerCapture(e.pointerId);} });
+stage.addEventListener('pointermove',e=>{ if(dragIdx<0)return; const[px,py]=pointerPos(e); cfg.mesh[dragIdx].x=Math.max(0,Math.min(100,px));cfg.mesh[dragIdx].y=Math.max(0,Math.min(100,py)); preview(); });
+stage.addEventListener('pointerup',()=>{dragIdx=-1;});
+
+// export
+function download(name,blob){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000);}
+$('copyCss').onclick=async()=>{try{await navigator.clipboard.writeText('background: '+buildCSS()+';');toast('CSS copiado ⧉');}catch(e){toast('no se pudo copiar');}};
+$('dlSvg').onclick=()=>{download('hg-gradiente.svg',new Blob([buildSVG()],{type:'image/svg+xml'}));toast('SVG ⬇');};
+$('dlPng').onclick=()=>{const off=document.createElement('canvas');off.width=cfg.w;off.height=cfg.h;renderTo(off.getContext('2d'),cfg.w,cfg.h);off.toBlob(b=>{download('hg-gradiente.png',b);toast('PNG ⬇');},'image/png');};
+
+function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),1500);}
+
+// init
+renderStops();renderMeshStops();setMode('linear');
+</script>
+</body></html>

@@ -1,0 +1,307 @@
+<!doctype html><html lang="es"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>KINETIC TYPE — Human Glitche · animaciones de texto</title>
+<meta name="description" content="Animá texto para tus videos y streams: typewriter, scramble/decode, glitch reveal, pop, wave y neón. Exportás un .webm con canal alpha real para OBS/Premiere + PNG. 100% en tu navegador.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&family=Anton&family=Archivo+Black&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+  :root{ --acid:#b8ff00; --glitch:#ff2d55; --cyan:#3ad0ff; --violet:#9b6bff; --pink:#ff5edb; --ink:#f0ede6; --line:rgba(240,237,230,.12); --bg:#050505; }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{min-height:100%;background:var(--bg);color:var(--ink);font-family:'Space Mono',monospace;}
+  body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");z-index:0;pointer-events:none;opacity:.4;}
+  .wrap{position:relative;z-index:1;max-width:1180px;margin:0 auto;padding:28px 22px 90px;}
+  header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;gap:14px;}
+  .brand{font-family:'Bebas Neue',sans-serif;font-size:44px;letter-spacing:.03em;line-height:.82;}
+  .brand b{color:var(--violet);font-weight:400;}
+  .brand .sub{display:block;font-family:'Space Mono';font-size:10px;letter-spacing:.2em;color:rgba(240,237,230,.45);margin-top:8px;}
+  header .nav{display:flex;flex-direction:column;align-items:flex-end;gap:7px;padding-top:6px;}
+  header a{font-size:10px;letter-spacing:.2em;color:rgba(240,237,230,.4);text-decoration:none;} header a:hover{color:var(--violet);}
+  .intro{font-size:12px;color:rgba(240,237,230,.55);line-height:1.8;max-width:78ch;margin-bottom:22px;}
+  .intro b{color:var(--violet);font-weight:400;}
+  .layout{display:grid;grid-template-columns:340px 1fr;gap:22px;align-items:start;}
+  @media(max-width:900px){.layout{grid-template-columns:1fr;}}
+  .panel{border:1px solid var(--line);border-radius:8px;padding:18px 16px;background:rgba(155,107,255,.03);margin-bottom:16px;}
+  h2.sec{font-size:9px;letter-spacing:.22em;color:rgba(240,237,230,.45);text-transform:uppercase;margin:0 0 13px;}
+  h2.sec b{color:var(--violet);font-weight:400;}
+  .fld{margin-bottom:13px;} .fld:last-child{margin-bottom:0;}
+  .fld label{display:block;font-size:9px;letter-spacing:.16em;color:rgba(240,237,230,.5);text-transform:uppercase;margin-bottom:6px;}
+  .fld input[type=text],.fld select,.fld textarea{width:100%;background:#0a0a0a;color:var(--ink);border:1px solid var(--line);font:inherit;font-size:13px;padding:9px 10px;border-radius:5px;}
+  .fld textarea{resize:vertical;min-height:54px;line-height:1.5;}
+  .fld input:focus,.fld select:focus,.fld textarea:focus{outline:none;border-color:var(--violet);}
+  .fld input[type=range]{width:100%;accent-color:var(--violet);padding:0;}
+  .rangehead{display:flex;justify-content:space-between;font-size:9px;letter-spacing:.14em;color:rgba(240,237,230,.5);text-transform:uppercase;margin-bottom:5px;}
+  .rangehead b{color:var(--violet);font-weight:400;}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;}
+  .chip{font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;padding:7px 10px;border:1px solid var(--line);border-radius:20px;cursor:pointer;color:rgba(240,237,230,.55);user-select:none;transition:.15s;}
+  .chip.on{border-color:var(--violet);color:var(--violet);background:rgba(155,107,255,.12);}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .btn{background:transparent;border:1px solid var(--line);color:var(--ink);font:inherit;font-size:11px;letter-spacing:.1em;padding:11px 14px;cursor:pointer;border-radius:5px;transition:.15s;text-align:center;}
+  .btn:hover{border-color:var(--violet);color:var(--violet);}
+  .btn.primary{background:var(--violet);color:#050505;border-color:var(--violet);font-weight:700;}
+  .btn.primary:hover{opacity:.85;color:#050505;}
+  .btn[disabled]{opacity:.4;cursor:not-allowed;}
+  .btnrow{display:flex;gap:8px;flex-wrap:wrap;} .btnrow .btn{flex:1;min-width:120px;}
+  .color-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+  .color-row input[type=color]{width:40px;height:34px;border:1px solid var(--line);border-radius:5px;background:#0a0a0a;cursor:pointer;padding:2px;}
+  .swatches{display:flex;gap:5px;} .sw{width:22px;height:22px;border-radius:50%;cursor:pointer;border:1px solid rgba(255,255,255,.15);} .sw:hover{transform:scale(1.15);}
+  .stage-wrap{position:sticky;top:16px;}
+  .stagebar{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px;font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:rgba(240,237,230,.45);}
+  .stagebar b{color:var(--violet);font-weight:400;}
+  .checker{--c1:#141414;--c2:#0b0b0b;border:1px solid var(--line);border-radius:10px;overflow:hidden;position:relative;
+    background-image:linear-gradient(45deg,var(--c2) 25%,transparent 25%),linear-gradient(-45deg,var(--c2) 25%,transparent 25%),linear-gradient(45deg,transparent 75%,var(--c2) 75%),linear-gradient(-45deg,transparent 75%,var(--c2) 75%);
+    background-size:26px 26px;background-position:0 0,0 13px,13px -13px,-13px 0;background-color:var(--c1);}
+  .checker.solidbg{background:var(--sb,#050505);}
+  #stage{display:block;width:100%;height:auto;}
+  .gen-row{display:flex;gap:8px;margin-top:10px;} .gen-row .btn{flex:1;}
+  .genbig{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:.05em;}
+  .recinfo{font-size:10px;color:var(--violet);letter-spacing:.1em;margin-top:10px;min-height:14px;text-align:center;}
+  details{border:1px solid var(--line);border-radius:8px;padding:0 16px;margin-top:16px;background:rgba(155,107,255,.03);}
+  details summary{cursor:pointer;padding:15px 0;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--violet);list-style:none;}
+  details summary::-webkit-details-marker{display:none;}
+  details summary::before{content:'▸ ';} details[open] summary::before{content:'▾ ';}
+  details .body{padding:0 0 18px;font-size:12px;line-height:1.8;color:rgba(240,237,230,.62);}
+  details .body b{color:var(--ink);font-weight:700;}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(30px);background:var(--violet);color:#050505;font-size:12px;font-weight:700;letter-spacing:.05em;padding:12px 22px;border-radius:6px;opacity:0;transition:.25s;z-index:50;pointer-events:none;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  .foot{font-size:10px;color:rgba(240,237,230,.35);letter-spacing:.1em;margin-top:44px;text-align:center;line-height:1.9;}
+  .foot a{color:rgba(240,237,230,.5);text-decoration:none;} .foot a:hover{color:var(--violet);}
+</style></head><body>
+<div class="wrap">
+  <header>
+    <div class="brand"><b>KINETIC TYPE</b><span class="sub">Human Glitche · el taller</span></div>
+    <div class="nav"><a href="/labs/">← LABS</a><a href="/letras/">LETRAS →</a></div>
+  </header>
+  <p class="intro">Animá <b>texto</b> para tus videos y streams — typewriter, scramble/decode, glitch reveal, pop, wave y neón. Ajustás fuente, color y ritmo, y exportás un <b>.webm con canal alpha real</b> (para OBS/Premiere/After Effects) o un PNG. 100% en tu navegador — la grabación pasa en tu máquina.</p>
+
+  <div class="layout">
+    <div class="controls">
+      <div class="panel">
+        <h2 class="sec"><b>Texto</b></h2>
+        <div class="fld"><textarea id="text" placeholder="TU TEXTO">HUMAN GLITCHE</textarea></div>
+        <div class="hint" style="font-size:10px;color:rgba(240,237,230,.4)">Varias líneas = varias líneas. Se anima palabra/letra según el efecto.</div>
+      </div>
+
+      <div class="panel"><h2 class="sec"><b>Animación</b></h2><div class="chips" id="anims"></div></div>
+
+      <div class="panel">
+        <h2 class="sec"><b>Fuente</b></h2>
+        <div class="fld"><select id="font">
+          <option value="Bebas Neue">Bebas Neue</option>
+          <option value="Anton">Anton</option>
+          <option value="Archivo Black">Archivo Black</option>
+          <option value="Syne">Syne</option>
+          <option value="Space Mono">Space Mono</option>
+        </select></div>
+        <div class="fld"><div class="rangehead"><span>Tamaño</span><b id="sizeVal">120</b></div><input type="range" id="fsize" min="40" max="240" value="120"></div>
+      </div>
+
+      <div class="panel">
+        <h2 class="sec"><b>Color</b></h2>
+        <div class="color-row"><input type="color" id="color" value="#f0ede6"><div class="swatches" id="swatches"></div></div>
+        <div class="chips" style="margin-top:12px">
+          <span class="chip" id="chkBg">fondo sólido</span>
+          <span class="chip" id="chkGlow">glow</span>
+        </div>
+        <div class="fld" id="bgFld" style="display:none;margin-top:12px"><label>Color de fondo</label><div class="color-row"><input type="color" id="bgcolor" value="#0a0a12"></div></div>
+      </div>
+
+      <div class="panel">
+        <h2 class="sec"><b>Ritmo</b></h2>
+        <div class="fld"><div class="rangehead"><span>Velocidad</span><b id="spdVal">1.0×</b></div><input type="range" id="spd" min="0.4" max="2.2" step="0.1" value="1"></div>
+        <div class="chips"><span class="chip on" id="chkLoop">loop</span></div>
+        <div class="two" style="margin-top:12px">
+          <div class="fld"><label>Formato</label><select id="size"><option value="1920x1080">1920×1080</option><option value="1080x1080">1080×1080</option><option value="1080x1920">1080×1920</option></select></div>
+          <div class="fld"><label>FPS</label><select id="fps"><option value="30">30</option><option value="60">60</option></select></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="stage-wrap">
+      <div class="stagebar"><span>PREVIEW · <b id="animName">TYPEWRITER</b></span><span id="fpsread">— fps</span></div>
+      <div class="checker" id="checker"><canvas id="stage"></canvas></div>
+      <div class="gen-row">
+        <button class="btn primary genbig" id="replay">↻ REPRODUCIR</button>
+        <button class="btn" id="rec">⏺ GRABAR .webm</button>
+      </div>
+      <div class="recinfo" id="recinfo"></div>
+      <div class="btnrow" style="margin-top:10px">
+        <button class="btn" id="dlPng">⬇ PNG (texto final)</button>
+      </div>
+
+      <details open>
+        <summary>Usar en OBS / editor</summary>
+        <div class="body">
+          El <b>.webm tiene canal alpha</b>: en OBS lo sumás como <b>Fuente de medios</b> (marcá "bucle" si querés) y flota sobre tu escena; en Premiere/After Effects lo tirás a la timeline con transparencia. Para un lower-third animado o un título de intro. Si preferís fondo, activá <b>fondo sólido</b> antes de grabar. El <b>PNG</b> es el texto ya asentado, sin animación.
+        </div>
+      </details>
+    </div>
+  </div>
+  <div class="foot">HUMAN GLITCHE · el taller · corre 100% client-side<br><a href="/labs/">← volver a LABS</a></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const $=id=>document.getElementById(id);
+const ANIMS=[['typewriter','⌨ typewriter'],['scramble','⚄ scramble'],['glitch','▓ glitch'],['pop','◍ pop'],['wave','∿ wave'],['neon','✦ neón'],['slide','⇥ slide']];
+const SWATCHES=['#f0ede6','#b8ff00','#3ad0ff','#ff2d55','#ffb020','#9b6bff','#ff5edb'];
+const GLYPHS='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#%&@*<>/';
+
+let cfg={text:'HUMAN GLITCHE',anim:'typewriter',font:'Bebas Neue',fsize:120,color:'#f0ede6',
+  bg:false,bgcolor:'#0a0a12',glow:false,spd:1,loop:true,w:1920,h:1080,fps:30};
+
+/* ================= ENGINE ================= */
+function makeEngine(canvas,c){
+  const ctx=canvas.getContext('2d');const W=c.w,H=c.h;canvas.width=W;canvas.height=H;
+  const lines=c.text.split('\n').map(l=>l.trim()).filter(l=>l.length).map(l=>l);
+  const allLines=lines.length?lines:[''];
+  const u=Math.min(W,H)/1080;
+  const fpx=Math.round(c.fsize*u*1.4);
+  const font=w=>`${w||400} ${fpx}px '${c.font}', 'Bebas Neue', sans-serif`;
+  const lh=fpx*1.12;
+  const inD=0.5, hold=1.6, outD=c.loop?0.5:0;
+  const total=(inD+hold+outD);
+  function easeOut(x){return 1-Math.pow(1-x,3);}
+  function easeOutBack(x){const s=1.7,s1=s+1;return 1+s1*Math.pow(x-1,3)+s*Math.pow(x-1,2);}
+
+  // build char layout
+  function measure(){ctx.font=font(700);const rows=allLines.map(l=>({txt:l,w:ctx.measureText(l).width}));return rows;}
+
+  function drawFrame(t){
+    // t normalized time seconds (loops via caller)
+    ctx.clearRect(0,0,W,H);
+    if(c.bg){ctx.fillStyle=c.bgcolor;ctx.fillRect(0,0,W,H);}
+    ctx.textAlign='center';ctx.textBaseline='middle';ctx.font=font(700);
+    if(c.glow){ctx.shadowColor=c.color;ctx.shadowBlur=fpx*0.4;}
+    const rows=measure();
+    const totalH=rows.length*lh; const y0=H/2-totalH/2+lh/2;
+    // global appear phase
+    const appearing = t<inD? t/inD : 1;
+    const disappearing = (c.loop && t>inD+hold)? 1-(t-inD-hold)/outD : 1;
+
+    rows.forEach((row,ri)=>{
+      const cy=y0+ri*lh;
+      const chars=row.txt.split('');
+      const rowW=row.w; let cx=W/2-rowW/2;
+      // char x positions
+      ctx.font=font(700);
+      const widths=chars.map(ch=>ctx.measureText(ch).width);
+      const nChars=chars.length;
+      chars.forEach((ch,ci)=>{
+        const x=cx+widths[ci]/2; cx+=widths[ci];
+        const frac=nChars>1?ci/(nChars-1):0;
+        const idxDelay=(ri*0.15)+ci*0.045;
+        drawChar(ch,x,cy,t,ci,ri,frac,idxDelay,nChars,disappearing);
+      });
+    });
+    ctx.shadowBlur=0;
+  }
+
+  function setColor(a){ctx.fillStyle=hexA(c.color,a);}
+  function hexA(h,a){h=h.replace('#','');if(h.length===3)h=h.split('').map(x=>x+x).join('');const R=parseInt(h.slice(0,2),16),G=parseInt(h.slice(2,4),16),B=parseInt(h.slice(4,6),16);return `rgba(${R},${G},${B},${a})`;}
+
+  function drawChar(ch,x,y,t,ci,ri,frac,delay,n,disappear){
+    const a=c.anim;
+    if(a==='typewriter'){
+      const perChar=(inD+hold)/(n+2); const on=t>ci*perChar*0.5;
+      if(!on)return; setColor(1*disappear); ctx.fillText(ch,x,y);
+      // cursor
+      if(t<inD+hold && Math.abs(t/perChar/0.5-ci)<1){ }
+    } else if(a==='scramble'){
+      const settle=Math.min(1,Math.max(0,(t-delay)/0.5));
+      let g=ch; if(settle<1 && ch!==' '){g=GLYPHS[Math.floor((t*30+ci*7+ri*13)%GLYPHS.length)];}
+      setColor((settle*0.85+0.15)*disappear); ctx.fillText(g,x,y);
+    } else if(a==='glitch'){
+      const p=Math.min(1,Math.max(0,(t-delay)/0.45));
+      if(p<=0)return; const jitter=(1-p)*fpx*0.15;
+      ctx.save();
+      if(p<1){ctx.globalAlpha=disappear;ctx.fillStyle='rgba(255,45,85,.7)';ctx.fillText(ch,x-jitter,y+(Math.random()-.5)*jitter);ctx.fillStyle='rgba(58,208,255,.7)';ctx.fillText(ch,x+jitter,y);}
+      setColor(easeOut(p)*disappear);ctx.fillText(ch,x,y+(1-p)*(Math.random()-.5)*jitter);
+      ctx.restore();
+    } else if(a==='pop'){
+      const p=Math.min(1,Math.max(0,(t-delay)/0.5)); if(p<=0)return;
+      const s=easeOutBack(p); ctx.save();ctx.translate(x,y);ctx.scale(s,s);setColor(Math.min(1,p*1.4)*disappear);ctx.fillText(ch,0,0);ctx.restore();
+    } else if(a==='wave'){
+      const app=Math.min(1,Math.max(0,(t-delay)/0.4));if(app<=0)return;
+      const dy=Math.sin(t*4-ci*0.5-ri)*fpx*0.12; setColor(app*disappear);ctx.fillText(ch,x,y+dy);
+    } else if(a==='neon'){
+      const p=Math.min(1,Math.max(0,(t-delay)/0.3));if(p<=0)return;
+      const flick=(t<inD+0.5)? (Math.random()>0.5?1:0.5): (0.92+0.08*Math.sin(t*8+ci));
+      ctx.save();ctx.shadowColor=c.color;ctx.shadowBlur=fpx*0.5*flick;setColor(p*flick*disappear);ctx.fillText(ch,x,y);ctx.restore();
+    } else if(a==='slide'){
+      const p=Math.min(1,Math.max(0,(t-delay)/0.5));if(p<=0)return;
+      const off=(1-easeOut(p))*fpx*0.8; ctx.save();ctx.globalAlpha=p*disappear;setColor(1);ctx.fillText(ch,x,y+off);ctx.restore();
+    }
+  }
+  return {drawFrame,total,inD,hold};
+}
+
+/* ================= UI ================= */
+let handle=null,raf=0,t0=null,playing=true;
+const stage=$('stage');
+function build(){ if(raf)cancelAnimationFrame(raf); handle=makeEngine(stage,{...cfg}); t0=null; playing=true; loop(); syncBg(); }
+function loop(ts){ if(!playing)return; if(t0==null)t0=ts||performance.now(); let t=((ts||performance.now())-t0)/1000*cfg.spd;
+  if(cfg.loop){ t=t%handle.total; } else if(t>handle.total){ t=handle.total; }
+  handle.drawFrame(t); raf=requestAnimationFrame(loop); }
+function syncBg(){const ch=$('checker');ch.classList.toggle('solidbg',cfg.bg);ch.style.setProperty('--sb',cfg.bgcolor);}
+
+const animsWrap=$('anims');
+ANIMS.forEach(([k,label])=>{const c=document.createElement('span');c.className='chip'+(cfg.anim===k?' on':'');c.textContent=label;c.dataset.k=k;c.onclick=()=>{cfg.anim=k;document.querySelectorAll('#anims .chip').forEach(x=>x.classList.toggle('on',x.dataset.k===k));$('animName').textContent=label.split(' ')[1].toUpperCase();build();};animsWrap.appendChild(c);});
+const swWrap=$('swatches');
+SWATCHES.forEach(c=>{const s=document.createElement('div');s.className='sw';s.style.background=c;s.onclick=()=>{cfg.color=c;$('color').value=c;build();};swWrap.appendChild(s);});
+
+$('text').oninput=e=>{cfg.text=e.target.value;build();};
+$('font').onchange=e=>{cfg.font=e.target.value;build();};
+$('fsize').oninput=e=>{cfg.fsize=+e.target.value;$('sizeVal').textContent=cfg.fsize;build();};
+$('color').oninput=e=>{cfg.color=e.target.value;build();};
+$('bgcolor').oninput=e=>{cfg.bgcolor=e.target.value;syncBg();build();};
+$('spd').oninput=e=>{cfg.spd=+e.target.value;$('spdVal').textContent=cfg.spd.toFixed(1)+'×';};
+$('chkBg').onclick=()=>{cfg.bg=!cfg.bg;$('chkBg').classList.toggle('on',cfg.bg);$('bgFld').style.display=cfg.bg?'':'none';build();};
+$('chkGlow').onclick=()=>{cfg.glow=!cfg.glow;$('chkGlow').classList.toggle('on',cfg.glow);build();};
+$('chkLoop').onclick=()=>{cfg.loop=!cfg.loop;$('chkLoop').classList.toggle('on',cfg.loop);build();};
+$('size').onchange=e=>{const[w,h]=e.target.value.split('x').map(Number);cfg.w=w;cfg.h=h;build();};
+$('fps').onchange=e=>{cfg.fps=+e.target.value;};
+$('replay').onclick=()=>{t0=null;playing=true;if(!raf)loop();build();};
+
+let fc=0,ft=performance.now();(function fps(){fc++;const n=performance.now();if(n-ft>500){$('fpsread').textContent=Math.round(fc/((n-ft)/1000))+' fps';fc=0;ft=n;}requestAnimationFrame(fps);})();
+
+/* ---------- record webm (alpha) ---------- */
+async function alphaOk(type){try{const cv=document.createElement('canvas');cv.width=cv.height=64;const cx=cv.getContext('2d');
+  const st=cv.captureStream(20);const mr=new MediaRecorder(st,{mimeType:type});const ch=[];mr.ondataavailable=e=>{if(e.data.size)ch.push(e.data);};const done=new Promise(r=>mr.onstop=r);mr.start();const t0=performance.now();
+  await new Promise(res=>{function f(){cx.clearRect(0,0,64,64);cx.fillStyle='#f00';cx.beginPath();cx.arc(32,32,12,0,7);cx.fill();if(performance.now()-t0<350)requestAnimationFrame(f);else res();}f();});
+  mr.stop();await done;const blob=new Blob(ch,{type});const v=document.createElement('video');v.muted=true;v.src=URL.createObjectURL(blob);
+  await new Promise((r,j)=>{v.onloadeddata=r;v.onerror=()=>j();});await new Promise(r=>{v.onseeked=r;v.currentTime=0.2;});
+  const oc=document.createElement('canvas');oc.width=oc.height=64;const ox=oc.getContext('2d');ox.fillStyle='#0f0';ox.fillRect(0,0,64,64);ox.drawImage(v,0,0,64,64);
+  const cc=ox.getImageData(2,2,1,1).data;return cc[1]>150&&cc[0]<120&&cc[2]<120;}catch(e){return false;}}
+
+async function record(){
+  const type=['video/webm;codecs=vp9','video/webm;codecs=vp8'].find(t=>MediaRecorder.isTypeSupported(t));
+  if(!type){toast('sin soporte de grabación webm');return;}
+  if(!cfg.bg && !await alphaOk(type)){ if(!confirm('Tu navegador no preservó el alpha en la prueba; el webm puede salir con fondo negro. ¿Grabar igual (o activá "fondo sólido")?'))return; }
+  $('rec').disabled=true;$('replay').disabled=true;$('rec').textContent='⏺ grabando…';
+  const eng=makeEngine(document.createElement('canvas'),{...cfg});
+  const rc=document.createElement('canvas');rc.width=cfg.w;rc.height=cfg.h;const rctx=rc.getContext('2d');
+  const eng2=makeEngine(rc,{...cfg});
+  const stream=rc.captureStream(cfg.fps);
+  const mr=new MediaRecorder(stream,{mimeType:type,videoBitsPerSecond:14_000_000});
+  const chunks=[];mr.ondataavailable=e=>{if(e.data.size)chunks.push(e.data);};
+  const done=new Promise(r=>mr.onstop=r);
+  const dur=eng2.total; const t0=performance.now(); mr.start();
+  await new Promise(res=>{function fr(){const t=(performance.now()-t0)/1000*cfg.spd;const p=Math.min(1,t/dur);eng2.drawFrame(Math.min(t,dur));$('recinfo').textContent='grabando '+Math.round(p*100)+'%';if(t<dur){requestAnimationFrame(fr);}else res();}fr();});
+  await new Promise(r=>setTimeout(r,100));
+  mr.stop();await done;
+  const blob=new Blob(chunks,{type});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='hg-kinetic.webm';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),3000);
+  $('recinfo').textContent='✓ listo · '+(blob.size/1024|0)+' KB · '+dur.toFixed(1)+'s';
+  $('rec').disabled=false;$('replay').disabled=false;$('rec').textContent='⏺ GRABAR .webm';
+  toast('.webm grabado ⬇');
+}
+$('rec').onclick=record;
+$('dlPng').onclick=()=>{const off=document.createElement('canvas');const eng=makeEngine(off,{...cfg});eng.drawFrame(eng.inD+eng.hold*0.5);off.toBlob(b=>{const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='hg-kinetic.png';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000);toast('PNG ⬇');},'image/png');};
+
+function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),1600);}
+
+// init — esperar a que las fuentes carguen para medir bien
+if(document.fonts&&document.fonts.ready){document.fonts.ready.then(build);}
+build();
+</script>
+</body></html>
