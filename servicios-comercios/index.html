@@ -1,0 +1,358 @@
+<!doctype html><html lang="es"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SERVICIOS — Automatización para comercios · Human Glitche</title>
+<meta name="description" content="Automatizamos la gestión de tu comercio — atención, pedidos, turnos, cobros, clientes, redes — para que vendas más y trabajes menos. Medí gratis cuán automatizado está tu negocio con el medidor en vivo, y mirá el catálogo completo de servicios con precio. 100% en tu navegador.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{ --acid:#b8ff00; --glitch:#ff2d55; --cyan:#3ad0ff; --amber:#ffb020; --violet:#9b6bff; --ink:#f0ede6; --line:rgba(240,237,230,.12); --bg:#050505; --pan:rgba(184,255,0,.015);
+         --paper:#faf9f6; --pink:#12100c; --pline:#e3ded2; --pmut:#6b6656; }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{min-height:100%;background:var(--bg);color:var(--ink);font-family:'Space Mono',monospace;scroll-behavior:smooth;}
+  body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");z-index:0;pointer-events:none;opacity:.4;}
+  .wrap{position:relative;z-index:1;max-width:1280px;margin:0 auto;padding:26px 20px 90px;}
+  header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;gap:16px;flex-wrap:wrap;}
+  .brand{font-family:'Bebas Neue',sans-serif;font-size:44px;letter-spacing:.03em;line-height:.82;}
+  .brand b{color:var(--acid);font-weight:400;}
+  .brand span{display:block;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.22em;color:rgba(240,237,230,.4);margin-top:8px;}
+  header nav a{font-size:10px;letter-spacing:.2em;color:rgba(240,237,230,.4);text-decoration:none;margin-left:16px;} header nav a:hover{color:var(--acid);}
+
+  /* HERO */
+  .hero{margin:26px 0 34px;border:1px solid var(--line);border-radius:14px;background:linear-gradient(180deg,rgba(184,255,0,.04),rgba(5,5,5,0));padding:44px 40px;text-align:center;}
+  .hero h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(38px,6vw,72px);letter-spacing:.02em;line-height:.92;}
+  .hero h1 b{color:var(--acid);font-weight:400;}
+  .hero p{font-size:13px;color:rgba(240,237,230,.62);line-height:1.85;max-width:66ch;margin:16px auto 22px;}
+  .hero p b{color:var(--ink);font-weight:400;}
+  .hero .cta{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
+  .hero .cta a{font-size:11px;letter-spacing:.12em;text-transform:uppercase;text-decoration:none;padding:12px 20px;border-radius:8px;transition:.16s;}
+  .hero .cta a.pri{background:var(--acid);color:#050505;font-weight:700;} .hero .cta a.pri:hover{filter:brightness(1.08);}
+  .hero .cta a.alt{border:1px solid var(--line);color:var(--ink);} .hero .cta a.alt:hover{border-color:var(--acid);color:var(--acid);}
+
+  .seccap{font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:.28em;text-transform:uppercase;color:var(--acid);margin:0 0 4px;display:flex;align-items:center;gap:10px;}
+  .seccap .nn{font-family:'Space Mono',monospace;font-size:11px;background:var(--acid);color:#050505;font-weight:700;border-radius:4px;padding:2px 8px;}
+  .sectitle{font-family:'Bebas Neue',sans-serif;font-size:clamp(30px,4.5vw,48px);letter-spacing:.02em;line-height:.95;margin-bottom:6px;}
+  .secsub{font-size:12px;color:rgba(240,237,230,.55);line-height:1.75;max-width:74ch;margin-bottom:22px;} .secsub b{color:var(--acid);font-weight:400;}
+  .block{margin-top:48px;}
+
+  .cols{display:grid;grid-template-columns:340px 1fr;gap:24px;align-items:start;}
+  @media(max-width:980px){ .cols{grid-template-columns:1fr;} }
+  .editor{border:1px solid var(--line);border-radius:10px;background:var(--pan);padding:18px 16px;position:sticky;top:16px;}
+
+  .gauge{text-align:center;margin-bottom:4px;}
+  .gauge svg{width:100%;max-width:280px;height:auto;overflow:visible;}
+  #arcFg{transition:stroke-dashoffset .55s cubic-bezier(.2,.8,.2,1);}
+  #needleG{transition:transform .55s cubic-bezier(.34,1.4,.5,1);transform-origin:120px 112px;}
+  .tier{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:.03em;line-height:1;margin-top:2px;color:var(--acid);min-height:24px;}
+  .tierd{font-size:10.5px;color:rgba(240,237,230,.55);line-height:1.55;margin:7px 0 12px;min-height:30px;}
+  .loadbar{height:9px;border-radius:6px;background:#0b0b0b;border:1px solid var(--line);overflow:hidden;}
+  .loadbar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--glitch),var(--amber) 55%,var(--acid));transition:width .55s cubic-bezier(.2,.8,.2,1);}
+  .answered{font-size:9.5px;letter-spacing:.1em;color:rgba(240,237,230,.4);margin:8px 0 16px;text-transform:uppercase;}
+  .areas .al{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:rgba(240,237,230,.4);margin-bottom:9px;display:flex;align-items:center;gap:8px;}
+  .areas .al::after{content:'';flex:1;height:1px;background:var(--line);}
+  .arow{display:flex;align-items:center;gap:8px;margin-bottom:7px;font-size:10px;}
+  .arow .an{width:96px;flex:0 0 auto;color:rgba(240,237,230,.7);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .arow .ab{flex:1;height:6px;border-radius:4px;background:#0b0b0b;border:1px solid var(--line);overflow:hidden;}
+  .arow .ab i{display:block;height:100%;width:0;background:var(--cyan);transition:width .5s ease;}
+  .arow .av{width:30px;text-align:right;flex:0 0 auto;color:rgba(240,237,230,.5);}
+  .arow.dim .an{color:rgba(240,237,230,.3);}
+  .btn{cursor:pointer;background:transparent;border:1px solid var(--line);color:var(--ink);font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.12em;padding:10px 12px;border-radius:6px;transition:.18s;text-transform:uppercase;width:100%;margin-top:14px;}
+  .btn:hover{border-color:var(--acid);color:var(--acid);}
+
+  .paperwrap{min-width:0;}
+  .doc{background:var(--paper);color:var(--pink);border-radius:6px;box-shadow:0 20px 60px rgba(0,0,0,.5);padding:36px 38px;font-size:13px;line-height:1.65;}
+  .doc h2.sc{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:.04em;text-transform:uppercase;margin:4px 0 12px;padding-bottom:6px;border-bottom:1px solid var(--pline);color:var(--pink);}
+  .q{border:1px solid var(--pline);border-radius:8px;padding:14px 16px;margin-bottom:12px;background:#fff;}
+  .q .qh{display:flex;gap:9px;align-items:baseline;margin-bottom:10px;}
+  .q .qn{font-family:'Space Mono',monospace;font-size:11px;font-weight:700;color:var(--acid);background:var(--pink);padding:2px 7px;border-radius:4px;flex:0 0 auto;}
+  .q .qa{font-size:8px;letter-spacing:.14em;text-transform:uppercase;color:var(--violet);border:1px solid #e0cff6;background:#f0e8fb;border-radius:3px;padding:2px 6px;flex:0 0 auto;align-self:center;}
+  .q .qt{font-size:13.5px;font-weight:700;color:var(--pink);line-height:1.4;}
+  .opts{display:flex;flex-direction:column;gap:6px;}
+  .opt{display:flex;align-items:center;gap:10px;font-size:12px;color:#2a2822;border:1px solid var(--pline);border-radius:6px;padding:8px 11px;cursor:pointer;transition:.12s;background:#faf9f4;line-height:1.4;}
+  .opt:hover{border-color:var(--pmut);}
+  .opt .dot{width:14px;height:14px;border-radius:50%;border:2px solid var(--pline);flex:0 0 auto;transition:.12s;}
+  .opt.on{border-color:#7bbf00;background:#eef8d6;color:var(--pink);}
+  .opt.on .dot{border-color:#7bbf00;background:#7bbf00;box-shadow:inset 0 0 0 2px #eef8d6;}
+  .opt .sc0{color:var(--glitch);}
+  .opt .lvl{margin-left:auto;font-size:8px;letter-spacing:.06em;text-transform:uppercase;color:var(--pmut);flex:0 0 auto;}
+  .na{display:inline-flex;align-items:center;gap:7px;font-size:10.5px;color:var(--pmut);border:1px dashed var(--pline);border-radius:5px;padding:5px 10px;cursor:pointer;background:#fbfaf5;margin-top:2px;}
+  .na.on{border-style:solid;border-color:var(--pmut);color:#3a382f;background:#f2efe7;}
+
+  .res{border:1px solid var(--pline);border-radius:8px;background:#fbfaf4;padding:18px 20px;margin-top:4px;}
+  .res .rl{font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:.02em;line-height:1;color:var(--pink);} .res .rl b{color:#5f8f00;}
+  .res .rt{font-size:12px;color:var(--pmut);line-height:1.6;margin-top:8px;}
+  .rec{display:flex;gap:12px;align-items:flex-start;border:1px solid var(--pline);border-radius:8px;padding:12px 14px;margin-bottom:10px;background:#fff;}
+  .rec .ri{font-size:24px;line-height:1;flex:0 0 auto;}
+  .rec .rc{flex:1;min-width:0;}
+  .rec .rn{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:.03em;color:var(--pink);}
+  .rec .rp{font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:#5f8f00;margin-left:8px;}
+  .rec .rd{font-size:11.5px;color:#3a382f;line-height:1.5;margin:3px 0 4px;}
+  .rec .rprice{font-size:11px;color:#12414f;background:#e2f4fb;border:1px solid #c9e8f4;border-radius:4px;padding:2px 8px;display:inline-block;}
+  .rec .gapbar{width:54px;flex:0 0 auto;text-align:center;}
+  .rec .gapbar .gv{font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--glitch);line-height:1;}
+  .rec .gapbar .gl{font-size:7.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--pmut);}
+  .cta2{margin-top:8px;padding:14px 16px;border:2px dashed #cfe89a;border-radius:8px;background:#f4fbe4;text-align:center;}
+  .cta2 p{font-size:12px;color:#3a382f;margin-bottom:10px;line-height:1.5;}
+  .cta2 a{display:inline-block;font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;text-decoration:none;background:var(--pink);color:var(--paper);padding:9px 16px;border-radius:6px;margin:0 3px;}
+  .cta2 a.alt{background:transparent;color:var(--pink);border:1px solid var(--pink);}
+  .locked{font-size:12px;color:var(--pmut);text-align:center;padding:24px;font-style:italic;}
+
+  /* CATÁLOGO */
+  .catgrp{margin-bottom:30px;}
+  .catgl{font-family:'Bebas Neue',sans-serif;font-size:19px;letter-spacing:.06em;color:var(--ink);margin-bottom:12px;display:flex;align-items:center;gap:10px;}
+  .catgl .cgi{font-size:20px;} .catgl::after{content:'';flex:1;height:1px;background:var(--line);}
+  .catgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;}
+  .svc{border:1px solid var(--line);border-radius:10px;background:var(--pan);padding:16px;transition:.16s;}
+  .svc:hover{border-color:rgba(184,255,0,.5);background:rgba(184,255,0,.03);}
+  .svc .sh{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+  .svc .si{font-size:22px;line-height:1;}
+  .svc .sn{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:.03em;line-height:1;}
+  .svc .spara{font-size:10px;color:var(--acid);letter-spacing:.04em;margin-bottom:8px;}
+  .svc .sd{font-size:11.5px;color:rgba(240,237,230,.6);line-height:1.6;margin-bottom:10px;}
+  .svc .sprice{font-size:11px;color:var(--cyan);border:1px solid rgba(58,208,255,.25);background:rgba(58,208,255,.06);border-radius:5px;padding:4px 9px;display:inline-block;}
+
+  .finalcta{margin-top:44px;border:1px solid var(--line);border-radius:14px;background:linear-gradient(180deg,rgba(184,255,0,.05),rgba(5,5,5,0));padding:38px 32px;text-align:center;}
+  .finalcta h3{font-family:'Bebas Neue',sans-serif;font-size:clamp(26px,4vw,42px);letter-spacing:.02em;line-height:.95;}
+  .finalcta h3 b{color:var(--acid);font-weight:400;}
+  .finalcta p{font-size:12px;color:rgba(240,237,230,.6);line-height:1.8;max-width:60ch;margin:12px auto 20px;}
+  .finalcta .cta a{font-size:11px;letter-spacing:.12em;text-transform:uppercase;text-decoration:none;padding:12px 22px;border-radius:8px;margin:0 4px;display:inline-block;}
+  .finalcta .cta a.pri{background:var(--acid);color:#050505;font-weight:700;} .finalcta .cta a.alt{border:1px solid var(--line);color:var(--ink);}
+
+  .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--acid);color:#050505;font-size:11px;font-weight:700;letter-spacing:.08em;padding:10px 18px;border-radius:6px;opacity:0;pointer-events:none;transition:.25s;z-index:9;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  .foot{font-size:10px;color:rgba(240,237,230,.35);letter-spacing:.1em;margin-top:40px;text-align:center;}
+</style></head><body>
+<div class="wrap">
+  <header>
+    <div class="brand"><b>SERVICIOS</b> · AUTOMATIZACIÓN<span>que tu comercio venda más y trabajes menos</span></div>
+    <nav><a href="/labs/">← LABS</a><a href="/pipelines/">PIPELINES</a><a href="/contacto.html">CONTACTO</a></nav>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero">
+    <h1>DEJÁ DE HACER<br><b>TODO A MANO</b>.</h1>
+    <p>Automatizamos la <b>gestión</b> de tu comercio — atención, pedidos, turnos, cobros, clientes, redes — con herramientas simples que trabajan por vos. <b>Medí gratis</b> cuánto podés automatizar y mirá todo lo que hacemos, con precios claros.</p>
+    <div class="cta"><a class="pri" href="#medir">Medir mi negocio ↓</a><a class="alt" href="#catalogo">Ver los servicios</a></div>
+  </section>
+
+  <!-- 1 · MEDIDOR -->
+  <section class="block" id="medir">
+    <div class="seccap"><span class="nn">1</span>Medí tu nivel</div>
+    <h2 class="sectitle">¿CUÁN AUTOMATIZADO ESTÁ TU NEGOCIO?</h2>
+    <p class="secsub">Un cuestionario corto sobre <b>cómo gestionás</b> el negocio — no tu producto. De <b>0 (todo a pulmón)</b> a <b>100 (piloto automático)</b>. La campana se mueve en vivo y al final ves tus mayores oportunidades.</p>
+    <div class="cols">
+      <div class="editor">
+        <div class="gauge">
+          <svg viewBox="0 0 240 138" role="img" aria-label="Medidor de automatización">
+            <defs><linearGradient id="gg" x1="0" x2="1" y1="0" y2="0">
+              <stop offset="0" stop-color="#ff2d55"/><stop offset=".5" stop-color="#ffb020"/><stop offset="1" stop-color="#b8ff00"/>
+            </linearGradient></defs>
+            <path id="arcBg" d="M28 112 A92 92 0 0 1 212 112" fill="none" stroke="rgba(240,237,230,.12)" stroke-width="16" stroke-linecap="round"/>
+            <path id="arcFg" d="M28 112 A92 92 0 0 1 212 112" fill="none" stroke="url(#gg)" stroke-width="16" stroke-linecap="round"/>
+            <g id="needleG"><line x1="120" y1="112" x2="120" y2="42" stroke="#f0ede6" stroke-width="3.4" stroke-linecap="round"/><circle cx="120" cy="112" r="6.5" fill="#f0ede6"/></g>
+            <text id="gScore" x="120" y="106" text-anchor="middle" font-family="'Bebas Neue',sans-serif" font-size="36" fill="#f0ede6">0</text>
+            <text x="26" y="132" text-anchor="middle" font-family="'Space Mono',monospace" font-size="8" letter-spacing="1" fill="rgba(240,237,230,.5)">MANUAL</text>
+            <text x="214" y="132" text-anchor="middle" font-family="'Space Mono',monospace" font-size="8" letter-spacing="1" fill="rgba(240,237,230,.5)">AUTO</text>
+          </svg>
+        </div>
+        <div class="tier" id="tier">—</div>
+        <div class="tierd" id="tierd">Respondé el cuestionario y la aguja se va a mover.</div>
+        <div class="loadbar"><i id="loadbar"></i></div>
+        <div class="answered" id="answered">0 de 11 respondidas</div>
+        <div class="areas"><div class="al">Perfil por área</div><div id="arows"></div></div>
+        <button class="btn" id="copyBtn">⧉ Copiar diagnóstico</button>
+      </div>
+
+      <div class="paperwrap">
+        <div class="doc">
+          <h2 class="sc">El cuestionario</h2>
+          <div id="quiz"></div>
+          <h2 class="sc" style="margin-top:26px;">Tu diagnóstico</h2>
+          <div id="result"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2 · CATÁLOGO -->
+  <section class="block" id="catalogo">
+    <div class="seccap"><span class="nn">2</span>Todo lo que automatizamos</div>
+    <h2 class="sectitle">EL CATÁLOGO DE SERVICIOS</h2>
+    <p class="secsub">Cada servicio resuelve una parte de tu gestión y se puede tomar suelto o en combo. <b>Setup</b> (una vez) + <b>abono mensual</b> donde corresponde — sin letra chica.</p>
+    <div id="catalog"></div>
+  </section>
+
+  <!-- CTA FINAL -->
+  <section class="finalcta">
+    <h3>¿ARMAMOS <b>TU PLAN</b>?</h3>
+    <p>Con tu diagnóstico ya sabemos por dónde empezar. Te armamos el plan de automatización a medida, con costo y presupuesto claro, y lo ponemos a andar.</p>
+    <div class="cta"><a class="pri" href="/contacto.html">Quiero mi diagnóstico</a><a class="alt" href="/pipelines/">Ver cómo se arma</a></div>
+  </section>
+
+  <p class="foot">HUMAN GLITCHE — automatización para comercios · el medidor corre 100% en tu navegador · precios de referencia, se ajustan al caso</p>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+var $=function(id){return document.getElementById(id);};
+function toast(m){var t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(function(){t.classList.remove('show');},1600);}
+function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+/* ============ SERVICIOS (los 13 de PIPELINES) ============ */
+var SV={
+  web:{ico:'🌐',name:'PRESENCIA WEB',para:'que te encuentren en internet',desc:'Sitio simple que carga rápido y aparece en Google. La base de todo.',setup:200,mensual:30},
+  wa:{ico:'💬',name:'WHATSAPP BIZ AUTOPILOT',para:'dejar de contestar lo mismo mil veces',desc:'Catálogo, respuestas automáticas a las preguntas de siempre, etiquetas y recordatorios.',setup:150,mensual:70},
+  social:{ico:'📲',name:'REDES EN PILOTO',para:'estar en redes sin vivir en el teléfono',desc:'Contenido programado, respuestas automáticas a DM y reporte mensual.',setup:160,mensual:200},
+  menu:{ico:'🍽️',name:'MENÚ + PEDIDOS WHATSAPP',para:'que los pedidos entren solos',desc:'Carta con QR: el cliente arma el pedido y cae directo a tu WhatsApp.',setup:180,mensual:80},
+  leads:{ico:'🧲',name:'CAPTURA DE LEADS',para:'no perder a los interesados',desc:'Formulario que captura interesados y dispara seguimiento automático.',setup:120,mensual:50},
+  resenas:{ico:'⭐',name:'REPUTACIÓN',para:'subir tu nota y tu confianza',desc:'Pide reseñas a los contentos y te avisa de las negativas antes de que escalen.',setup:90,mensual:45},
+  turnos:{ico:'📆',name:'AGENDA / TURNOS',para:'dejar de coordinar turnos a mano',desc:'Link de reserva con confirmación y recordatorio automático 24h antes.',setup:130,mensual:55},
+  factura:{ico:'🧾',name:'FACTURACIÓN AUTO',para:'facturar sin fricción',desc:'De la venta al comprobante: arma la factura AR, la envía y la registra.',setup:140,mensual:60},
+  tienda:{ico:'🛒',name:'TIENDA + PAGOS',para:'cobrar online, registrado solo',desc:'Catálogo con carrito y cobro por Mercado Pago: el pedido llega cobrado.',setup:240,mensual:60},
+  ads:{ico:'📣',name:'PUBLICIDAD LOCAL',para:'traer clientes nuevos con pauta',desc:'Campañas en Instagram/Google segmentadas al barrio, con reporte claro.',setup:140,mensual:180},
+  email:{ico:'💌',name:'EMAIL + FIDELIZACIÓN',para:'hacer que los clientes vuelvan',desc:'Base de clientes con newsletter, cupones y cumpleaños automático.',setup:100,mensual:50},
+  brand:{ico:'🎨',name:'IDENTIDAD VISUAL',para:'que todo se vea de la misma casa',desc:'Logo, paleta, tipografías y plantillas para redes. El pack queda para siempre.',setup:220,mensual:0},
+  video:{ico:'🎬',name:'PACK VIDEO / REELS',para:'aparecer con reels sin producirlos vos',desc:'Pack mensual de videos cortos filmados y editados con estética propia.',setup:120,mensual:250}
+};
+function priceStr(id){ var s=SV[id]; return s.mensual>0 ? ('Setup desde $'+s.setup+' · $'+s.mensual+'/mes') : ('Pago único $'+s.setup); }
+
+/* ============ CATÁLOGO agrupado ============ */
+var GROUPS=[
+  {ico:'🔎',n:'Que te encuentren',ids:['web','social','ads']},
+  {ico:'💬',n:'Atender y vender',ids:['wa','menu','tienda']},
+  {ico:'📆',n:'Ordenar la operación',ids:['turnos','factura','leads']},
+  {ico:'❤️',n:'Fidelizar clientes',ids:['email','resenas']},
+  {ico:'🎨',n:'Imagen y contenido',ids:['brand','video']}
+];
+function renderCatalog(){
+  var box=$('catalog'); var h='';
+  GROUPS.forEach(function(g){
+    h+='<div class="catgrp"><div class="catgl"><span class="cgi">'+g.ico+'</span>'+esc(g.n)+'</div><div class="catgrid">';
+    g.ids.forEach(function(id){ var s=SV[id]; if(!s) return;
+      h+='<div class="svc"><div class="sh"><span class="si">'+s.ico+'</span><span class="sn">'+esc(s.name)+'</span></div>'+
+         '<div class="spara">para '+esc(s.para)+'</div><div class="sd">'+esc(s.desc)+'</div><span class="sprice">'+priceStr(id)+'</span></div>';
+    });
+    h+='</div></div>';
+  });
+  box.innerHTML=h;
+}
+
+/* ============ CUESTIONARIO (gestión) ============ */
+var LVL=['Manual','Semi','Casi','Auto'];
+var Q=[
+  {id:'q1',area:'Presencia',svc:['web','social'],q:'¿Cómo te encuentra un cliente nuevo?',
+   o:['De boca en boca; me tienen que conocer','Tengo redes y las manejo a pulmón','Tengo web o ficha de Google que aparece sola','Web + Google + redes actualizadas casi solas']},
+  {id:'q2',area:'Atención',svc:['wa'],q:'¿Cómo respondés las consultas de siempre (precios, horarios, stock)?',
+   o:['Contesto yo cada una, cuando puedo','Contesto yo, con respuestas guardadas','WhatsApp Business con catálogo','Un bot responde las FAQ y me avisa lo importante']},
+  {id:'q3',area:'Pedidos',svc:['menu','tienda'],q:'¿Cómo te entra un pedido o una compra?',
+   o:['Me lo dicen y lo anoto a mano','Por WhatsApp, con idas y vueltas hasta cerrar','Con un menú/catálogo que arma el pedido','Entra armado (y cobrado) sin que yo intervenga']},
+  {id:'q4',area:'Turnos',svc:['turnos'],na:true,q:'Si trabajás con turnos o reservas, ¿cómo los manejás?',
+   o:['Agenda de papel; coordino a mano','Los anoto en el celu; confirmo y recuerdo yo','Tengo un link de reserva','Reserva + confirmación + recordatorio automáticos']},
+  {id:'q5',area:'Cobros',svc:['tienda'],q:'¿Cómo cobrás?',
+   o:['Efectivo o transferencia que reviso a mano','Varios medios, pero registro a mano','Link de pago o QR','Cobro online integrado al pedido, registrado solo']},
+  {id:'q6',area:'Cobros',svc:['factura'],na:true,q:'¿Cómo hacés las facturas?',
+   o:['A mano, o no facturo todo','Cargo cada una en la web de ARCA','Tengo un sistema, pero lo hago yo','Se genera y se envía sola con la venta']},
+  {id:'q7',area:'Clientes',svc:['leads','email'],q:'¿Tenés una base con los contactos de tus clientes?',
+   o:['No la tengo','Algunos números sueltos','Una lista o planilla','Una base que se llena sola y puedo usar para avisar']},
+  {id:'q8',area:'Clientes',svc:['email','resenas'],q:'¿Qué hacés para que vuelvan y para juntar reseñas?',
+   o:['Nada puntual','A veces mando una promo por mi cuenta','Mando novedades cuando me acuerdo','Promos, cupones y reseñas salen automáticos']},
+  {id:'q9',area:'Redes',svc:['social','video'],q:'¿Cómo manejás las redes y el contenido?',
+   o:['Casi no publico / cuando puedo','Publico a pulmón, sin plan','Tengo un plan y a veces programo','Contenido programado con reporte, casi sin tocar']},
+  {id:'q10',area:'Redes',svc:['ads'],na:true,q:'¿Hacés publicidad paga?',
+   o:['Nunca / no sé cómo','Aprieto "promocionar" en IG cada tanto','Pauto a veces y miro resultados','Campañas segmentadas con reporte de retorno']},
+  {id:'q11',area:'Números',svc:[],q:'¿Sabés tus números (qué se vende más, cuánto entra, de dónde viene)?',
+   o:['Los tengo en la cabeza','Anoto algo pero no lo miro','Reviso una planilla de vez en cuando','Tengo reportes claros que miro para decidir']}
+];
+var SCORES=[0,33,66,100];
+var AREAS=['Presencia','Atención','Pedidos','Turnos','Cobros','Clientes','Redes','Números'];
+var TIERS=[
+  {min:0,  n:'TODO A PULMÓN',       d:'Tu gestión es casi toda manual: cada tarea depende de vos y de tu tiempo. Hay muchísimo para destrabar.'},
+  {min:25, n:'ARRANCANDO A ORDENAR',d:'Diste los primeros pasos, pero todavía hacés a mano varias cosas que podrían andar solas.'},
+  {min:50, n:'SEMI-AUTOMATIZADO',   d:'Buena base: varias piezas ya trabajan por vos. Faltan las que más tiempo te comen.'},
+  {min:75, n:'PILOTO AUTOMÁTICO',    d:'Tu gestión corre casi sola. Ahora es cuestión de afinar y escalar.'}
+];
+function tierFor(s){ var t=TIERS[0]; for(var i=0;i<TIERS.length;i++) if(s>=TIERS[i].min) t=TIERS[i]; return t; }
+
+var st;
+try{ st=JSON.parse(localStorage.getItem('hg_medidor_serv')||'null'); }catch(e){ st=null; }
+if(!st||!st.ans) st={ ans:{} };
+function save(){ try{ localStorage.setItem('hg_medidor_serv',JSON.stringify(st)); }catch(e){} }
+
+function answeredList(){ return Q.filter(function(q){ var a=st.ans[q.id]; return a===0||a>0; }); }
+function score(){ var a=answeredList(); if(!a.length) return 0; var s=0; a.forEach(function(q){ s+=SCORES[st.ans[q.id]]; }); return Math.round(s/a.length); }
+function areaScore(area){ var qs=Q.filter(function(q){ return q.area===area && (st.ans[q.id]===0||st.ans[q.id]>0); }); if(!qs.length) return null; var s=0; qs.forEach(function(q){ s+=SCORES[st.ans[q.id]]; }); return Math.round(s/qs.length); }
+function recs(){ var acc={}; Q.forEach(function(q){ var a=st.ans[q.id]; if(!(a===0||a>0)) return; if(!q.svc.length) return; var gap=100-SCORES[a]; if(gap<=0) return; q.svc.forEach(function(id){ acc[id]=(acc[id]||0)+gap; }); }); return Object.keys(acc).map(function(id){return {id:id,gap:acc[id]};}).sort(function(x,y){return y.gap-x.gap;}); }
+
+var TOTAL=Math.PI*92;
+function updateGauge(){
+  var s=score(), n=answeredList().length;
+  $('arcFg').style.strokeDasharray=TOTAL+' '+TOTAL;
+  $('arcFg').style.strokeDashoffset=(TOTAL*(1-s/100));
+  $('needleG').style.transform='rotate('+((s-50)/50*90)+'deg)';
+  $('gScore').textContent=s;
+  $('loadbar').style.width=s+'%';
+  var t=tierFor(s);
+  $('tier').textContent = n? t.n : '—';
+  $('tierd').textContent = n? t.d : 'Respondé el cuestionario y la aguja se va a mover.';
+  $('answered').textContent=n+' de '+Q.length+' respondidas';
+}
+function updateAreas(){
+  var box=$('arows'); box.innerHTML='';
+  AREAS.forEach(function(area){ var v=areaScore(area), has=v!==null;
+    var d=document.createElement('div'); d.className='arow'+(has?'':' dim');
+    d.innerHTML='<span class="an">'+esc(area)+'</span><span class="ab"><i style="width:'+(has?v:0)+'%"></i></span><span class="av">'+(has?v:'–')+'</span>';
+    box.appendChild(d);
+  });
+}
+function renderQuiz(){
+  var box=$('quiz'); box.innerHTML='';
+  Q.forEach(function(q,i){
+    var a=st.ans[q.id];
+    var opts=q.o.map(function(txt,idx){ var on=(a===idx);
+      return '<div class="opt'+(on?' on':'')+'" data-q="'+q.id+'" data-o="'+idx+'"><span class="dot"></span><span'+(idx===0?' class="sc0"':'')+'>'+esc(txt)+'</span><span class="lvl">'+LVL[idx]+'</span></div>';
+    }).join('');
+    var na = q.na ? '<div style="margin-top:2px"><span class="na'+(a==='na'?' on':'')+'" data-q="'+q.id+'" data-na="1">'+(a==='na'?'✓ ':'')+'No aplica a mi negocio</span></div>' : '';
+    box.innerHTML += '<div class="q"><div class="qh"><span class="qn">'+(i<9?'0':'')+(i+1)+'</span><span class="qa">'+esc(q.area)+'</span><span class="qt">'+esc(q.q)+'</span></div><div class="opts">'+opts+'</div>'+na+'</div>';
+  });
+  Array.prototype.forEach.call(box.querySelectorAll('.opt'),function(el){ el.addEventListener('click',function(){ st.ans[el.getAttribute('data-q')]=+el.getAttribute('data-o'); save(); updateAll(); }); });
+  Array.prototype.forEach.call(box.querySelectorAll('.na'),function(el){ el.addEventListener('click',function(){ var q=el.getAttribute('data-q'); if(st.ans[q]==='na') delete st.ans[q]; else st.ans[q]='na'; save(); updateAll(); }); });
+}
+function renderResult(){
+  var box=$('result'), n=answeredList().length, s=score();
+  if(n<3){ box.innerHTML='<div class="locked">Respondé al menos 3 preguntas para ver tu nivel y tus oportunidades. Llevás '+n+'.</div>'; return; }
+  var t=tierFor(s);
+  var h='<div class="res"><div class="rl">Tu nivel: <b>'+s+'/100</b> — '+esc(t.n)+'</div><div class="rt">'+esc(t.d)+'</div></div>';
+  var r=recs();
+  if(r.length){
+    h+='<h2 class="sc" style="margin-top:22px;">Tus mayores oportunidades</h2>';
+    h+='<p style="font-size:11.5px;color:#6b6656;margin:-4px 0 12px;line-height:1.6;">Ordenadas por lo que más tiempo te destraban. Cada una es un servicio del catálogo, con su precio de referencia.</p>';
+    var maxGap=r[0].gap||1;
+    r.slice(0,5).forEach(function(o){ var s2=SV[o.id]; if(!s2) return; var prio=Math.round(o.gap/maxGap*100);
+      h+='<div class="rec"><span class="ri">'+s2.ico+'</span><div class="rc"><div><span class="rn">'+esc(s2.name)+'</span><span class="rp">para '+esc(s2.para)+'</span></div>'+
+         '<div class="rd">'+esc(s2.desc)+'</div><span class="rprice">'+priceStr(o.id)+'</span></div>'+
+         '<div class="gapbar"><div class="gv">'+prio+'</div><div class="gl">prioridad</div></div></div>';
+    });
+    h+='<div class="cta2"><p>Estas oportunidades ya son un plan armable. Escribinos y lo ponemos a andar con costo y presupuesto claro.</p>'+
+       '<a href="/contacto.html">Quiero mi plan</a><a class="alt" href="#catalogo">Ver todo el catálogo</a></div>';
+  } else {
+    h+='<div class="cta2"><p>¡Tu gestión ya corre en piloto automático! No detectamos tareas manuales para destrabar. Si querés afinar detalles, escribinos.</p><a href="/contacto.html">Escribinos</a></div>';
+  }
+  box.innerHTML=h;
+}
+function diagText(){
+  var s=score(), t=tierFor(s), L=['DIAGNÓSTICO DE GESTIÓN · Human Glitche','(mide la gestión del negocio, no el producto)','',
+    'NIVEL: '+s+'/100 — '+t.n, t.d,'','PERFIL POR ÁREA:'];
+  AREAS.forEach(function(a){ var v=areaScore(a); if(v!==null) L.push('  · '+a+': '+v+'/100'); });
+  var r=recs(); if(r.length){ L.push('','TUS MAYORES OPORTUNIDADES:'); r.slice(0,5).forEach(function(o){ var sv=SV[o.id]; L.push('  '+sv.ico+' '+sv.name+' — '+priceStr(o.id)); L.push('     para '+sv.para+'. '+sv.desc); }); }
+  L.push('','Escribinos para armar tu plan · hg-vl.com'); return L.join('\n');
+}
+function updateAll(){ updateGauge(); updateAreas(); renderQuiz(); renderResult(); }
+
+$('copyBtn').addEventListener('click',function(){ if(answeredList().length<3){toast('Respondé al menos 3 preguntas');return;}
+  var t=diagText(); if(navigator.clipboard) navigator.clipboard.writeText(t).then(function(){toast('Diagnóstico copiado');},function(){prompt('Copiá:',t);}); else prompt('Copiá:',t); });
+
+renderCatalog();
+updateAll();
+})();
+</script>
+</body></html>

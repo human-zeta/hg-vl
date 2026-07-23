@@ -1,0 +1,84 @@
+<!doctype html><html lang="es"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SERVICIOS — Human Glitche · elegí tu camino</title>
+<meta name="description" content="Dos líneas de servicio de Human Glitche: el Estudio (producción audiovisual e identidad para artistas y marcas, en tiempo real) y Automatización para comercios (web, WhatsApp, turnos, cobros y más para que tu negocio venda más y trabajes menos). Elegí la que va con vos.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{ --acid:#b8ff00; --glitch:#ff2d55; --cyan:#3ad0ff; --violet:#9b6bff; --ink:#f0ede6; --line:rgba(240,237,230,.12); --bg:#050505; }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{min-height:100%;background:var(--bg);color:var(--ink);font-family:'Space Mono',monospace;}
+  body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");z-index:0;pointer-events:none;opacity:.4;}
+  .wrap{position:relative;z-index:1;max-width:1080px;margin:0 auto;padding:34px 20px 80px;min-height:100vh;display:flex;flex-direction:column;}
+  header{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;margin-bottom:auto;}
+  .brand{font-family:'Bebas Neue',sans-serif;font-size:40px;letter-spacing:.03em;line-height:.82;}
+  .brand b{color:var(--acid);font-weight:400;}
+  .brand span{display:block;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.24em;color:rgba(240,237,230,.4);margin-top:7px;}
+  header nav a{font-size:10px;letter-spacing:.2em;color:rgba(240,237,230,.4);text-decoration:none;margin-left:16px;} header nav a:hover{color:var(--acid);}
+
+  .center{margin:auto 0;}
+  .lead{text-align:center;margin-bottom:34px;}
+  .lead h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(38px,6.5vw,76px);letter-spacing:.02em;line-height:.9;}
+  .lead h1 b{color:var(--acid);font-weight:400;}
+  .lead p{font-size:13px;color:rgba(240,237,230,.6);line-height:1.8;max-width:60ch;margin:14px auto 0;}
+
+  .doors{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+  @media(max-width:760px){ .doors{grid-template-columns:1fr;} }
+  .door{position:relative;border:1px solid var(--line);border-radius:16px;padding:32px 30px 28px;text-decoration:none;color:var(--ink);overflow:hidden;transition:.2s;display:flex;flex-direction:column;min-height:340px;}
+  .door::before{content:'';position:absolute;inset:0;opacity:.05;transition:.2s;}
+  .door.studio::before{background:radial-gradient(120% 80% at 50% 0%,var(--violet),transparent 70%);}
+  .door.comercios::before{background:radial-gradient(120% 80% at 50% 0%,var(--acid),transparent 70%);}
+  .door:hover{transform:translateY(-4px);}
+  .door.studio:hover{border-color:var(--violet);} .door.studio:hover::before{opacity:.13;}
+  .door.comercios:hover{border-color:var(--acid);} .door.comercios:hover::before{opacity:.12;}
+  .door .ic{font-size:44px;line-height:1;margin-bottom:18px;}
+  .door .kick{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:rgba(240,237,230,.45);margin-bottom:6px;}
+  .door.studio .kick{color:var(--violet);} .door.comercios .kick{color:var(--acid);}
+  .door h2{font-family:'Bebas Neue',sans-serif;font-size:34px;letter-spacing:.02em;line-height:.95;margin-bottom:12px;}
+  .door p{font-size:12.5px;color:rgba(240,237,230,.62);line-height:1.75;}
+  .door ul{list-style:none;margin:14px 0 0;padding:0;}
+  .door li{font-size:11.5px;color:rgba(240,237,230,.55);line-height:1.9;padding-left:16px;position:relative;}
+  .door li::before{content:'→';position:absolute;left:0;color:rgba(240,237,230,.35);}
+  .door .go{margin-top:auto;padding-top:20px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;display:flex;align-items:center;gap:8px;}
+  .door.studio .go{color:var(--violet);} .door.comercios .go{color:var(--acid);}
+  .door .go .arw{transition:.2s;} .door:hover .go .arw{transform:translateX(5px);}
+
+  .foot{text-align:center;font-size:10px;color:rgba(240,237,230,.32);letter-spacing:.1em;margin-top:40px;}
+  .foot a{color:rgba(240,237,230,.5);text-decoration:none;} .foot a:hover{color:var(--acid);}
+</style></head><body>
+<div class="wrap">
+  <header>
+    <div class="brand"><b>HUMAN</b> GLITCHE<span>servicios</span></div>
+    <nav><a href="/home.html">← HG</a><a href="/labs/">LABS</a><a href="/contacto.html">CONTACTO</a></nav>
+  </header>
+
+  <div class="center">
+    <div class="lead">
+      <h1>¿QUÉ <b>NECESITÁS</b>?</h1>
+      <p>Trabajamos en dos mundos. Elegí el que va con vos y te mostramos exactamente lo que hacemos y cuánto sale.</p>
+    </div>
+
+    <div class="doors">
+      <a class="door studio" href="/servicios.html">
+        <div class="ic">🎬</div>
+        <div class="kick">Human Studio × Glitche</div>
+        <h2>ESTUDIO<br>ARTISTAS &amp; MARCAS</h2>
+        <p>Producción audiovisual e identidad con alma, potenciada por IA y tiempo real. Para músicos, eventos, espectáculos y marcas que quieren destacar.</p>
+        <ul><li>Identidad y dirección de arte</li><li>Videoclips y contenido de gira</li><li>Visuales en vivo (VDMX6 / TouchDesigner)</li></ul>
+        <div class="go">Ver la oferta del estudio <span class="arw">→</span></div>
+      </a>
+
+      <a class="door comercios" href="/servicios-comercios/">
+        <div class="ic">🏪</div>
+        <div class="kick">Automatización</div>
+        <h2>COMERCIOS<br>&amp; NEGOCIOS LOCALES</h2>
+        <p>Automatizamos la gestión de tu comercio — atención, pedidos, turnos, cobros, clientes — para que vendas más y trabajes menos. Con precios claros.</p>
+        <ul><li>Medí gratis cuánto podés automatizar</li><li>Web, WhatsApp, turnos, tienda y pagos</li><li>13 servicios sueltos o en combo</li></ul>
+        <div class="go">Medir mi negocio y ver servicios <span class="arw">→</span></div>
+      </a>
+    </div>
+  </div>
+
+  <div class="foot">HUMAN GLITCHE — <a href="/home.html">la misión</a> · <a href="/labs/">el taller</a> · <a href="/vl/">visual lab</a></div>
+</div>
+</body></html>
