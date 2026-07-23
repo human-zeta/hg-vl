@@ -1,0 +1,441 @@
+<!doctype html><html lang="es"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>GUIÓN DE CAMPAÑA — Human Glitche · el copy de tu lanzamiento, por rubro</title>
+<meta name="description" content="El gemelo verbal del KIT DE LANZAMIENTO: elegís tu rubro (gastronomía, producto/ecommerce, indumentaria), cargás tu producto y oferta, y baja el copy de toda la campaña — hooks que frenan el scroll, caption, CTA y hashtags — por cada momento del lanzamiento (teaser → anuncio → prueba → oferta → cierre) y adaptado por plataforma. Tres tonos. Copiás o imprimís el guión. 100% en tu navegador.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{ --acid:#b8ff00; --glitch:#ff2d55; --cyan:#3ad0ff; --amber:#ffb020; --violet:#9b6bff; --ink:#f0ede6; --line:rgba(240,237,230,.12); --bg:#050505; --pan:rgba(184,255,0,.015);
+         --paper:#faf9f6; --pink:#12100c; --pline:#e3ded2; --pmut:#6b6656; }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{min-height:100%;background:var(--bg);color:var(--ink);font-family:'Space Mono',monospace;}
+  body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");z-index:0;pointer-events:none;opacity:.4;}
+  .wrap{position:relative;z-index:1;max-width:1280px;margin:0 auto;padding:26px 20px 90px;}
+  header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;gap:16px;flex-wrap:wrap;}
+  .brand{font-family:'Bebas Neue',sans-serif;font-size:52px;letter-spacing:.03em;line-height:.82;}
+  .brand b{color:var(--acid);font-weight:400;}
+  .brand span{display:block;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.26em;color:rgba(240,237,230,.4);margin-top:8px;}
+  header nav a{font-size:10px;letter-spacing:.2em;color:rgba(240,237,230,.4);text-decoration:none;margin-left:16px;} header nav a:hover{color:var(--acid);}
+  .intro{font-size:12px;color:rgba(240,237,230,.55);line-height:1.8;max-width:80ch;margin:12px 0 22px;}
+  .intro b{color:var(--acid);font-weight:400;}
+
+  .cols{display:grid;grid-template-columns:360px 1fr;gap:24px;align-items:start;}
+  @media(max-width:980px){ .cols{grid-template-columns:1fr;} }
+  .editor{border:1px solid var(--line);border-radius:10px;background:var(--pan);padding:16px;position:sticky;top:16px;max-height:calc(100vh - 32px);overflow:auto;}
+  .editor h2{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:.04em;color:var(--acid);margin:2px 0 12px;}
+  .grp{margin-bottom:16px;} .grp>.gl{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:rgba(240,237,230,.4);margin-bottom:8px;display:flex;align-items:center;gap:8px;}
+  .grp>.gl::after{content:'';flex:1;height:1px;background:var(--line);}
+  .fld{display:flex;flex-direction:column;gap:4px;margin-bottom:9px;}
+  .fld label{font-size:8.5px;letter-spacing:.16em;text-transform:uppercase;color:rgba(240,237,230,.4);}
+  .fld input{background:#0b0b0b;border:1px solid var(--line);color:var(--ink);font-family:'Space Mono',monospace;font-size:12px;padding:7px 9px;border-radius:6px;width:100%;}
+  .fld input:focus{outline:none;border-color:var(--acid);}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;}
+  .chip{font-size:10px;padding:5px 9px;border:1px solid var(--line);border-radius:5px;cursor:pointer;transition:.12s;color:rgba(240,237,230,.7);user-select:none;}
+  .chip:hover{border-color:var(--acid);} .chip.on{border-color:var(--acid);color:var(--acid);background:rgba(184,255,0,.07);}
+  .rubros{display:flex;flex-direction:column;gap:7px;}
+  .rubro{display:flex;gap:10px;align-items:center;border:1px solid var(--line);border-radius:8px;padding:10px 11px;cursor:pointer;transition:.14s;background:#0b0b0b;}
+  .rubro:hover{border-color:rgba(184,255,0,.5);}
+  .rubro.on{border-color:var(--acid);background:rgba(184,255,0,.06);}
+  .rubro .ic{font-size:20px;line-height:1;}
+  .rubro .tx b{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:.04em;color:var(--ink);font-weight:400;display:block;}
+  .rubro.on .tx b{color:var(--acid);}
+  .rubro .tx span{font-size:9px;letter-spacing:.08em;color:rgba(240,237,230,.45);}
+  .shotoggle{display:flex;flex-direction:column;gap:5px;}
+  .stg{display:flex;align-items:center;gap:9px;font-size:11px;color:rgba(240,237,230,.7);cursor:pointer;padding:5px 7px;border:1px solid transparent;border-radius:5px;transition:.12s;}
+  .stg:hover{background:rgba(255,255,255,.02);}
+  .stg .bx{width:15px;height:15px;border:1px solid var(--line);border-radius:3px;flex:0 0 auto;display:grid;place-items:center;font-size:10px;color:var(--bg);}
+  .stg.on .bx{background:var(--acid);border-color:var(--acid);}
+  .stg.on{color:var(--ink);}
+  .stg .kn{font-size:8px;padding:1px 5px;border-radius:3px;letter-spacing:.06em;text-transform:uppercase;margin-left:auto;background:rgba(155,107,255,.16);color:var(--violet);}
+  .btn{cursor:pointer;background:transparent;border:1px solid var(--line);color:var(--ink);font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.12em;padding:10px 12px;border-radius:6px;transition:.18s;text-transform:uppercase;width:100%;}
+  .btn:hover{border-color:var(--acid);color:var(--acid);}
+  .btn.pri{background:var(--acid);color:#050505;font-weight:700;border-color:var(--acid);} .btn.pri:hover{filter:brightness(1.08);}
+  .btnrow{display:flex;gap:8px;margin-top:6px;}
+
+  .paperwrap{min-width:0;}
+  .doc{background:var(--paper);color:var(--pink);border-radius:6px;box-shadow:0 20px 60px rgba(0,0,0,.5);padding:48px 50px;font-size:13px;line-height:1.65;}
+  .doc .dhead{display:flex;justify-content:space-between;align-items:flex-start;gap:18px;border-bottom:2px solid var(--pink);padding-bottom:16px;margin-bottom:8px;flex-wrap:wrap;}
+  .doc .dbrand{font-family:'Bebas Neue',sans-serif;font-size:34px;letter-spacing:.02em;line-height:.85;}
+  .doc .dbrand em{font-style:normal;border-bottom:4px solid var(--acid);}
+  .doc .dbrand small{display:block;font-family:'Space Mono',monospace;font-size:9.5px;letter-spacing:.18em;color:var(--pmut);margin-top:8px;text-transform:uppercase;}
+  .doc .dmeta{text-align:right;font-size:11px;color:var(--pmut);line-height:1.7;} .doc .dmeta b{color:var(--pink);}
+  .doc .dtitle{font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:.02em;line-height:.95;margin:16px 0 2px;}
+  .doc .dfor{font-size:12px;color:var(--pmut);margin-bottom:6px;} .doc .dfor b{color:var(--pink);}
+  .doc .dtags{font-size:11px;color:#2a2822;background:#f2efe7;border:1px solid var(--pline);border-radius:6px;padding:9px 12px;margin:12px 0 22px;line-height:1.7;position:relative;}
+  .doc .dtags .tl{font-size:8.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--pmut);display:block;margin-bottom:3px;}
+  .doc .dtags .cp{position:absolute;top:8px;right:10px;font-size:9px;letter-spacing:.06em;border:1px solid var(--pline);border-radius:4px;padding:2px 8px;cursor:pointer;color:#3a382f;background:#fff;text-transform:uppercase;}
+  .doc .dtags .cp:hover{border-color:var(--pink);}
+
+  .card{border:1px solid var(--pline);border-radius:8px;padding:16px 18px;margin-bottom:14px;page-break-inside:avoid;background:#fff;}
+  .card .ch{display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap;}
+  .card .num{font-family:'Space Mono',monospace;font-size:12px;font-weight:700;color:var(--acid);background:var(--pink);padding:3px 8px;border-radius:4px;letter-spacing:.05em;}
+  .card .cn{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:.03em;line-height:1;}
+  .card .badges{display:flex;gap:5px;flex-wrap:wrap;margin-left:auto;}
+  .card .bdg{font-size:9px;letter-spacing:.04em;text-transform:uppercase;padding:3px 7px;border-radius:4px;border:1px solid var(--pline);color:#3a382f;background:#f2efe7;white-space:nowrap;}
+  .card .bdg.when{color:#5a3a12;background:#fbeed9;border-color:#f4e2c4;}
+  .card .bdg.plat{color:#3a1250;background:#f0e8fb;border-color:#e0cff6;}
+  .card .why{font-size:11.5px;color:var(--pmut);font-style:italic;line-height:1.55;margin-bottom:11px;}
+  .card .why b{color:#3a382f;font-style:normal;}
+  .card .plabel{font-size:8.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--pmut);margin:11px 0 5px;display:flex;align-items:center;gap:8px;}
+  .card .plabel .cp{margin-left:auto;font-size:9px;letter-spacing:.08em;border:1px solid var(--pline);border-radius:4px;padding:2px 8px;cursor:pointer;color:#3a382f;background:#f2efe7;transition:.12s;text-transform:uppercase;}
+  .card .plabel .cp:hover{border-color:var(--pink);}
+  .hooks{display:flex;flex-direction:column;gap:5px;}
+  .hook{font-size:12.5px;line-height:1.45;color:#161510;background:#f6f4ec;border:1px solid var(--pline);border-radius:6px;padding:8px 34px 8px 11px;position:relative;font-weight:700;}
+  .hook .hc{position:absolute;top:50%;right:8px;transform:translateY(-50%);font-size:11px;cursor:pointer;color:var(--pmut);opacity:.7;}
+  .hook .hc:hover{opacity:1;color:var(--pink);}
+  .body{font-size:12.5px;line-height:1.6;color:#211f1a;background:#f6f4ec;border:1px solid var(--pline);border-radius:6px;padding:11px 13px;white-space:pre-wrap;}
+  .cta{font-size:12.5px;line-height:1.5;color:#12414f;background:#e2f4fb;border:1px solid #c9e8f4;border-radius:6px;padding:9px 12px;font-weight:700;}
+  .adapt{font-size:10.5px;color:var(--pmut);margin-top:10px;line-height:1.55;} .adapt b{color:#3a382f;}
+  .empty{color:var(--pmut);font-size:13px;text-align:center;padding:60px 0;}
+
+  .dfoot{margin-top:22px;padding-top:14px;border-top:2px solid var(--pink);display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font-size:11px;color:var(--pmut);} .dfoot b{color:var(--pink);}
+  .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--acid);color:#050505;font-size:11px;font-weight:700;letter-spacing:.08em;padding:10px 18px;border-radius:6px;opacity:0;pointer-events:none;transition:.25s;z-index:9;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  .foot{font-size:10px;color:rgba(240,237,230,.35);letter-spacing:.1em;margin-top:36px;text-align:center;}
+
+  @media print{ @page{margin:14mm;} body::before{display:none;} body{background:#fff;}
+    .wrap{max-width:none;padding:0;} header,.intro,.editor,.foot,.toast{display:none!important;}
+    .cols{display:block;} .doc{box-shadow:none;border-radius:0;padding:0;} .card{border-color:#ccc;} .cp,.hook .hc{display:none!important;} }
+</style></head><body>
+<div class="wrap">
+  <header>
+    <div class="brand"><b>GUIÓN</b> DE CAMPAÑA<span>el copy de tu lanzamiento, por rubro</span></div>
+    <nav><a href="/labs/">← LABS</a><a href="/kit-lanzamiento/">KIT</a><a href="/brief/">BRIEF</a></nav>
+  </header>
+  <p class="intro">El <b>gemelo verbal</b> del KIT DE LANZAMIENTO: el KIT resuelve las imágenes, esto resuelve las <b>palabras</b>. Elegís tu rubro, cargás tu producto y tu oferta, y baja el copy de toda la campaña — <b>hooks que frenan el scroll</b>, caption, CTA y hashtags — por cada momento del lanzamiento y adaptado por plataforma. Elegís el <b>tono</b>, copiás cada pieza o imprimís el guión entero. Todo corre en tu navegador.</p>
+
+  <div class="cols">
+    <div class="editor">
+      <h2>ARMÁ TU GUIÓN</h2>
+
+      <div class="grp">
+        <div class="gl">1 · Rubro</div>
+        <div class="rubros" id="rubros"></div>
+      </div>
+
+      <div class="grp">
+        <div class="gl">2 · Tu campaña</div>
+        <div class="fld"><label id="lblProd">Producto / plato estrella</label><input id="producto" placeholder=""></div>
+        <div class="fld"><label>Nombre del negocio / marca</label><input id="negocio" placeholder=""></div>
+        <div class="fld"><label>Oferta / gancho de lanzamiento</label><input id="oferta" placeholder="ej: 2x1 la primera semana"></div>
+        <div class="fld"><label>Firma (marca al pie)</label><input id="marca" placeholder="Human Glitche"></div>
+      </div>
+
+      <div class="grp">
+        <div class="gl">3 · Tono</div>
+        <div class="chips" id="tonoChips"></div>
+      </div>
+
+      <div class="grp">
+        <div class="gl">4 · Momentos de la campaña</div>
+        <div class="shotoggle" id="shotoggle"></div>
+      </div>
+
+      <div class="grp">
+        <div class="gl">Exportar</div>
+        <button class="btn pri" id="copyBtn">⧉ Copiar todo el guión</button>
+        <div class="btnrow">
+          <button class="btn" id="tagsBtn">⧉ Hashtags</button>
+          <button class="btn" id="printBtn">⎙ Imprimir</button>
+        </div>
+        <div class="btnrow"><button class="btn" id="resetBtn">Reset</button></div>
+      </div>
+    </div>
+
+    <div class="paperwrap">
+      <div class="doc" id="doc"></div>
+    </div>
+  </div>
+
+  <p class="foot">GUIÓN DE CAMPAÑA · HUMAN GLITCHE — corre 100% en tu navegador · el gemelo verbal del KIT DE LANZAMIENTO</p>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+var $=function(id){return document.getElementById(id);};
+function toast(m){var t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(function(){t.classList.remove('show');},1600);}
+
+/* ============ TONOS ============ */
+var TONOS=[
+  {id:'cercano', name:'Cercano', desc:'con emojis, tuteo'},
+  {id:'premium', name:'Premium', desc:'sobrio, sin emojis'},
+  {id:'express', name:'Express', desc:'solo hook + CTA'}
+];
+
+/* ============ RUBROS + GUIONES CURADOS ============
+   Momentos = arco de lanzamiento: teaser → anuncio → prueba → oferta → cierre.
+   Tokens: {producto} {negocio} {oferta}. */
+var RUBROS={
+  gastro:{
+    ico:'🍽️', name:'Gastronomía', sub:'restaurant · delivery · café',
+    prodLabel:'Plato / producto estrella', prodPH:'pizza napolitana', negPH:'La Nonna',
+    prodDef:'nuestro plato estrella', negDef:'el local',
+    hashtags:['#comidarica','#foodie','#instafood','#delivery','#restaurante','#gastronomia','#pedidos','#quecomer','#{ciudad}','#{negocio}'],
+    beats:[
+      {id:'teaser', name:'Teaser', when:'3–2 días antes', plat:'IG/TikTok · Reel o Story',
+       why:'Sembrás intriga antes de mostrar nada. La gente activa notificaciones y llega caliente al día 0.',
+       hooks:['Algo nuevo se está cocinando en {negocio}… 👀','3 días. Y {negocio} no va a ser el mismo.','Guardá este post. Vas a querer venir.'],
+       body:'Estamos por soltar algo que veníamos preparando hace rato. No decimos más. Activá las notificaciones 🔔 y quedate cerca — esto va a volar.',
+       cta:'🔔 Seguinos y activá notificaciones para no perdértelo.',
+       adapt:'En Story: usá el hook + sticker de cuenta regresiva.'},
+      {id:'anuncio', name:'Lanzamiento', when:'Día 0', plat:'IG/TikTok · Reel (Hero del KIT)',
+       why:'El anuncio principal: claro, apetitoso y con la info de cómo pedir. Fijalo arriba del perfil.',
+       hooks:['Ya está: llegó {producto} a {negocio} 🔥','Esto es {producto}. Y ya podés pedirlo.','Paren todo. {producto} ya está en la carta.'],
+       body:'Lo esperaban y acá está: {producto}, recién sumado a {negocio}. Hecho como nos gusta, sin atajos. Vení a probarlo o pedilo por delivery. ¿Quién se prende primero?',
+       cta:'📍 Te esperamos · 📲 Pedí por WhatsApp.',
+       adapt:'Fijá este post arriba del perfil toda la campaña.'},
+      {id:'prueba', name:'Detrás / proceso', when:'Día 1–2', plat:'IG/TikTok · Reel (Proceso del KIT)',
+       why:'Mostrás cómo se hace o repostás a un cliente feliz. Construye confianza y deseo, no solo venta.',
+       hooks:['Así se hace {producto} 👨‍🍳','El secreto está en este paso 👇','Mirá lo que pasa cuando pedís {producto}…'],
+       body:'Nada de magia: {producto} se hace así, a mano y con tiempo. Por eso sale como sale. Etiquetá a esa persona que tenés que traer 👇',
+       cta:'Etiquetá a alguien con quien lo vas a compartir.',
+       adapt:'En Story: reposteá a quien te etiquete comiéndolo.'},
+      {id:'oferta', name:'Oferta / urgencia', when:'Día 2–4', plat:'IG Story + WhatsApp estado',
+       why:'Empujás la primera compra con tu gancho de apertura y una fecha límite real.',
+       hooks:['{oferta} — solo por esta semana ⏳','Esto no se repite: {oferta}.','Corré: {oferta} y se termina.'],
+       body:'Para estrenar {producto} como corresponde: {oferta}. Es por tiempo limitado, así que no lo dejes para mañana. Mostrá este posteo o escribinos y listo.',
+       cta:'📲 Escribinos ahora y aprovechá {oferta}.',
+       adapt:'En WhatsApp: 1 línea + link directo al pedido.'},
+      {id:'cierre', name:'Último llamado', when:'Día 5–7', plat:'IG Story + Reel corto',
+       why:'Recuperás a los que dudaron. El cierre con urgencia real convierte a los indecisos.',
+       hooks:['Último día para {oferta} 🚨','¿En serio te lo vas a perder?','Se termina hoy. Después no digas que no te avisamos.'],
+       body:'Hoy cierra {oferta} en {negocio}. Si venías dudando, es ahora. Mañana vuelve el precio de siempre. Nos vemos 👋',
+       cta:'📍 Veníte hoy · 📲 Pedí antes de que cierre.',
+       adapt:'En Story: encuesta "¿ya lo probaste?" Sí / Todavía no.'}
+    ]
+  },
+  producto:{
+    ico:'📦', name:'Producto / ecommerce', sub:'objeto físico · marketplace',
+    prodLabel:'Producto', prodPH:'botella térmica', negPH:'Terra',
+    prodDef:'nuestro nuevo producto', negDef:'la tienda',
+    hashtags:['#tienda','#comprasonline','#ecommerce','#nuevo','#enviosatodoelpais','#emprendimiento','#hechoenargentina','#diseño','#novedad','#{negocio}'],
+    beats:[
+      {id:'teaser', name:'Teaser', when:'3–2 días antes', plat:'IG/TikTok · Reel o Story',
+       why:'Sembrás expectativa para que el drop no salga en frío. Los seguidores llegan listos a comprar.',
+       hooks:['Se viene algo nuevo a {negocio} 👀','Spoiler: lo vas a querer.','Guardá este post. En 3 días lo entendés.'],
+       body:'Estuvimos meses con esto entre manos. Falta poco para mostrarlo. Activá notificaciones 🔔 que no querés enterarte tarde.',
+       cta:'🔔 Seguí a {negocio} y activá notificaciones.',
+       adapt:'En Story: sticker de cuenta regresiva al día del drop.'},
+      {id:'anuncio', name:'Lanzamiento', when:'Día 0', plat:'IG/TikTok · Reel (Packshot del KIT)',
+       why:'Presentás el producto con su promesa clara y el camino a la compra. Link en bio, sin fricción.',
+       hooks:['Ya está disponible: {producto} 🚀','Te presentamos {producto}.','Esto es lo que estábamos preparando: {producto}.'],
+       body:'Llegó {producto} a {negocio}. Lo pensamos hasta el último detalle para que te dure y te resuelva. Ya podés pedirlo con envío a todo el país. Link en bio 🔗',
+       cta:'🔗 Link en bio para comprarlo.',
+       adapt:'Poné el link de compra directo en la bio y en el botón de la Story.'},
+      {id:'prueba', name:'Detalle / beneficio', when:'Día 1–2', plat:'IG/TikTok · Reel (Macro del KIT)',
+       why:'Respondés la desconfianza online mostrando de qué está hecho y por qué te conviene. Confianza = conversión.',
+       hooks:['Por qué {producto} es distinto 👇','Este detalle lo cambia todo.','Mirá {producto} de cerca…'],
+       body:'No es marketing: {producto} está hecho para durar y resolverte el día a día. Ese es el detalle que lo diferencia. ¿Dudas? Te leemos en los comentarios 👇',
+       cta:'Comentá tu duda y te respondemos al toque.',
+       adapt:'En Story: caja de preguntas "¿qué querés saber de {producto}?".'},
+      {id:'oferta', name:'Oferta / preventa', when:'Día 2–4', plat:'IG Story + email/WhatsApp',
+       why:'Activás la urgencia con stock y tiempo limitados. La preventa premia a los primeros y acelera la caja.',
+       hooks:['{oferta} en el lanzamiento ⏳','Solo los primeros: {oferta}.','Preventa con {oferta}. Se agota.'],
+       body:'Por el lanzamiento de {producto}: {oferta}. Es por tiempo y stock limitados. Si lo estabas esperando, este es el momento.',
+       cta:'🔗 Comprá con {oferta} — link en bio.',
+       adapt:'En WhatsApp/email a tu lista: asunto corto + link directo.'},
+      {id:'cierre', name:'Últimas unidades', when:'Día 5–7', plat:'IG Story + Reel corto',
+       why:'Cerrás con escasez real. "Quedan pocas" mueve a los que dejaron el carrito a mitad.',
+       hooks:['Últimas unidades de {producto} 🚨','Se termina {oferta} hoy.','Cierra la preventa. ¿Entrás?'],
+       body:'Hoy cierra {oferta} y quedan pocas unidades de {producto}. Después vuelve al precio normal, si queda stock. No lo dejes pasar 🔗',
+       cta:'🔗 Asegurá el tuyo — link en bio.',
+       adapt:'En Story: contador de stock ("quedan X") si podés.'}
+    ]
+  },
+  moda:{
+    ico:'👕', name:'Indumentaria / moda', sub:'prenda · colección · accesorio',
+    prodLabel:'Prenda / producto', prodPH:'campera de jean oversize', negPH:'Sudestada',
+    prodDef:'lo nuevo de la colección', negDef:'la marca',
+    hashtags:['#moda','#ootd','#nuevacoleccion','#lookdeldia','#style','#indumentaria','#slowfashion','#hechoenargentina','#tiendaonline','#{negocio}'],
+    beats:[
+      {id:'teaser', name:'Teaser', when:'3–2 días antes', plat:'IG/TikTok · Reel o Story',
+       why:'Anticipás la colección sin mostrarla. Genera deseo y hace que la espera juegue a favor.',
+       hooks:['Nueva colección cargando… 👀','Algo se viene, y tiene que ver con tu placard.','Guardá la fecha: {negocio} tiene novedades.'],
+       body:'Se viene lo nuevo de {negocio}. Todavía no mostramos nada, pero preparate. Activá notificaciones 🔔 para verlo primero.',
+       cta:'🔔 Seguinos para ser de los primeros.',
+       adapt:'En Story: teaser de un detalle de la tela en primerísimo plano.'},
+      {id:'anuncio', name:'Lanzamiento', when:'Día 0', plat:'IG/TikTok · Reel (Lookbook del KIT)',
+       why:'Presentás la prenda puesta, con actitud, y el camino a comprarla. Define el tono de la colección.',
+       hooks:['Ya está: {producto} 🖤','Te presentamos {producto}.','La espera terminó: llegó {producto}.'],
+       body:'Presentamos {producto}, lo nuevo de {negocio}. Pensada para usarse de verdad, todos los días. Ya disponible — probátela o pedila con envío. Link en bio 🔗',
+       cta:'🔗 Conseguila — link en bio.',
+       adapt:'Fijá el Reel de lookbook arriba del perfil.'},
+      {id:'prueba', name:'Styling / cómo usarla', when:'Día 1–2', plat:'IG/TikTok · Reel (Flatlay del KIT)',
+       why:'Mostrás combinaciones y materialidad. Sumás valor de styling y subís el ticket promedio.',
+       hooks:['3 formas de usar {producto} 👇','El detalle que la hace distinta.','Cómo la combinamos nosotros…'],
+       body:'{producto} va con todo: sola de protagonista o combinada para el día y para la noche. Tela pensada para que te dure. ¿Con qué la usarías vos? 👇',
+       cta:'Contanos en comentarios cómo armarías tu look.',
+       adapt:'En Story: encuesta entre dos looks ("¿este o este?").'},
+      {id:'oferta', name:'Oferta / preventa', when:'Día 2–4', plat:'IG Story + WhatsApp difusión',
+       why:'Empujás con descuento de estreno y talles limitados. La preventa asegura ventas antes del precio de lista.',
+       hooks:['{oferta} en el lanzamiento ⏳','Preventa: {oferta}.','Solo esta semana: {oferta}.'],
+       body:'Por el estreno de {producto}: {oferta}. Por tiempo limitado y en los talles que quedan. Si la tenías fichada, es ahora 🔗',
+       cta:'🔗 Aprovechá {oferta} — link en bio.',
+       adapt:'En WhatsApp difusión: foto del look + link + talles disponibles.'},
+      {id:'cierre', name:'Últimos talles', when:'Día 5–7', plat:'IG Story + Reel corto',
+       why:'Cerrás con escasez de talles. Es el empujón final para quien dudaba por el precio.',
+       hooks:['Últimos talles de {producto} 🚨','Se termina {oferta}.','Cierra hoy. ¿Te quedás afuera?'],
+       body:'Hoy cierra {oferta} y quedan pocos talles de {producto}. Después vuelve al precio de lista. No te quedes con las ganas 🔗',
+       cta:'🔗 Último llamado — link en bio.',
+       adapt:'En Story: lista de talles que van quedando, actualizada.'}
+    ]
+  }
+};
+
+/* ============ ESTADO ============ */
+var DEF={ rubro:'gastro', producto:'', negocio:'', oferta:'', marca:'Human Glitche', tono:'cercano', off:{} };
+var st;
+try{ st=JSON.parse(localStorage.getItem('hg_guioncamp')||'null'); }catch(e){ st=null; }
+if(!st) st=JSON.parse(JSON.stringify(DEF));
+if(!st.off) st.off={};
+function save(){ try{ localStorage.setItem('hg_guioncamp',JSON.stringify(st)); }catch(e){} }
+
+/* ============ HELPERS ============ */
+function curRubro(){ return RUBROS[st.rubro]; }
+function fill(t){
+  var r=curRubro();
+  var prod=(st.producto||'').trim()||r.prodDef;
+  var neg=(st.negocio||'').trim()||r.negDef;
+  var of=(st.oferta||'').trim()||'nuestra oferta de lanzamiento';
+  return t.replace(/\{producto\}/g,prod).replace(/\{negocio\}/g,neg).replace(/\{oferta\}/g,of);
+}
+function stripEmoji(s){
+  return s.replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{2300}-\u{23FF}\u{2B00}-\u{2BFF}\u{2190}-\u{21FF}️‍]/gu,'')
+          .replace(/\s{2,}/g,' ').replace(/\s+([.,])/g,'$1').trim();
+}
+function tone(s){
+  if(st.tono==='premium'){ return stripEmoji(s).replace(/[¡]/g,'').replace(/!+/g,'.'); }
+  return s;
+}
+function activeBeats(){ var r=curRubro(); return r.beats.filter(function(b){ return !(st.off[st.rubro]&&st.off[st.rubro][b.id]); }); }
+function hashtagLine(){
+  var r=curRubro(), neg=slug((st.negocio||'').trim()||'');
+  return r.hashtags.map(function(h){ return h.replace('{negocio}', neg||'tumarca').replace('{ciudad}','tuciudad'); }).join(' ');
+}
+function slug(s){ return (s||'').trim().toLowerCase().replace(/[^a-z0-9áéíóúñ]/gi,'')||''; }
+
+/* ============ RENDER EDITOR ============ */
+function renderRubros(){
+  var box=$('rubros'); box.innerHTML='';
+  Object.keys(RUBROS).forEach(function(k){
+    var r=RUBROS[k];
+    var d=document.createElement('div');
+    d.className='rubro'+(st.rubro===k?' on':'');
+    d.innerHTML='<div class="ic">'+r.ico+'</div><div class="tx"><b>'+r.name+'</b><span>'+r.sub+'</span></div>';
+    d.addEventListener('click',function(){ st.rubro=k; save(); renderAll(); });
+    box.appendChild(d);
+  });
+}
+function renderTonos(){
+  var box=$('tonoChips'); box.innerHTML='';
+  TONOS.forEach(function(t){
+    var c=document.createElement('div');
+    c.className='chip'+(st.tono===t.id?' on':'');
+    c.textContent=t.name; c.title=t.desc;
+    c.addEventListener('click',function(){ st.tono=t.id; save(); renderAll(); });
+    box.appendChild(c);
+  });
+}
+function renderToggle(){
+  var box=$('shotoggle'); box.innerHTML=''; var r=curRubro();
+  r.beats.forEach(function(b){
+    var on=!(st.off[st.rubro]&&st.off[st.rubro][b.id]);
+    var d=document.createElement('div');
+    d.className='stg'+(on?' on':'');
+    d.innerHTML='<div class="bx">'+(on?'✓':'')+'</div><span>'+b.name+'</span><span class="kn">'+b.when+'</span>';
+    d.addEventListener('click',function(){
+      if(!st.off[st.rubro]) st.off[st.rubro]={};
+      if(on) st.off[st.rubro][b.id]=1; else delete st.off[st.rubro][b.id];
+      save(); renderAll();
+    });
+    box.appendChild(d);
+  });
+}
+function renderInputs(){
+  var r=curRubro();
+  $('lblProd').textContent=r.prodLabel;
+  $('producto').placeholder='ej: '+r.prodPH;
+  $('negocio').placeholder='ej: '+r.negPH;
+  $('producto').value=st.producto; $('negocio').value=st.negocio; $('oferta').value=st.oferta; $('marca').value=st.marca;
+}
+
+/* ============ RENDER DOC ============ */
+function renderDoc(){
+  var r=curRubro(), doc=$('doc');
+  var neg=(st.negocio||'').trim()||r.negDef;
+  var beats=activeBeats();
+  var tn=TONOS.filter(function(x){return x.id===st.tono;})[0];
+  var h='';
+  h+='<div class="dhead"><div class="dbrand">HUMAN <em>GLITCHE</em><small>Guión de campaña</small></div>'+
+     '<div class="dmeta"><b>'+r.ico+' '+r.name+'</b><br>'+beats.length+' momentos<br>tono: '+esc(tn.name)+'</div></div>';
+  h+='<div class="dtitle">'+esc((st.producto||'').trim()||r.prodDef).toUpperCase()+'</div>';
+  h+='<div class="dfor">para <b>'+esc(neg)+'</b>'+((st.oferta||'').trim()?' · gancho: <b>'+esc(st.oferta.trim())+'</b>':'')+'</div>';
+  h+='<div class="dtags"><span class="tl">Hashtags del rubro (editá a tu ciudad/marca)</span>'+esc(hashtagLine())+'<span class="cp" id="tagcp">⧉ copiar</span></div>';
+
+  if(!beats.length){ h+='<div class="empty">No hay momentos activos. Activá al menos uno en el panel.</div>'; }
+  beats.forEach(function(b,i){
+    var badges='<span class="bdg when">'+esc(b.when)+'</span><span class="bdg plat">'+esc(b.plat)+'</span>';
+    var hooksH=b.hooks.map(function(hk){
+      var t=tone(fill(hk));
+      return '<div class="hook">'+esc(t)+'<span class="hc" data-copy="'+encodeURIComponent(t)+'">⧉</span></div>';
+    }).join('');
+    h+='<div class="card">'+
+       '<div class="ch"><span class="num">'+pad(i+1)+'</span><span class="cn">'+esc(b.name)+'</span><span class="badges">'+badges+'</span></div>'+
+       '<div class="why"><b>Por qué va acá:</b> '+esc(b.why)+'</div>'+
+       '<div class="plabel">Hooks — elegí uno (frenan el scroll)</div>'+
+       '<div class="hooks">'+hooksH+'</div>';
+    if(st.tono!=='express'){
+      h+='<div class="plabel">Caption<span class="cp" data-copy="'+encodeURIComponent(tone(fill(b.body)))+'">⧉ copiar</span></div>'+
+         '<div class="body">'+esc(tone(fill(b.body)))+'</div>';
+    }
+    h+='<div class="plabel">CTA</div><div class="cta">'+esc(tone(fill(b.cta)))+'</div>'+
+       '<div class="adapt"><b>Adaptación:</b> '+esc(b.adapt)+'</div>'+
+       '</div>';
+  });
+  h+='<div class="dfoot"><span>— '+esc((st.marca||'').trim()||'Human Glitche')+'</span><span>Arco de campaña: <b>teaser → anuncio → prueba → oferta → cierre</b></span></div>';
+  doc.innerHTML=h;
+  Array.prototype.forEach.call(doc.querySelectorAll('[data-copy]'),function(el){
+    el.addEventListener('click',function(){ copy(decodeURIComponent(el.getAttribute('data-copy')),'Copiado'); });
+  });
+  var tc=$('tagcp'); if(tc) tc.addEventListener('click',function(){ copy(hashtagLine(),'Hashtags copiados'); });
+}
+function pad(n){ return (n<10?'0':'')+n; }
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+/* ============ EXPORT ============ */
+function fullText(){
+  var r=curRubro(), beats=activeBeats();
+  var L=['GUIÓN DE CAMPAÑA · '+r.name.toUpperCase(),
+         'Producto: '+((st.producto||'').trim()||r.prodDef)+'  ·  Negocio: '+((st.negocio||'').trim()||r.negDef),
+         (st.oferta||'').trim()?'Gancho: '+st.oferta.trim():'',
+         'Tono: '+(TONOS.filter(function(x){return x.id===st.tono;})[0].name),'',''];
+  beats.forEach(function(b,i){
+    L.push(pad(i+1)+' · '+b.name.toUpperCase()+'  ['+b.when+' · '+b.plat+']');
+    L.push('Por qué: '+b.why);
+    L.push('HOOKS:');
+    b.hooks.forEach(function(hk){ L.push('  · '+tone(fill(hk))); });
+    if(st.tono!=='express') L.push('CAPTION: '+tone(fill(b.body)));
+    L.push('CTA: '+tone(fill(b.cta)));
+    L.push('Adaptación: '+b.adapt,'');
+  });
+  L.push('HASHTAGS: '+hashtagLine(),'','— '+((st.marca||'').trim()||'Human Glitche'));
+  return L.filter(function(x){return x!==undefined;}).join('\n');
+}
+function copy(t,msg){ if(navigator.clipboard) navigator.clipboard.writeText(t).then(function(){toast(msg||'Copiado');},function(){prompt('Copiá:',t);}); else prompt('Copiá:',t); }
+
+/* ============ BIND ============ */
+function bindInput(id,key){ $(id).addEventListener('input',function(){ st[key]=this.value; save(); renderDoc(); }); }
+bindInput('producto','producto'); bindInput('negocio','negocio'); bindInput('oferta','oferta'); bindInput('marca','marca');
+
+$('copyBtn').addEventListener('click',function(){ if(!activeBeats().length){toast('No hay momentos activos');return;} copy(fullText(),'Guión copiado ('+activeBeats().length+' momentos)'); });
+$('tagsBtn').addEventListener('click',function(){ copy(hashtagLine(),'Hashtags copiados'); });
+$('printBtn').addEventListener('click',function(){ if(!activeBeats().length){toast('No hay momentos activos');return;} window.print(); });
+$('resetBtn').addEventListener('click',function(){ if(!confirm('¿Reiniciar el guión?'))return; st=JSON.parse(JSON.stringify(DEF)); save(); renderAll(); });
+
+/* ============ RENDER ALL ============ */
+function renderAll(){ renderRubros(); renderTonos(); renderToggle(); renderInputs(); renderDoc(); }
+renderAll();
+})();
+</script>
+</body></html>

@@ -1,0 +1,440 @@
+<!doctype html><html lang="es"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>KIT DE LANZAMIENTO — Human Glitche · la secuencia de tomas perfecta por rubro</title>
+<meta name="description" content="Elegís tu rubro (gastronomía, producto/ecommerce, indumentaria) y la app te arma el kit de lanzamiento visual: la secuencia exacta de tomas que necesitás, cada una con su prompt afinado, el modelo recomendado y el formato. Copiás, imprimís el kit o exportás un shotlist.json listo para el pipeline cine-ia. 100% en tu navegador.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{ --acid:#b8ff00; --glitch:#ff2d55; --cyan:#3ad0ff; --amber:#ffb020; --violet:#9b6bff; --ink:#f0ede6; --line:rgba(240,237,230,.12); --bg:#050505; --pan:rgba(184,255,0,.015);
+         --paper:#faf9f6; --pink:#12100c; --pline:#e3ded2; --pmut:#6b6656; }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{min-height:100%;background:var(--bg);color:var(--ink);font-family:'Space Mono',monospace;}
+  body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");z-index:0;pointer-events:none;opacity:.4;}
+  .wrap{position:relative;z-index:1;max-width:1280px;margin:0 auto;padding:26px 20px 90px;}
+  header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;gap:16px;flex-wrap:wrap;}
+  .brand{font-family:'Bebas Neue',sans-serif;font-size:52px;letter-spacing:.03em;line-height:.82;}
+  .brand b{color:var(--acid);font-weight:400;}
+  .brand span{display:block;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.26em;color:rgba(240,237,230,.4);margin-top:8px;}
+  header nav a{font-size:10px;letter-spacing:.2em;color:rgba(240,237,230,.4);text-decoration:none;margin-left:16px;} header nav a:hover{color:var(--acid);}
+  .intro{font-size:12px;color:rgba(240,237,230,.55);line-height:1.8;max-width:80ch;margin:12px 0 22px;}
+  .intro b{color:var(--acid);font-weight:400;}
+
+  .cols{display:grid;grid-template-columns:360px 1fr;gap:24px;align-items:start;}
+  @media(max-width:980px){ .cols{grid-template-columns:1fr;} }
+  .editor{border:1px solid var(--line);border-radius:10px;background:var(--pan);padding:16px;position:sticky;top:16px;max-height:calc(100vh - 32px);overflow:auto;}
+  .editor h2{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:.04em;color:var(--acid);margin:2px 0 12px;}
+  .grp{margin-bottom:16px;} .grp>.gl{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:rgba(240,237,230,.4);margin-bottom:8px;display:flex;align-items:center;gap:8px;}
+  .grp>.gl::after{content:'';flex:1;height:1px;background:var(--line);}
+  .fld{display:flex;flex-direction:column;gap:4px;margin-bottom:9px;}
+  .fld label{font-size:8.5px;letter-spacing:.16em;text-transform:uppercase;color:rgba(240,237,230,.4);}
+  .fld input{background:#0b0b0b;border:1px solid var(--line);color:var(--ink);font-family:'Space Mono',monospace;font-size:12px;padding:7px 9px;border-radius:6px;width:100%;}
+  .fld input:focus{outline:none;border-color:var(--acid);}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;}
+  .chip{font-size:10px;padding:5px 9px;border:1px solid var(--line);border-radius:5px;cursor:pointer;transition:.12s;color:rgba(240,237,230,.7);user-select:none;}
+  .chip:hover{border-color:var(--acid);} .chip.on{border-color:var(--acid);color:var(--acid);background:rgba(184,255,0,.07);}
+  .rubros{display:flex;flex-direction:column;gap:7px;}
+  .rubro{display:flex;gap:10px;align-items:center;border:1px solid var(--line);border-radius:8px;padding:10px 11px;cursor:pointer;transition:.14s;background:#0b0b0b;}
+  .rubro:hover{border-color:rgba(184,255,0,.5);}
+  .rubro.on{border-color:var(--acid);background:rgba(184,255,0,.06);}
+  .rubro .ic{font-size:20px;line-height:1;}
+  .rubro .tx b{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:.04em;color:var(--ink);font-weight:400;display:block;}
+  .rubro.on .tx b{color:var(--acid);}
+  .rubro .tx span{font-size:9px;letter-spacing:.08em;color:rgba(240,237,230,.45);}
+  .shotoggle{display:flex;flex-direction:column;gap:5px;}
+  .stg{display:flex;align-items:center;gap:9px;font-size:11px;color:rgba(240,237,230,.7);cursor:pointer;padding:5px 7px;border:1px solid transparent;border-radius:5px;transition:.12s;}
+  .stg:hover{background:rgba(255,255,255,.02);}
+  .stg .bx{width:15px;height:15px;border:1px solid var(--line);border-radius:3px;flex:0 0 auto;display:grid;place-items:center;font-size:10px;color:var(--bg);}
+  .stg.on .bx{background:var(--acid);border-color:var(--acid);}
+  .stg.on{color:var(--ink);}
+  .stg .kn{font-size:8px;padding:1px 5px;border-radius:3px;letter-spacing:.06em;text-transform:uppercase;}
+  .kn.img{background:rgba(58,208,255,.14);color:var(--cyan);} .kn.vid{background:rgba(255,45,85,.14);color:var(--glitch);}
+  .btn{cursor:pointer;background:transparent;border:1px solid var(--line);color:var(--ink);font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.12em;padding:10px 12px;border-radius:6px;transition:.18s;text-transform:uppercase;width:100%;}
+  .btn:hover{border-color:var(--acid);color:var(--acid);}
+  .btn.pri{background:var(--acid);color:#050505;font-weight:700;border-color:var(--acid);} .btn.pri:hover{filter:brightness(1.08);}
+  .btnrow{display:flex;gap:8px;margin-top:6px;}
+
+  .paperwrap{min-width:0;}
+  .doc{background:var(--paper);color:var(--pink);border-radius:6px;box-shadow:0 20px 60px rgba(0,0,0,.5);padding:48px 50px;font-size:13px;line-height:1.65;}
+  .doc .dhead{display:flex;justify-content:space-between;align-items:flex-start;gap:18px;border-bottom:2px solid var(--pink);padding-bottom:16px;margin-bottom:8px;flex-wrap:wrap;}
+  .doc .dbrand{font-family:'Bebas Neue',sans-serif;font-size:34px;letter-spacing:.02em;line-height:.85;}
+  .doc .dbrand em{font-style:normal;border-bottom:4px solid var(--acid);}
+  .doc .dbrand small{display:block;font-family:'Space Mono',monospace;font-size:9.5px;letter-spacing:.18em;color:var(--pmut);margin-top:8px;text-transform:uppercase;}
+  .doc .dmeta{text-align:right;font-size:11px;color:var(--pmut);line-height:1.7;} .doc .dmeta b{color:var(--pink);}
+  .doc .dtitle{font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:.02em;line-height:.95;margin:16px 0 2px;}
+  .doc .dfor{font-size:12px;color:var(--pmut);margin-bottom:6px;} .doc .dfor b{color:var(--pink);}
+  .doc .dlook{font-size:11px;color:var(--pmut);border-left:3px solid var(--acid);padding:6px 0 6px 12px;margin:12px 0 22px;line-height:1.6;} .doc .dlook b{color:var(--pink);}
+
+  .card{border:1px solid var(--pline);border-radius:8px;padding:16px 18px;margin-bottom:14px;page-break-inside:avoid;background:#fff;}
+  .card .ch{display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap;}
+  .card .num{font-family:'Space Mono',monospace;font-size:12px;font-weight:700;color:var(--acid);background:var(--pink);padding:3px 8px;border-radius:4px;letter-spacing:.05em;}
+  .card .cn{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:.03em;line-height:1;}
+  .card .badges{display:flex;gap:5px;flex-wrap:wrap;margin-left:auto;}
+  .card .bdg{font-size:9px;letter-spacing:.04em;text-transform:uppercase;padding:3px 7px;border-radius:4px;border:1px solid var(--pline);color:#3a382f;background:#f2efe7;white-space:nowrap;}
+  .card .bdg.fmt{color:#1c3a44;background:#e2f4fb;border-color:#c9e8f4;}
+  .card .bdg.k-video{color:#7a1226;background:#fde4ea;border-color:#f6c9d5;}
+  .card .bdg.k-imagen{color:#12414f;background:#e2f4fb;border-color:#c9e8f4;}
+  .card .why{font-size:11.5px;color:var(--pmut);font-style:italic;line-height:1.55;margin-bottom:10px;}
+  .card .why b{color:#3a382f;font-style:normal;}
+  .card .plabel{font-size:8.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--pmut);margin-bottom:4px;display:flex;align-items:center;gap:8px;}
+  .card .plabel .cp{margin-left:auto;font-size:9px;letter-spacing:.08em;border:1px solid var(--pline);border-radius:4px;padding:2px 8px;cursor:pointer;color:#3a382f;background:#f2efe7;transition:.12s;text-transform:uppercase;}
+  .card .plabel .cp:hover{border-color:var(--pink);}
+  .card .prompt{font-size:12px;line-height:1.6;color:#211f1a;background:#f6f4ec;border:1px solid var(--pline);border-radius:6px;padding:11px 13px;white-space:pre-wrap;}
+  .card .tips{font-size:10.5px;color:var(--pmut);margin-top:9px;line-height:1.55;} .card .tips b{color:#3a382f;}
+  .empty{color:var(--pmut);font-size:13px;text-align:center;padding:60px 0;}
+
+  .dfoot{margin-top:22px;padding-top:14px;border-top:2px solid var(--pink);display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font-size:11px;color:var(--pmut);} .dfoot b{color:var(--pink);}
+  .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--acid);color:#050505;font-size:11px;font-weight:700;letter-spacing:.08em;padding:10px 18px;border-radius:6px;opacity:0;pointer-events:none;transition:.25s;z-index:9;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  .foot{font-size:10px;color:rgba(240,237,230,.35);letter-spacing:.1em;margin-top:36px;text-align:center;}
+
+  @media print{ @page{margin:14mm;} body::before{display:none;} body{background:#fff;}
+    .wrap{max-width:none;padding:0;} header,.intro,.editor,.foot,.toast{display:none!important;}
+    .cols{display:block;} .doc{box-shadow:none;border-radius:0;padding:0;} .card{border-color:#ccc;} .card .plabel .cp{display:none;} }
+</style></head><body>
+<div class="wrap">
+  <header>
+    <div class="brand"><b>KIT</b> DE LANZAMIENTO<span>la secuencia de tomas perfecta, por rubro</span></div>
+    <nav><a href="/labs/">← LABS</a><a href="/brief/">BRIEF</a><a href="/storyboard/">STORYBOARD</a></nav>
+  </header>
+  <p class="intro">No es una lista de prompts sueltos: es un <b>director de arte</b> que sabe qué tomas necesitás para lanzar bien y <b>en qué orden</b>. Elegís tu rubro, cargás tu producto, y baja el kit completo — cada escena con su <b>prompt afinado</b>, el modelo recomendado y el formato. Copiás, imprimís el kit o exportás un <b>shotlist.json</b> listo para generar con el pipeline <b>cine-ia</b>. Todo corre en tu navegador.</p>
+
+  <div class="cols">
+    <div class="editor">
+      <h2>ARMÁ TU KIT</h2>
+
+      <div class="grp">
+        <div class="gl">1 · Rubro</div>
+        <div class="rubros" id="rubros"></div>
+      </div>
+
+      <div class="grp">
+        <div class="gl">2 · Tu producto</div>
+        <div class="fld"><label id="lblProd">Producto / plato estrella</label><input id="producto" placeholder=""></div>
+        <div class="fld"><label>Nombre del negocio / marca</label><input id="negocio" placeholder=""></div>
+        <div class="fld"><label>Firma (marca al pie)</label><input id="marca" placeholder="Human Glitche"></div>
+      </div>
+
+      <div class="grp">
+        <div class="gl">3 · Estilo visual</div>
+        <div class="chips" id="estiloChips"></div>
+      </div>
+
+      <div class="grp">
+        <div class="gl">4 · Tomas del kit</div>
+        <div class="shotoggle" id="shotoggle"></div>
+      </div>
+
+      <div class="grp">
+        <div class="gl">Exportar</div>
+        <button class="btn pri" id="copyBtn">⧉ Copiar todos los prompts</button>
+        <div class="btnrow">
+          <button class="btn" id="jsonBtn">↧ shotlist.json</button>
+          <button class="btn" id="printBtn">⎙ Imprimir kit</button>
+        </div>
+        <div class="btnrow"><button class="btn" id="resetBtn">Reset</button></div>
+      </div>
+    </div>
+
+    <div class="paperwrap">
+      <div class="doc" id="doc"></div>
+    </div>
+  </div>
+
+  <p class="foot">KIT DE LANZAMIENTO · HUMAN GLITCHE — corre 100% en tu navegador · export compatible con el pipeline cine-ia</p>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+var $=function(id){return document.getElementById(id);};
+function toast(m){var t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(function(){t.classList.remove('show');},1600);}
+
+/* ============ ESTILOS (modificadores de look) ============ */
+var ESTILOS=[
+  {id:'calido', name:'Cálido / apetitoso', mod:'tono cálido dominante y luz de hora dorada'},
+  {id:'minimal', name:'Minimal / limpio',  mod:'estética minimalista, mucho espacio negativo y paleta reducida'},
+  {id:'premium', name:'Premium / oscuro',  mod:'fondo oscuro, iluminación dramática de bajo perfil, sensación premium'},
+  {id:'natural', name:'Natural / orgánico',mod:'luz natural suave, texturas orgánicas y paleta terrosa'},
+  {id:'vibrante',name:'Vibrante / pop',    mod:'colores saturados y vibrantes, alto contraste, energía pop'}
+];
+
+/* ============ RUBROS + SECUENCIAS CURADAS ============ */
+/* Prompts escritos según reglas-prompt-plano.md de cine-ia: sujeto+acción → encuadre →
+   movimiento → luz → paleta → mood. Autónomos. Tokens: {producto} {negocio}. */
+var RUBROS={
+  gastro:{
+    ico:'🍽️', name:'Gastronomía', sub:'restaurant · delivery · café',
+    prodLabel:'Plato / producto estrella', prodPH:'pizza napolitana', negPH:'La Nonna',
+    prodDef:'el plato estrella', negDef:'el local',
+    look:{ palette:'ámbar cálido, madera, verdes de hierbas frescas',
+           emulsion:'digital limpio con grano fino, halación suave en las luces',
+           vocab:['hora dorada','vapor visible','fondo desenfocado','luz de ventana lateral'] },
+    shots:[
+      {id:'hero', name:'Hero del plato', kind:'imagen', format:'4:5', model:'GPT Image 2',
+       why:'La imagen ancla del lanzamiento: el producto estrella, solo, irresistible. Es la primera que ve la gente.',
+       prompt:'Primerísimo plano cenital de {producto} recién emplatado, vapor sutil elevándose, sobre plato de cerámica artesanal y mesa de madera oscura; cámara fija en picado a 90°; luz de ventana lateral cálida tipo hora dorada que recorta el vapor; paleta de ámbar y verdes de hierbas frescas, grano fino; apetitoso y honesto.',
+       tips:'Disparalo primero: define la paleta y el look que van a heredar el resto de las tomas.'},
+      {id:'ambiente', name:'Ambiente / salón', kind:'imagen', format:'16:9', model:'GPT Image 2', amb:true,
+       why:'Muestra el lugar lleno y con vida — vende la experiencia, no solo el plato. Va segundo para dar contexto.',
+       prompt:'Plano general del salón de {negocio} en hora pico, mesas ocupadas con clientes desenfocados de fondo y foco en una mesa servida en primer término; cámara a la altura de la mesa, gran angular suave; luz práctica cálida de lámparas colgantes más luz de ventana al atardecer; atmósfera acogedora y viva.',
+       tips:'Ideal para portada de web y Google Business. La gente desenfocada da prueba social sin problemas de derechos.'},
+      {id:'ingrediente', name:'Ingrediente / flatlay', kind:'imagen', format:'1:1', model:'GPT Image 2',
+       why:'Comunica frescura y honestidad de producto. El flatlay funciona perfecto para el feed cuadrado.',
+       prompt:'Flatlay cenital de la materia prima cruda de {producto} — ingredientes frescos ordenados con intención sobre superficie de piedra clara; cámara fija a 90°; luz difusa de día con sombras suaves; paleta natural, colores reales saturados de los ingredientes; limpio y editorial gastronómico.',
+       tips:'El “detrás del plato”: transmite calidad de materia prima antes de mostrar el resultado.'},
+      {id:'proceso', name:'Proceso / manos', kind:'video', format:'9:16', model:'Seedance 2.0', duration:'6s',
+       why:'El movimiento y las manos humanizan la marca y son el mejor material para reels. Cuarto beat: del producto al oficio.',
+       prompt:'Primer plano de las manos del cocinero terminando {producto} con un gesto preciso —espolvorear, napar o cortar—, vapor y movimiento; cámara fija macro con leve dolly-in; luz lateral dura que marca la textura; cálido, artesanal, con tensión apetitosa.',
+       tips:'Un solo gesto por plano. El dolly-in suave suma tensión sin marear.'},
+      {id:'menu', name:'Detalle / carta', kind:'imagen', format:'4:5', model:'GPT Image 2', amb:true,
+       why:'Pieza de marca: muestra identidad, tipografía y precio percibido. Sirve para bio y destacados.',
+       prompt:'Plano medio de la carta de {negocio} apoyada sobre la mesa junto a una copa y una vela, foco en la tipografía; cámara en ángulo de 45° con poca profundidad de campo; luz cálida de práctica; paleta tenue e íntima.',
+       tips:'Si tenés identidad visual definida, esta toma la refuerza. Cuidá que el texto de la carta sea legible.'},
+      {id:'teaser', name:'Teaser / apertura', kind:'video', format:'9:16', model:'Seedance 2.0', duration:'8s',
+       why:'El teaser de campaña — hecho para abrir el lanzamiento con impacto y dejar lugar al copy.',
+       prompt:'{producto} girando lento sobre fondo oscuro limpio, gotas o vapor congelándose en el aire, una luz de recorte aparece revelando el plato; cámara en órbita de 180° suave; dramático y premium, alto contraste; termina con espacio negativo arriba para texto.',
+       tips:'Dejá el espacio negativo para el logo/copy. Es el post que abre la campaña.'}
+    ]
+  },
+  producto:{
+    ico:'📦', name:'Producto / ecommerce', sub:'objeto físico · marketplace',
+    prodLabel:'Producto', prodPH:'botella de vino', negPH:'Terra',
+    prodDef:'el producto', negDef:'la marca',
+    look:{ palette:'según marca, sobre fondo neutro controlado',
+           emulsion:'estudio limpio, alta nitidez, sin grano',
+           vocab:['fondo infinito','sombra de contacto realista','luz de softbox','reflejos controlados'] },
+    shots:[
+      {id:'packshot', name:'Packshot limpio', kind:'imagen', format:'1:1', model:'GPT Image 2',
+       why:'La foto obligatoria de ecommerce: producto solo, fondo limpio, fiel. Es la que va en la ficha y el marketplace.',
+       prompt:'Packshot de estudio de {producto} centrado sobre fondo infinito neutro claro, con sombra de contacto realista; cámara fija a la altura del producto, lente 85mm sin distorsión; iluminación de dos softbox suaves y reflejo controlado en el borde; nitidez alta y colores fieles; estilo catálogo premium.',
+       tips:'Marketplaces suelen exigir fondo blanco: mantené esta toma neutra y fiel al color real.'},
+      {id:'macro', name:'Detalle / macro', kind:'imagen', format:'1:1', model:'GPT Image 2',
+       why:'Prueba de calidad. El macro convence de que el producto está bien hecho — clave para superar la desconfianza online.',
+       prompt:'Macro de la textura y el detalle clave de {producto} —costura, material, acabado o logo—; cámara macro con profundidad mínima y foco en el detalle diferencial; luz lateral rasante que revela el relieve; paleta fiel, fondo desenfocado a tono.',
+       tips:'Elegí el detalle que más se duda en la compra online (material, terminación) y hacelo protagonista.'},
+      {id:'escala', name:'Escala / en uso', kind:'imagen', format:'4:5', model:'GPT Image 2', amb:true,
+       why:'Da escala y contexto de uso — responde “¿qué tamaño tiene, cómo se usa?”. Tercer beat: del estudio a la vida real.',
+       prompt:'{producto} sostenido o usado por una persona en contexto real, foco en el producto y la mano, persona parcialmente fuera de cuadro; plano medio, luz natural de ventana; paleta cálida y real, estilo lifestyle honesto.',
+       tips:'La mano da escala instantánea. Persona fuera de cuadro evita problemas de casting y derechos.'},
+      {id:'lifestyle', name:'Lifestyle / ambiente', kind:'imagen', format:'4:5', model:'GPT Image 2',
+       why:'Vende el estilo de vida alrededor del producto. Ideal para feed y anuncios de captación.',
+       prompt:'{producto} integrado en un ambiente aspiracional coherente con la marca —escritorio, baño, cocina o exterior—, con styling prolijo y props sutiles; plano general con poca profundidad de campo; luz de día suave; paleta armónica de marca; editorial y deseable.',
+       tips:'Los props deben acompañar sin robar cámara. Coherencia con el mundo de la marca.'},
+      {id:'flatlay', name:'Flatlay / la gama', kind:'imagen', format:'1:1', model:'GPT Image 2',
+       why:'Muestra la gama completa y el “qué incluye” de un vistazo. Muy compartible y sirve de portada de colección.',
+       prompt:'Flatlay cenital de {producto} junto a sus accesorios y variantes, y props de marca, ordenados en grilla (knolling); cámara fija a 90°; luz difusa pareja; paleta de marca, fondo de color plano; ordenado y satisfactorio.',
+       tips:'El knolling ordenado es adictivo de mirar. Perfecto para portada de una colección o combo.'},
+      {id:'teaser', name:'Teaser / 360', kind:'video', format:'9:16', model:'Seedance 2.0', duration:'6s',
+       why:'El hero animado del drop — reel/anuncio que muestra el producto entero con acabado premium.',
+       prompt:'{producto} rotando 360° sobre un pedestal, fondo en degradé de marca, partículas o una luz de recorte animada; cámara en órbita fija; luz de estudio dramática con destello al girar; premium e hipnótico; con espacio para texto de lanzamiento.',
+       tips:'La rotación completa responde “¿cómo es de todos lados?”. Dejá aire para el copy del drop.'}
+    ]
+  },
+  moda:{
+    ico:'👕', name:'Indumentaria / moda', sub:'prenda · colección · accesorio',
+    prodLabel:'Prenda / producto', prodPH:'campera de jean oversize', negPH:'Sudestada',
+    prodDef:'la prenda', negDef:'la marca',
+    look:{ palette:'según la colección, con fondos de textura (concreto, tela, papel)',
+           emulsion:'editorial de moda, contraste medio, grano de película sutil',
+           vocab:['luz de ventana grande','pose con intención','tela en movimiento','fondo de textura'] },
+    shots:[
+      {id:'lookbook', name:'Lookbook / figura', kind:'imagen', format:'4:5', model:'GPT Image 2 · o Soul si hay identidad fija',
+       why:'La foto principal de campaña: la prenda puesta, cuerpo entero, actitud. Define el tono de la colección.',
+       prompt:'Retrato de cuerpo entero de una modelo vistiendo {producto}, pose editorial relajada y mirada fuera de cámara; plano general, lente 50mm; luz grande de ventana lateral con caída suave; fondo de textura neutra (concreto o papel); paleta de la colección, grano de película sutil; moda editorial.',
+       tips:'Si querés la misma modelo en toda la campaña, entrená un Soul ID y usalo con --soul-id para mantener la identidad.'},
+      {id:'tela', name:'Detalle / tela', kind:'imagen', format:'1:1', model:'GPT Image 2',
+       why:'Comunica calidad y materialidad. En moda online la textura es lo que más se duda — este plano lo resuelve.',
+       prompt:'Macro del tejido, la costura y el detalle de {producto} —trama de la tela, botones, etiqueta—; cámara macro con foco selectivo; luz rasante que revela la textura; paleta fiel; táctil y premium.',
+       tips:'La textura vende calidad. Rasante = relieve. Elegí el detalle que justifica el precio.'},
+      {id:'movimiento', name:'Movimiento', kind:'video', format:'9:16', model:'Seedance 2.0', duration:'6s',
+       why:'La ropa se entiende en movimiento — cómo cae y fluye. El mejor material para reels de moda. Tercer beat.',
+       prompt:'Modelo con {producto} caminando o girando, la tela en movimiento y flujo, gesto natural; la cámara la sigue con leve travelling; luz de ventana direccional; paleta de la colección, ritmo relajado; editorial en movimiento.',
+       tips:'El movimiento muestra caída y volumen que una foto fija no puede. Un solo gesto, ritmo calmo.'},
+      {id:'flatlay', name:'Flatlay / el look', kind:'imagen', format:'1:1', model:'GPT Image 2',
+       why:'El “armá el look” — muestra combinaciones y suma valor de styling. Súper compartible y guardable.',
+       prompt:'Flatlay cenital del look completo — {producto} combinado con accesorios y calzado, ordenado como un outfit; cámara a 90°; luz difusa pareja; fondo de textura a tono; paleta de la colección; aspiracional, estilo “get the look”.',
+       tips:'Sumar accesorios convierte una prenda en un look completo — y en ticket promedio más alto.'},
+      {id:'editorial', name:'Ambiente / editorial', kind:'imagen', format:'4:5', model:'GPT Image 2', amb:true,
+       why:'Le da mundo y relato a la colección — la saca del estudio. Ideal para el lanzamiento y editoriales.',
+       prompt:'Modelo con {producto} en una locación real coherente con la colección —calle, interior con carácter o naturaleza—, plano general que integra el entorno; luz natural de la hora elegida; paleta ambiental armónica; narrativo y aspiracional.',
+       tips:'La locación cuenta la historia de la colección. Que el entorno hable el mismo idioma que la ropa.'},
+      {id:'teaser', name:'Teaser / campaña', kind:'video', format:'9:16', model:'Seedance 2.0', duration:'8s',
+       why:'El adelanto de campaña — abre el lanzamiento y concentra la energía de la colección en 8 segundos.',
+       prompt:'Montaje corto: detalle de la tela → figura completa → gesto de la modelo con {producto}, con transiciones rápidas al ritmo; luz editorial contrastada; paleta de la colección; enérgico, deja espacio final para el logo de campaña.',
+       tips:'Concentrá la energía de la colección. Cortá al ritmo y reservá el cierre para el logo.'}
+    ]
+  }
+};
+
+/* ============ ESTADO ============ */
+var DEF={ rubro:'gastro', producto:'', negocio:'', marca:'Human Glitche', estilo:'', off:{} };
+var st;
+try{ st=JSON.parse(localStorage.getItem('hg_kitlanz')||'null'); }catch(e){ st=null; }
+if(!st) st=JSON.parse(JSON.stringify(DEF));
+if(!st.off) st.off={};
+function save(){ try{ localStorage.setItem('hg_kitlanz',JSON.stringify(st)); }catch(e){} }
+
+/* ============ HELPERS ============ */
+function curRubro(){ return RUBROS[st.rubro]; }
+function styleMod(){ var e=ESTILOS.filter(function(x){return x.id===st.estilo;})[0]; return e?e.mod:''; }
+function fill(t){
+  var r=curRubro();
+  var prod=(st.producto||'').trim()||r.prodDef;
+  var neg=(st.negocio||'').trim()||r.negDef;
+  var out=t.replace(/\{producto\}/g,prod).replace(/\{negocio\}/g,neg);
+  var m=styleMod();
+  if(m) out=out.replace(/\.$/,'')+'. Estilo: '+m+'.';
+  return out;
+}
+function activeShots(){ var r=curRubro(); return r.shots.filter(function(s){ return !(st.off[st.rubro]&&st.off[st.rubro][s.id]); }); }
+function slug(s){ return (s||'').trim().toLowerCase().replace(/[^a-z0-9áéíóúñ ]/gi,'').replace(/\s+/g,'-')||'x'; }
+
+/* ============ RENDER EDITOR ============ */
+function renderRubros(){
+  var box=$('rubros'); box.innerHTML='';
+  Object.keys(RUBROS).forEach(function(k){
+    var r=RUBROS[k];
+    var d=document.createElement('div');
+    d.className='rubro'+(st.rubro===k?' on':'');
+    d.innerHTML='<div class="ic">'+r.ico+'</div><div class="tx"><b>'+r.name+'</b><span>'+r.sub+'</span></div>';
+    d.addEventListener('click',function(){ st.rubro=k; save(); renderAll(); });
+    box.appendChild(d);
+  });
+}
+function renderEstilos(){
+  var box=$('estiloChips'); box.innerHTML='';
+  ESTILOS.forEach(function(e){
+    var c=document.createElement('div');
+    c.className='chip'+(st.estilo===e.id?' on':'');
+    c.textContent=e.name;
+    c.addEventListener('click',function(){ st.estilo=(st.estilo===e.id?'':e.id); save(); renderAll(); });
+    box.appendChild(c);
+  });
+}
+function renderShotToggle(){
+  var box=$('shotoggle'); box.innerHTML=''; var r=curRubro();
+  r.shots.forEach(function(s){
+    var on=!(st.off[st.rubro]&&st.off[st.rubro][s.id]);
+    var d=document.createElement('div');
+    d.className='stg'+(on?' on':'');
+    d.innerHTML='<div class="bx">'+(on?'✓':'')+'</div><span>'+s.name+'</span><span class="kn '+(s.kind==='video'?'vid':'img')+'">'+(s.kind==='video'?'video':'img')+'</span>';
+    d.addEventListener('click',function(){
+      if(!st.off[st.rubro]) st.off[st.rubro]={};
+      if(on) st.off[st.rubro][s.id]=1; else delete st.off[st.rubro][s.id];
+      save(); renderAll();
+    });
+    box.appendChild(d);
+  });
+}
+function renderInputs(){
+  var r=curRubro();
+  $('lblProd').textContent=r.prodLabel;
+  $('producto').placeholder='ej: '+r.prodPH;
+  $('negocio').placeholder='ej: '+r.negPH;
+  $('producto').value=st.producto; $('negocio').value=st.negocio; $('marca').value=st.marca;
+}
+
+/* ============ RENDER DOC ============ */
+function renderDoc(){
+  var r=curRubro(), doc=$('doc');
+  var neg=(st.negocio||'').trim()||r.negDef;
+  var shots=activeShots();
+  var m=styleMod();
+  var vocab=r.look.vocab.slice(); if(m) vocab.push(m);
+  var h='';
+  h+='<div class="dhead"><div class="dbrand">HUMAN <em>GLITCHE</em><small>Kit de lanzamiento visual</small></div>'+
+     '<div class="dmeta"><b>'+r.ico+' '+r.name+'</b><br>'+shots.length+' tomas<br>'+
+     shots.filter(function(s){return s.kind==='imagen';}).length+' img · '+shots.filter(function(s){return s.kind==='video';}).length+' video</div></div>';
+  h+='<div class="dtitle">'+esc((st.producto||'').trim()||r.prodDef).toUpperCase()+'</div>';
+  h+='<div class="dfor">para <b>'+esc(neg)+'</b></div>';
+  h+='<div class="dlook"><b>LOOK BASE (heredado por todas las tomas)</b><br>Paleta: '+esc(r.look.palette)+' · Emulsión: '+esc(r.look.emulsion)+(m?' · Estilo: '+esc(m):'')+'</div>';
+
+  if(!shots.length){ h+='<div class="empty">No hay tomas activas. Activá al menos una en el panel.</div>'; }
+  shots.forEach(function(s,i){
+    var badges='<span class="bdg fmt">'+s.format+'</span><span class="bdg k-'+s.kind+'">'+s.kind+(s.duration?' · '+s.duration:'')+'</span><span class="bdg">'+esc(s.model)+'</span>';
+    h+='<div class="card">'+
+       '<div class="ch"><span class="num">'+pad(i+1)+'</span><span class="cn">'+esc(s.name)+'</span><span class="badges">'+badges+'</span></div>'+
+       '<div class="why"><b>Por qué acá:</b> '+esc(s.why)+'</div>'+
+       '<div class="plabel">Prompt afinado<span class="cp" data-cp="'+s.id+'">⧉ copiar</span></div>'+
+       '<div class="prompt" id="pr_'+s.id+'">'+esc(fill(s.prompt))+'</div>'+
+       '<div class="tips"><b>Tip:</b> '+esc(s.tips)+'</div>'+
+       '</div>';
+  });
+  h+='<div class="dfoot"><span>— '+esc((st.marca||'').trim()||'Human Glitche')+'</span><span>Secuencia pensada como arco de lanzamiento: <b>ancla → contexto → prueba → movimiento → cierre</b></span></div>';
+  doc.innerHTML=h;
+  // bind copy per card
+  Array.prototype.forEach.call(doc.querySelectorAll('.cp'),function(b){
+    b.addEventListener('click',function(){ var s=findShot(b.getAttribute('data-cp')); copy(fill(s.prompt),'Prompt copiado'); });
+  });
+}
+function findShot(id){ return curRubro().shots.filter(function(s){return s.id===id;})[0]; }
+function pad(n){ return (n<10?'0':'')+n; }
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+/* ============ EXPORT ============ */
+function allPromptsText(){
+  var r=curRubro(), shots=activeShots(), m=styleMod();
+  var L=['KIT DE LANZAMIENTO · '+r.name.toUpperCase(),
+         'Producto: '+((st.producto||'').trim()||r.prodDef)+'  ·  Negocio: '+((st.negocio||'').trim()||r.negDef),
+         'Look base: '+r.look.palette+' | '+r.look.emulsion+(m?' | Estilo: '+m:''),'',''];
+  shots.forEach(function(s,i){
+    L.push(pad(i+1)+' · '+s.name.toUpperCase()+'  ['+s.format+' · '+s.kind+(s.duration?' '+s.duration:'')+' · '+s.model+']');
+    L.push('Por qué: '+s.why);
+    L.push('PROMPT: '+fill(s.prompt));
+    L.push('Tip: '+s.tips,'');
+  });
+  L.push('— '+((st.marca||'').trim()||'Human Glitche'));
+  return L.join('\n');
+}
+function shotlistJSON(){
+  var r=curRubro(), shots=activeShots(), m=styleMod();
+  var vocab=r.look.vocab.slice(); if(m) vocab.push(m);
+  var prod=(st.producto||'').trim()||r.prodDef;
+  var neg=(st.negocio||'').trim()||r.negDef;
+  return {
+    project:neg+' — Kit de lanzamiento ('+r.name+')',
+    scene:'lanzamiento',
+    brief:'web/labs KIT DE LANZAMIENTO',
+    look:{ palette:r.look.palette+(m?' · '+m:''), emulsion:r.look.emulsion, vocab:vocab },
+    shots:shots.map(function(s,i){
+      var el=['@'+slug(prod)]; if(s.amb) el.push('@'+slug(neg));
+      var rec={ shot:String(i+1).padStart ? String(i+1).padStart(3,'0') : ('00'+(i+1)).slice(-3),
+                description:s.name+' — '+s.format+(s.kind==='video'?' · video':' · imagen') };
+      if(s.kind==='video') rec.duration=s.duration;
+      rec.elements=el;
+      rec.prompt=fill(s.prompt);
+      rec.format=s.format;
+      rec.model=s.model;
+      rec.status='pendiente';
+      rec.asset='';
+      return rec;
+    })
+  };
+}
+function download(name,text){
+  var blob=new Blob([text],{type:'application/json'});
+  var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name;
+  document.body.appendChild(a); a.click(); setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); },100);
+}
+function copy(t,msg){ if(navigator.clipboard) navigator.clipboard.writeText(t).then(function(){toast(msg||'Copiado');},function(){prompt('Copiá:',t);}); else prompt('Copiá:',t); }
+
+/* ============ BIND ============ */
+function bindInput(id,key){ $(id).addEventListener('input',function(){ st[key]=this.value; save(); renderDoc(); }); }
+bindInput('producto','producto'); bindInput('negocio','negocio'); bindInput('marca','marca');
+
+$('copyBtn').addEventListener('click',function(){ if(!activeShots().length){toast('No hay tomas activas');return;} copy(allPromptsText(),'Kit copiado ('+activeShots().length+' prompts)'); });
+$('jsonBtn').addEventListener('click',function(){
+  if(!activeShots().length){toast('No hay tomas activas');return;}
+  var r=curRubro(); var neg=slug((st.negocio||'').trim()||r.negDef);
+  download('shotlist_'+neg+'_'+st.rubro+'.json', JSON.stringify(shotlistJSON(),null,2));
+  toast('shotlist.json descargado');
+});
+$('printBtn').addEventListener('click',function(){ if(!activeShots().length){toast('No hay tomas activas');return;} window.print(); });
+$('resetBtn').addEventListener('click',function(){ if(!confirm('¿Reiniciar el kit?'))return; st=JSON.parse(JSON.stringify(DEF)); save(); renderAll(); });
+
+/* ============ RENDER ALL ============ */
+function renderAll(){ renderRubros(); renderEstilos(); renderShotToggle(); renderInputs(); renderDoc(); }
+renderAll();
+})();
+</script>
+</body></html>

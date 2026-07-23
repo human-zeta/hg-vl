@@ -1,0 +1,465 @@
+<!doctype html><html lang="es"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>REGISTRO DE PLANOS — Human Glitche · seguí tu shotlist y aprendé cada plano</title>
+<meta name="description" content="El tablero para seguir tu producción plano a plano: importás el shotlist.json que exporta el KIT DE LANZAMIENTO y vas tildando cada plano (pendiente → generado → aprobado) con su asset y notas de continuidad. Y para quien no sabe qué significa cada plano, cada tarjeta explica en criollo qué es y cómo lograrlo — con celu o generándolo con IA. Diccionario de planos incluido. Export shotlist.json actualizado, listo para cine-ia. 100% en tu navegador.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{ --acid:#b8ff00; --glitch:#ff2d55; --cyan:#3ad0ff; --amber:#ffb020; --violet:#9b6bff; --ink:#f0ede6; --line:rgba(240,237,230,.12); --bg:#050505; --pan:rgba(184,255,0,.015);
+         --paper:#faf9f6; --pink:#12100c; --pline:#e3ded2; --pmut:#6b6656; }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{min-height:100%;background:var(--bg);color:var(--ink);font-family:'Space Mono',monospace;}
+  body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");z-index:0;pointer-events:none;opacity:.4;}
+  .wrap{position:relative;z-index:1;max-width:1280px;margin:0 auto;padding:26px 20px 90px;}
+  header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;gap:16px;flex-wrap:wrap;}
+  .brand{font-family:'Bebas Neue',sans-serif;font-size:52px;letter-spacing:.03em;line-height:.82;}
+  .brand b{color:var(--acid);font-weight:400;}
+  .brand span{display:block;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.26em;color:rgba(240,237,230,.4);margin-top:8px;}
+  header nav a{font-size:10px;letter-spacing:.2em;color:rgba(240,237,230,.4);text-decoration:none;margin-left:16px;} header nav a:hover{color:var(--acid);}
+  .intro{font-size:12px;color:rgba(240,237,230,.55);line-height:1.8;max-width:80ch;margin:12px 0 22px;}
+  .intro b{color:var(--acid);font-weight:400;}
+
+  .cols{display:grid;grid-template-columns:360px 1fr;gap:24px;align-items:start;}
+  @media(max-width:980px){ .cols{grid-template-columns:1fr;} }
+  .editor{border:1px solid var(--line);border-radius:10px;background:var(--pan);padding:16px;position:sticky;top:16px;max-height:calc(100vh - 32px);overflow:auto;}
+  .editor h2{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:.04em;color:var(--acid);margin:2px 0 12px;}
+  .grp{margin-bottom:16px;} .grp>.gl{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:rgba(240,237,230,.4);margin-bottom:8px;display:flex;align-items:center;gap:8px;}
+  .grp>.gl::after{content:'';flex:1;height:1px;background:var(--line);}
+  .fld{display:flex;flex-direction:column;gap:4px;margin-bottom:9px;}
+  .fld label{font-size:8.5px;letter-spacing:.16em;text-transform:uppercase;color:rgba(240,237,230,.4);}
+  .fld textarea{background:#0b0b0b;border:1px solid var(--line);color:var(--ink);font-family:'Space Mono',monospace;font-size:11px;padding:8px 9px;border-radius:6px;width:100%;resize:vertical;min-height:70px;line-height:1.5;}
+  .fld textarea:focus{outline:none;border-color:var(--acid);}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;}
+  .chip{font-size:10px;padding:5px 9px;border:1px solid var(--line);border-radius:5px;cursor:pointer;transition:.12s;color:rgba(240,237,230,.7);user-select:none;}
+  .chip:hover{border-color:var(--acid);} .chip.on{border-color:var(--acid);color:var(--acid);background:rgba(184,255,0,.07);}
+  .btn{cursor:pointer;background:transparent;border:1px solid var(--line);color:var(--ink);font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.12em;padding:10px 12px;border-radius:6px;transition:.18s;text-transform:uppercase;width:100%;}
+  .btn:hover{border-color:var(--acid);color:var(--acid);}
+  .btn.pri{background:var(--acid);color:#050505;font-weight:700;border-color:var(--acid);} .btn.pri:hover{filter:brightness(1.08);}
+  .btnrow{display:flex;gap:8px;margin-top:6px;}
+  .prog{margin:2px 0 6px;}
+  .progbar{height:8px;border-radius:5px;background:#0b0b0b;border:1px solid var(--line);overflow:hidden;display:flex;}
+  .progbar i{height:100%;display:block;} .progbar .pa{background:var(--acid);} .progbar .pg{background:var(--cyan);}
+  .progtxt{font-size:10px;color:rgba(240,237,230,.6);margin-top:6px;line-height:1.6;}
+  .progtxt b{color:var(--ink);}
+
+  .paperwrap{min-width:0;}
+  .doc{background:var(--paper);color:var(--pink);border-radius:6px;box-shadow:0 20px 60px rgba(0,0,0,.5);padding:44px 46px;font-size:13px;line-height:1.65;}
+  .doc .dhead{display:flex;justify-content:space-between;align-items:flex-start;gap:18px;border-bottom:2px solid var(--pink);padding-bottom:16px;margin-bottom:18px;flex-wrap:wrap;}
+  .doc .dbrand{font-family:'Bebas Neue',sans-serif;font-size:34px;letter-spacing:.02em;line-height:.85;}
+  .doc .dbrand em{font-style:normal;border-bottom:4px solid var(--acid);}
+  .doc .dbrand small{display:block;font-family:'Space Mono',monospace;font-size:9.5px;letter-spacing:.18em;color:var(--pmut);margin-top:8px;text-transform:uppercase;}
+  .doc .dmeta{text-align:right;font-size:11px;color:var(--pmut);line-height:1.7;} .doc .dmeta b{color:var(--pink);}
+  .doc .dtitle{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:.02em;line-height:.95;margin:2px 0 2px;}
+  .doc .dlook{font-size:11px;color:var(--pmut);border-left:3px solid var(--acid);padding:6px 0 6px 12px;margin:10px 0 20px;line-height:1.6;} .doc .dlook b{color:var(--pink);}
+
+  .card{border:1px solid var(--pline);border-radius:8px;padding:15px 17px;margin-bottom:14px;page-break-inside:avoid;background:#fff;border-left:4px solid var(--pline);}
+  .card.st-generado{border-left-color:var(--cyan);}
+  .card.st-aprobado{border-left-color:#7bbf00;}
+  .card .ch{display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap;}
+  .card .num{font-family:'Space Mono',monospace;font-size:12px;font-weight:700;color:var(--acid);background:var(--pink);padding:3px 8px;border-radius:4px;letter-spacing:.05em;}
+  .card .cn{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:.03em;line-height:1;}
+  .card .badges{display:flex;gap:5px;flex-wrap:wrap;margin-left:auto;}
+  .card .bdg{font-size:9px;letter-spacing:.04em;text-transform:uppercase;padding:3px 7px;border-radius:4px;border:1px solid var(--pline);color:#3a382f;background:#f2efe7;white-space:nowrap;}
+  .card .bdg.fmt{color:#1c3a44;background:#e2f4fb;border-color:#c9e8f4;}
+
+  .status{display:flex;gap:6px;margin:4px 0 12px;}
+  .sb{flex:1;text-align:center;font-size:10px;letter-spacing:.08em;text-transform:uppercase;padding:7px 4px;border:1px solid var(--pline);border-radius:5px;cursor:pointer;color:var(--pmut);background:#f7f5ee;transition:.12s;user-select:none;}
+  .sb:hover{border-color:var(--pmut);}
+  .sb.on.pend{background:#fbeed9;color:#5a3a12;border-color:#f4e2c4;}
+  .sb.on.gen{background:#e2f4fb;color:#12414f;border-color:#c9e8f4;}
+  .sb.on.apr{background:#eaf7cc;color:#3f5a00;border-color:#cfe89a;}
+
+  details{margin:8px 0;border:1px solid var(--pline);border-radius:6px;background:#faf9f4;overflow:hidden;}
+  details>summary{cursor:pointer;list-style:none;font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--pmut);padding:8px 11px;user-select:none;display:flex;align-items:center;gap:8px;}
+  details>summary::-webkit-details-marker{display:none;}
+  details>summary::before{content:'▸';color:var(--acid);font-size:11px;} details[open]>summary::before{content:'▾';}
+  details>summary:hover{color:#3a382f;}
+  details .dc{padding:2px 13px 13px;font-size:12px;line-height:1.6;color:#211f1a;}
+  .prompt{white-space:pre-wrap;background:#f2efe7;border-radius:5px;padding:10px 12px;font-size:11.5px;line-height:1.55;color:#211f1a;}
+  .copyp{font-size:9px;letter-spacing:.06em;border:1px solid var(--pline);border-radius:4px;padding:2px 8px;cursor:pointer;color:#3a382f;background:#fff;margin-left:auto;text-transform:uppercase;}
+  .copyp:hover{border-color:var(--pink);}
+  .plain{font-size:12px;color:#2a2822;line-height:1.6;margin-bottom:8px;} .plain b{color:var(--pink);}
+  .term{border-top:1px dashed var(--pline);padding-top:8px;margin-top:8px;font-size:11.5px;line-height:1.55;color:#2a2822;}
+  .term:first-child{border-top:none;padding-top:0;margin-top:0;}
+  .term .tt{font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:.03em;color:var(--pink);margin-right:6px;}
+  .term .tc{font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--violet);border:1px solid #e0cff6;background:#f0e8fb;border-radius:3px;padding:1px 5px;}
+  .term .como{color:var(--pmut);} .term .como b{color:#3a382f;font-weight:700;}
+
+  .track{display:grid;grid-template-columns:1fr;gap:7px;margin-top:10px;}
+  .track input,.track textarea{width:100%;background:#fbfaf5;border:1px solid var(--pline);border-radius:5px;font-family:'Space Mono',monospace;font-size:11px;color:#211f1a;padding:7px 9px;}
+  .track input:focus,.track textarea:focus{outline:none;border-color:var(--acid);}
+  .track textarea{resize:vertical;min-height:40px;line-height:1.5;}
+  .track .tl{font-size:8px;letter-spacing:.16em;text-transform:uppercase;color:var(--pmut);margin-bottom:-2px;}
+  .assetlink{font-size:10px;color:#12414f;word-break:break-all;}
+
+  .empty{text-align:center;padding:30px 10px;}
+  .empty h3{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:.03em;color:var(--pink);margin-bottom:8px;}
+  .empty p{font-size:12px;color:var(--pmut);line-height:1.7;max-width:52ch;margin:0 auto 14px;}
+  .empty .eb{display:inline-block;font-size:11px;letter-spacing:.1em;text-transform:uppercase;border:1px solid var(--pline);border-radius:6px;padding:9px 16px;cursor:pointer;color:#3a382f;background:#f2efe7;margin:0 4px;}
+  .empty .eb:hover{border-color:var(--pink);}
+
+  .glos{margin-top:26px;}
+  .glos h3{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:.03em;color:var(--pink);border-bottom:2px solid var(--pink);padding-bottom:8px;margin-bottom:4px;}
+  .glos .gcat{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--violet);margin:16px 0 6px;}
+  .glos .gitem{font-size:12px;line-height:1.55;color:#2a2822;padding:8px 0;border-top:1px solid var(--pline);}
+  .glos .gitem .tt{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:.03em;color:var(--pink);margin-right:6px;}
+  .glos .gitem .como{color:var(--pmut);} .glos .gitem .como b{color:#3a382f;}
+
+  .dfoot{margin-top:22px;padding-top:14px;border-top:2px solid var(--pink);display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font-size:11px;color:var(--pmut);} .dfoot b{color:var(--pink);}
+  .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--acid);color:#050505;font-size:11px;font-weight:700;letter-spacing:.08em;padding:10px 18px;border-radius:6px;opacity:0;pointer-events:none;transition:.25s;z-index:9;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  .foot{font-size:10px;color:rgba(240,237,230,.35);letter-spacing:.1em;margin-top:36px;text-align:center;}
+
+  @media print{ @page{margin:14mm;} body::before{display:none;} body{background:#fff;}
+    .wrap{max-width:none;padding:0;} header,.intro,.editor,.foot,.toast{display:none!important;}
+    .cols{display:block;} .doc{box-shadow:none;border-radius:0;padding:0;} .card{border-color:#ccc;}
+    details{border-color:#ddd;} details>summary{display:none;} details .dc{padding-top:8px;} details:not([open]) .dc{display:block;}
+    .copyp,.status{display:none!important;} }
+</style></head><body>
+<div class="wrap">
+  <header>
+    <div class="brand"><b>REGISTRO</b> DE PLANOS<span>seguí tu shotlist y aprendé cada plano</span></div>
+    <nav><a href="/labs/">← LABS</a><a href="/kit-lanzamiento/">KIT</a><a href="/guion-campana/">GUIÓN</a></nav>
+  </header>
+  <p class="intro">El tablero para seguir tu producción <b>plano a plano</b>. Importás el <b>shotlist.json</b> que exporta el KIT DE LANZAMIENTO y vas tildando cada plano — <b>pendiente → generado → aprobado</b> — con su link de asset y notas de continuidad. Y para quien nunca escuchó qué es un "cenital" o un "contrapicado", cada tarjeta explica <b>en criollo qué es ese plano y cómo lograrlo</b>, con el celu o generándolo con IA. Al final, exportás el shotlist.json actualizado, listo para <b>cine-ia</b>. Todo en tu navegador.</p>
+
+  <div class="cols">
+    <div class="editor">
+      <h2>TU PRODUCCIÓN</h2>
+
+      <div class="grp">
+        <div class="gl">Progreso</div>
+        <div class="prog">
+          <div class="progbar"><i class="pa" id="pbA"></i><i class="pg" id="pbG"></i></div>
+          <div class="progtxt" id="progtxt">Sin planos cargados.</div>
+        </div>
+      </div>
+
+      <div class="grp">
+        <div class="gl">Cargar shotlist</div>
+        <div class="fld"><label>Pegá el shotlist.json (del KIT DE LANZAMIENTO)</label>
+          <textarea id="jsonIn" placeholder='{ "project": "...", "shots": [ ... ] }'></textarea></div>
+        <button class="btn pri" id="loadBtn">↥ Cargar planos</button>
+        <div class="btnrow">
+          <button class="btn" id="fileBtn">Abrir archivo…</button>
+          <button class="btn" id="demoBtn">Ver ejemplo</button>
+        </div>
+        <input type="file" id="fileIn" accept=".json,application/json" style="display:none">
+      </div>
+
+      <div class="grp">
+        <div class="gl">Filtrar</div>
+        <div class="chips" id="filterChips"></div>
+      </div>
+
+      <div class="grp">
+        <div class="gl">Exportar</div>
+        <button class="btn pri" id="exportBtn">↧ shotlist.json actualizado</button>
+        <div class="btnrow">
+          <button class="btn" id="printBtn">⎙ Imprimir</button>
+          <button class="btn" id="resetBtn">Reset</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="paperwrap">
+      <div class="doc" id="doc"></div>
+    </div>
+  </div>
+
+  <p class="foot">REGISTRO DE PLANOS · HUMAN GLITCHE — corre 100% en tu navegador · cierra el loop KIT → cine-ia</p>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+var $=function(id){return document.getElementById(id);};
+function toast(m){var t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(function(){t.classList.remove('show');},1700);}
+function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+/* ============ DICCIONARIO DE PLANOS ============ */
+var GLOSARIO=[
+  // ENCUADRE
+  {cat:'Encuadre', tt:'Plano general', al:['plano general','gran angular','plano entero','cuerpo entero','salón','salon','ambiente'],
+   que:'La cámara muestra todo: el sujeto completo y su entorno. Ubica al que mira dónde pasa la escena.',
+   como:'Alejate del sujeto (o usá gran angular) hasta que entre todo el ambiente.'},
+  {cat:'Encuadre', tt:'Plano medio', al:['plano medio'],
+   que:'Muestra al sujeto de la cintura para arriba, o el objeto con algo de su entorno. Ni tan lejos ni tan cerca.',
+   como:'Acercate hasta que el sujeto ocupe la mitad del cuadro, dejando algo de aire alrededor.'},
+  {cat:'Encuadre', tt:'Primer plano', al:['primer plano','close-up','closeup','primerísimo','primerisimo'],
+   que:'El sujeto llena el cuadro. Se ven las expresiones, o el producto como protagonista absoluto.',
+   como:'Acercate mucho (o usá zoom) hasta que el sujeto ocupe casi todo el encuadre.'},
+  {cat:'Encuadre', tt:'Macro / detalle', al:['macro','detalle','textura','trama'],
+   que:'Un acercamiento extremo: la costura, el vapor, una gota, el grano. Detalles que el ojo casi no ve.',
+   como:'Usá el modo macro del celu o una lente macro. Mucha luz y pulso firme o trípode: a esa distancia todo tiembla.'},
+  {cat:'Encuadre', tt:'Cenital / flatlay', al:['cenital','picado a 90','picado en 90','desde arriba','a 90°','a 90','flatlay','flat lay','knolling'],
+   que:'La cámara mira desde arriba, a 90°, como si estuvieras parado justo encima. El clásico "foto de la comida desde arriba".',
+   como:'Poné la cámara paralela a la mesa apuntando hacia abajo. Cuidá tu propia sombra: que la luz venga de un costado o difusa.'},
+  // ÁNGULO
+  {cat:'Ángulo', tt:'Picado', al:['picado'],
+   que:'La cámara mira al sujeto de arriba hacia abajo. Lo empequeñece un poco, da orden o cercanía amable.',
+   como:'Levantá la cámara por encima del sujeto y apuntá hacia abajo, sin llegar al cenital de 90°.'},
+  {cat:'Ángulo', tt:'Contrapicado', al:['contrapicado'],
+   que:'La cámara mira de abajo hacia arriba. Agranda y da poder o imponencia al sujeto.',
+   como:'Bajá la cámara casi al piso y apuntá hacia arriba.'},
+  {cat:'Ángulo', tt:'A la altura', al:['a la altura','nivel del ojo','altura de la mesa','altura del producto'],
+   que:'La cámara a la misma altura del sujeto. La mirada más neutral y honesta: lo ves "de igual a igual".',
+   como:'Poné la cámara a la altura del objeto o de los ojos, ni arriba ni abajo.'},
+  {cat:'Ángulo', tt:'Sobre el hombro', al:['over-the-shoulder','sobre el hombro','over the shoulder'],
+   que:'Vemos la escena por encima del hombro de alguien: nos mete en su lugar.',
+   como:'Poné la cámara detrás y al costado de una persona, mostrando parte de su hombro y lo que mira.'},
+  // MOVIMIENTO
+  {cat:'Movimiento (video)', tt:'Cámara fija', al:['cámara fija','camara fija','plano fijo','fija'],
+   que:'La cámara no se mueve. Todo el movimiento lo hace lo que está delante (vapor, manos, tela).',
+   como:'Trípode, o apoyá el celu bien firme. Que se mueva el sujeto, no vos.'},
+  {cat:'Movimiento (video)', tt:'Dolly (in/out)', al:['dolly','dolly-in','dolly in','dolly-out','dolly out'],
+   que:'La cámara entera se acerca (in) o se aleja (out) del sujeto. Suma tensión o revela el entorno.',
+   como:'Caminá lento hacia (o desde) el sujeto con el celu estabilizado. Un paso por segundo, parejo.'},
+  {cat:'Movimiento (video)', tt:'Paneo', al:['paneo','paneá','panea','pan '],
+   que:'La cámara gira sobre su eje de un lado a otro, sin desplazarse.',
+   como:'Parado en el lugar, girá la cámara horizontalmente, lento y continuo.'},
+  {cat:'Movimiento (video)', tt:'Travelling', al:['travelling','travel','la sigue','seguir','sigue con'],
+   que:'La cámara acompaña al sujeto que se mueve, viajando con él.',
+   como:'Caminá al lado del sujeto manteniendo la distancia, con el celu estabilizado.'},
+  {cat:'Movimiento (video)', tt:'Órbita / 360°', al:['órbita','orbita','360','girando','rotando'],
+   que:'La cámara da vueltas alrededor del sujeto, o el sujeto gira sobre sí mismo. El clásico teaser de producto.',
+   como:'Rodeá el producto en círculo manteniéndolo centrado; o poné el producto en una base giratoria y dejá la cámara fija.'},
+  // LUZ
+  {cat:'Luz', tt:'Hora dorada', al:['hora dorada','golden hour','atardecer','amanecer'],
+   que:'La luz cálida y suave de justo después del amanecer o antes del atardecer. Todo se ve dorado y favorecedor.',
+   como:'Filmá cerca de una ventana a esa hora, o simulala con una luz cálida (anaranjada), lateral y baja.'},
+  {cat:'Luz', tt:'Contraluz / recorte', al:['contraluz','luz de recorte','recorta','recorte','backlight'],
+   que:'La luz viene desde atrás del sujeto y lo recorta del fondo con un borde brillante. Ideal para vapor y siluetas.',
+   como:'Poné la fuente de luz detrás del sujeto apuntando hacia la cámara, cuidando que no la encandile de más.'},
+  {cat:'Luz', tt:'Luz de ventana', al:['luz de ventana','luz lateral','ventana','luz de día','luz de dia'],
+   que:'La luz suave y direccional que entra por una ventana. La más fácil y linda para empezar, y gratis.',
+   como:'Poné el sujeto al costado de una ventana. Si la luz es muy dura, difundila con una cortina fina o papel.'},
+  {cat:'Luz', tt:'Softbox / difusa', al:['softbox','luz difusa','difusa','dos softbox','luz pareja'],
+   que:'Una luz artificial pareja y sin sombras duras, como la de un estudio.',
+   como:'Una lámpara con una tela blanca o papel manteca adelante (sin que se queme), o un panel LED con difusor.'},
+  {cat:'Luz', tt:'Luz rasante', al:['rasante','luz lateral dura','marca la textura','revela la textura','revela el relieve','relieve'],
+   que:'La luz llega casi paralela a la superficie y crea sombras largas que revelan relieve y textura.',
+   como:'Poné la luz muy al costado, casi rozando la superficie del objeto.'},
+  // RECURSO
+  {cat:'Recurso', tt:'Profundidad / desenfoque', al:['profundidad de campo','poca profundidad','desenfocado','fondo desenfocado','bokeh','foco selectivo'],
+   que:'El sujeto nítido y el fondo borroso. Aísla lo importante y se ve más "profesional".',
+   como:'Acercate al sujeto y alejá el fondo; usá el modo retrato del celu o una apertura baja (número f chico).'},
+  {cat:'Recurso', tt:'Espacio negativo', al:['espacio negativo','espacio para texto','espacio arriba','aire'],
+   que:'Zona vacía a propósito en el cuadro, para que respire o para poner texto/logo encima.',
+   como:'Componé al sujeto a un costado y dejá el resto liso.'}
+];
+var FORMATOS={
+  '9:16':'Vertical, pantalla completa del celu — Reels, TikTok, Stories.',
+  '4:5':'Vertical de feed: ocupa más pantalla que el cuadrado. El que más rinde en el feed de Instagram.',
+  '1:1':'Cuadrado — feed clásico y catálogos. Se ve igual en todos lados.',
+  '16:9':'Horizontal (apaisado) — web, YouTube, presentaciones.',
+  '3:4':'Vertical de feed, alternativa al 4:5.',
+  '2:3':'Vertical tipo afiche/foto — Pinterest, impresión.'
+};
+function matchTerms(s){
+  var hay=((s.prompt||'')+' '+(s.description||'')+' '+(s.name||'')).toLowerCase();
+  var out=[], seen={};
+  GLOSARIO.forEach(function(g){
+    if(seen[g.tt]) return;
+    for(var i=0;i<g.al.length;i++){ if(hay.indexOf(g.al[i])>=0){ out.push(g); seen[g.tt]=1; break; } }
+  });
+  return out.slice(0,5);
+}
+function plainDesc(s){
+  var kind=s.kind==='video'?('un clip de video'+(s.duration?' de '+s.duration:'')):'una foto fija';
+  var fmt=FORMATOS[s.format]?(' Formato '+s.format+': '+FORMATOS[s.format]):'';
+  var how=s.kind==='video'
+    ? 'Grabalo con el celu bien estabilizado (o generalo con '+(s.model||'un modelo de video')+').'
+    : 'Sacala con el celu o una cámara (o generala con '+(s.model||'un modelo de imagen')+').';
+  return 'Es <b>'+kind+'</b>. '+how+fmt;
+}
+
+/* ============ EJEMPLO (export real del KIT · gastronomía) ============ */
+var DEMO={
+  project:'La Nonna — Kit de lanzamiento (Gastronomía)', scene:'lanzamiento', brief:'web/labs KIT DE LANZAMIENTO',
+  look:{ palette:'ámbar cálido, madera, verdes de hierbas frescas', emulsion:'digital limpio con grano fino, halación suave en las luces', vocab:['hora dorada','vapor visible','fondo desenfocado','luz de ventana lateral'] },
+  shots:[
+    {shot:'001',description:'Hero del plato — 4:5 · imagen',elements:['@pizza-napolitana'],prompt:'Primerísimo plano cenital de pizza napolitana recién emplatada, vapor sutil elevándose, sobre plato de cerámica artesanal y mesa de madera oscura; cámara fija en picado a 90°; luz de ventana lateral cálida tipo hora dorada que recorta el vapor; paleta de ámbar y verdes de hierbas frescas, grano fino; apetitoso y honesto.',format:'4:5',model:'GPT Image 2',status:'pendiente',asset:''},
+    {shot:'002',description:'Ambiente / salón — 16:9 · imagen',elements:['@pizza-napolitana','@la-nonna'],prompt:'Plano general del salón de La Nonna en hora pico, mesas ocupadas con clientes desenfocados de fondo y foco en una mesa servida en primer término; cámara a la altura de la mesa, gran angular suave; luz práctica cálida de lámparas colgantes más luz de ventana al atardecer; atmósfera acogedora y viva.',format:'16:9',model:'GPT Image 2',status:'pendiente',asset:''},
+    {shot:'003',description:'Ingrediente / flatlay — 1:1 · imagen',elements:['@pizza-napolitana'],prompt:'Flatlay cenital de la materia prima cruda de pizza napolitana — ingredientes frescos ordenados con intención sobre superficie de piedra clara; cámara fija a 90°; luz difusa de día con sombras suaves; paleta natural, colores reales saturados; limpio y editorial gastronómico.',format:'1:1',model:'GPT Image 2',status:'pendiente',asset:''},
+    {shot:'004',description:'Proceso / manos — 9:16 · video',duration:'6s',elements:['@pizza-napolitana'],prompt:'Primer plano de las manos del cocinero terminando la pizza napolitana con un gesto preciso, vapor y movimiento; cámara fija macro con leve dolly-in; luz lateral dura que marca la textura; cálido, artesanal, con tensión apetitosa.',format:'9:16',model:'Seedance 2.0',status:'pendiente',asset:''},
+    {shot:'005',description:'Teaser / apertura — 9:16 · video',duration:'8s',elements:['@pizza-napolitana'],prompt:'Pizza napolitana girando lento sobre fondo oscuro limpio, vapor congelándose en el aire, una luz de recorte aparece revelando el plato; cámara en órbita de 180° suave; dramático y premium, alto contraste; termina con espacio negativo arriba para texto.',format:'9:16',model:'Seedance 2.0',status:'pendiente',asset:''}
+  ]
+};
+
+/* ============ ESTADO ============ */
+var st;
+try{ st=JSON.parse(localStorage.getItem('hg_regplanos')||'null'); }catch(e){ st=null; }
+if(!st) st={ project:'', scene:'', brief:'', look:null, shots:[], filter:'todos' };
+if(!st.filter) st.filter='todos';
+function save(){ try{ localStorage.setItem('hg_regplanos',JSON.stringify(st)); }catch(e){} }
+
+var FILTERS=[{id:'todos',n:'Todos'},{id:'pendiente',n:'Pendientes'},{id:'generado',n:'Generados'},{id:'aprobado',n:'Aprobados'}];
+
+/* ============ IMPORT / NORMALIZE ============ */
+function normShot(s,i){
+  var name = s.name || (s.description ? String(s.description).split('—')[0].split(' - ')[0].trim() : ('Plano '+(i+1)));
+  var kind = s.kind || ((s.duration || /video/i.test(s.description||'')) ? 'video' : 'imagen');
+  return { shot:s.shot||String(i+1), name:name, description:s.description||'', format:s.format||'', model:s.model||'',
+           kind:kind, duration:s.duration||'', prompt:s.prompt||'', elements:s.elements||[],
+           status:(['pendiente','generado','aprobado'].indexOf(s.status)>=0?s.status:'pendiente'), asset:s.asset||'', notes:s.notes||'' };
+}
+function loadData(obj){
+  var arr = Array.isArray(obj) ? obj : (obj && Array.isArray(obj.shots) ? obj.shots : null);
+  if(!arr){ toast('No encontré "shots" en el JSON'); return false; }
+  st.project = (obj && obj.project) || st.project || 'Producción sin nombre';
+  st.scene = (obj && obj.scene) || 'lanzamiento';
+  st.brief = (obj && obj.brief) || '';
+  st.look = (obj && obj.look) || st.look || null;
+  st.shots = arr.map(normShot);
+  st.filter='todos';
+  save(); render();
+  toast('Cargados '+st.shots.length+' planos');
+  return true;
+}
+
+/* ============ RENDER ============ */
+function counts(){ var c={pendiente:0,generado:0,aprobado:0}; st.shots.forEach(function(s){ c[s.status]=(c[s.status]||0)+1; }); return c; }
+function renderProgress(){
+  var n=st.shots.length, c=counts();
+  var pa=n?Math.round(c.aprobado/n*100):0, pg=n?Math.round(c.generado/n*100):0;
+  $('pbA').style.width=pa+'%'; $('pbG').style.width=pg+'%';
+  $('progtxt').innerHTML = n
+    ? '<b>'+c.aprobado+'</b> aprobados · <b>'+c.generado+'</b> generados · <b>'+c.pendiente+'</b> pendientes<br>de <b>'+n+'</b> planos ('+pa+'% listo)'
+    : 'Sin planos cargados.';
+}
+function renderFilters(){
+  var box=$('filterChips'); box.innerHTML='';
+  FILTERS.forEach(function(f){
+    var c=document.createElement('div'); c.className='chip'+(st.filter===f.id?' on':'');
+    var cnt = f.id==='todos'?st.shots.length:counts()[f.id]||0;
+    c.textContent=f.n+' ('+cnt+')';
+    c.addEventListener('click',function(){ st.filter=f.id; save(); renderBoard(); renderFilters(); });
+    box.appendChild(c);
+  });
+}
+function glossaryHTML(){
+  var h='<div class="glos"><h3>Diccionario de planos</h3><p style="font-size:11px;color:#6b6656;margin:6px 0 2px;line-height:1.6;">Todos los términos que podés encontrar en los prompts, explicados para hacerlos vos.</p>';
+  var cats=[]; GLOSARIO.forEach(function(g){ if(cats.indexOf(g.cat)<0) cats.push(g.cat); });
+  cats.forEach(function(cat){
+    h+='<div class="gcat">'+esc(cat)+'</div>';
+    GLOSARIO.filter(function(g){return g.cat===cat;}).forEach(function(g){
+      h+='<div class="gitem"><span class="tt">'+esc(g.tt)+'</span>'+esc(g.que)+' <span class="como"><b>Cómo:</b> '+esc(g.como)+'</span></div>';
+    });
+  });
+  h+='</div>';
+  return h;
+}
+function render(){
+  var doc=$('doc');
+  if(!st.shots.length){
+    doc.innerHTML='<div class="empty"><h3>Todavía no hay planos</h3>'+
+      '<p>Pegá el <b>shotlist.json</b> que te dio el KIT DE LANZAMIENTO en el panel de la izquierda y apretá <b>Cargar planos</b>. O mirá un ejemplo para ver cómo funciona.</p>'+
+      '<span class="eb" id="e1">Ver ejemplo</span></div>'+glossaryHTML();
+    var e1=$('e1'); if(e1) e1.addEventListener('click',function(){ loadData(JSON.parse(JSON.stringify(DEMO))); });
+    renderProgress(); renderFilters();
+    return;
+  }
+  var head='<div class="dhead"><div class="dbrand">HUMAN <em>GLITCHE</em><small>Registro de planos</small></div>'+
+    '<div class="dmeta"><b>'+esc(st.project)+'</b><br>'+st.shots.length+' planos · escena: '+esc(st.scene||'—')+'</div></div>'+
+    '<div class="dtitle">'+esc(st.project).toUpperCase()+'</div>';
+  if(st.look) head+='<div class="dlook"><b>LOOK BASE</b><br>Paleta: '+esc(st.look.palette||'—')+' · Emulsión: '+esc(st.look.emulsion||'—')+'</div>';
+  doc.innerHTML=head+'<div id="board"></div>'+glossaryHTML();
+  renderBoard(); renderProgress(); renderFilters();
+}
+function renderBoard(){
+  var board=$('board'); if(!board) return;
+  var list = st.shots.map(function(s,i){return {s:s,i:i};}).filter(function(o){ return st.filter==='todos'||o.s.status===st.filter; });
+  if(!list.length){ board.innerHTML='<div style="color:#6b6656;font-size:12px;text-align:center;padding:24px;">No hay planos '+esc(st.filter)+'.</div>'; return; }
+  var h='';
+  list.forEach(function(o){
+    var s=o.s, i=o.i;
+    var badges='';
+    if(s.format) badges+='<span class="bdg fmt">'+esc(s.format)+'</span>';
+    badges+='<span class="bdg">'+esc(s.kind)+(s.duration?' · '+esc(s.duration):'')+'</span>';
+    if(s.model) badges+='<span class="bdg">'+esc(s.model)+'</span>';
+    var terms=matchTerms(s);
+    var termsH=terms.map(function(g){
+      return '<div class="term"><span class="tt">'+esc(g.tt)+'</span><span class="tc">'+esc(g.cat)+'</span><br>'+esc(g.que)+' <span class="como"><b>Cómo:</b> '+esc(g.como)+'</span></div>';
+    }).join('');
+    var els = (s.elements&&s.elements.length)?'<div style="font-size:10px;color:#6b6656;margin-top:6px;">Continuidad: '+esc(s.elements.join('  '))+'</div>':'';
+    h+='<div class="card st-'+s.status+'" data-i="'+i+'">'+
+      '<div class="ch"><span class="num">'+esc(s.shot)+'</span><span class="cn">'+esc(s.name)+'</span><span class="badges">'+badges+'</span></div>'+
+      '<div class="status">'+
+        '<div class="sb pend'+(s.status==='pendiente'?' on':'')+'" data-st="pendiente" data-i="'+i+'">Pendiente</div>'+
+        '<div class="sb gen'+(s.status==='generado'?' on':'')+'" data-st="generado" data-i="'+i+'">Generado</div>'+
+        '<div class="sb apr'+(s.status==='aprobado'?' on':'')+'" data-st="aprobado" data-i="'+i+'">Aprobado</div>'+
+      '</div>'+
+      '<details open><summary>¿Qué es este plano y cómo lo hago?</summary><div class="dc">'+
+        '<div class="plain">'+plainDesc(s)+'</div>'+(termsH||'<div style="font-size:11px;color:#6b6656;">Este plano no usa términos técnicos: seguí la descripción del prompt tal cual.</div>')+
+      '</div></details>'+
+      '<details><summary>Prompt del plano</summary><div class="dc"><div style="display:flex;margin-bottom:6px;"><span class="copyp" data-cp="'+i+'">⧉ copiar prompt</span></div><div class="prompt">'+esc(s.prompt||'(sin prompt)')+'</div>'+els+'</div></details>'+
+      '<div class="track">'+
+        '<div><div class="tl">Link del asset generado</div><input type="url" data-asset="'+i+'" value="'+esc(s.asset)+'" placeholder="pegá la URL de la imagen/video aprobado"></div>'+
+        (s.asset?'<div class="assetlink">→ <a href="'+esc(s.asset)+'" target="_blank" rel="noopener">'+esc(s.asset)+'</a></div>':'')+
+        '<div><div class="tl">Notas de continuidad</div><textarea data-notes="'+i+'" placeholder="qué se mantiene del plano anterior, ajustes, versión elegida…">'+esc(s.notes)+'</textarea></div>'+
+      '</div>'+
+      '</div>';
+  });
+  board.innerHTML=h;
+  // status buttons
+  Array.prototype.forEach.call(board.querySelectorAll('.sb'),function(b){
+    b.addEventListener('click',function(){ var i=+b.getAttribute('data-i'); st.shots[i].status=b.getAttribute('data-st'); save(); renderBoard(); renderProgress(); renderFilters(); });
+  });
+  // copy prompt
+  Array.prototype.forEach.call(board.querySelectorAll('.copyp'),function(b){
+    b.addEventListener('click',function(){ var i=+b.getAttribute('data-cp'); copy(st.shots[i].prompt||'','Prompt copiado'); });
+  });
+  // asset / notes (no re-render, keep focus)
+  Array.prototype.forEach.call(board.querySelectorAll('[data-asset]'),function(inp){
+    inp.addEventListener('input',function(){ st.shots[+inp.getAttribute('data-asset')].asset=inp.value; save(); });
+  });
+  Array.prototype.forEach.call(board.querySelectorAll('[data-notes]'),function(inp){
+    inp.addEventListener('input',function(){ st.shots[+inp.getAttribute('data-notes')].notes=inp.value; save(); });
+  });
+}
+function copy(t,msg){ if(!t){toast('Vacío');return;} if(navigator.clipboard) navigator.clipboard.writeText(t).then(function(){toast(msg||'Copiado');},function(){prompt('Copiá:',t);}); else prompt('Copiá:',t); }
+
+/* ============ EXPORT ============ */
+function exportObj(){
+  return { project:st.project, scene:st.scene||'lanzamiento', brief:st.brief||'', look:st.look||undefined,
+    shots:st.shots.map(function(s){
+      var r={ shot:s.shot, description:s.description||(s.name+' — '+s.format+' · '+s.kind) };
+      if(s.kind==='video'&&s.duration) r.duration=s.duration;
+      r.elements=s.elements||[]; r.prompt=s.prompt||''; r.format=s.format; r.model=s.model;
+      r.status=s.status; r.asset=s.asset||'';
+      if(s.notes) r.notes=s.notes;
+      return r;
+    }) };
+}
+function download(name,text){
+  var blob=new Blob([text],{type:'application/json'});
+  var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name;
+  document.body.appendChild(a); a.click(); setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); },100);
+}
+
+/* ============ BIND ============ */
+$('loadBtn').addEventListener('click',function(){
+  var raw=$('jsonIn').value.trim(); if(!raw){ toast('Pegá el JSON primero'); return; }
+  var obj; try{ obj=JSON.parse(raw); }catch(e){ toast('JSON inválido: '+e.message.slice(0,40)); return; }
+  loadData(obj);
+});
+$('fileBtn').addEventListener('click',function(){ $('fileIn').click(); });
+$('fileIn').addEventListener('change',function(e){
+  var f=e.target.files[0]; if(!f) return;
+  var rd=new FileReader(); rd.onload=function(){ try{ loadData(JSON.parse(rd.result)); }catch(err){ toast('JSON inválido'); } }; rd.readAsText(f); e.target.value='';
+});
+$('demoBtn').addEventListener('click',function(){ loadData(JSON.parse(JSON.stringify(DEMO))); });
+$('exportBtn').addEventListener('click',function(){
+  if(!st.shots.length){ toast('No hay planos cargados'); return; }
+  var neg=(st.project||'produccion').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,40)||'produccion';
+  download('shotlist_'+neg+'.json', JSON.stringify(exportObj(),null,2));
+  toast('shotlist.json actualizado descargado');
+});
+$('printBtn').addEventListener('click',function(){ if(!st.shots.length){toast('No hay planos');return;} window.print(); });
+$('resetBtn').addEventListener('click',function(){ if(!confirm('¿Vaciar el registro? Se pierden estados y notas.'))return; st={ project:'', scene:'', brief:'', look:null, shots:[], filter:'todos' }; save(); $('jsonIn').value=''; render(); });
+
+render();
+})();
+</script>
+</body></html>
