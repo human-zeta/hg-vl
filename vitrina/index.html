@@ -1,0 +1,404 @@
+<!doctype html><html lang="es"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>VITRINA — Human Glitche · la presencia digital soñada del comercio, en prompts para IA</title>
+<meta name="description" content="El arma de cierre visual del embudo de comercios: elegís un comercio (de AUDITORÍA o a mano), cargás sus datos y su estética, y la app arma los prompts afinados para Nano Banana Pro / Higgsfield que renderizan su presencia digital soñada — su web, su perfil de Instagram, sus fotos de producto, el antes/después con foto real y un refresh de su logo. El asset 'esto podés ser vos' que cierra la venta. 100% en tu navegador.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{ --acid:#b8ff00; --glitch:#ff2d55; --cyan:#3ad0ff; --amber:#ffb020; --violet:#9b6bff; --ink:#f0ede6; --line:rgba(240,237,230,.12); --bg:#050505; --pan:rgba(184,255,0,.015);
+         --paper:#faf9f6; --pink:#12100c; --pline:#e3ded2; --pmut:#6b6656; }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{min-height:100%;background:var(--bg);color:var(--ink);font-family:'Space Mono',monospace;}
+  body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");z-index:0;pointer-events:none;opacity:.4;}
+  .wrap{position:relative;z-index:1;max-width:1280px;margin:0 auto;padding:26px 20px 90px;}
+  header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;gap:16px;flex-wrap:wrap;}
+  .brand{font-family:'Bebas Neue',sans-serif;font-size:52px;letter-spacing:.03em;line-height:.82;}
+  .brand b{color:var(--acid);font-weight:400;}
+  .brand span{display:block;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.26em;color:rgba(240,237,230,.4);margin-top:8px;}
+  header nav a{font-size:10px;letter-spacing:.2em;color:rgba(240,237,230,.4);text-decoration:none;margin-left:16px;} header nav a:hover{color:var(--acid);}
+  .intro{font-size:12px;color:rgba(240,237,230,.55);line-height:1.8;max-width:82ch;margin:12px 0 12px;}
+  .intro b{color:var(--acid);font-weight:400;}
+  .funnel{font-size:10.5px;color:rgba(240,237,230,.4);letter-spacing:.05em;margin-bottom:22px;}
+  .funnel b{color:var(--cyan);}
+
+  .cols{display:grid;grid-template-columns:360px 1fr;gap:24px;align-items:start;}
+  @media(max-width:980px){ .cols{grid-template-columns:1fr;} }
+  .editor{border:1px solid var(--line);border-radius:10px;background:var(--pan);padding:16px;position:sticky;top:16px;max-height:calc(100vh - 32px);overflow:auto;}
+  .editor h2{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:.04em;color:var(--acid);margin:2px 0 12px;}
+  .grp{margin-bottom:16px;} .grp>.gl{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:rgba(240,237,230,.4);margin-bottom:8px;display:flex;align-items:center;gap:8px;}
+  .grp>.gl::after{content:'';flex:1;height:1px;background:var(--line);}
+  .fld{display:flex;flex-direction:column;gap:4px;margin-bottom:9px;}
+  .fld label{font-size:8.5px;letter-spacing:.16em;text-transform:uppercase;color:rgba(240,237,230,.4);}
+  .fld input,.fld textarea{background:#0b0b0b;border:1px solid var(--line);color:var(--ink);font-family:'Space Mono',monospace;font-size:12px;padding:7px 9px;border-radius:6px;width:100%;}
+  .fld textarea{resize:vertical;min-height:52px;line-height:1.5;}
+  .fld input:focus,.fld textarea:focus{outline:none;border-color:var(--acid);}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;}
+  .chip{font-size:10px;padding:5px 9px;border:1px solid var(--line);border-radius:5px;cursor:pointer;transition:.12s;color:rgba(240,237,230,.7);user-select:none;}
+  .chip:hover{border-color:var(--acid);} .chip.on{border-color:var(--acid);color:var(--acid);background:rgba(184,255,0,.07);}
+  .shotoggle{display:flex;flex-direction:column;gap:5px;}
+  .stg{display:flex;align-items:center;gap:9px;font-size:11px;color:rgba(240,237,230,.7);cursor:pointer;padding:5px 7px;border:1px solid transparent;border-radius:5px;transition:.12s;}
+  .stg:hover{background:rgba(255,255,255,.02);}
+  .stg .bx{width:15px;height:15px;border:1px solid var(--line);border-radius:3px;flex:0 0 auto;display:grid;place-items:center;font-size:10px;color:var(--bg);}
+  .stg.on .bx{background:var(--acid);border-color:var(--acid);}
+  .stg.on{color:var(--ink);} .stg .ico{margin-left:auto;font-size:13px;}
+  .btn{cursor:pointer;background:transparent;border:1px solid var(--line);color:var(--ink);font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.12em;padding:10px 12px;border-radius:6px;transition:.18s;text-transform:uppercase;width:100%;}
+  .btn:hover{border-color:var(--acid);color:var(--acid);}
+  .btn.pri{background:var(--acid);color:#050505;font-weight:700;border-color:var(--acid);} .btn.pri:hover{filter:brightness(1.08);}
+  .btnrow{display:flex;gap:8px;margin-top:6px;}
+  #gResults .gres{border:1px solid var(--line);border-radius:6px;padding:8px 10px;margin-top:6px;cursor:pointer;transition:.12s;}
+  #gResults .gres:hover{border-color:var(--acid);background:rgba(184,255,0,.05);}
+  #gResults .gres b{display:block;color:var(--ink);font-size:12px;}
+  #gResults .gres span{color:rgba(240,237,230,.5);font-size:9.5px;}
+  #gResults .gmsg{font-size:10px;color:rgba(240,237,230,.5);margin-top:6px;line-height:1.5;}
+  .gphoto{margin-top:8px;border:1px solid var(--line);border-radius:6px;padding:8px;display:flex;gap:10px;align-items:center;background:#0b0b0b;}
+  .gphoto img{width:54px;height:54px;object-fit:cover;border-radius:4px;flex:0 0 auto;}
+  .gphoto span{font-size:9px;color:rgba(240,237,230,.6);line-height:1.5;} .gphoto a{color:var(--acid);}
+  .subgl{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:rgba(240,237,230,.35);margin:14px 0 6px;}
+
+  .paperwrap{min-width:0;}
+  .doc{background:var(--paper);color:var(--pink);border-radius:6px;box-shadow:0 20px 60px rgba(0,0,0,.5);padding:44px 46px;font-size:13px;line-height:1.65;}
+  .doc .dhead{display:flex;justify-content:space-between;align-items:flex-start;gap:18px;border-bottom:2px solid var(--pink);padding-bottom:16px;margin-bottom:8px;flex-wrap:wrap;}
+  .doc .dbrand{font-family:'Bebas Neue',sans-serif;font-size:34px;letter-spacing:.02em;line-height:.85;}
+  .doc .dbrand em{font-style:normal;border-bottom:4px solid var(--acid);}
+  .doc .dbrand small{display:block;font-family:'Space Mono',monospace;font-size:9.5px;letter-spacing:.18em;color:var(--pmut);margin-top:8px;text-transform:uppercase;}
+  .doc .dmeta{text-align:right;font-size:11px;color:var(--pmut);line-height:1.7;} .doc .dmeta b{color:var(--pink);}
+  .doc .dtitle{font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:.02em;line-height:.95;margin:16px 0 2px;}
+  .doc .dfor{font-size:12px;color:var(--pmut);margin-bottom:6px;} .doc .dfor b{color:var(--pink);}
+  .doc .howto{font-size:11px;color:#2a2822;background:#eaf7cc;border:1px solid #cfe89a;border-radius:6px;padding:9px 12px;margin:12px 0 22px;line-height:1.6;} .doc .howto b{color:var(--pink);}
+
+  .card{border:1px solid var(--pline);border-radius:8px;padding:16px 18px;margin-bottom:14px;page-break-inside:avoid;background:#fff;}
+  .card .ch{display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap;}
+  .card .num{font-family:'Space Mono',monospace;font-size:12px;font-weight:700;color:var(--acid);background:var(--pink);padding:3px 8px;border-radius:4px;letter-spacing:.05em;}
+  .card .cn{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:.03em;line-height:1;}
+  .card .badges{display:flex;gap:5px;flex-wrap:wrap;margin-left:auto;}
+  .card .bdg{font-size:9px;letter-spacing:.04em;text-transform:uppercase;padding:3px 7px;border-radius:4px;border:1px solid var(--pline);color:#3a382f;background:#f2efe7;white-space:nowrap;}
+  .card .bdg.fmt{color:#1c3a44;background:#e2f4fb;border-color:#c9e8f4;}
+  .card .bdg.mdl{color:#5a3a12;background:#fbeed9;border-color:#f4e2c4;}
+  .card .why{font-size:11.5px;color:var(--pmut);font-style:italic;line-height:1.55;margin-bottom:10px;} .card .why b{color:#3a382f;font-style:normal;}
+  .card .refnote{font-size:11px;color:#7a1226;background:#fde4ea;border:1px solid #f6c9d5;border-radius:6px;padding:8px 11px;margin-bottom:10px;line-height:1.55;}
+  .card .plabel{font-size:8.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--pmut);margin:10px 0 4px;display:flex;align-items:center;gap:8px;}
+  .card .plabel .cp{margin-left:auto;font-size:9px;letter-spacing:.08em;border:1px solid var(--pline);border-radius:4px;padding:2px 8px;cursor:pointer;color:#3a382f;background:#f2efe7;transition:.12s;text-transform:uppercase;}
+  .card .plabel .cp:hover{border-color:var(--pink);}
+  .card .prompt{font-size:12px;line-height:1.6;color:#211f1a;background:#f6f4ec;border:1px solid var(--pline);border-radius:6px;padding:11px 13px;white-space:pre-wrap;}
+  .card .tips{font-size:10.5px;color:var(--pmut);margin-top:9px;line-height:1.55;} .card .tips b{color:#3a382f;}
+  .empty{color:var(--pmut);font-size:13px;text-align:center;padding:50px 0;}
+
+  .dfoot{margin-top:22px;padding-top:14px;border-top:2px solid var(--pink);display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font-size:11px;color:var(--pmut);} .dfoot b{color:var(--pink);}
+  .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--acid);color:#050505;font-size:11px;font-weight:700;letter-spacing:.08em;padding:10px 18px;border-radius:6px;opacity:0;pointer-events:none;transition:.25s;z-index:9;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  .foot{font-size:10px;color:rgba(240,237,230,.35);letter-spacing:.1em;margin-top:36px;text-align:center;}
+
+  @media print{ @page{margin:14mm;} body::before{display:none;} body{background:#fff;}
+    .wrap{max-width:none;padding:0;} header,.intro,.funnel,.editor,.foot,.toast{display:none!important;}
+    .cols{display:block;} .doc{box-shadow:none;border-radius:0;padding:0;} .card .plabel .cp{display:none;} }
+</style></head><body>
+<div class="wrap">
+  <header>
+    <div class="brand"><b>VITRINA</b><span>la presencia digital soñada del comercio, en prompts para IA</span></div>
+    <nav><a href="/labs/">← LABS</a><a href="/medidor-gestion/">MEDIDOR</a><a href="/propuesta/">PROPUESTA</a></nav>
+  </header>
+  <p class="intro">El <b>arma de cierre visual</b> del embudo de comercios. Elegís un comercio, cargás sus datos y su estética, y la app arma los <b>prompts afinados para Nano Banana Pro / Higgsfield</b> que renderizan su presencia digital <b>soñada</b> — su web, su Instagram, sus fotos, el antes/después con foto real y un refresh de su logo. El asset <b>"esto podés ser vos"</b> que hace que el comercio diga que sí.</p>
+  <p class="funnel">EN EL EMBUDO: <b>AUDITORÍA</b> (lo encontrás) → <b>MEDIDOR</b> (le mostrás el dolor) → <b>VITRINA</b> (le mostrás el sueño) → <b>PROPUESTA</b> (el precio) → cierre</p>
+
+  <div class="cols">
+    <div class="editor">
+      <h2>ARMÁ LA VITRINA</h2>
+
+      <div class="grp">
+        <div class="gl">1 · Traé el comercio (automático)</div>
+        <div class="fld"><label>🔍 Buscalo en Google (nombre + ciudad)</label>
+          <input id="gq" placeholder="ej: Pizzería La Nonna La Plata"></div>
+        <button class="btn" id="gBtn">🔍 Buscar en Google</button>
+        <div id="gResults"></div>
+        <div id="gPhoto"></div>
+        <div class="subgl">o pegá de AUDITORÍA</div>
+        <div class="fld"><label>JSON del comercio — opcional</label>
+          <textarea id="jsonIn" placeholder='{"name":"...","type":"...","city":"..."}'></textarea></div>
+        <button class="btn" id="importBtn">↥ Traer datos</button>
+      </div>
+
+      <div class="grp">
+        <div class="gl">2 · Datos del comercio</div>
+        <div class="fld"><label>Nombre del comercio</label><input id="comercio" placeholder="ej: Pizzería La Nonna"></div>
+        <div class="row2">
+          <div class="fld"><label>Rubro</label><input id="rubro" placeholder="ej: pizzería"></div>
+          <div class="fld"><label>Ciudad</label><input id="ciudad" placeholder="ej: La Plata"></div>
+        </div>
+        <div class="fld"><label>Producto / servicio estrella</label><input id="producto" placeholder="ej: pizza napolitana"></div>
+        <div class="fld"><label>@ de Instagram (sin @)</label><input id="handle" placeholder="ej: lanonna.pizza"></div>
+        <div class="fld"><label>Frase / tagline para la web</label><input id="tagline" placeholder="ej: La napolitana que estabas buscando"></div>
+      </div>
+
+      <div class="grp">
+        <div class="gl">3 · Estética</div>
+        <div class="chips" id="estChips"></div>
+        <div class="fld" style="margin-top:8px"><label>Colores (opcional)</label><input id="colores" placeholder="ej: rojo, crema y madera"></div>
+      </div>
+
+      <div class="grp">
+        <div class="gl">4 · Assets a generar</div>
+        <div class="shotoggle" id="shotoggle"></div>
+      </div>
+
+      <div class="grp">
+        <div class="gl">Exportar</div>
+        <button class="btn pri" id="copyBtn">⧉ Copiar todos los prompts</button>
+        <div class="btnrow">
+          <button class="btn" id="printBtn">⎙ Imprimir brief</button>
+          <button class="btn" id="resetBtn">Reset</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="paperwrap">
+      <div class="doc" id="doc"></div>
+    </div>
+  </div>
+
+  <p class="foot">VITRINA · HUMAN GLITCHE — corre 100% en tu navegador · los prompts se generan acá; las imágenes las disparás en Higgsfield (Nano Banana Pro) o te las genera Claude con el MCP</p>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+var $=function(id){return document.getElementById(id);};
+function toast(m){var t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(function(){t.classList.remove('show');},1600);}
+function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+/* ============ ESTÉTICAS ============ */
+var EST=[
+  {id:'moderno', name:'Moderno / minimal', mod:'moderna y minimalista, mucho espacio en blanco, líneas limpias'},
+  {id:'calido',  name:'Cálido / artesanal', mod:'cálida y artesanal, tonos madera y tierra, hecho a mano'},
+  {id:'premium', name:'Premium / oscuro',   mod:'premium, fondos oscuros y elegantes, detalles dorados'},
+  {id:'natural', name:'Natural / orgánico', mod:'natural y orgánica, texturas, verdes y materiales nobles'},
+  {id:'vibrante',name:'Vibrante / pop',     mod:'vibrante y pop, colores saturados, energía y alegría'},
+  {id:'elegante',name:'Elegante / clásico', mod:'elegante y clásica, sobria, atemporal y prolija'}
+];
+
+/* ============ ASSETS (packs de prompts para Nano Banana Pro) ============ */
+var ASSETS=[
+  {id:'web', name:'Web soñada', ico:'🌐', format:'16:9 · mockup', model:'Nano Banana Pro',
+   why:'La foto de "así se vería tu web". Lo primero que imaginan cuando les vendés presencia — y Nano Banana Pro renderiza texto legible, así que el mockup se ve creíble.',
+   prompts:[
+     {label:'Hero / desktop', text:'Captura realista (mockup) de la landing de un sitio web moderno y limpio para «{comercio}», {rubro} en {ciudad}. Sección hero: foto grande y apetecible de {producto}, título llamativo y legible «{tagline}», un botón de acción claro («Pedí ahora»), y una barra de navegación arriba con el nombre del negocio. Estética {estetica}, paleta {colores}. Mostrado dentro del marco de un navegador en una laptop. Profesional, confiable, alta resolución, proporciones reales de una web.'},
+     {label:'Mobile', text:'Mockup realista de la versión mobile del sitio de «{comercio}» ({rubro}) en un celular: header fijo con logo, hero con foto de {producto}, botón de WhatsApp para pedir, secciones limpias. Estilo {estetica}, paleta {colores}. Sostenido en la mano, marco de celular realista.'}
+   ],
+   tip:'Generá primero el desktop para fijar el look; el mobile hereda la misma estética.'},
+
+  {id:'ig', name:'Perfil de Instagram', ico:'📸', format:'1:1 · perfil + grilla', model:'Nano Banana Pro',
+   why:'Lo que MÁS mira un comercio. Ver su Instagram cuidado y coherente es el golpe que más convierte — porque es donde ya viven.',
+   prompts:[
+     {label:'Perfil completo (grilla 9)', text:'Mockup realista de un perfil de Instagram para «@{handle}» ({rubro} en {ciudad}). Mostrar el encabezado del perfil: foto de perfil circular (el logo), nombre del negocio, bio «{bio}», números de seguidores, fila de destacados, y una grilla de 9 posteos coherentes de {producto} y del negocio, todos con un mismo look {estetica} y paleta {colores}. Interfaz real de Instagram, limpio, aspiracional, texto legible.'},
+     {label:'Posteo tipo (feed)', text:'Posteo de feed de Instagram para {comercio} ({rubro}): {producto} bellamente fotografiado, estética {estetica}, paleta {colores}, coherente con una grilla de marca, con lugar para un texto corto encima. Cuadrado 1:1, apetecible y deseable, profesional.'},
+     {label:'Historia / story', text:'Historia de Instagram vertical (9:16) para {comercio}: {producto} en primer plano, un sticker de «Nuevo» o una oferta, estética {estetica}, paleta {colores}, con espacio para texto arriba. Dinámica y con onda.'}
+   ],
+   tip:'Generá el perfil completo primero: fija el look de toda la marca; los posteos sueltos lo heredan.'},
+
+  {id:'producto', name:'Fotos de producto / lifestyle', ico:'🛍️', format:'4:5 · 1:1', model:'Nano Banana Pro',
+   why:'El material que después usa en TODO (web, redes, WhatsApp). Le mostrás la calidad de foto posible sin contratar un fotógrafo.',
+   prompts:[
+     {label:'Estudio', text:'Foto de producto de estudio, profesional, de {producto} de {comercio}: fondo neutro limpio, luz de softbox suave, sombra de contacto realista, styling {estetica}, detalles en {colores}. Calidad de catálogo, nítida, colores fieles.'},
+     {label:'Lifestyle', text:'Foto lifestyle de {producto} de {comercio} en un ambiente real y aspiracional propio de un {rubro}, luz natural de ventana, clima {estetica}, paleta {colores}. Editorial, deseable.'},
+     {label:'Ambiente / local', text:'Foto amplia y acogedora del local de {comercio} ({rubro} en {ciudad}), lleno de calidez y vida, estética {estetica}, paleta {colores}, luz cálida de hora dorada. Que den ganas de ir.'}
+   ],
+   tip:'Si tenés foto real del producto, pasala como referencia en Nano Banana Pro para que respete el producto exacto.'},
+
+  {id:'antesdespues', name:'Antes / después', ico:'↔️', format:'con foto real · referencia', model:'Nano Banana Pro (ref)', needsRef:true,
+   why:'El comparativo que no se puede discutir: su realidad de hoy vs la versión cuidada. Impacto puro — el comercio se ve a sí mismo, mejor.',
+   prompts:[
+     {label:'Transformación (mismo lugar)', text:'Transformá esta foto de {comercio} manteniéndola reconociblemente el MISMO lugar/producto, pero elevado: iluminación profesional, todo ordenado y con estilo, estética {estetica}, paleta {colores}, aspiracional pero creíble — la mejor versión real de este lugar exacto. No inventes otro lugar; mejorá ÉSTE.'}
+   ],
+   tip:'El "después" tiene que ser CREÍBLE (el mismo lugar, mejor), no una fantasía — así el dueño se reconoce y lo desea.'},
+
+  {id:'logo', name:'Logo — review + refresh', ico:'✳️', format:'logo · vector', model:'Nano Banana Pro',
+   why:'Lo más personal del dueño. Si le gusta cómo PODRÍA verse su marca, ya lo tenés emocionalmente. Ofrecé 2-3 variantes.',
+   prompts:[
+     {label:'Refresh (desde cero)', text:'Rediseño de logo moderno y limpio para «{comercio}», {rubro}. Un wordmark refinado más un ícono simple que evoque {producto}/{rubro}, estilo {estetica}, paleta {colores}. Mostralo sobre fondo blanco y sobre fondo oscuro, más una versión chica. Estilo vectorial, atemporal, legible, profesional. Simple y reconocible.'},
+     {label:'Refresh (desde el logo actual)', text:'Subí el logo actual como referencia y pedí: «Refrescá este logo manteniendo su esencia reconocible: más limpio, moderno y consistente, misma marca pero mejor resuelta.» Estética {estetica}, paleta {colores}.'}
+   ],
+   review:'REVIEW del logo actual (contale al dueño con criterio): ¿se lee en chico (perfil de IG)? · ¿funciona en un solo color? · ¿escala de la vidriera al favicon? · ¿se distingue de la competencia? · ¿dice algo del rubro? Cada "no" es una razón para el refresh.',
+   tip:'Empezá por la review (le mostrás los problemas reales), después el refresh (la solución). Igual que MEDIDOR → VITRINA pero con la marca.'}
+];
+
+/* ============ ESTADO ============ */
+var DEF={ comercio:'', rubro:'', ciudad:'', producto:'', handle:'', tagline:'', colores:'', est:'moderno', refPhoto:'', off:{} };
+var st;
+try{ st=JSON.parse(localStorage.getItem('hg_vitrina')||'null'); }catch(e){ st=null; }
+if(!st) st=JSON.parse(JSON.stringify(DEF));
+if(!st.off) st.off={};
+function save(){ try{ localStorage.setItem('hg_vitrina',JSON.stringify(st)); }catch(e){} }
+
+/* ============ HELPERS ============ */
+function slug(s){ return (s||'').trim().toLowerCase().replace(/[^a-z0-9áéíóúñ ]/gi,'').replace(/\s+/g,'.').replace(/^\.|\.$/g,''); }
+function estMod(){ var e=EST.filter(function(x){return x.id===st.est;})[0]; return e?e.mod:'moderna y prolija'; }
+function fill(t){
+  var com=(st.comercio||'').trim()||'el comercio';
+  var rub=(st.rubro||'').trim()||'comercio local';
+  var ciu=(st.ciudad||'').trim()||'la ciudad';
+  var pro=(st.producto||'').trim()||'su producto estrella';
+  var han=(st.handle||'').trim()||slug(st.comercio)||'elnegocio';
+  var tag=(st.tagline||'').trim()||('Lo mejor de '+ciu);
+  var bio=rub.charAt(0).toUpperCase()+rub.slice(1)+' en '+ciu;
+  var col=(st.colores||'').trim()||'acorde a la marca';
+  return t.replace(/\{comercio\}/g,com).replace(/\{rubro\}/g,rub).replace(/\{ciudad\}/g,ciu)
+    .replace(/\{producto\}/g,pro).replace(/\{handle\}/g,han).replace(/\{tagline\}/g,tag)
+    .replace(/\{bio\}/g,bio).replace(/\{colores\}/g,col).replace(/\{estetica\}/g,estMod());
+}
+function activeAssets(){ return ASSETS.filter(function(a){ return !st.off[a.id]; }); }
+
+/* ============ RENDER EDITOR ============ */
+function renderEst(){
+  var box=$('estChips'); box.innerHTML='';
+  EST.forEach(function(e){
+    var c=document.createElement('div'); c.className='chip'+(st.est===e.id?' on':''); c.textContent=e.name;
+    c.addEventListener('click',function(){ st.est=e.id; save(); renderDoc(); renderEst(); });
+    box.appendChild(c);
+  });
+}
+function renderToggle(){
+  var box=$('shotoggle'); box.innerHTML='';
+  ASSETS.forEach(function(a){
+    var on=!st.off[a.id];
+    var d=document.createElement('div'); d.className='stg'+(on?' on':'');
+    d.innerHTML='<div class="bx">'+(on?'✓':'')+'</div><span>'+a.name+'</span><span class="ico">'+a.ico+'</span>';
+    d.addEventListener('click',function(){ if(on) st.off[a.id]=1; else delete st.off[a.id]; save(); renderDoc(); renderToggle(); });
+    box.appendChild(d);
+  });
+}
+function bindInputs(){
+  ['comercio','rubro','ciudad','producto','handle','tagline','colores'].forEach(function(k){
+    var el=$(k); el.value=st[k]||'';
+    el.addEventListener('input',function(){ st[k]=this.value; save(); renderDoc(); });
+  });
+}
+
+/* ============ RENDER DOC ============ */
+function renderDoc(){
+  var doc=$('doc'), assets=activeAssets();
+  var com=(st.comercio||'').trim()||'el comercio';
+  var h='';
+  h+='<div class="dhead"><div class="dbrand">HUMAN <em>GLITCHE</em><small>Vitrina — brief visual de venta</small></div>'+
+     '<div class="dmeta"><b>'+esc((st.rubro||'').trim()||'comercio')+'</b><br>'+assets.length+' assets<br>estética: '+esc((EST.filter(function(x){return x.id===st.est;})[0]||{}).name||'')+'</div></div>';
+  h+='<div class="dtitle">'+esc(com).toUpperCase()+'</div>';
+  h+='<div class="dfor">'+((st.ciudad||'').trim()?'en <b>'+esc(st.ciudad.trim())+'</b> · ':'')+'presencia digital soñada</div>';
+  h+='<div class="howto"><b>Cómo se generan:</b> copiá cada prompt y pegalo en <b>Higgsfield → Nano Banana Pro</b> (unlimited). Para el antes/después y el logo, subí la <b>foto/logo real</b> como imagen de referencia. ¿No querés hacerlo a mano? Pasale este brief a <b>Claude</b> y las genera con el MCP.</div>';
+
+  if(!assets.length){ h+='<div class="empty">No hay assets activos. Activá al menos uno en el panel.</div>'; }
+  assets.forEach(function(a,i){
+    var badges='<span class="bdg fmt">'+esc(a.format)+'</span><span class="bdg mdl">'+esc(a.model)+'</span>';
+    h+='<div class="card"><div class="ch"><span class="num">'+(i<9?'0':'')+(i+1)+'</span><span class="cn">'+a.ico+' '+esc(a.name)+'</span><span class="badges">'+badges+'</span></div>';
+    h+='<div class="why"><b>Por qué vende:</b> '+esc(a.why)+'</div>';
+    if(a.needsRef) h+='<div class="refnote">📎 <b>Necesita foto real:</b> subí la foto de la fachada, el local o el producto como referencia en Nano Banana Pro.'+(st.refPhoto?' <b>Ya capturaste una de Google:</b> <a href="'+esc(st.refPhoto)+'" target="_blank" rel="noopener" style="color:#7a1226;text-decoration:underline">abrir foto</a>.':'')+'</div>';
+    if(a.review) h+='<div class="refnote" style="color:#12414f;background:#e2f4fb;border-color:#c9e8f4">🔍 '+esc(a.review)+'</div>';
+    a.prompts.forEach(function(p){
+      h+='<div class="plabel">'+esc(p.label)+'<span class="cp" data-cp="'+a.id+'|'+esc(p.label)+'">⧉ copiar</span></div>'+
+         '<div class="prompt">'+esc(fill(p.text))+'</div>';
+    });
+    h+='<div class="tips"><b>Tip:</b> '+esc(a.tip)+'</div></div>';
+  });
+  h+='<div class="dfoot"><span>— Human Glitche · Visual Lab</span><span>Generá con <b>Nano Banana Pro</b> · el asset que cierra la venta</span></div>';
+  doc.innerHTML=h;
+  Array.prototype.forEach.call(doc.querySelectorAll('.cp'),function(b){
+    b.addEventListener('click',function(){
+      var parts=b.getAttribute('data-cp').split('|'), a=ASSETS.filter(function(x){return x.id===parts[0];})[0];
+      var p=a.prompts.filter(function(x){return x.label===parts[1];})[0];
+      copy(fill(p.text),'Prompt copiado');
+    });
+  });
+}
+
+/* ============ EXPORT / IMPORT ============ */
+function allText(){
+  var assets=activeAssets(), L=['VITRINA — BRIEF VISUAL DE VENTA','Comercio: '+((st.comercio||'').trim()||'—')+' · '+((st.rubro||'').trim()||'')+' · '+((st.ciudad||'').trim()||''),
+    'Estética: '+((EST.filter(function(x){return x.id===st.est;})[0]||{}).mod||''),
+    'Generar en: Higgsfield → Nano Banana Pro (unlimited)','',''];
+  assets.forEach(function(a,i){
+    L.push((i+1)+' · '+a.name.toUpperCase()+'  ['+a.format+' · '+a.model+']');
+    L.push('Por qué vende: '+a.why);
+    if(a.needsRef) L.push('⚠️ Subí la foto real como referencia.');
+    if(a.review) L.push('Review: '+a.review);
+    a.prompts.forEach(function(p){ L.push('· '+p.label+':'); L.push('  '+fill(p.text)); });
+    L.push('Tip: '+a.tip,'');
+  });
+  return L.join('\n');
+}
+function copy(t,msg){ if(navigator.clipboard) navigator.clipboard.writeText(t).then(function(){toast(msg||'Copiado');},function(){prompt('Copiá:',t);}); else prompt('Copiá:',t); }
+
+/* ============ BUSCAR EN GOOGLE (Places, patrón de AUDITORÍA) ============ */
+var GMAPS_KEY='AIzaSyCnXWhyWR6VxayZBDcTUu7AkkeH60bU180';
+var mapsPromise=null;
+function loadMaps(){
+  if(window.google&&google.maps&&google.maps.places) return Promise.resolve();
+  if(mapsPromise) return mapsPromise;
+  mapsPromise=new Promise(function(res,rej){
+    window.__vitrinaMapsCb=function(){ res(); };
+    var s=document.createElement('script');
+    s.src='https://maps.googleapis.com/maps/api/js?key='+GMAPS_KEY+'&libraries=places&callback=__vitrinaMapsCb';
+    s.async=true; s.onerror=function(){ rej(new Error('maps')); };
+    document.head.appendChild(s);
+  });
+  return mapsPromise;
+}
+var RUBRO_MAP={restaurant:'restaurante',cafe:'cafetería',bakery:'panadería',bar:'bar',meal_takeaway:'rotisería',meal_delivery:'delivery',clothing_store:'tienda de ropa',store:'tienda',beauty_salon:'peluquería',hair_care:'peluquería',spa:'spa',gym:'gimnasio',pharmacy:'farmacia',florist:'florería',book_store:'librería',hardware_store:'ferretería',car_repair:'taller mecánico',veterinary_care:'veterinaria',dentist:'odontología',lodging:'hotel',real_estate_agency:'inmobiliaria',supermarket:'supermercado',jewelry_store:'joyería',shoe_store:'zapatería',electronics_store:'electrónica',furniture_store:'mueblería',liquor_store:'vinoteca',cafe_bar:'bar'};
+function typeToRubro(types){ if(!types) return ''; for(var i=0;i<types.length;i++){ if(RUBRO_MAP[types[i]]) return RUBRO_MAP[types[i]]; } return (types[0]||'').replace(/_/g,' ').replace('point of interest','').replace('establishment','').trim(); }
+function cityFromAddr(a){ if(!a) return ''; var p=a.split(','); return p.length>=2?p[p.length-2].replace(/\d{3,}/g,'').trim():''; }
+function renderGPhoto(){
+  var box=$('gPhoto'); if(!box) return;
+  if(!st.refPhoto){ box.innerHTML=''; return; }
+  box.innerHTML='<div class="gphoto"><img src="'+esc(st.refPhoto)+'" alt="foto real"><span>📎 Foto real capturada → úsala de referencia en el <b>antes/después</b>. <a href="'+esc(st.refPhoto)+'" target="_blank" rel="noopener">abrir</a></span></div>';
+}
+function doSearch(){
+  var q=$('gq').value.trim(); if(!q){ toast('Escribí el nombre + ciudad'); return; }
+  $('gResults').innerHTML='<div class="gmsg">Buscando en Google…</div>';
+  var done=false;
+  var to=setTimeout(function(){ if(done) return; done=true;
+    $('gResults').innerHTML='<div class="gmsg">No se pudo buscar (la clave de Google puede no estar habilitada para este dominio). Funciona publicado en hg-vl.com — mientras, cargá a mano.</div>'; }, 8000);
+  loadMaps().then(function(){
+    var svc=new google.maps.places.PlacesService(document.createElement('div'));
+    svc.textSearch({query:q}, function(results,status){
+      if(done) return; done=true; clearTimeout(to);
+      if(status!=='OK'||!results||!results.length){ $('gResults').innerHTML='<div class="gmsg">Sin resultados ('+esc(status||'')+'). Probá con más detalle, o cargá a mano.</div>'; return; }
+      window.__vRes=results.slice(0,5);
+      $('gResults').innerHTML=window.__vRes.map(function(r,i){
+        return '<div class="gres" data-i="'+i+'"><b>'+esc(r.name)+'</b><span>'+esc(r.formatted_address||'')+(r.rating?' · ⭐'+r.rating+(r.user_ratings_total?' ('+r.user_ratings_total+')':''):'')+'</span></div>';
+      }).join('');
+      Array.prototype.forEach.call($('gResults').querySelectorAll('.gres'),function(el){
+        el.addEventListener('click',function(){ pickResult(window.__vRes[+el.getAttribute('data-i')]); });
+      });
+    });
+  }).catch(function(){ if(done) return; done=true; clearTimeout(to);
+    $('gResults').innerHTML='<div class="gmsg">No se pudo cargar Google Maps. Funciona publicado en hg-vl.com; o cargá a mano.</div>'; });
+}
+function pickResult(r){
+  if(r.name) st.comercio=r.name;
+  var rub=typeToRubro(r.types); if(rub) st.rubro=rub;
+  var ciu=cityFromAddr(r.formatted_address); if(ciu) st.ciudad=ciu;
+  if(!st.handle) st.handle=slug(r.name);
+  st.refPhoto='';
+  if(r.photos&&r.photos.length){ try{ st.refPhoto=r.photos[0].getUrl({maxWidth:800,maxHeight:800}); }catch(e){} }
+  $('gResults').innerHTML='';
+  save(); bindInputs(); renderGPhoto(); renderDoc();
+  toast('Traído de Google: '+r.name);
+}
+$('gBtn').addEventListener('click',doSearch);
+$('gq').addEventListener('keydown',function(e){ if(e.key==='Enter'){ e.preventDefault(); doSearch(); } });
+
+$('importBtn').addEventListener('click',function(){
+  var raw=$('jsonIn').value.trim(); if(!raw){ toast('Pegá el JSON del comercio'); return; }
+  var o; try{ o=JSON.parse(raw); }catch(e){ toast('JSON inválido'); return; }
+  if(Array.isArray(o)) o=o[0]||{};
+  if(o.name) st.comercio=o.name; if(o.type) st.rubro=o.type; if(o.city) st.ciudad=o.city;
+  if(o.handle||o.ig_handle) st.handle=o.handle||o.ig_handle;
+  save(); bindInputs(); renderDoc(); toast('Comercio traído: '+(st.comercio||'?'));
+});
+$('copyBtn').addEventListener('click',function(){ if(!activeAssets().length){toast('No hay assets activos');return;} copy(allText(),'Brief copiado ('+activeAssets().length+' assets)'); });
+$('printBtn').addEventListener('click',function(){ if(!activeAssets().length){toast('No hay assets activos');return;} window.print(); });
+$('resetBtn').addEventListener('click',function(){ if(!confirm('¿Reiniciar la vitrina?'))return; st=JSON.parse(JSON.stringify(DEF)); save(); renderAll(); });
+
+/* ============ INIT ============ */
+function renderAll(){ renderEst(); renderToggle(); bindInputs(); renderGPhoto(); renderDoc(); }
+renderAll();
+})();
+</script>
+</body></html>
