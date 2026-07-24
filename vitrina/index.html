@@ -131,6 +131,17 @@
       </div>
 
       <div class="grp">
+        <div class="gl">🔎 Su presencia actual (el "antes")</div>
+        <div class="chips">
+          <div class="chip" data-open="pedidosya">🍔 PedidosYa</div>
+          <div class="chip" data-open="rappi">🛵 Rappi</div>
+          <div class="chip" data-open="ig">📸 Instagram</div>
+          <div class="chip" data-open="google">🔍 Google</div>
+        </div>
+        <div style="font-size:9px;color:rgba(240,237,230,.4);margin-top:6px;line-height:1.5">Abrí cómo se presenta hoy → capturá esas imágenes (sobre todo si está en delivery) como referencia para el <b>antes/después</b>.</div>
+      </div>
+
+      <div class="grp">
         <div class="gl">3 · Estética</div>
         <div class="chips" id="estChips"></div>
         <div class="fld" style="margin-top:8px"><label>Colores (opcional)</label><input id="colores" placeholder="ej: rojo, crema y madera"></div>
@@ -383,6 +394,22 @@ function pickResult(r){
 }
 $('gBtn').addEventListener('click',doSearch);
 $('gq').addEventListener('keydown',function(e){ if(e.key==='Enter'){ e.preventDefault(); doSearch(); } });
+
+/* ============ DEEP-LINKS: presencia actual (el "antes") ============ */
+function presenciaUrl(engine){
+  var c=(st.comercio||'').trim(), ci=(st.ciudad||'').trim(), han=(st.handle||'').trim();
+  var q=(c||'comercio')+(ci?' '+ci:'');
+  if(engine==='ig') return han ? 'https://instagram.com/'+encodeURIComponent(han) : 'https://www.google.com/search?q='+encodeURIComponent(q+' instagram');
+  if(engine==='pedidosya') return 'https://www.google.com/search?q='+encodeURIComponent(q+' pedidosya');
+  if(engine==='rappi') return 'https://www.google.com/search?q='+encodeURIComponent(q+' rappi');
+  return 'https://www.google.com/search?q='+encodeURIComponent(q);
+}
+Array.prototype.forEach.call(document.querySelectorAll('[data-open]'),function(el){
+  el.addEventListener('click',function(){
+    if(!(st.comercio||'').trim()){ toast('Cargá primero el nombre del comercio'); return; }
+    window.open(presenciaUrl(el.getAttribute('data-open')),'_blank','noopener');
+  });
+});
 
 $('importBtn').addEventListener('click',function(){
   var raw=$('jsonIn').value.trim(); if(!raw){ toast('Pegá el JSON del comercio'); return; }

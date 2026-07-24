@@ -633,7 +633,7 @@ const FB_URL = (typeof window!=='undefined' && typeof window.FB_URL!=='undefined
   : 'https://hg-vl-shaders-default-rtdb.firebaseio.com'; // PLACEHOLDER · confirmar (GATES)
 const FB_API_KEY = (typeof window!=='undefined' && typeof window.FB_API_KEY!=='undefined')
   ? window.FB_API_KEY
-  : 'AIzaSyAeMKHe7dj4bnaUzkF7iDANrC_cBtg4LAA'; // key real del sitio vivo (misma que gate.js / auditoria.html previa), NO confundir con la key de Maps
+  : 'PLACEHOLDER_FIREBASE_API_KEY'; // PLACEHOLDER · confirmar (GATES), NO confundir con la key de Maps
 const REFRESH_URL = 'https://securetoken.googleapis.com/v1/token';
 const LS_KEY = 'hg_auth_session';
 
@@ -984,6 +984,8 @@ function selectBiz(id, kind){
     ? (nS===1 ? '1 registro ('+curSnaps[0].d+'). El gráfico se llena en cada snapshot.' : 'Sin historial todavía — corré snapshot_historial.py para empezar a registrar.')
     : nS+' registros · del '+curSnaps[0].d+' al '+curSnaps[nS-1].d;
   const gsearch = 'https://www.google.com/search?q='+encodeURIComponent((b.name||'')+' '+(b.city||''));
+  const pysearch = 'https://www.google.com/search?q='+encodeURIComponent((b.name||'')+' '+(b.city||'')+' pedidosya');
+  const rasearch = 'https://www.google.com/search?q='+encodeURIComponent((b.name||'')+' '+(b.city||'')+' rappi');
   const side = $('detailSide');
   side.style.display = 'block';
   { const de=$('detailEmpty'); if(de) de.style.display='none'; }
@@ -1003,7 +1005,7 @@ function selectBiz(id, kind){
     <div class="chart-note">📈 Evolución · ${histNote}</div>
   </div>
   <p class="verif" style="margin-bottom:.5rem;">${verifDate ? 'Última verificación: '+verifDate : 'Sin fecha de verificación todavía'}${b.notes?' · '+escHtml(b.notes):''}</p>
-  <div class="side-apps"><button class="btn ghost sm" onclick="goAppFor('pipelines','${id}')">🔀 Pipelines</button><button class="btn ghost sm" onclick="goAppFor('propuesta','${id}')">📄 Propuesta</button>${b.website?`<a class="btn ghost sm" href="${escHtml(b.website)}" target="_blank" rel="noopener">🌐 Web</a>`:''}<a class="btn ghost sm" href="${gsearch}" target="_blank" rel="noopener">🔍 Google</a><button class="btn ghost sm" onclick="toggleFav('${id}',event)">${favs.has(id)?'★ Quitar fav':'☆ Favorito'}</button></div>
+  <div class="side-apps"><button class="btn ghost sm" onclick="goAppFor('pipelines','${id}')">🔀 Pipelines</button><button class="btn ghost sm" onclick="goAppFor('propuesta','${id}')">📄 Propuesta</button>${b.website?`<a class="btn ghost sm" href="${escHtml(b.website)}" target="_blank" rel="noopener">🌐 Web</a>`:''}<a class="btn ghost sm" href="${gsearch}" target="_blank" rel="noopener">🔍 Google</a><a class="btn ghost sm" href="${pysearch}" target="_blank" rel="noopener">🍔 PedidosYa</a><a class="btn ghost sm" href="${rasearch}" target="_blank" rel="noopener">🛵 Rappi</a><button class="btn ghost sm" onclick="toggleFav('${id}',event)">${favs.has(id)?'★ Quitar fav':'☆ Favorito'}</button></div>
   ${kind!=='pending' && isModerator ? `<button class="btn ghost sm" onclick="openModEdit('${id}')">✎ EDITAR (moderador)</button>` : ''}
   ${kind!=='pending' && isModerator && !b.photo ? `<button class="btn ghost sm" id="fetch-photo-btn" onclick="fetchPhotoFor('${id}')">📷 TRAER FOTO (Google)</button>` : ''}
   ${kind==='pending' && isModerator ? `<div style="display:flex;gap:8px;"><button class="btn sm" onclick="approvePending('${id}')">✓ APROBAR</button><button class="btn danger sm" onclick="rejectPending('${id}')">✕ RECHAZAR</button></div>` : ''}`;
