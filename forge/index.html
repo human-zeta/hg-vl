@@ -15,27 +15,40 @@
   .brand .sub{display:block;font-family:'Space Mono';font-size:9px;letter-spacing:.28em;color:rgba(240,237,230,.45);margin-top:4px;}
   #top a{font-size:10px;letter-spacing:.2em;color:rgba(240,237,230,.4);text-decoration:none;}
   #top a:hover{color:var(--acid);}
-  #panel{position:fixed;right:0;top:0;bottom:0;width:312px;z-index:9;background:rgba(5,5,5,.72);backdrop-filter:blur(9px);border-left:1px solid var(--line);
-    padding:70px 18px 18px;overflow:auto;transition:transform .25s;}
+  #panel{position:fixed;right:0;top:0;bottom:0;width:322px;z-index:9;background:rgba(5,5,5,.72);backdrop-filter:blur(9px);border-left:1px solid var(--line);
+    padding:64px 16px 24px;overflow:auto;transition:transform .25s;}
   #panel.hide{transform:translateX(100%);}
   #toggle{position:fixed;right:14px;top:64px;z-index:11;background:rgba(5,5,5,.7);border:1px solid var(--line);color:var(--ink);
     font:inherit;font-size:10px;letter-spacing:.18em;padding:7px 10px;cursor:pointer;}
   #toggle:hover{border-color:var(--acid);color:var(--acid);}
-  h2{font-size:9px;letter-spacing:.2em;color:rgba(240,237,230,.4);text-transform:uppercase;margin:0 0 9px;}
-  .fams{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;margin-bottom:16px;}
-  .fam{background:rgba(184,255,0,.04);border:1px solid var(--line);color:var(--ink);font:inherit;font-size:10px;padding:7px 4px;cursor:pointer;border-radius:3px;transition:.15s;}
+  h2{font-size:9px;letter-spacing:.2em;color:rgba(240,237,230,.4);text-transform:uppercase;margin:16px 0 9px;}
+  h2:first-child{margin-top:0;}
+  h2 .hint2{color:rgba(240,237,230,.3);font-size:8px;letter-spacing:.1em;}
+  .fams{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;margin-bottom:6px;}
+  .fam{background:rgba(184,255,0,.04);border:1px solid var(--line);color:var(--ink);font:inherit;font-size:9px;padding:6px 3px;cursor:pointer;border-radius:3px;transition:.15s;}
   .fam:hover{border-color:var(--acid);color:var(--acid);}
   .fam.on{border-color:var(--acid);color:var(--acid);background:rgba(184,255,0,.12);}
-  .ctrl{margin-bottom:11px;}
+  .ctrl{margin-bottom:10px;}
   .ctrl label{display:flex;justify-content:space-between;font-size:10px;letter-spacing:.06em;color:rgba(240,237,230,.65);margin-bottom:4px;}
-  .ctrl label b{color:var(--acid);font-weight:400;}
-  .ctrl input[type=range]{width:100%;accent-color:var(--acid);}
-  .cols{display:flex;gap:7px;margin:6px 0 16px;}
+  label b,.fxv{color:var(--acid);font-weight:400;}
+  input[type=range]{width:100%;accent-color:var(--acid);}
+  .fx{margin-bottom:8px;transition:opacity .15s;}
+  .fx.off{opacity:.4;}
+  .fx .hd{display:flex;align-items:center;gap:7px;margin-bottom:3px;}
+  .fx .fxl{flex:1;font-size:10px;letter-spacing:.05em;color:rgba(240,237,230,.7);}
+  .fx .fxv{font-size:10px;}
+  .tg{background:transparent;border:1px solid var(--line);color:rgba(240,237,230,.4);font:inherit;font-size:8px;letter-spacing:.1em;
+    padding:2px 6px;border-radius:3px;cursor:pointer;min-width:34px;transition:.15s;}
+  .tg:hover{border-color:var(--acid);}
+  .tg.on{border-color:var(--acid);color:var(--acid);background:rgba(184,255,0,.12);}
+  .togs{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;margin-bottom:6px;}
+  .togs .tg{width:100%;font-size:9px;padding:7px 4px;letter-spacing:.06em;}
+  .cols{display:flex;gap:7px;margin:6px 0 6px;}
   .cols .c{flex:1;}
   .cols .c span{display:block;font-size:8px;letter-spacing:.1em;color:rgba(240,237,230,.4);margin-bottom:3px;text-transform:uppercase;}
   .cols input[type=color]{width:100%;height:30px;border:1px solid var(--line);background:none;cursor:pointer;border-radius:3px;}
   #gen{width:100%;background:var(--acid);color:#050505;border:none;font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:.06em;
-    padding:12px;cursor:pointer;border-radius:4px;margin-bottom:8px;transition:filter .15s;}
+    padding:12px;cursor:pointer;border-radius:4px;margin:12px 0 8px;transition:filter .15s;}
   #gen:hover{filter:brightness(1.12);}
   .row{display:flex;gap:7px;}
   .row button{flex:1;background:transparent;border:1px solid var(--line);color:var(--ink);font:inherit;font-size:10px;letter-spacing:.12em;padding:9px;cursor:pointer;border-radius:3px;transition:.15s;}
@@ -47,7 +60,7 @@
   .hint{position:fixed;left:20px;bottom:18px;z-index:8;font-size:10px;letter-spacing:.1em;color:rgba(240,237,230,.4);pointer-events:none;}
   .hint b{color:var(--acid);font-weight:400;}
   @media(max-width:640px){ #panel{width:100%;} .brand{font-size:24px;} }
-</style></head><body><script src="/gate/gate.js"></script>
+</style></head><body>
 <canvas id="gl"></canvas>
 <div id="top">
   <div class="brand lab"><b>THE</b> FORGE<span class="sub">Human Glitche · generador de shaders</span></div>
@@ -57,17 +70,16 @@
   </div>
 </div>
 <button id="toggle">⚙ PANEL</button>
-<div class="hint">tecla <b>G</b> = generar · <b>S</b> = guardar .fs</div>
+<div class="hint">tecla <b>G</b> = generar · <b>R</b> = re-encuadre · <b>S</b> = guardar .fs</div>
 
 <div id="panel">
   <h2>Familia</h2>
   <div class="fams" id="fams"></div>
-  <h2>Parámetros</h2>
-  <div class="ctrl"><label>escala <b data-v="scale"></b></label><input type="range" id="scale" min="0.5" max="6" step="0.01"></div>
-  <div class="ctrl"><label>warp (distorsión) <b data-v="warp"></b></label><input type="range" id="warp" min="0" max="1.5" step="0.01"></div>
-  <div class="ctrl"><label>simetría (kaleido) <b data-v="sym"></b></label><input type="range" id="sym" min="0" max="12" step="1"></div>
-  <div class="ctrl"><label>velocidad <b data-v="speed"></b></label><input type="range" id="speed" min="0" max="2" step="0.01"></div>
-  <div class="ctrl"><label>glitch <b data-v="glitch"></b></label><input type="range" id="glitch" min="0" max="1" step="0.01"></div>
+  <h2>Base</h2>
+  <div id="baseCtrls"></div>
+  <h2>Efectos <span class="hint2">· on / off</span></h2>
+  <div id="fxCtrls"></div>
+  <div class="togs" id="togCtrls"></div>
   <h2>Paleta</h2>
   <div class="cols">
     <div class="c"><span>fondo</span><input type="color" id="colA"></div>
@@ -75,6 +87,9 @@
     <div class="c"><span>acento</span><input type="color" id="colC"></div>
   </div>
   <button id="gen">⚡ GENERAR</button>
+  <div class="row" style="margin-bottom:8px;">
+    <button id="reframe">⛶ RE-ENCUADRE</button>
+  </div>
   <div class="row">
     <button id="exportBtn">⤓ .fs</button>
     <button id="copyBtn">⧉ COPIAR</button>
@@ -86,7 +101,43 @@
 <script type="module">
 import { Renderer } from 'https://esm.sh/interactive-shader-format';
 
-const FAMILIES = ['KALEIDO','PLASMA','TÚNEL','VORONOI','ONDAS','FRACTAL','RAYMARCH','TRUCHET','MOIRÉ','HEX','ESPIRAL','METABALLS','KIFS','CAUSTICS','FLOW','MÁRMOL','CRISTAL','GRID'];
+const FAMILIES = ['KALEIDO','PLASMA','TÚNEL','VORONOI','ONDAS','FRACTAL','RAYMARCH','TRUCHET','MOIRÉ','HEX','ESPIRAL','METABALLS','KIFS','CAUSTICS','FLOW','MÁRMOL','CRISTAL','GRID','MICELIO','NEBULOSA','AURORA','MAGMA','RAYO','TINTA','CORAL','NEURONA','REACCIÓN','DENDRITA','LIQUEN','APOLONIO','CUASICRISTAL','FILOTAXIS','GIROIDE','HIPERESPACIO','CURL','TOPO','PINCELADA','SUPREMA','DRIP','COLLAGE','GARABATO'];
+
+// config de controles — de acá se generan panel, uniforms e ISF INPUTS
+const BASE = [
+  {k:'scale',   l:'escala',    min:0.5, max:6,   step:0.01},
+  {k:'panx',    l:'pan X',     min:-3,  max:3,   step:0.01},
+  {k:'pany',    l:'pan Y',     min:-3,  max:3,   step:0.01},
+  {k:'rot',     l:'rotación',  min:0,   max:6.2832, step:0.01},
+  {k:'sym',     l:'simetría',  min:0,   max:12,  step:1,   int:true},
+  {k:'speed',   l:'velocidad', min:0,   max:2,   step:0.01},
+  {k:'contrast',l:'contraste', min:0.4, max:2.5, step:0.01},
+];
+// efectos con slider + toggle. Apagado => el uniform va en 0 y el shader lo saltea.
+const FX = [
+  {k:'warp',  l:'warp',        min:0, max:1.5, step:0.01},
+  {k:'glitch',l:'glitch',      min:0, max:1,   step:0.01},
+  {k:'aberr', l:'aberración',  min:0, max:1,   step:0.01},
+  {k:'bloom', l:'bloom',       min:0, max:1.5, step:0.01},
+  {k:'edge',  l:'contorno',    min:2, max:12,  step:0.01},
+  {k:'post',  l:'posterizar',  min:2, max:12,  step:1,    int:true},
+  {k:'pixel', l:'pixelar',     min:4, max:80,  step:1,    int:true},
+  {k:'scan',  l:'scanlines',   min:0, max:1,   step:0.01},
+  {k:'grain', l:'grano',       min:0, max:0.3, step:0.005},
+  {k:'vig',   l:'viñeta',      min:0, max:1,   step:0.01},
+  {k:'hue',   l:'hue shift',   min:0, max:1,   step:0.01},
+  {k:'wave',  l:'ondular',     min:0, max:1,   step:0.01},
+  {k:'rgbsh', l:'RGB shift',   min:0, max:1,   step:0.01},
+  {k:'htone', l:'semitonos',   min:0, max:1,   step:0.01},
+  {k:'dither',l:'dither',      min:0, max:1,   step:0.01},
+];
+// toggles puros (0/1)
+const TOG = [
+  {k:'mirror', l:'espejo'},
+  {k:'invert', l:'invertir'},
+  {k:'duo',    l:'duotono'},
+];
+const FXMAX = { warp:1.5, glitch:1, aberr:1, bloom:1.5, edge:12, post:12, pixel:80, scan:1, grain:0.3, vig:1, hue:1, wave:1, rgbsh:1, htone:1, dither:1 };
 
 const SHADER_BODY = `
 float hash(vec2 p){ p=fract(p*vec2(123.34,456.21)); p+=dot(p,p+45.32); return fract(p.x*p.y); }
@@ -130,12 +181,101 @@ float cristal(vec2 p, float t){ vec2 g=floor(p),f=fract(p); float f1=1.5; vec2 m
 float grid(vec2 uv, float t){ if(uv.y>-0.02) return 0.0; float persp=1.0/(-uv.y);
   float gx=abs(fract(uv.x*persp*0.5)-0.5); float gz=abs(fract(persp*0.6+t)-0.5);
   float line=max(smoothstep(0.04,0.0,gx),smoothstep(0.06,0.0,gz)); return line*smoothstep(0.0,-0.7,uv.y); }
+float micelio(vec2 p, float t){ vec2 q=p; q+=0.6*vec2(fbm(p*1.3+t*0.15),fbm(p*1.3+vec2(3.1,1.7)-t*0.12));
+  float n=fbm(q*1.6); float veins=pow(1.0-abs(2.0*n-1.0),3.0);
+  float fine=1.0-abs(2.0*fbm(q*4.0+t*0.2)-1.0); float m=veins*0.85+pow(fine,4.0)*0.6;
+  m*=0.65+0.35*sin(n*12.0-t*2.0); return clamp(m,0.0,1.0); }
+float nebula(vec2 p, float t){ vec2 q=p*0.85; q+=vec2(fbm(q+t*0.05),fbm(q+vec2(2.0,5.0)-t*0.04));
+  float gas=pow(fbm(q*1.5),2.0); vec2 sp=floor(p*9.0);
+  float star=step(0.985,hash(sp))*pow(fract(hash(sp)*97.3),18.0); float tw=0.5+0.5*sin(t*3.0+hash(sp)*40.0);
+  return clamp(gas*1.2+star*tw*4.0,0.0,1.0); }
+float aurora(vec2 p, float t){ float bands=0.0;
+  for(int i=0;i<4;i++){ float fi=float(i); float x=p.x*1.1+fbm(vec2(p.x*0.6,t*0.2+fi))*1.6;
+    float curtain=fbm(vec2(x*0.8,p.y*0.5-t*0.3+fi*2.0)); float center=sin(x+fi*1.7)*0.45;
+    bands+=smoothstep(0.35,0.7,curtain)*smoothstep(0.9,0.0,abs(p.y-center)); } return clamp(bands*0.7,0.0,1.0); }
+float magma(vec2 p, float t){ vec2 q=p+0.3*vec2(fbm(p+t*0.1),fbm(p.yx-t*0.08));
+  float crack=smoothstep(0.07,0.0,voro(q*1.4)); float ember=pow(fbm(p*3.0+t*0.35),3.0)*0.5;
+  float rock=fbm(p*2.0)*0.12; return clamp(crack+ember-rock,0.0,1.0); }
+float rayo(vec2 p, float t){ float v=0.0;
+  for(int i=0;i<3;i++){ float fi=float(i); float bolt=p.y+(fbm(vec2(p.x*2.2+fi*7.0,t*1.5+fi))-0.5)*1.4;
+    v+=0.011/(abs(bolt)+0.02)*(0.5+0.5*sin(t*18.0+fi*2.0)); } return clamp(v,0.0,1.0); }
+float tinta(vec2 p, float t){ vec2 q=p+0.5*vec2(fbm(p*1.2+t*0.1),fbm(p*1.2+vec2(5.0,2.0)-t*0.08));
+  float d=fbm(q*1.7); return clamp(smoothstep(0.56,0.5,d)*0.85+smoothstep(0.66,0.44,d)*0.2,0.0,1.0); }
+float coral(vec2 p, float t){ vec2 q=p;
+  for(int i=0;i<3;i++){ q+=0.35*vec2(fbm(q*1.5+t*0.08),fbm(q.yx*1.5-t*0.06)); }
+  float branch=smoothstep(0.22,0.0,voro(q*1.8)); float grow=0.5+0.5*sin(fbm(q)*10.0-t*1.5);
+  return clamp(branch*(0.6+0.4*grow),0.0,1.0); }
+float neurona(vec2 p, float t){ vec2 q=p+0.3*vec2(fbm(p+t*0.1),fbm(p.yx-t*0.1));
+  float fil=smoothstep(0.05,0.0,voro(q*2.0)); vec2 g=floor(q*2.0);
+  float node=pow(fract(hash(g)*50.0),8.0); float pulse=0.5+0.5*sin(t*4.0+hash(g)*30.0);
+  return clamp(fil*0.8+node*pulse*1.6,0.0,1.0); }
+float reaccion(vec2 p, float t){ float a=fbm(p*2.0+t*0.05); float b=fbm(p*4.2-t*0.04);
+  float turing=a-b*0.6+0.5; float lab=0.5+0.5*sin(turing*16.0-t);
+  float spots=smoothstep(0.35,0.5,fbm(p*3.0+turing)); return clamp(mix(lab,spots,0.4),0.0,1.0); }
+float dendrita(vec2 p, float t){ vec2 q=p*1.4; float ang=atan(q.y,q.x); float r=length(q);
+  float branches=abs(sin(ang*6.0)); float frost=fbm(vec2(r*3.0-t*0.3,ang*3.0));
+  float d=branches*0.5+frost*0.5-r*0.15; return clamp(smoothstep(0.2,0.6,d),0.0,1.0); }
+float liquen(vec2 p, float t){ vec2 g=floor(p*1.5),f=fract(p*1.5); float patch=0.0;
+  for(int y=-1;y<=1;y++){ for(int x=-1;x<=1;x++){ vec2 o=vec2(float(x),float(y));
+    vec2 c=o+hash2(g+o)-f; float grow=0.35+0.25*sin(t*0.5+hash(g+o)*20.0);
+    patch=max(patch,smoothstep(grow,grow-0.15,length(c))*(0.5+0.5*hash(g+o))); } }
+  return clamp(patch-fbm(p*6.0)*0.3,0.0,1.0); }
+float apolonio(vec2 p, float t){ vec2 z=p*0.7; float scale=1.0,d=1e9; float s=1.15+0.25*sin(t*0.25);
+  for(int i=0;i<6;i++){ z=-1.0+2.0*fract(0.5*z+0.5); float r2=max(dot(z,z),0.02); float k=s/r2; z*=k; scale*=k; d=min(d,abs(z.y)); }
+  return clamp(1.0-d/scale*7.0,0.0,1.0); }
+float cuasi(vec2 p, float t){ float v=0.0; p*=2.4;
+  for(int i=0;i<7;i++){ float a=3.14159265*float(i)/7.0; v+=cos(cos(a)*p.x+sin(a)*p.y+t*0.3); }
+  return 0.5+0.5*cos(v*3.14159); }
+float filotaxis(vec2 p, float t){ float best=1e9; float ga=2.39996323;
+  for(int i=0;i<64;i++){ float fi=float(i); float r=sqrt(fi/64.0)*2.2; float a=fi*ga+t*0.2;
+    best=min(best, length(p-vec2(cos(a),sin(a))*r)); }
+  return clamp(1.0-best*8.0,0.0,1.0); }
+float giroide(vec2 p, float t){ vec3 q=vec3(p*3.0, t*0.3);
+  float g=sin(q.x)*cos(q.y)+sin(q.y)*cos(q.z)+sin(q.z)*cos(q.x);
+  return 1.0-smoothstep(0.0,0.55,abs(g)); }
+float hiperespacio(vec2 p, float t){ float v=0.0;
+  for(int i=0;i<20;i++){ float fi=float(i)+1.0;
+    float sp=fract(hash(vec2(fi,7.0))*9.0+t*(0.3+0.5*hash(vec2(fi,3.0))));
+    float ang=hash(vec2(fi,5.0))*6.2831; vec2 c=vec2(cos(ang),sin(ang))*sp*2.3;
+    v+=smoothstep(0.05*sp+0.004,0.0,length(p-c))*sp; }
+  return clamp(v,0.0,1.0); }
+float curl(vec2 p, float t){ vec2 q=p; float e=0.1;
+  for(int i=0;i<4;i++){ float n1=fbm(q+vec2(0.0,e)+t*0.1),n2=fbm(q-vec2(0.0,e)+t*0.1);
+    float n3=fbm(q+vec2(e,0.0)+t*0.1),n4=fbm(q-vec2(e,0.0)+t*0.1);
+    q+=0.09*vec2(n1-n2,-(n3-n4))/(2.0*e); }
+  return 0.5+0.5*sin(fbm(q*2.0)*8.0); }
+float topo(vec2 p, float t){ float n=fbm(p*1.2+t*0.08);
+  float lines=abs(fract(n*10.0)-0.5); return smoothstep(0.06,0.0,lines)*0.8+n*0.2; }
+float pincelada(vec2 p, float t){ float v=0.0;
+  for(int i=0;i<4;i++){ float fi=float(i); float ang=0.6+fi*0.5; vec2 d=vec2(cos(ang),sin(ang));
+    float along=dot(p,d), across=dot(p,vec2(-d.y,d.x));
+    float stroke=sin(across*3.0+fbm(p*1.5+fi+t*0.1)*4.0);
+    v+=smoothstep(0.3,0.9,stroke)*(0.6+0.4*sin(along*2.0)); }
+  return clamp(v*0.5,0.0,1.0); }
+float suprema(vec2 p, float t){ float v=0.0;
+  for(int i=0;i<5;i++){ float fi=float(i); float ang=hash(vec2(fi,1.0))*3.14159; vec2 d=vec2(cos(ang),sin(ang));
+    float pos=dot(p,d)-(hash(vec2(fi,2.0))*4.0-2.0)-sin(t*0.2+fi)*0.3;
+    float w=0.1+hash(vec2(fi,3.0))*0.5;
+    v=max(v, smoothstep(w,w-0.02,abs(pos))*(0.4+0.6*hash(vec2(fi,4.0)))); }
+  return v; }
+float drip(vec2 p, float t){ float x=p.x+fbm(vec2(p.x*1.4, p.y*0.35+t*0.25))*1.3;
+  float band=fbm(vec2(x*2.2, p.y*0.4-t*0.45)); float streak=smoothstep(0.42,0.72,band);
+  return clamp(streak*(0.55+0.45*sin(x*3.5)),0.0,1.0); }
+float collage(vec2 p, float t){ vec2 q=p*0.7+vec2(0.0,t*0.03); vec2 cell=floor(q); vec2 f=fract(q);
+  float h=hash(cell); float bw=0.05+0.03*hash(cell+7.0);
+  float border=step(bw,f.x)*step(bw,f.y)*step(f.x,1.0-bw)*step(f.y,1.0-bw);
+  float fill=step(0.35,hash(cell+3.0)); return border*fill*(0.3+0.7*h); }
+float garabato(vec2 p, float t){ float d=1e9;
+  for(int i=0;i<50;i++){ float s=float(i); float a=s*0.3;
+    vec2 c=vec2(sin(a*1.3+t*0.2)+0.8*sin(a*0.7), cos(a*1.1-t*0.15)+0.8*sin(a*0.5))*1.1;
+    d=min(d,length(p-c)); }
+  return clamp(1.0-d*5.0,0.0,1.0); }
 vec2 kaleido(vec2 uv, float folds){ if(folds<0.5) return uv;
   float a=atan(uv.y,uv.x); float r=length(uv); float seg=3.14159265/folds;
   a=abs(mod(a,2.0*seg)-seg); return vec2(cos(a),sin(a))*r; }
 float pattern(vec2 p, float t){
   float m=floor(mode+0.5);
-  bool noWarp=(m>4.5 && m<6.5) || (m>11.5 && m<12.5) || (m>15.5);   // fractal/raymarch/kifs/cristal/grid: sin domain-warp
+  bool noWarp=(m>4.5 && m<6.5) || (m>11.5 && m<12.5) || (m>15.5 && m<17.5) || (m>20.5 && m<23.5) || (m>24.5 && m<25.5) || (m>26.5 && m<27.5) || (m>28.5 && m<33.5) || (m>36.5 && m<37.5) || (m>38.5 && m<39.5);   // estructurados (fractal/kifs/cristal/grid/magma/rayo/tinta/neurona/dendrita/apolonio/filotaxis/giroide/hiperespacio): sin domain-warp
   if(warp>0.001 && !noWarp){ vec2 q=vec2(fbm(p+t*0.1), fbm(p+vec2(5.2,1.3)-t*0.08)); p+=warp*(q-0.5)*2.0; }
   if(m<0.5){ return fbm(p+t*0.15); }
   else if(m<1.5){ float v=sin(p.x*1.5+t)+sin(p.y*1.7-t*0.8)+sin((p.x+p.y)*1.1+t*0.6)+sin(length(p)*2.0-t); return 0.5+0.125*v; }
@@ -154,48 +294,99 @@ float pattern(vec2 p, float t){
   else if(m<14.5){ return flow(p, t); }
   else if(m<15.5){ return marmol(p, t); }
   else if(m<16.5){ return cristal(p, t); }
-  else { return grid(p, t); }
+  else if(m<17.5){ return grid(p, t); }
+  else if(m<18.5){ return micelio(p, t); }
+  else if(m<19.5){ return nebula(p, t); }
+  else if(m<20.5){ return aurora(p, t); }
+  else if(m<21.5){ return magma(p, t); }
+  else if(m<22.5){ return rayo(p, t); }
+  else if(m<23.5){ return tinta(p, t); }
+  else if(m<24.5){ return coral(p, t); }
+  else if(m<25.5){ return neurona(p, t); }
+  else if(m<26.5){ return reaccion(p, t); }
+  else if(m<27.5){ return dendrita(p, t); }
+  else if(m<28.5){ return liquen(p, t); }
+  else if(m<29.5){ return apolonio(p, t); }
+  else if(m<30.5){ return cuasi(p, t); }
+  else if(m<31.5){ return filotaxis(p, t); }
+  else if(m<32.5){ return giroide(p, t); }
+  else if(m<33.5){ return hiperespacio(p, t); }
+  else if(m<34.5){ return curl(p, t); }
+  else if(m<35.5){ return topo(p, t); }
+  else if(m<36.5){ return pincelada(p, t); }
+  else if(m<37.5){ return suprema(p, t); }
+  else if(m<38.5){ return drip(p, t); }
+  else if(m<39.5){ return collage(p, t); }
+  else { return garabato(p, t); }
 }
-vec3 pal(float t){ t=clamp(t,0.0,1.0); vec3 c=mix(colA.rgb,colB.rgb,smoothstep(0.0,0.55,t)); c=mix(c,colC.rgb,smoothstep(0.5,1.0,t)); return c; }
+vec3 pal(float x){ x=clamp(x,0.0,1.0); vec3 c=mix(colA.rgb,colB.rgb,smoothstep(0.0,0.55,x)); c=mix(c,colC.rgb,smoothstep(0.5,1.0,x)); return c; }
+vec3 hueRot(vec3 c, float a){ vec3 k=vec3(0.57735); float ca=cos(a),sa=sin(a);
+  return c*ca+cross(k,c)*sa+k*dot(k,c)*(1.0-ca); }
 void main(){
-  vec2 uv=isf_FragNormCoord-0.5; uv.x*=RENDERSIZE.x/RENDERSIZE.y;
+  vec2 nc=isf_FragNormCoord;
+  vec2 uv=nc-0.5; uv.x*=RENDERSIZE.x/RENDERSIZE.y;
   float t=TIME*speed;
+  if(rot>0.001){ float cr=cos(rot),sr=sin(rot); uv=mat2(cr,-sr,sr,cr)*uv; }
+  if(mirror>0.5){ uv=abs(uv); }
   uv=kaleido(uv, floor(sym));
-  vec2 p=uv*scale;
-  float gt=floor(TIME*12.0); float burst=step(0.86,hash(vec2(gt,3.7)))*glitch;
-  float ln=floor(isf_FragNormCoord.y*30.0); p.x+=(hash(vec2(ln,gt))-0.5)*burst*0.3;
-  float sep=0.01+burst*0.05;
-  float fr=pattern(p+vec2(sep,0.0),t); float fg=pattern(p,t); float fb=pattern(p-vec2(sep,0.0),t);
+  if(wave>0.001){ uv+=wave*0.15*vec2(sin(uv.y*6.0+t*1.5), sin(uv.x*6.0+t*1.2)); }
+  vec2 p=uv*scale+vec2(panx,pany);
+  if(pixel>=4.0){ p=(floor(p*pixel)+0.5)/pixel; }
+  float gt=floor(TIME*12.0);
+  float burst = glitch>0.001 ? step(0.86,hash(vec2(gt,3.7)))*glitch : 0.0;
+  float ln=floor(nc.y*30.0); p.x+=(hash(vec2(ln,gt))-0.5)*burst*0.3;
+  vec2 shift = vec2(aberr*0.02 + burst*0.05, 0.0);
+  if(rgbsh>0.001){ shift += rgbsh*0.05*vec2(cos(t*0.7),sin(t*0.9)); }
+  float fg=pattern(p,t);
+  float fr=fg, fb=fg;
+  if(dot(shift,shift)>1e-8){ fr=pattern(p+shift,t); fb=pattern(p-shift,t); }
+  if(edge>0.001){ float e=0.012;
+    float dx=pattern(p+vec2(e,0.0),t)-pattern(p-vec2(e,0.0),t);
+    float dy=pattern(p+vec2(0.0,e),t)-pattern(p-vec2(0.0,e),t);
+    float mag=clamp(length(vec2(dx,dy))*(1.5+edge),0.0,1.0); fr=mag; fg=mag; fb=mag; }
+  if(post>=2.0){ fr=floor(fr*post)/post; fg=floor(fg*post)/post; fb=floor(fb*post)/post; }
   vec3 col; col.r=pal(fr).r; col.g=pal(fg).g; col.b=pal(fb).b;
-  col+=pal(fg)*smoothstep(0.72,1.0,fg)*0.55;
+  if(bloom>0.001){ col+=pal(fg)*smoothstep(0.72,1.0,fg)*bloom; }
+  if(duo>0.5){ float lum=dot(col,vec3(0.299,0.587,0.114));
+    col = lum<0.5 ? mix(colA.rgb,colB.rgb,lum*2.0) : mix(colB.rgb,colC.rgb,(lum-0.5)*2.0); }
+  col=(col-0.5)*contrast+0.5;
+  if(hue>0.001){ col=hueRot(col, hue*6.2831); }
+  if(invert>0.5){ col=1.0-col; }
   col=pow(max(col,0.0),vec3(0.9));
-  col+=(hash(isf_FragNormCoord*RENDERSIZE.xy+TIME)-0.5)*0.04;
-  col*=smoothstep(1.25,0.3,length(isf_FragNormCoord-0.5));
+  if(htone>0.001){ float lum=dot(col,vec3(0.299,0.587,0.114));
+    vec2 gp=nc*RENDERSIZE.xy/8.0; vec2 f=fract(gp)-0.5;
+    float rad=sqrt(clamp(lum,0.0,1.0))*0.5; float dt=smoothstep(rad,rad-0.08,length(f));
+    col=mix(col, col*dt, htone); }
+  if(dither>0.001){ float lv=mix(8.0,3.0,dither);
+    float dn=(hash(floor(nc*RENDERSIZE.xy))-0.5)/lv;
+    col=floor((col+dn)*lv+0.5)/lv; }
+  if(grain>0.001){ col+=(hash(nc*RENDERSIZE.xy+TIME)-0.5)*grain; }
+  if(scan>0.001){ float s=0.5+0.5*sin(nc.y*RENDERSIZE.y*3.14159); col*=1.0-scan*(1.0-s); }
+  float d=length(nc-0.5); col*=mix(1.0, smoothstep(1.25,0.3,d), clamp(vig,0.0,1.0));
   gl_FragColor=vec4(max(col,0.0),1.0);
 }`;
 
-// estado de parámetros
-const P = { mode:0, scale:2.2, warp:0.5, sym:0, speed:0.4, glitch:0.2,
+// estado
+const P = { mode:0, scale:2.2, panx:0, pany:0, rot:0, sym:0, speed:0.4, contrast:1.0,
+  amt:{ warp:0.5, glitch:0.2, aberr:0.3, bloom:0.55, edge:6, post:5, pixel:24, scan:0.3, grain:0.04, vig:0.6, hue:0.0, wave:0.4, rgbsh:0.3, htone:0.6, dither:0.5 },
+  on: { warp:true, glitch:false, aberr:true, bloom:true, edge:false, post:false, pixel:false, scan:false, grain:true, vig:true, hue:false, wave:false, rgbsh:false, htone:false, dither:false },
+  tog:{ mirror:false, invert:false, duo:false },
   colA:[0.02,0.02,0.03], colB:[0.72,1.0,0.0], colC:[1.0,0.18,0.33] };
 let seed = 1;
 
-function isfHeader(){
-  return JSON.stringify({
-    DESCRIPTION:'The Forge · '+FAMILIES[P.mode]+' · Human Glitche', CREDIT:'Human Glitche', ISFVSN:'2',
-    CATEGORIES:['generator','procedural'],
-    INPUTS:[
-      {NAME:'mode',TYPE:'float',DEFAULT:P.mode,MIN:0,MAX:17},
-      {NAME:'scale',TYPE:'float',DEFAULT:r2(P.scale),MIN:0.5,MAX:6},
-      {NAME:'warp',TYPE:'float',DEFAULT:r2(P.warp),MIN:0,MAX:1.5},
-      {NAME:'sym',TYPE:'float',DEFAULT:P.sym,MIN:0,MAX:12},
-      {NAME:'speed',TYPE:'float',DEFAULT:r2(P.speed),MIN:0,MAX:2},
-      {NAME:'glitch',TYPE:'float',DEFAULT:r2(P.glitch),MIN:0,MAX:1},
-      {NAME:'colA',TYPE:'color',DEFAULT:P.colA.concat(1).map(r3)},
-      {NAME:'colB',TYPE:'color',DEFAULT:P.colB.concat(1).map(r3)},
-      {NAME:'colC',TYPE:'color',DEFAULT:P.colC.concat(1).map(r3)}
-    ]},null,2);
-}
 const r2=x=>Math.round(x*100)/100, r3=x=>Math.round(x*1000)/1000;
+const fxVal = k => P.on[k] ? P.amt[k] : 0;
+
+function isfHeader(){
+  const inputs=[{NAME:'mode',TYPE:'float',DEFAULT:P.mode,MIN:0,MAX:FAMILIES.length-1}];
+  BASE.forEach(b=>inputs.push({NAME:b.k,TYPE:'float',DEFAULT:r2(P[b.k]),MIN:b.min,MAX:b.max}));
+  FX.forEach(f=>inputs.push({NAME:f.k,TYPE:'float',DEFAULT:r2(fxVal(f.k)),MIN:0,MAX:FXMAX[f.k]}));
+  TOG.forEach(tg=>inputs.push({NAME:tg.k,TYPE:'float',DEFAULT:P.tog[tg.k]?1:0,MIN:0,MAX:1}));
+  inputs.push({NAME:'colA',TYPE:'color',DEFAULT:P.colA.concat(1).map(r3)});
+  inputs.push({NAME:'colB',TYPE:'color',DEFAULT:P.colB.concat(1).map(r3)});
+  inputs.push({NAME:'colC',TYPE:'color',DEFAULT:P.colC.concat(1).map(r3)});
+  return JSON.stringify({ DESCRIPTION:'The Forge · '+FAMILIES[P.mode]+' · Human Glitche', CREDIT:'Human Glitche', ISFVSN:'2', CATEGORIES:['generator','procedural'], INPUTS:inputs },null,2);
+}
 function isfSource(){ return '/*'+isfHeader()+'*/\n'+SHADER_BODY; }
 
 // runtime
@@ -209,8 +400,10 @@ function frame(){ requestAnimationFrame(frame); try{ renderer.draw(canvas); }cat
 requestAnimationFrame(frame);
 
 function applyAll(){
-  renderer.setValue('mode',P.mode); renderer.setValue('scale',P.scale); renderer.setValue('warp',P.warp);
-  renderer.setValue('sym',P.sym); renderer.setValue('speed',P.speed); renderer.setValue('glitch',P.glitch);
+  renderer.setValue('mode',P.mode);
+  BASE.forEach(b=>renderer.setValue(b.k,P[b.k]));
+  FX.forEach(f=>renderer.setValue(f.k, fxVal(f.k)));
+  TOG.forEach(tg=>renderer.setValue(tg.k, P.tog[tg.k]?1:0));
   renderer.setValue('colA',P.colA.concat(1)); renderer.setValue('colB',P.colB.concat(1)); renderer.setValue('colC',P.colC.concat(1));
 }
 
@@ -221,34 +414,80 @@ function hsl(h,s,l){ h=((h%1)+1)%1; const a=s*Math.min(l,1-l);
 function toHex(c){ return '#'+c.map(x=>('0'+Math.round(Math.max(0,Math.min(1,x))*255).toString(16)).slice(-2)).join(''); }
 function fromHex(h){ return [parseInt(h.slice(1,3),16)/255,parseInt(h.slice(3,5),16)/255,parseInt(h.slice(5,7),16)/255]; }
 
-// GENERAR — recipe aleatoria con buen gusto
+// GENERAR — recipe aleatoria con buen gusto: familia + stack de efectos con un "look" fuerte ocasional
 function roll(){
   seed = Math.floor(Math.random()*1e6);
   P.mode = Math.floor(Math.random()*FAMILIES.length);
-  P.scale = 1.8 + Math.random()*3.0;                        // piso más alto = más detalle, menos lavado
-  P.warp = 0.15 + Math.random()*Math.random()*1.2;          // algo de distorsión siempre
-  P.sym = Math.random()<0.35 ? 0 : (3+Math.floor(Math.random()*8));   // más chance de kaleidoscopio
+  P.scale = 1.8 + Math.random()*3.0;
+  P.sym = Math.random()<0.6 ? 0 : (3+Math.floor(Math.random()*8));   // más seguido sin kaleido → menos simétrico
+  P.rot = Math.random()<0.5 ? 0 : Math.random()*6.2832;
+  P.panx = Math.random()<0.4 ? 0 : (Math.random()*4-2);              // descentra la composición
+  P.pany = Math.random()<0.4 ? 0 : (Math.random()*4-2);
   P.speed = 0.2 + Math.random()*0.9;
-  P.glitch = Math.random()<0.4 ? 0 : Math.random()*0.55;
-  // paleta armónica: base + esquema (complementario/triada/análogo)
+  P.contrast = 0.85 + Math.random()*0.9;
+  const A=P.amt;
+  A.warp=0.15+Math.random()*Math.random()*1.2; A.glitch=0.1+Math.random()*0.5; A.aberr=0.1+Math.random()*0.6;
+  A.bloom=0.2+Math.random()*0.9; A.edge=3+Math.random()*7; A.post=3+Math.floor(Math.random()*7);
+  A.pixel=8+Math.floor(Math.random()*50); A.scan=0.15+Math.random()*0.5; A.grain=0.02+Math.random()*0.1;
+  A.vig=0.35+Math.random()*0.55; A.hue=Math.random();
+  A.wave=0.15+Math.random()*0.5; A.rgbsh=0.15+Math.random()*0.5; A.htone=0.4+Math.random()*0.5; A.dither=0.3+Math.random()*0.5;
+  const O=P.on;
+  O.warp=Math.random()<0.8; O.aberr=Math.random()<0.55; O.bloom=Math.random()<0.7;
+  O.grain=Math.random()<0.65; O.vig=Math.random()<0.85; O.glitch=Math.random()<0.3;
+  O.scan=Math.random()<0.22; O.hue=Math.random()<0.3;
+  O.wave=Math.random()<0.25; O.rgbsh=Math.random()<0.3; O.dither=Math.random()<0.2;
+  // "look" fuerte: como mucho uno (contorno/posterizar/pixelar/semitonos) para que lea como tratamiento distinto
+  O.edge=false; O.post=false; O.pixel=false; O.htone=false;
+  const looks=['none','none','edge','post','pixel','htone']; const pick=looks[Math.floor(Math.random()*looks.length)];
+  if(pick!=='none') O[pick]=true;
+  P.tog.mirror=Math.random()<0.3; P.tog.invert=Math.random()<0.18; P.tog.duo=Math.random()<0.3;
   const h0=Math.random(), schemes=[0.5,0.33,-0.33,0.08,0.14], h1=(h0+schemes[Math.floor(Math.random()*schemes.length)]+1)%1;
-  P.colA = hsl(h0, 0.45+Math.random()*0.3, 0.03+Math.random()*0.05);   // fondo casi negro, tintado
-  P.colB = hsl(h0, 0.8+Math.random()*0.2, 0.5+Math.random()*0.12);     // medio vivo
-  P.colC = hsl(h1, 0.85+Math.random()*0.15, 0.55+Math.random()*0.15);  // acento
+  P.colA = hsl(h0, 0.45+Math.random()*0.3, 0.03+Math.random()*0.05);
+  P.colB = hsl(h0, 0.8+Math.random()*0.2, 0.5+Math.random()*0.12);
+  P.colC = hsl(h1, 0.85+Math.random()*0.15, 0.55+Math.random()*0.15);
   syncUI(); applyAll();
 }
 
-// UI
+// RE-ENCUADRE — re-tira solo el encuadre (pan/rotación/escala/simetría), misma familia y efectos
+function rollFraming(){
+  P.scale=1.5+Math.random()*3.5;
+  P.rot=Math.random()<0.4?0:Math.random()*6.2832;
+  P.panx=Math.random()<0.3?0:(Math.random()*5-2.5);
+  P.pany=Math.random()<0.3?0:(Math.random()*5-2.5);
+  P.sym=Math.random()<0.7?0:(3+Math.floor(Math.random()*8));
+  syncUI(); applyAll();
+}
+
+// ── construir panel desde la config ──
 const famsEl=document.getElementById('fams');
 FAMILIES.forEach((f,i)=>{ const b=document.createElement('button'); b.className='fam'; b.textContent=f; b.dataset.i=i;
   b.addEventListener('click',()=>{ P.mode=i; syncUI(); applyAll(); }); famsEl.appendChild(b); });
-const sliders=['scale','warp','sym','speed','glitch'];
-sliders.forEach(id=>{ document.getElementById(id).addEventListener('input',e=>{ P[id]=+e.target.value; syncUI(); applyAll(); }); });
+
+const baseEl=document.getElementById('baseCtrls');
+BASE.forEach(b=>{ baseEl.insertAdjacentHTML('beforeend',
+  `<div class="ctrl"><label>${b.l} <b data-v="${b.k}"></b></label><input type="range" id="ct_${b.k}" min="${b.min}" max="${b.max}" step="${b.step}"></div>`);
+  document.getElementById('ct_'+b.k).addEventListener('input',e=>{ P[b.k]=+e.target.value; syncUI(); applyAll(); }); });
+
+const fxEl=document.getElementById('fxCtrls');
+FX.forEach(f=>{ fxEl.insertAdjacentHTML('beforeend',
+  `<div class="fx" data-k="${f.k}"><div class="hd"><button class="tg" data-tg="${f.k}">OFF</button><span class="fxl">${f.l}</span><b class="fxv" data-v="${f.k}"></b></div><input type="range" id="fx_${f.k}" min="${f.min}" max="${f.max}" step="${f.step}"></div>`);
+  document.getElementById('fx_'+f.k).addEventListener('input',e=>{ P.amt[f.k]=+e.target.value; P.on[f.k]=true; syncUI(); applyAll(); });
+  fxEl.querySelector('[data-tg="'+f.k+'"]').addEventListener('click',()=>{ P.on[f.k]=!P.on[f.k]; syncUI(); applyAll(); }); });
+
+const togEl=document.getElementById('togCtrls');
+TOG.forEach(tg=>{ togEl.insertAdjacentHTML('beforeend', `<button class="tg" data-tog="${tg.k}">${tg.l}</button>`);
+  togEl.querySelector('[data-tog="'+tg.k+'"]').addEventListener('click',()=>{ P.tog[tg.k]=!P.tog[tg.k]; syncUI(); applyAll(); }); });
+
 ['colA','colB','colC'].forEach(id=>{ document.getElementById(id).addEventListener('input',e=>{ P[id]=fromHex(e.target.value); applyAll(); }); });
+
+function setLabel(k,val,isInt){ const v=document.querySelector('[data-v="'+k+'"]'); if(v) v.textContent = isInt ? String(Math.round(val)) : (+val).toFixed(2); }
 function syncUI(){
   [...famsEl.children].forEach((b,i)=>b.classList.toggle('on',i===P.mode));
-  sliders.forEach(id=>{ document.getElementById(id).value=P[id];
-    const v=document.querySelector('[data-v="'+id+'"]'); if(v) v.textContent=(id==='sym')?String(Math.round(P[id])):(+P[id]).toFixed(2); });
+  BASE.forEach(b=>{ const el=document.getElementById('ct_'+b.k); if(el)el.value=P[b.k]; setLabel(b.k,P[b.k],b.int); });
+  FX.forEach(f=>{ const el=document.getElementById('fx_'+f.k); if(el)el.value=P.amt[f.k]; setLabel(f.k,P.amt[f.k],f.int);
+    const row=fxEl.querySelector('.fx[data-k="'+f.k+'"]'); const tg=row.querySelector('.tg');
+    row.classList.toggle('off',!P.on[f.k]); tg.classList.toggle('on',P.on[f.k]); tg.textContent=P.on[f.k]?'ON':'OFF'; });
+  TOG.forEach(tg=>{ togEl.querySelector('[data-tog="'+tg.k+'"]').classList.toggle('on',P.tog[tg.k]); });
   document.getElementById('colA').value=toHex(P.colA);
   document.getElementById('colB').value=toHex(P.colB);
   document.getElementById('colC').value=toHex(P.colC);
@@ -258,11 +497,12 @@ function syncUI(){
 // botones
 function toast(t){ const el=document.getElementById('toast'); el.textContent=t; el.classList.add('show'); clearTimeout(el._h); el._h=setTimeout(()=>el.classList.remove('show'),2200); }
 document.getElementById('gen').addEventListener('click',roll);
+document.getElementById('reframe').addEventListener('click',rollFraming);
 document.getElementById('exportBtn').addEventListener('click',()=>{ const blob=new Blob([isfSource()],{type:'text/plain'});
   const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='forge-'+FAMILIES[P.mode].toLowerCase()+'-'+seed+'.fs'; a.click(); URL.revokeObjectURL(a.href); toast('descargado .fs — arrastralo a VDMX'); });
 document.getElementById('copyBtn').addEventListener('click',async()=>{ try{ await navigator.clipboard.writeText(isfSource()); toast('código ISF copiado'); }catch(e){ toast('no se pudo copiar'); } });
 document.getElementById('toggle').addEventListener('click',()=>document.getElementById('panel').classList.toggle('hide'));
-addEventListener('keydown',e=>{ if(e.target.tagName==='INPUT')return; if(e.key==='g'||e.key==='G')roll(); if(e.key==='s'||e.key==='S')document.getElementById('exportBtn').click(); });
+addEventListener('keydown',e=>{ if(e.target.tagName==='INPUT')return; if(e.key==='g'||e.key==='G')roll(); if(e.key==='r'||e.key==='R')rollFraming(); if(e.key==='s'||e.key==='S')document.getElementById('exportBtn').click(); });
 
 syncUI(); applyAll();
 </script></body></html>
