@@ -377,8 +377,9 @@ let seed = 1;
 const r2=x=>Math.round(x*100)/100, r3=x=>Math.round(x*1000)/1000;
 const fxVal = k => P.on[k] ? P.amt[k] : 0;
 
-function isfHeader(){
-  const inputs=[{NAME:'mode',TYPE:'float',DEFAULT:P.mode,MIN:0,MAX:FAMILIES.length-1}];
+function isfHeader(withMode){
+  const inputs=[];
+  if(withMode!==false) inputs.push({NAME:'mode',TYPE:'float',DEFAULT:P.mode,MIN:0,MAX:FAMILIES.length-1});
   BASE.forEach(b=>inputs.push({NAME:b.k,TYPE:'float',DEFAULT:r2(P[b.k]),MIN:b.min,MAX:b.max}));
   FX.forEach(f=>inputs.push({NAME:f.k,TYPE:'float',DEFAULT:r2(fxVal(f.k)),MIN:0,MAX:FXMAX[f.k]}));
   TOG.forEach(tg=>inputs.push({NAME:tg.k,TYPE:'float',DEFAULT:P.tog[tg.k]?1:0,MIN:0,MAX:1}));
@@ -387,26 +388,61 @@ function isfHeader(){
   inputs.push({NAME:'colC',TYPE:'color',DEFAULT:P.colC.concat(1).map(r3)});
   return JSON.stringify({ DESCRIPTION:'The Forge · '+FAMILIES[P.mode]+' · Human Glitche', CREDIT:'Human Glitche', ISFVSN:'2', CATEGORIES:['generator','procedural'], INPUTS:inputs },null,2);
 }
-function isfSource(){ return '/*'+isfHeader()+'*/\n'+SHADER_BODY; }
+// Export para VDMX: mantiene `mode` como INPUT, así podés cambiar de familia allá.
+function isfSource(){ return '/*'+isfHeader(true)+'*/\n'+SHADER_BODY; }
+
+// Vista previa: familia FIJA en tiempo de compilación.
+// Con `mode` como uniform, el compilador emite las 41 familias y asigna registros
+// por el PEOR caso: una familia barata (PLASMA) termina corriendo con la huella de
+// una cara (RAYMARCH). Baja la ocupancia y en GPUs integradas dispara el TDR de
+// Windows (reset del driver = navegador congelado). Como const, el if/else de
+// pattern() se pliega y las otras 40 familias se eliminan como código muerto.
+function previewSource(){
+  return '/*'+isfHeader(false)+'*/\nconst float mode = '+Number(P.mode).toFixed(1)+';\n'+SHADER_BODY;
+}
 
 // runtime
 const canvas=document.getElementById('gl');
 const gl=canvas.getContext('webgl',{preserveDrawingBuffer:true,antialias:false,powerPreference:'high-performance'});
 const renderer=new Renderer(gl);
+// Techo de píxeles adaptativo. Arranca bajo y sube sólo si la máquina responde:
+// el primer frame a resolución alta es justo el que cuelga a las GPU integradas.
+let pxCap=0.7e6;
 function resize(){
   const dpr=Math.min(devicePixelRatio||1, 1.5);
   let w=innerWidth*dpr, h=innerHeight*dpr;
-  const cap=2.0e6, s=Math.sqrt(cap/(w*h));   // techo de píxeles: en pantallas grandes se renderiza a menos y CSS reescala (evita el cuelgue)
+  const s=Math.sqrt(pxCap/(w*h));
   if(s<1){ w*=s; h*=s; }
   canvas.width=Math.max(1,Math.round(w)); canvas.height=Math.max(1,Math.round(h));
 }
 resize(); addEventListener('resize',resize);
-renderer.loadSource(isfSource());
-function frame(){ requestAnimationFrame(frame); try{ renderer.draw(canvas); }catch(e){} }
+
+let loadedMode=null;
+function syncSource(){
+  if(P.mode!==loadedMode){ loadedMode=P.mode; renderer.loadSource(previewSource()); }
+}
+syncSource();
+
+// Tope de FPS + vigilancia: si los frames se vuelven lentos, baja la resolución en
+// vez de arrastrar al navegador a un cuelgue.
+const FPS=30; let last=0, ema=0;
+function frame(now){
+  requestAnimationFrame(frame);
+  if(now-last < 1000/FPS - 1) return;
+  const dt = last ? now-last : 1000/FPS; last=now;
+  ema = ema ? ema*0.85+dt*0.15 : dt;
+  if(ema > (1000/FPS)*2.2 && pxCap > 0.15e6){
+    pxCap=Math.max(0.15e6, pxCap*0.7); ema=0; resize();
+    console.warn('[forge] bajando resolución a '+Math.round(pxCap/1000)+'k px');
+  } else if(ema < (1000/FPS)*1.15 && pxCap < 2.0e6){
+    pxCap=Math.min(2.0e6, pxCap*1.05); resize();
+  }
+  try{ renderer.draw(canvas); }catch(e){}
+}
 requestAnimationFrame(frame);
 
 function applyAll(){
-  renderer.setValue('mode',P.mode);
+  syncSource();
   BASE.forEach(b=>renderer.setValue(b.k,P[b.k]));
   FX.forEach(f=>renderer.setValue(f.k, fxVal(f.k)));
   TOG.forEach(tg=>renderer.setValue(tg.k, P.tog[tg.k]?1:0));
