@@ -3,11 +3,17 @@
 Variante de la entrada: el scroll atraviesa un túnel de polvo, pasa cerca de
 los planetas y termina frente al sol, que se dibuja **en ASCII**.
 
-**Es la variante principal** (elegida 2026-08-11). La versión de dos puertas
-quedó archivada en `_archivo/entrada-dos-puertas/` — no borrada: ninguna
-carpeta está commiteada, y borrar sin historial es perder. El `index.html` de
-producción sigue intacto hasta que se pida publicar; los pasos y la marca de
-build necesaria están al final.
+**PUBLICADA — es el index de producción desde 2026-08-11** (commit `f391026`,
+build `202608111208`). El `index.html` de la raíz es una copia de este con
+rutas absolutas a `/entrada-tunel/` y marca de build; el portal anterior queda
+en el historial de git (`git show 9ecc441:index.html` lo recupera). La versión
+de dos puertas está archivada en `_archivo/entrada-dos-puertas/`, que Jekyll
+no publica.
+
+**Para publicar una actualización**: editar acá, regenerar el `index.html` de
+la raíz con una marca de build nueva (las dos apariciones de `?v=` y el
+`window.__BUILD`), commit y push. GitHub Pages cachea 10 minutos: un visitante
+recurrente puede tardar eso en ver los módulos nuevos.
 
 ```bash
 python3 -m http.server 8811 --directory /Users/human/Desktop/repos/hg-vl
