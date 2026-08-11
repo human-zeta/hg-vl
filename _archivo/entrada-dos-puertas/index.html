@@ -1,0 +1,151 @@
+<!doctype html><html lang="es"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>HUMAN GLITCHE · VISUAL LAB — entrada</title>
+<meta name="description" content="Human Glitche: filosofía, comunidad y herramientas de creación. Visual Lab: la vidriera del estudio — galería y servicios.">
+<link rel="canonical" href="https://www.hg-vl.com/">
+<meta property="og:title" content="HUMAN GLITCHE · VISUAL LAB">
+<meta property="og:description" content="Un dominio, dos puertas: Human Glitche (misión) y Visual Lab (el estudio).">
+<meta property="og:url" content="https://www.hg-vl.com/">
+<meta name="theme-color" content="#050505">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="preload" as="fetch" href="assets/compiled.glsl" crossorigin>
+<style>
+  :root{
+    --black:#050505; --white:#f0ede6; --acid:#b8ff00; --glitch:#ff2d55; --cyan:#3ad0ff;
+    --line:rgba(240,237,230,.12);
+    --mono:'Space Mono',monospace; --display:'Bebas Neue',sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{height:100%;background:var(--black);color:var(--white);font-family:var(--mono);overflow:hidden;}
+  a{color:inherit;text-decoration:none;}
+
+  /* El canvas reemplaza al grano SVG del portal anterior: el grano ahora lo
+     produce el shader de composicion, junto al bloom y la aberracion. */
+  #stage{position:fixed;inset:0;display:block;width:100%;height:100%;
+    pointer-events:none;z-index:0;}
+
+  /* --- Loader --- */
+  #loader{position:fixed;inset:0;z-index:20;display:grid;place-content:center;gap:14px;
+    background:var(--black);transition:opacity .6s ease;}
+  #loader.is-done{opacity:0;pointer-events:none;}
+  .loader__bar{width:150px;height:1px;background:rgba(240,237,230,.14);overflow:hidden;}
+  .loader__bar i{display:block;height:100%;width:100%;background:var(--acid);
+    transform:scaleX(0);transform-origin:left;}
+  .loader__pct{font-size:10px;letter-spacing:.2em;color:rgba(240,237,230,.45);
+    text-align:center;font-variant-numeric:tabular-nums;}
+
+  /* Velo entre el canvas y el texto.
+     Dos focos oscuros centrados en cada columna de texto. Le da piso a la
+     tipografia sin apagar la escena en los bordes, que es donde las particulas
+     se lucen. Va en CSS y no en el shader porque sigue al layout, no a la
+     camara: si cambia la grilla de puertas, el velo la acompaña solo. */
+  #scrim{position:fixed;inset:0;z-index:1;pointer-events:none;
+    background:
+      radial-gradient(46% 44% at 19% 52%, rgba(5,5,5,.86), rgba(5,5,5,0) 74%),
+      radial-gradient(46% 44% at 81% 52%, rgba(5,5,5,.86), rgba(5,5,5,0) 74%);}
+
+  /* --- Portal --- */
+  #portal{position:relative;z-index:2;height:100vh;height:100svh;display:flex;flex-direction:column;}
+  .topbar{display:flex;justify-content:space-between;align-items:center;padding:20px 26px;flex:0 0 auto;}
+  .logo{font-family:var(--display);font-size:26px;letter-spacing:.04em;}
+  .logo b{color:var(--acid);font-weight:400;}
+  .topbar .q{font-size:10px;letter-spacing:.2em;color:rgba(240,237,230,.45);transition:color .25s;}
+  .topbar .q:hover{color:var(--acid);}
+
+  /* La juntura ya no es un fondo de grilla: el haz vertical lo dibuja el
+     shader del campo, asi el hover la enciende con el color de la puerta. */
+  .doors{flex:1 1 auto;display:grid;grid-template-columns:1fr 1fr;min-height:0;}
+  .door{position:relative;display:flex;flex-direction:column;justify-content:center;
+    padding:6vh 6vw;overflow:hidden;outline:none;
+    transition:opacity .45s ease;}
+
+  /* Cuando una puerta esta activa, la otra se retira. El contraste hace el
+     trabajo que antes hacia un cambio de fondo. */
+  body[data-door] .door{opacity:.34;}
+  body[data-door="hg"] .door.hg,
+  body[data-door="vl"] .door.vl{opacity:1;}
+
+  .door .kick{font-size:10px;letter-spacing:.28em;text-transform:uppercase;
+    color:rgba(240,237,230,.4);margin-bottom:16px;}
+  .door h1{font-family:var(--display);font-size:clamp(54px,8vw,118px);line-height:.82;letter-spacing:.02em;}
+  .door.hg h1{color:var(--acid);}
+  .door.vl h1{color:var(--white);}
+  .door .name{font-size:12px;letter-spacing:.24em;text-transform:uppercase;
+    color:rgba(240,237,230,.6);margin-top:10px;}
+  .door p{font-size:13px;line-height:1.8;color:rgba(240,237,230,.62);max-width:34ch;margin-top:20px;}
+  .door .enter{margin-top:30px;font-size:11px;letter-spacing:.24em;color:var(--acid);
+    display:inline-flex;align-items:center;gap:10px;}
+  .door.vl .enter{color:var(--cyan);}
+  .door .enter .arw{transition:transform .25s;}
+  .door:hover .enter .arw,
+  .door:focus-visible .enter .arw{transform:translateX(6px);}
+  .door:focus-visible{box-shadow:inset 0 0 0 1px var(--acid);}
+  .door.vl:focus-visible{box-shadow:inset 0 0 0 1px var(--cyan);}
+  .door .tags{margin-top:24px;display:flex;flex-wrap:wrap;gap:8px;}
+  .door .tags span{font-size:9px;letter-spacing:.14em;text-transform:uppercase;
+    color:rgba(240,237,230,.42);border:1px solid var(--line);border-radius:999px;padding:5px 11px;}
+
+  .portalfoot{flex:0 0 auto;text-align:center;padding:14px;font-size:9.5px;
+    letter-spacing:.14em;color:rgba(240,237,230,.32);}
+  .portalfoot a{color:inherit;}
+  .portalfoot a:hover{color:var(--acid);}
+
+  [data-line]{opacity:0;transform:translateY(16px);will-change:opacity,transform;}
+  /* Si JS no corre o WebGL no esta, el texto tiene que verse igual. */
+  .is-fallback [data-line]{opacity:1!important;transform:none!important;}
+
+  @media(prefers-reduced-motion:reduce){
+    .door,.door .enter .arw{transition:none;}
+  }
+  @media(max-width:620px){
+    html,body{overflow:auto;}
+    #portal{height:auto;min-height:100svh;}
+    .doors{grid-template-columns:1fr;}
+    .door{min-height:52vh;}
+    body[data-door] .door{opacity:1;}
+  }
+</style>
+<noscript><style>#loader{display:none}[data-line]{opacity:1!important;transform:none!important}</style></noscript>
+</head><body>
+
+<canvas id="stage" aria-hidden="true"></canvas>
+<div id="scrim" aria-hidden="true"></div>
+
+<div id="loader">
+  <div class="loader__bar"><i></i></div>
+  <div class="loader__pct" aria-live="polite">00</div>
+</div>
+
+<div id="portal">
+  <div class="topbar">
+    <div class="logo" data-line><b>HG</b>·VL</div>
+    <a class="q" href="/home.html#manifiesto" data-line>¿QUÉ ES ESTO?</a>
+  </div>
+
+  <div class="doors">
+    <a class="door hg" data-door="hg" href="/home.html">
+      <div class="kick" data-line>La casa madre</div>
+      <h1 data-line>HUMAN<br>GLITCHE</h1>
+      <div class="name" data-line>filosofía · comunidad · herramientas</div>
+      <p data-line>El ecosistema: manifiesto, diario, academia, comunidad y <b style="color:var(--acid)">todas las herramientas de creación</b>.</p>
+      <span class="enter" data-line>ENTRAR A LA COMUNIDAD <span class="arw">→</span></span>
+      <div class="tags" data-line><span>Manifiesto</span><span>Diario</span><span>Labs</span><span>Academia</span><span>Comunidad</span></div>
+    </a>
+
+    <a class="door vl" data-door="vl" href="/vl/">
+      <div class="kick" data-line>La vidriera</div>
+      <h1 data-line>VISUAL<br>LAB</h1>
+      <div class="name" data-line>galería · servicios</div>
+      <p data-line>La rama comercial. El <b style="color:var(--cyan)">trabajo del estudio</b> y la oferta de servicios, en un solo lugar.</p>
+      <span class="enter" data-line>ENTRAR AL ESTUDIO <span class="arw">→</span></span>
+      <div class="tags" data-line><span>Galería</span><span>Servicios</span><span>Contacto</span></div>
+    </a>
+  </div>
+
+  <div class="portalfoot" data-line>HUMAN GLITCHE · VISUAL LAB — un dominio, dos puertas &nbsp;·&nbsp; <a href="/studio/">▶ intro cinematic</a> &nbsp;·&nbsp; <a href="/privacidad.html">Privacidad</a> &nbsp;·&nbsp; <a href="/terminos.html">Términos</a></div>
+</div>
+
+<script type="module" src="src/main.js"></script>
+</body></html>
