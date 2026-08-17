@@ -1,0 +1,1668 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>zzz</title>
+<meta name="description" content="Kit de privacidad y seguridad de la información. Hábitos, protocolos, medición y guías — sin cuenta, sin servidor, sin telemetría: no pide ni tu nombre.">
+<link rel="canonical" href="https://www.hg-vl.com/zzz/">
+<meta name="theme-color" content="#060B14">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta property="og:title" content="zzz — kit de privacidad">
+<meta property="og:description" content="Sin cuenta, sin servidor, sin telemetría. Todo queda en tu dispositivo.">
+<style>
+  /* ═══════════════════════════════════════════════════════════════════
+     zzz app · prototipo F0.6 — informar + hábitos + protocolos + política
+     Identidad zzz (ZZZ-IDV-01). Tema único oscuro, todo color explícito.
+     Sin dependencias, sin red, sin cuenta: la app no pide ni el nombre.
+     ═══════════════════════════════════════════════════════════════════ */
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --void:#060B14; --surf:rgba(255,255,255,.055); --surf-hi:rgba(255,255,255,.09);
+    --edge:rgba(255,255,255,.13); --edge-hi:rgba(255,255,255,.22);
+    --text:#F2F5F8; --muted:rgba(242,245,248,.66); --dim:rgba(242,245,248,.42);
+    --teal:#2FA8B8; --teal-hi:#7FD4E8; --indigo:#3B5BC4; --indigo-hi:#8FA8F0;
+    --ambar:#FFC46B; --ok:#7FE0C8; --warn:#FFC46B; --bad:#FF8E7A;
+    --mono:ui-monospace,'SF Mono',SFMono-Regular,Menlo,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',Roboto,sans-serif;
+  }
+
+  html { -webkit-text-size-adjust:100%; }
+  body {
+    background:
+      radial-gradient(120% 80% at 80% -10%, rgba(48,86,180,.30), transparent 55%),
+      radial-gradient(90% 70% at 10% 110%, rgba(26,58,110,.35), transparent 60%),
+      #060B14;
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.5;
+    letter-spacing: -.01em;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  :focus-visible { outline: 2px solid var(--teal-hi); outline-offset: 2px; border-radius: 6px; }
+  @media (prefers-reduced-motion: reduce) { * { transition:none !important; animation:none !important; } }
+
+  .app { max-width: 520px; margin: 0 auto; padding: 0 16px 96px; }
+
+  .top { display:flex; align-items:baseline; justify-content:space-between; padding:18px 2px 14px; }
+  .logo { font-family:var(--mono); font-size:26px; font-weight:700; letter-spacing:-.04em; }
+  .logo em { font-style:normal; color:var(--teal-hi); }
+  .ver { font-family:var(--mono); font-size:9.5px; letter-spacing:.12em; text-transform:uppercase;
+         color:var(--dim); border:.5px solid var(--edge); border-radius:999px; padding:4px 10px; }
+
+  nav {
+    position:fixed; bottom:0; left:0; right:0; z-index:20;
+    background:rgba(6,11,20,.92);
+    backdrop-filter: blur(18px) saturate(160%);
+    -webkit-backdrop-filter: blur(18px) saturate(160%);
+    border-top:.5px solid var(--edge);
+  }
+  .nav-row { max-width:520px; margin:0 auto; display:flex; }
+  nav button {
+    flex:1; background:none; border:0; color:var(--dim); cursor:pointer;
+    font-family:var(--mono); font-size:10px; letter-spacing:.12em; text-transform:uppercase;
+    padding:15px 4px calc(15px + env(safe-area-inset-bottom,0px));
+    border-top:2px solid transparent; transition:color .15s;
+  }
+  nav button:hover { color:var(--muted); }
+  nav button.on { color:var(--teal-hi); border-top-color:var(--teal); }
+  @media (max-width:430px){
+    nav button { font-size:8.5px; letter-spacing:.06em; padding-left:2px; padding-right:2px; }
+  }
+
+  .view { display:none; }
+  .view.on { display:block; animation:in .2s ease; }
+  @keyframes in { from { opacity:0; transform:translateY(4px);} to { opacity:1; transform:none;} }
+
+  h2 { font-size:21px; font-weight:650; letter-spacing:-.025em; margin:18px 0 4px; }
+  .sub { font-size:14px; color:var(--muted); margin-bottom:16px; max-width:46ch; }
+  .eyebrow { font-family:var(--mono); font-size:9.5px; letter-spacing:.16em; text-transform:uppercase;
+             color:var(--dim); display:block; margin-top:22px; }
+
+  .card {
+    background:var(--surf); border:.5px solid var(--edge); border-radius:18px;
+    padding:16px 17px; margin-bottom:12px;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.10);
+  }
+  .card.tap { cursor:pointer; transition:border-color .15s, background .15s; }
+  .card.tap:hover { border-color:var(--edge-hi); background:var(--surf-hi); }
+  .card h3 { font-size:15.5px; font-weight:600; letter-spacing:-.015em; }
+  .card p { font-size:13.5px; color:var(--muted); margin-top:3px; }
+  .row { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+
+  .promise { display:flex; flex-wrap:wrap; gap:6px; margin:2px 0 18px; }
+  .promise span {
+    font-family:var(--mono); font-size:9.5px; letter-spacing:.1em; text-transform:uppercase;
+    color:var(--teal-hi); border:.5px solid rgba(127,212,232,.35); border-radius:999px;
+    padding:4px 10px; background:rgba(47,168,184,.08);
+  }
+
+  .big { font-family:var(--mono); font-size:30px; font-weight:600; letter-spacing:-.03em;
+         font-variant-numeric:tabular-nums; }
+  .big small { font-size:13px; color:var(--dim); font-weight:400; letter-spacing:0; }
+
+  .chip { display:inline-block; font-family:var(--mono); font-size:10.5px; letter-spacing:.06em;
+          border-radius:999px; padding:3px 10px; border:.5px solid; white-space:nowrap; }
+  .c-ok   { color:var(--ok);   border-color:rgba(127,224,200,.4); background:rgba(127,224,200,.09); }
+  .c-warn { color:var(--warn); border-color:rgba(255,196,107,.4); background:rgba(255,196,107,.09); }
+  .c-bad  { color:var(--bad);  border-color:rgba(255,142,122,.4); background:rgba(255,142,122,.09); }
+  .c-dim  { color:var(--dim);  border-color:var(--edge); background:rgba(255,255,255,.04); }
+
+  /* hoy */
+  .hoy-item { display:flex; align-items:center; justify-content:space-between; gap:12px;
+              padding:12px 2px; border-bottom:.5px solid var(--edge); }
+  .hoy-item:last-child { border-bottom:0; }
+  .hoy-item b { font-size:14.5px; display:block; letter-spacing:-.01em; }
+  .hoy-item span { font-size:12px; color:var(--muted); }
+  .calm { text-align:center; padding:26px 10px; }
+  .calm .z { font-family:var(--mono); font-size:30px; color:var(--teal-hi); letter-spacing:.1em; }
+  .calm b { display:block; font-size:16px; margin-top:8px; }
+  .calm p { font-size:13px; color:var(--muted); margin-top:4px; }
+
+  /* checklist */
+  .task { display:grid; grid-template-columns:24px 1fr; gap:12px; padding:12px 2px;
+          border-bottom:.5px solid var(--edge); cursor:pointer; }
+  .task:last-child { border-bottom:0; }
+  .task input {
+    appearance:none; -webkit-appearance:none; width:18px; height:18px; margin-top:2px;
+    border:1.5px solid var(--dim); border-radius:6px; cursor:pointer;
+    display:grid; place-content:center; background:transparent;
+  }
+  .task input::after { content:''; width:9px; height:9px; border-radius:3px;
+    background:var(--teal-hi); transform:scale(0); transition:transform .12s; }
+  .task input:checked { border-color:var(--teal); }
+  .task input:checked::after { transform:scale(1); }
+  .task b { font-size:14.5px; font-weight:600; display:block; letter-spacing:-.01em; }
+  .task span { font-size:12.5px; color:var(--muted); }
+  .task small { font-family:var(--mono); font-size:10px; color:var(--dim); margin-left:6px; }
+  .task input:checked ~ div b { color:var(--dim); text-decoration:line-through; }
+  .task input:checked ~ div span { color:var(--dim); }
+
+  /* hábitos */
+  .hab { border:.5px solid var(--edge); border-radius:16px; margin-bottom:10px;
+         background:var(--surf); padding:13px 15px; }
+  .hab.off { opacity:.55; }
+  .hab-top { display:flex; align-items:flex-start; justify-content:space-between; gap:10px; }
+  .hab-top b { font-size:14.5px; font-weight:600; letter-spacing:-.01em; display:block; }
+  .hab-top .cad { font-family:var(--mono); font-size:9.5px; letter-spacing:.1em;
+                  text-transform:uppercase; color:var(--dim); }
+  .hab-why { font-size:12.5px; color:var(--muted); margin-top:6px; line-height:1.45; }
+  .hab-foot { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:10px; }
+  .hab-state { font-size:12px; color:var(--muted); font-variant-numeric:tabular-nums; }
+  .hab-actions { display:flex; gap:6px; }
+
+  .sw { position:relative; width:38px; height:22px; flex:none; cursor:pointer; }
+  .sw input { position:absolute; opacity:0; width:100%; height:100%; margin:0; cursor:pointer; }
+  .sw i { position:absolute; inset:0; border-radius:999px; background:rgba(255,255,255,.12);
+          border:.5px solid var(--edge-hi); transition:background .15s; }
+  .sw i::after { content:''; position:absolute; top:2px; left:2px; width:16px; height:16px;
+                 border-radius:50%; background:var(--dim); transition:transform .15s, background .15s; }
+  .sw input:checked + i { background:rgba(47,168,184,.35); border-color:var(--teal); }
+  .sw input:checked + i::after { transform:translateX(16px); background:var(--teal-hi); }
+
+  /* medir */
+  .dom { border:.5px solid var(--edge); border-radius:16px; margin-bottom:10px;
+         background:var(--surf); overflow:hidden; }
+  .dom-head { display:flex; align-items:center; justify-content:space-between; gap:10px;
+              padding:13px 15px; cursor:pointer; }
+  .dom-head:hover { background:var(--surf-hi); }
+  .dom-head b { font-size:14.5px; font-weight:600; letter-spacing:-.01em; }
+  .dom-head .mini { font-family:var(--mono); font-size:10px; color:var(--dim); display:block; }
+  .dom-body { display:none; border-top:.5px solid var(--edge); padding:6px 15px 14px; }
+  .dom.open .dom-body { display:block; }
+  .lvl { display:grid; grid-template-columns:30px 1fr auto; gap:10px; align-items:start;
+         padding:9px 0; border-bottom:.5px solid rgba(255,255,255,.06); }
+  .lvl:last-child { border-bottom:0; }
+  .lvl .n { font-family:var(--mono); font-size:12px; font-weight:700; color:var(--dim); padding-top:2px; }
+  .lvl p { font-size:12.5px; color:var(--muted); line-height:1.4; }
+  .lvl label.ev { display:flex; gap:7px; align-items:flex-start; margin-top:6px;
+                  font-size:11.5px; color:var(--warn); cursor:pointer; }
+  .lvl label.ev input { accent-color:#2FA8B8; margin-top:2px; }
+  .lvl .pick {
+    font-family:var(--mono); font-size:10.5px; letter-spacing:.06em;
+    border:.5px solid var(--edge-hi); background:transparent; color:var(--muted);
+    border-radius:999px; padding:5px 12px; cursor:pointer; transition:all .12s;
+  }
+  .lvl .pick:not(:disabled):hover { border-color:var(--teal); color:var(--teal-hi); }
+  .lvl .pick:disabled { opacity:.35; cursor:not-allowed; }
+  .lvl.sel .pick { background:rgba(47,168,184,.15); border-color:var(--teal); color:var(--teal-hi); }
+
+  .board { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin:14px 0; }
+  .cell { background:var(--surf); border:.5px solid var(--edge); border-radius:12px;
+          padding:10px 8px; text-align:center; }
+  .cell .d { font-family:var(--mono); font-size:9.5px; letter-spacing:.08em; color:var(--dim); }
+  .cell .v { font-family:var(--mono); font-size:20px; font-weight:600; margin-top:2px; }
+
+  /* guía */
+  .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .grid3 { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+  .opt {
+    background:var(--surf); border:.5px solid var(--edge); border-radius:12px;
+    color:var(--text); padding:11px 10px; cursor:pointer; text-align:left;
+    font-family:var(--sans); font-size:13px; font-weight:600; letter-spacing:-.01em;
+    transition:all .12s;
+  }
+  .opt small { display:block; font-weight:400; font-size:10.5px; color:var(--dim); margin-top:1px; }
+  .opt:hover { border-color:var(--edge-hi); }
+  .opt.on { border-color:var(--teal); background:rgba(47,168,184,.12); }
+  .verdict { border-radius:16px; padding:16px 17px; margin-top:12px; border:1px solid; display:none; }
+  .verdict.show { display:block; }
+  .verdict .glyph { font-family:var(--mono); font-size:26px; font-weight:700; }
+  .verdict b { display:block; font-size:15.5px; margin-top:2px; }
+  .verdict p { font-size:13px; margin-top:5px; color:var(--muted); }
+  .v-ok   { border-color:rgba(127,224,200,.45); background:rgba(127,224,200,.08); color:var(--ok); }
+  .v-warn { border-color:rgba(255,196,107,.45); background:rgba(255,196,107,.08); color:var(--warn); }
+  .v-bad  { border-color:rgba(255,142,122,.45); background:rgba(255,142,122,.08); color:var(--bad); }
+
+  .idea { display:grid; grid-template-columns:36px 1fr; gap:11px; padding:11px 2px;
+          border-bottom:.5px solid var(--edge); }
+  .idea:last-child { border-bottom:0; }
+  .idea .k { font-family:var(--mono); font-size:10px; font-weight:700; color:var(--teal-hi);
+             letter-spacing:.06em; padding-top:3px; }
+  .idea p { font-size:13.5px; color:var(--muted); }
+  .idea p b { color:var(--text); }
+
+  /* protocolos */
+  .say { border-left:2px solid var(--teal); background:rgba(47,168,184,.07);
+         border-radius:0 12px 12px 0; padding:10px 13px; font-size:12.5px;
+         color:var(--muted); margin:8px 0 6px; font-style:italic; }
+  .sec-h { font-family:var(--mono); font-size:9px; letter-spacing:.14em;
+           text-transform:uppercase; color:var(--teal-hi); margin:14px 0 2px; display:block; }
+
+  /* generador de claves */
+  .kg-out { font-family:var(--mono); font-size:19px; font-weight:600; letter-spacing:-.01em;
+            line-height:1.5; padding:14px 4px 6px; word-break:break-word; min-height:54px;
+            color:var(--teal-hi); user-select:all; -webkit-user-select:all; }
+  .kg-out.empty { color:var(--dim); font-size:14px; font-weight:400; }
+
+  /* flyer señuelo — sin marca a propósito */
+  #flyer { background:#FFFFFF; color:#111111; border-radius:4px; padding:26px 22px 20px;
+           margin-top:6px; box-shadow:0 8px 30px rgba(0,0,0,.5); }
+  .fly-top { display:flex; justify-content:space-between; font-family:var(--mono);
+             font-size:9.5px; letter-spacing:.14em; text-transform:uppercase; color:#111;
+             border-bottom:3px solid #111; padding-bottom:7px; }
+  .fly-title { font-size:33px; font-weight:800; letter-spacing:-.03em; line-height:.95;
+               text-transform:uppercase; color:#111; margin:16px 0 3px; }
+  .fly-vol { font-family:var(--mono); font-size:9.5px; letter-spacing:.22em;
+             text-transform:uppercase; color:#111; margin-bottom:16px; }
+  .fly-line { background:#111; color:#fff; display:inline-block; padding:3px 9px;
+              font-family:var(--mono); font-size:8.5px; letter-spacing:.22em;
+              text-transform:uppercase; }
+  .fly-list { list-style:none; margin:10px 0 14px; padding:0; }
+  .fly-list li { font-weight:800; font-size:14.5px; text-transform:uppercase; color:#111;
+                 letter-spacing:.01em; padding:3.5px 0; border-bottom:1px solid #E4E4E4;
+                 display:flex; justify-content:space-between; align-items:baseline; }
+  .fly-list li i { font-style:normal; font-family:var(--mono); font-size:8.5px;
+                   color:#9A9A9A; letter-spacing:.1em; text-transform:lowercase; }
+  .fly-bars { display:flex; gap:2px; height:24px; margin:12px 0 7px; align-items:stretch; }
+  .fly-bars b { background:#111; }
+  .fly-foot { font-family:var(--mono); font-size:8.5px; letter-spacing:.12em;
+              text-transform:uppercase; color:#333; display:flex;
+              justify-content:space-between; gap:8px; flex-wrap:wrap; }
+
+  /* documentos */
+  .doc-line { font-size:13px; color:var(--muted); padding:4px 0; line-height:1.5; }
+  .doc-line b { color:var(--text); }
+  .doc-li { padding-left:15px; position:relative; }
+  .doc-li::before { content:''; position:absolute; left:2px; top:13px;
+                    width:6px; height:1.5px; background:var(--teal-hi); }
+  .doc-hi { border-left:2px solid var(--warn); background:rgba(255,196,107,.08);
+            border-radius:0 10px 10px 0; padding:8px 12px; margin:6px 0;
+            font-size:12.5px; color:var(--muted); }
+  .doc-hi b { color:var(--warn); }
+  .mark { color:var(--ambar); border-bottom:1px dashed rgba(255,196,107,.5); }
+
+  /* marcas */
+  .brands { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:8px; }
+  a.brand { display:flex; gap:10px; align-items:flex-start;
+            background:var(--surf); border:.5px solid var(--edge); border-radius:14px;
+            padding:11px 12px; text-decoration:none; color:var(--text);
+            transition:border-color .15s, background .15s; }
+  a.brand:hover { border-color:var(--edge-hi); background:var(--surf-hi); }
+  .tile { width:38px; height:38px; border-radius:10px; flex:none;
+          display:grid; place-content:center;
+          font-family:var(--mono); font-weight:700; font-size:13px; color:#fff;
+          letter-spacing:-.02em; border:.5px solid rgba(255,255,255,.18);
+          box-shadow: inset 0 1px 0 rgba(255,255,255,.22); }
+  .brand b { font-size:13.5px; display:block; letter-spacing:-.01em; }
+  .brand b i { font-style:normal; font-family:var(--mono); font-size:9px; color:var(--dim); }
+  .brand span { font-size:11px; color:var(--muted); display:block; line-height:1.35; margin-top:1px; }
+  .brand .dom { font-family:var(--mono); font-size:9.5px; color:var(--teal-hi); margin-top:3px; display:block; }
+
+  /* SOS */
+  .sos-card { border-color:rgba(255,142,122,.35); }
+  .sos-step { display:grid; grid-template-columns:34px 1fr; gap:12px; padding:13px 2px;
+              border-bottom:.5px solid var(--edge); }
+  .sos-step:last-child { border-bottom:0; }
+  .sos-step .k { font-family:var(--mono); font-size:15px; font-weight:700; color:var(--bad);
+                 border:1.5px solid rgba(255,142,122,.5); border-radius:10px;
+                 width:30px; height:30px; display:grid; place-content:center; }
+  .sos-step b { font-size:15px; display:block; letter-spacing:-.01em; }
+  .sos-step span { font-size:12.5px; color:var(--muted); }
+
+  .btn {
+    font-family:var(--mono); font-size:11px; letter-spacing:.08em;
+    background:rgba(47,168,184,.14); border:.5px solid var(--teal); color:var(--teal-hi);
+    border-radius:999px; padding:7px 14px; cursor:pointer; white-space:nowrap;
+  }
+  .btn:hover { background:rgba(47,168,184,.22); }
+  .btn.ghost { background:transparent; border-color:var(--edge-hi); color:var(--muted); }
+  .btn.danger { border-color:rgba(255,142,122,.5); color:var(--bad); background:rgba(255,142,122,.08); }
+
+  .note { font-size:12px; color:var(--dim); margin-top:14px; line-height:1.5; }
+  .note b { color:var(--muted); }
+  textarea.dump {
+    width:100%; min-height:120px; margin-top:10px; border-radius:12px;
+    background:rgba(0,0,0,.35); border:.5px solid var(--edge); color:var(--muted);
+    font-family:var(--mono); font-size:11px; padding:10px; display:none;
+  }
+  textarea.dump.show { display:block; }
+
+  /* impresión: sale sólo el flyer */
+  @media print {
+    body { background:#fff !important; }
+    body * { visibility:hidden; }
+    #flyer, #flyer * { visibility:visible; }
+    #flyer { position:fixed; left:0; top:0; width:100%; margin:0;
+             box-shadow:none; border-radius:0; }
+    nav { display:none !important; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <div class="logo">zz<em>z</em></div>
+    <div class="ver">prototipo F0.8 · kit v1.0</div>
+  </div>
+
+  <!-- ═══════════ INICIO / HOY ═══════════ -->
+  <section class="view on" id="v-inicio">
+    <div class="promise">
+      <span>sin cuenta</span><span>sin servidor</span><span>sin telemetría</span><span>no pide ni tu nombre</span>
+    </div>
+
+    <span class="eyebrow">Hoy</span>
+    <div class="card" style="margin-top:8px" id="hoy-box"></div>
+
+    <div class="card tap" data-go="v-medir">
+      <div class="row">
+        <div><h3>Tu nivel</h3><p id="home-med-note">Sin medir todavía</p></div>
+        <div class="big" id="home-nivel">—<small>/4</small></div>
+      </div>
+    </div>
+
+    <div class="card tap" data-go="v-triage">
+      <div class="row">
+        <div><h3>Triage de 72 horas</h3><p>Nueve acciones, ninguna cuesta plata</p></div>
+        <div class="big" id="home-triage">0<small>/9</small></div>
+      </div>
+    </div>
+
+    <div class="card tap" data-go="v-protocolos">
+      <div class="row">
+        <div><h3>Protocolos</h3><p>Reunión sensible, viaje, salida de alguien, barrido</p></div>
+        <span class="chip c-dim">eventos</span>
+      </div>
+    </div>
+
+    <div class="card tap" data-go="v-docs">
+      <div class="row">
+        <div><h3>Política y documentos</h3><p>La política completa, y el mapa de todo el kit</p></div>
+        <span class="chip c-dim">leer</span>
+      </div>
+    </div>
+
+    <div class="card tap" data-go="v-claves">
+      <div class="row">
+        <div><h3>Crear una clave</h3><p>Frase o pronunciable — y el flyer para esconderla en papel</p></div>
+        <span class="chip c-dim">claves</span>
+      </div>
+    </div>
+
+    <div class="card tap sos-card" data-go="v-sos">
+      <div class="row">
+        <div><h3>¿Pasó algo?</h3><p>Robo, CBU, AnyDesk, archivo raro, credencial, dispositivo</p></div>
+        <span class="chip c-bad">SOS</span>
+      </div>
+    </div>
+
+    <p class="note"><b>Qué es esto:</b> el kit zzz hecho instrumento. Informa, acompaña los
+      hábitos y recuerda lo que vence — sin monitorear, sin escanear y sin mandar nada a
+      ningún lado.</p>
+    <p class="note">
+      <button class="btn ghost" id="btn-dump">Ver mis datos</button>
+      <button class="btn danger" id="btn-wipe">Borrar todo</button>
+    </p>
+    <textarea class="dump" id="dump" readonly aria-label="Datos locales en JSON"></textarea>
+  </section>
+
+  <!-- ═══════════ HÁBITOS ═══════════ -->
+  <section class="view" id="v-habitos">
+    <h2>Hábitos</h2>
+    <p class="sub">La seguridad se pierde por costumbre, no por ataque. Encendé los que
+      apliquen a tu caso — cada uno explica por qué existe.</p>
+    <div id="hab-list"></div>
+
+    <span class="eyebrow">Checklist del mes</span>
+    <div class="card" style="margin-top:8px" id="rut-list"></div>
+    <p class="note"><button class="btn ghost" id="btn-reset-mes">Empezar mes nuevo</button></p>
+
+    <p class="note"><b>Sobre los avisos:</b> en esta versión el recordatorio es el semáforo
+      y la lista de «hoy». Con la app instalada (fase 2) se suman notificaciones del
+      sistema, <b>generadas en tu dispositivo</b> — nunca desde un servidor, porque un
+      recordatorio que necesita servidor es un servidor que sabe qué tenés que recordar.</p>
+  </section>
+
+  <!-- ═══════════ TRIAGE ═══════════ -->
+  <section class="view" id="v-triage">
+    <h2>Triage de 72 horas</h2>
+    <p class="sub">Por impacto sobre esfuerzo, no por tema. Si sólo hacés esta lista, ya
+      cerraste la mayoría del riesgo real.</p>
+    <div class="card" id="triage-list"></div>
+    <p class="note">Si venís de una venta, una salida, un conflicto o un incidente, hay un
+      décimo punto con reloj — está en <b>SOS</b> y en los escenarios del kit.</p>
+  </section>
+
+  <!-- ═══════════ MEDIR ═══════════ -->
+  <section class="view" id="v-medir">
+    <h2>Medir la base</h2>
+    <p class="sub">El instrumento del kit: nueve dominios, cinco niveles. <b>Un nivel sin su
+      evidencia no se acredita</b>, y el nivel general es el mínimo — no el promedio.</p>
+
+    <div class="board" id="board"></div>
+    <div class="card">
+      <div class="row">
+        <div><h3>Nivel general</h3><p id="med-note">El mínimo de los nueve</p></div>
+        <div class="big" id="med-gen">—<small>/4</small></div>
+      </div>
+    </div>
+
+    <div id="dom-list"></div>
+    <p class="note">En la app completa, esto exporta el informe ZZZ-INF-01 — y a los seis
+      meses, el comparativo ZZZ-INF-02 contra esta línea base.</p>
+  </section>
+
+  <!-- ═══════════ PROTOCOLOS ═══════════ -->
+  <section class="view" id="v-protocolos">
+    <h2>Protocolos</h2>
+    <p class="sub">Lo que no es hábito ni emergencia: viene un evento sensible y se corre la
+      lista — antes, durante y después. Cada una se reinicia para el próximo.</p>
+    <div id="proto-list"></div>
+    <p class="note">Los hábitos cubren el calendario, el SOS cubre lo que ya pasó — esto
+      cubre lo que <b>va a pasar</b>. Las versiones completas están en el kit.</p>
+  </section>
+
+  <!-- ═══════════ CLAVES ═══════════ -->
+  <section class="view" id="v-claves">
+    <h2>Crear una clave</h2>
+    <p class="sub">Para las dos o tres que no pueden vivir en el gestor: la maestra del
+      gestor, el cifrado de disco, la frase de recuperación. Todo lo demás lo inventa el
+      gestor.</p>
+
+    <div class="grid2" id="kg-modes"></div>
+
+    <div class="card" style="margin-top:12px">
+      <div class="row">
+        <span class="hab-state" id="kg-lenlab">—</span>
+        <span class="hab-actions">
+          <button class="btn ghost" id="kg-less" aria-label="menos">−</button>
+          <button class="btn ghost" id="kg-more" aria-label="más">+</button>
+        </span>
+      </div>
+      <div id="kg-out" class="kg-out empty">tocá generar</div>
+      <div class="row" style="margin-top:10px">
+        <span id="kg-bits" class="chip c-dim">— bits</span>
+        <span class="hab-actions">
+          <button class="btn ghost" id="kg-copy">Copiar</button>
+          <button class="btn" id="kg-gen">Generar</button>
+        </span>
+      </div>
+    </div>
+
+    <p class="note">Azar criptográfico local (<b>crypto.getRandomValues</b>), sin tildes a
+      propósito — se tipea igual en cualquier teclado. <b>Nada se guarda ni sale del
+      dispositivo:</b> cerrás esta vista y la clave se fue. Anotala donde corresponde antes
+      de irte.</p>
+
+    <span class="eyebrow">Esconderla en papel — el flyer</span>
+    <p class="sub" style="margin-top:6px">Tus palabras, mezcladas entre señuelos en el
+      lineup de un evento que no existe. En un cajón parece un flyer viejo, no una clave.</p>
+    <p><button class="btn" id="kg-flyer">Armar el flyer</button></p>
+
+    <div id="fly-wrap" style="display:none">
+      <div id="flyer"></div>
+      <p class="note" id="fly-pos"></p>
+      <p class="note"><button class="btn" id="kg-print">Imprimir</button>&nbsp; Al 100%,
+        sin escalar. Si el botón no anda en este entorno: Cmd+P — sale sólo el flyer.</p>
+      <p class="doc-hi"><b>Esto es camuflaje, no cifrado.</b> Protege del que revisa el
+        cajón, no del que sabe qué buscar. La mitad que falta —el orden— no se imprime:
+        memorizalo o guardalo en otro lado. Sin el orden, el flyer son dieciséis nombres.</p>
+    </div>
+  </section>
+
+  <!-- ═══════════ DOCUMENTOS ═══════════ -->
+  <section class="view" id="v-docs">
+    <h2>Política y documentos</h2>
+    <p class="sub">La política de seguridad de la información, completa y consultable — y el
+      mapa de todo lo que el kit contiene.</p>
+
+    <span class="eyebrow">La política, sección por sección</span>
+    <p class="note" style="margin-top:6px;margin-bottom:10px">Esta es la política modelo del
+      kit (capítulo 10). <b>Si tu organización ya firmó su versión adaptada, vale la
+      firmada</b> — los marcadores en ámbar son lo que se completa en la adaptación.</p>
+    <div id="pol-list"></div>
+
+    <span class="eyebrow">El kit — qué contiene</span>
+    <div class="card" style="margin-top:8px" id="kitmap-list"></div>
+    <p class="note">El texto completo vive en el repositorio del kit — una sola fuente. En
+      la app completa (fase 1), los capítulos se leen acá adentro, empaquetados
+      automáticamente desde esa misma fuente para que nunca diverjan.</p>
+  </section>
+
+  <!-- ═══════════ GUÍA ═══════════ -->
+  <section class="view" id="v-guia">
+    <h2>Guía</h2>
+    <p class="sub">Lo esencial del kit, para consultar en el momento.</p>
+
+    <span class="eyebrow">¿Por dónde lo mando?</span>
+    <p class="sub" style="margin-top:4px">Dos toques: qué tan sensible es, por dónde lo
+      querés mandar.</p>
+    <div class="grid2" id="nivel-btns"></div>
+    <div class="grid3" id="canal-btns" style="margin-top:8px"></div>
+    <div class="verdict" id="verdict" role="status"></div>
+
+    <span class="eyebrow">Las seis reglas</span>
+    <div class="card" style="margin-top:8px" id="reglas-list"></div>
+
+    <span class="eyebrow">Nueve ideas que sostienen todo</span>
+    <div class="card" style="margin-top:8px" id="ideas-list"></div>
+
+    <span class="eyebrow">Las marcas que recomendamos</span>
+    <div id="marcas"></div>
+    <p class="note"><b>Ninguna nos paga ni nos da comisión</b> — mismo criterio que todo el
+      kit: si ganáramos con la recomendación, la recomendación no valdría nada. Y una regla
+      al usarlas: <b>descargá siempre desde el sitio oficial</b>, nunca desde un aviso en el
+      buscador — los avisos falsos de descarga son un vector real de infección, incluso
+      para estas mismas herramientas.</p>
+
+    <span class="eyebrow">Qué guarda esta app</span>
+    <div class="card" style="margin-top:8px">
+      <div class="idea"><div class="k">GUARDA</div><p>Tus tildes, las fechas de tus hábitos y tu medición. Nada más.</p></div>
+      <div class="idea"><div class="k">DÓNDE</div><p>En este dispositivo. No hay servidor, no hay nube, no hay copia nuestra.</p></div>
+      <div class="idea"><div class="k">QUIÉN</div><p>Nadie. No hay cuenta: la app no pide nombre, mail ni teléfono.</p></div>
+      <div class="idea"><div class="k">SALIDA</div><p>Podés ver todo lo guardado y borrarlo con un botón, desde Inicio. Eso también es la promesa.</p></div>
+    </div>
+  </section>
+
+  <!-- ═══════════ SOS ═══════════ -->
+  <section class="view" id="v-sos">
+    <h2>¿Pasó algo?</h2>
+    <p class="sub">Primero contener, después entender. Elegí lo que está pasando.</p>
+    <div id="sos-list"></div>
+    <p class="note"><b>Regla cero:</b> reportar un error propio no tiene consecuencias.
+      Ocultarlo, sí. El daño crece con cada hora sin reportar.</p>
+  </section>
+</div>
+
+<nav aria-label="Secciones">
+  <div class="nav-row">
+    <button data-go="v-inicio" class="on">inicio</button>
+    <button data-go="v-habitos">hábitos</button>
+    <button data-go="v-protocolos">eventos</button>
+    <button data-go="v-medir">medir</button>
+    <button data-go="v-guia">guía</button>
+    <button data-go="v-sos">sos</button>
+  </div>
+</nav>
+<script>
+(function () {
+  'use strict';
+
+  /* ───────── estado local ───────── */
+  var KEY = 'zzz-app-v1';
+  var S = { triage: {}, med: {}, rut: {}, fechas: {}, hab: {}, proto: {} };
+  try {
+    var raw = localStorage.getItem(KEY);
+    if (raw) S = Object.assign(S, JSON.parse(raw));
+    if (!S.hab) S.hab = {};
+    if (!S.proto) S.proto = {};
+    /* migración desde F0: las fechas sueltas pasan a ser hábitos */
+    if (S.fechas && S.fechas.backup && !(S.hab.rest && S.hab.rest.last)) {
+      S.hab.rest = { on: true, last: S.fechas.backup };
+    }
+    if (S.fechas && S.fechas.barrido && !(S.hab.barrido && S.hab.barrido.last)) {
+      S.hab.barrido = { on: true, last: S.fechas.barrido };
+    }
+  } catch (e) {}
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
+
+  /* ───────── datos: hábitos (cadencia en días) ───────── */
+  var HABITOS = [
+    { id:'reinicio', n:'Reiniciar el teléfono', cad:1, cadTxt:'diario', def:false,
+      why:'Buena parte del spyware móvil no sobrevive al reinicio y tiene que reinfectar. No te protege — le sube el costo y la exposición al atacante. Cuesta cero.' },
+    { id:'mensual', n:'Correr la checklist del mes', cad:30, cadTxt:'mensual', def:true,
+      why:'Accesos, reenvíos, pagos verificados, papeles. Media hora que sostiene todo lo demás — está acá abajo, en esta misma pestaña.' },
+    { id:'fria', n:'Copia fría: conectar, copiar, desconectar', cad:30, cadTxt:'mensual', def:true,
+      why:'Un disco siempre enchufado no es un backup: es un segundo blanco para el ransomware. La copia que te salva es la que está desconectada — se conecta, se copia, y vuelve a la caja.' },
+    { id:'rest', n:'Probar una restauración del backup', cad:92, cadTxt:'trimestral', def:true,
+      why:'Un backup que nunca se restauró es una hipótesis. La mitad de los que la gente cree tener no funcionan, y se descubre el peor día posible.' },
+    { id:'huella', n:'Buscarte: tu huella pública', cad:92, cadTxt:'trimestral', def:false,
+      why:'Lo que se encuentra sobre vos —dirección, rutina, familia, patente— es la materia prima de la estafa dirigida. Buscate como te buscaría un desconocido.' },
+    { id:'barrido', n:'Barrido de la sala sensible', cad:92, cadTxt:'trimestral', def:false,
+      why:'Física primero, red después, RF al final. Sin línea base registrada no hay comparación — y el cambio contra la línea base es la señal.' },
+    { id:'vehiculo', n:'Inspección del vehículo', cad:92, cadTxt:'trimestral', def:false,
+      why:'Los rastreadores se encuentran mirando, no con detectores: puerto OBD-II primero, pasarruedas, paragolpes y bajos con espejo. Más un escaneo BLE en marcha (AirGuard), 15 minutos. Para perfil expuesto o en conflicto.' },
+    { id:'anual', n:'Revisión anual', cad:365, cadTxt:'anual', def:true,
+      why:'La política con el abogado, la purga de cuentas que no usás, las suscripciones. Lo que no se revisa una vez al año, se pudre.' },
+    { id:'simulacro', n:'Probar el circuito de pagos', cad:365, cadTxt:'anual', def:false,
+      why:'Un caso inventado: un mail interno pidiendo un cambio de CBU, a ver qué pasa. Si el cambio se carga sin llamada, el hallazgo es del proceso, no de la persona. Para empresas con más de una persona pagando.' }
+  ];
+
+  function habState(h) {
+    var st = S.hab[h.id];
+    if (!st) { st = S.hab[h.id] = { on: h.def, last: null, streak: 0 }; }
+    if (st.on === undefined) st.on = h.def;
+    return st;
+  }
+  function isToday(iso) {
+    return iso && new Date(iso).toDateString() === new Date().toDateString();
+  }
+  function daysAgo(iso) {
+    if (!iso) return null;
+    return Math.floor((Date.now() - new Date(iso).getTime()) / 86400000);
+  }
+  /* estado: 'ok' | 'pronto' | 'vencido' | 'nunca' */
+  function habEstado(h) {
+    var st = habState(h);
+    if (!st.on) return 'off';
+    if (!st.last) return 'nunca';
+    if (h.cad === 1) return isToday(st.last) ? 'ok' : 'vencido';
+    var d = daysAgo(st.last);
+    if (d >= h.cad) return 'vencido';
+    if (h.cad >= 30 && d >= h.cad - 7) return 'pronto';
+    return 'ok';
+  }
+  function habTexto(h) {
+    var st = habState(h);
+    if (!st.last) return 'todavía sin registro';
+    if (h.cad === 1) {
+      if (isToday(st.last)) return 'hecho hoy' + (st.streak > 1 ? ' · ' + st.streak + ' días seguidos' : '');
+      return 'último: hace ' + daysAgo(st.last) + ' día' + (daysAgo(st.last) === 1 ? '' : 's');
+    }
+    var d = daysAgo(st.last);
+    var t = 'hace ' + d + ' día' + (d === 1 ? '' : 's');
+    if (d >= h.cad) t += ' · venció';
+    else if (h.cad >= 30 && d >= h.cad - 7) t += ' · vence pronto';
+    return t;
+  }
+  function habDone(h) {
+    var st = habState(h);
+    if (h.cad === 1) {
+      var ayer = st.last && (daysAgo(st.last) === 1);
+      st.streak = ayer ? (st.streak || 0) + 1 : 1;
+    }
+    st.last = new Date().toISOString();
+    save(); renderHab(); renderHome();
+  }
+
+  /* ───────── datos: triage ───────── */
+  var TRIAGE = [
+    ['Cerrar los accesos que ya no corresponden', 'Gente que se fue, proveedores viejos, enlaces «cualquiera con el enlace»', '30 min'],
+    ['Auditar el mail', 'Reglas de reenvío, permisos OAuth, sesiones activas', '15 min'],
+    ['Rotar credenciales compartidas', 'Toda contraseña que conoce alguien que ya no está', '20 min'],
+    ['Sacar el SMS como segundo factor', 'Un SIM swap se lleva todo. App autenticadora', '20 min'],
+    ['Activar cifrado de disco', 'FileVault, BitLocker o LUKS. La clave, en papel', '10 min'],
+    ['Subir el bloqueo de pantalla', '6+ dígitos, 30 segundos, sin vistas previas', '5 min'],
+    ['Modo Restringido en los teléfonos expuestos', 'La mejor defensa contra spyware, gratis', '2 min'],
+    ['Confirmar el backup y probar una restauración', 'Un backup que nunca se restauró es una hipótesis', '15 min'],
+    ['Comunicar la regla de canal y la de pagos', 'Nada confidencial por WhatsApp. Los CBU no se cambian por mail', '10 min']
+  ];
+
+  /* ───────── datos: matriz (ZZZ-MAD-01, abreviada) ───────── */
+  var DOM = [
+    ['D1', 'Gobierno de la información', [
+      'No hay clasificación de ningún tipo',
+      'Hay criterio en la cabeza de alguien, distinto según a quién se pregunte',
+      'Política escrita con los cuatro niveles, comunicada y con responsable',
+      'Carpetas y documentos efectivamente segregados según la política',
+      'Revisión anual documentada, con constancias firmadas'],
+      ['', '', 'Vi la política escrita', 'Vi las carpetas o etiquetas aplicadas', 'Vi la última revisión con fecha y firmas']],
+    ['D2', 'Identidad y accesos', [
+      'Contraseñas compartidas, sin 2FA, sin proceso de baja',
+      'Cada uno con su cuenta, sin gestor ni 2FA consistente',
+      'Gestor adoptado y procedimiento de alta/baja escrito',
+      'Reporte del gestor sin repetidas · 2FA sin SMS · llave física en dirección',
+      'Auditoría mensual de accesos y reenvíos, con registro'],
+      ['', '', 'Vi el gestor y el procedimiento', 'Vi el reporte del gestor', 'Vi el registro del último mes']],
+    ['D3', 'Dispositivos', [
+      'Sin cifrado, sin bloqueo, sin inventario',
+      'Algunos equipos cifrados, según quién los configuró',
+      'Requisitos escritos y aceptados; inventario con responsable',
+      'Cifrado verificado equipo por equipo · antirrobo activo · modo restringido',
+      'Revisión mensual de MDM, accesibilidad y actualizaciones'],
+      ['', '', 'Vi los requisitos y el inventario', 'Lo verifiqué en los equipos', 'Vi el registro de la última revisión']],
+    ['D4', 'Datos y backups', [
+      'Sin backup, o un disco conectado permanentemente',
+      'Backup que corre, sin esquema y sin nadie mirando',
+      'Esquema 3-2-1 escrito, con copia fría desconectada',
+      'Restauración probada con fecha · copia fría con registro',
+      'Prueba trimestral registrada · retención aplicada'],
+      ['', '', 'Vi el esquema y la copia fría', 'Vi la restauración o su fecha registrada', 'Vi el registro trimestral']],
+    ['D5', 'Comunicaciones', [
+      'Todo por WhatsApp y mail personal',
+      'Se evita «lo delicado» por WhatsApp, sin regla escrita',
+      'Matriz de canales escrita · Signal en el círculo que lo necesita',
+      'Grupos auditados · backup de WhatsApp desactivado',
+      'Bots de transcripción bloqueados a nivel organización'],
+      ['', '', 'Vi la matriz comunicada', 'Lo vi en los teléfonos', 'Vi la configuración del administrador']],
+    ['D6', 'Red', [
+      'Router del ISP con credenciales por defecto, red plana',
+      'Contraseña del router cambiada, red de invitados activa',
+      'Segmentación definida: corporativa / invitados / IoT',
+      'VLANs comprobadas · WPS y UPnP apagados · DNS con registro',
+      'Revisión mensual del registro DNS y los dispositivos'],
+      ['', '', 'Vi el plan de segmentación', 'Entré al router y lo vi', 'Vi el registro del último mes']],
+    ['D7', 'Terceros', [
+      'Terceros con acceso sin acuerdo ni vencimiento',
+      'Hay NDAs firmados, sin control de accesos vivos',
+      'Inventario de terceros · regla de verificación de pagos escrita',
+      'Accesos nominales con vencimiento · sin enlaces públicos',
+      'Devolución o destrucción certificada al cierre de cada relación'],
+      ['', '', 'Vi el inventario y la regla', 'Corrí el reporte de compartidos', 'Vi una certificación recibida']],
+    ['D8', 'Entorno físico y señales', [
+      'Sin control de acceso ni criterio para reuniones sensibles',
+      'Control de acceso sin auditar; papeles al tacho',
+      'Protocolo de sala escrito · destructora de corte cruzado',
+      'Credenciales auditadas · línea base de barrido registrada',
+      'Barrido trimestral comparado contra la línea base'],
+      ['', '', 'Vi el protocolo y la destructora', 'Leí la credencial / vi la línea base', 'Vi la comparación del último barrido']],
+    ['D9', 'Respuesta a incidentes', [
+      'Sin procedimiento ni responsable',
+      'Se sabe a quién llamar, sin nada escrito',
+      'Procedimiento escrito por tipo, con responsable y suplente',
+      'Contactos impresos fuera de los sistemas · regla sin sanción comunicada',
+      'Un incidente con post mortem, o un simulacro documentado'],
+      ['', '', 'Vi el procedimiento', 'Vi la hoja impresa', 'Vi el post mortem o el simulacro']]
+  ];
+
+  /* ───────── datos: canales ───────── */
+  var NIVELES = [
+    ['P', 'Público', 'Puede publicarse mañana'],
+    ['I', 'Interno', 'Molesta si sale'],
+    ['C', 'Confidencial', 'Perdés plata si sale'],
+    ['K', 'Crítico', 'Perdés el negocio, un juicio o gente']
+  ];
+  var CANALES = [
+    ['WhatsApp',        {P:'✓', I:'△ mejor evitarlo', C:'✗ nunca — los grupos no se auditan y el backup rompe el cifrado', K:'✗ nunca'}],
+    ['Mail corporativo',{P:'✓', I:'✓', C:'△ sólo interno y con adjunto cifrado', K:'✗ lo Crítico no se escribe'}],
+    ['Mail personal',   {P:'✓', I:'✗ es la vía número uno de fuga', C:'✗', K:'✗'}],
+    ['Slack / Teams',   {P:'✓', I:'✓', C:'△ sólo en canal privado', K:'✗'}],
+    ['Signal',          {P:'✓', I:'✓', C:'✓', K:'✓ con mensajes temporales'}],
+    ['Drive corporativo',{P:'✓', I:'✓', C:'✓ con permiso nominal', K:'△ sólo carpeta restringida'}],
+    ['Drive personal',  {P:'✓', I:'✗', C:'✗', K:'✗'}],
+    ['Videollamada',    {P:'✓', I:'✓', C:'△ sin grabar y sin bots de transcripción', K:'✗ presencial o llamada Signal'}],
+    ['Llamada Signal',  {P:'✓', I:'✓', C:'✓', K:'✓'}],
+    ['Presencial',      {P:'✓', I:'✓', C:'✓', K:'✓ con protocolo de sala'}],
+    ['Pendrive',        {P:'✓', I:'△', C:'✗ salvo cifrado', K:'✗'}],
+    ['IA / chatbot público', {P:'✓', I:'△ con criterio', C:'✗ es publicarlo en un tercero', K:'✗'}]
+  ];
+
+  var REGLAS = [
+    ['1', '<b>WhatsApp no es un canal de negocio.</b> Sirve para «llego en 10».'],
+    ['2', '<b>Nada del trabajo va al mail personal.</b> Es la vía número uno de fuga, casi siempre sin mala intención.'],
+    ['3', '<b>Lo Crítico se habla, no se escribe.</b> Lo que no existe en texto no se filtra ni se cita fuera de contexto.'],
+    ['4', '<b>La IA es un canal más.</b> Reunión sensible: el bot de transcripción no entra.'],
+    ['5', '<b>Rojo con alguien de afuera = Signal con mensajes temporales.</b>'],
+    ['6', '<b>Los datos de pago no se cambian por mail.</b> Todo cambio de CBU se confirma por teléfono al número de siempre.']
+  ];
+
+  var IDEAS = [
+    ['D1', '<b>«Si mañana lo tiene tu competidor, ¿qué te pasa?»</b> Esa pregunta clasifica todo.'],
+    ['D2', 'Tu seguridad es la de tu eslabón más débil — <b>y casi siempre es el SMS.</b>'],
+    ['D3', 'El teléfono antes que la computadora: <b>es el que sale a la calle.</b>'],
+    ['D4', '<b>Un backup que nunca se restauró es una hipótesis</b>, no un backup.'],
+    ['D5', 'Basta <b>un</b> participante con bot de transcripción para que la reunión quede guardada en un tercero.'],
+    ['D6', 'Un dispositivo comprometido sólo debe poder alcanzar <b>su propio segmento.</b>'],
+    ['D7', 'Los enlaces «cualquiera con el enlace» <b>son eternos</b> — sobreviven a la revocación del usuario.'],
+    ['D8', 'El micrófono más probable de tu sala es <b>el celular de alguien sentado en ella.</b>'],
+    ['D9', 'El daño crece con cada hora sin reportar. <b>Reportar un error propio no se sanciona.</b>']
+  ];
+
+  /* ───────── datos: SOS ───────── */
+  var SOS = [
+    ['Me robaron el teléfono', 'Los primeros 10 minutos. El orden importa.', [
+      ['Bloqueá remoto', 'icloud.com/find o android.com/lock — funciona con sólo tu número'],
+      ['Llamá al banco', 'Bloqueá cuentas, tarjetas y transferencias. Antes que todo lo digital'],
+      ['Llamá al operador', 'Bloqueá la línea: corta los SMS de recuperación'],
+      ['Clave de Apple / Google', 'Desde otro equipo, y cerrá TODAS las sesiones'],
+      ['Clave del mail', 'Y revisá las reglas de reenvío'],
+      ['Denuncia + IMEI', 'El operador lo inutiliza en todas las redes del país'],
+      ['Avisá a los tuyos', 'Van a pedirles plata desde tu WhatsApp. Casi sin excepción'],
+      ['Borrado remoto', 'Recién cuando ya no esperes recuperarlo — borrar corta el rastreo']
+    ], 'Si te obligan a desbloquear: entregá y desbloqueá. Ningún dato vale tu integridad.'],
+    ['Me llegó un cambio de CBU', 'La factura puede ser real y el hilo también.', [
+      ['No cargues nada', 'La urgencia del pedido no exime la verificación: la agrava'],
+      ['Llamá al número de siempre', 'El de la agenda o el contrato. NUNCA al que figura en el mail'],
+      ['¿Ya se pagó?', 'Banco YA para pedir el recupero, y denuncia el mismo día (UFECI)'],
+      ['Avisá al proveedor por teléfono', 'No por mail ni respondiendo al hilo: su casilla puede seguir tomada'],
+      ['Preservá todo', 'Mails con encabezados completos, facturas, comprobantes']
+    ], 'El intento fallido también se reporta: revela que están apuntando.'],
+    ['Me piden instalar AnyDesk', 'El banco jamás. Microsoft no llama.', [
+      ['Cortá la llamada', 'La urgencia es la técnica. Nadie legítimo pide acceso remoto'],
+      ['¿Ya lo instalaste? Cortá internet', 'Wifi y cable: el acceso muere ahí. No hace falta apagar'],
+      ['Llamá al banco', 'Si entraste al homebanking en la sesión: bloqueo preventivo ya'],
+      ['Desinstalá y revisá', 'AnyDesk, TeamViewer, RustDesk — y usuarios o tareas nuevas'],
+      ['Cambiá las claves usadas', 'Desde OTRO equipo. Toda credencial de la sesión cayó']
+    ], 'El soporte de verdad lo iniciás vos, por el canal oficial.'],
+    ['Me llegó un archivo raro', 'Subirlo a un escáner puede ser la fuga.', [
+      ['¿Es confidencial? No lo subas', 'VirusTotal comparte lo subido con ~70 fabricantes y sus clientes'],
+      ['Chequeá por huella', 'shasum -a 256 (Mac) · Get-FileHash (Win) → buscá el hash en VirusTotal'],
+      ['«Limpio» no es seguro', 'Lo dirigido y fresco pasa sin detección los primeros días'],
+      ['Abrilo sin riesgo', 'Documentos: Dangerzone. Ejecutables: Windows Sandbox. Macros: jamás'],
+      ['Verificá al remitente', 'Adjunto inesperado de un conocido → preguntá por otro canal antes de abrir']
+    ], 'El archivo llega por un canal; la verificación va por otro.'],
+    ['Se comprometió una credencial', 'Cambiar la contraseña no alcanza.', [
+      ['Cambiá esa contraseña ya', 'Antes de confirmar nada'],
+      ['Cerrá todas las sesiones', 'Cambiar la clave no expulsa a quien ya está adentro'],
+      ['Revisá reenvíos y OAuth', 'El paso que se saltea siempre — y el que deja la puerta abierta'],
+      ['Cambiala donde se repita', 'Toda cuenta que usaba la misma'],
+      ['Reforzá el segundo factor', 'Sin SMS']
+    ], ''],
+    ['Encontré un dispositivo raro', 'Puede ser evidencia de un delito.', [
+      ['NO lo toques', 'Ni lo muevas, ni lo desconectes, ni lo abras'],
+      ['Fotografiá el lugar exacto', 'Antes de cualquier cosa'],
+      ['Salí de la habitación', 'Y no hables del hallazgo ahí adentro'],
+      ['Llamá a tu abogado', 'Desde otro lugar. Su valor probatorio depende de no manipularlo'],
+      ['No uses esa sala', 'Para nada sensible, hasta que un profesional la revise']
+    ], '']
+  ];
+
+  /* ───────── datos: marcas recomendadas ───────── */
+  var MARCAS = [
+    ['Comunicar', [
+      ['Signal', 'signal.org', 'https://signal.org', '#3A76F0', 'Si', 'El canal para lo sensible — mensajes y llamadas'],
+      ['Proton', 'proton.me', 'https://proton.me', '#6D4AFF', 'Pr', 'Mail, nube, VPN y claves en una cuenta. Para el perfil individual']
+    ]],
+    ['Claves y llaves', [
+      ['Bitwarden', 'bitwarden.com', 'https://bitwarden.com', '#175DDC', 'Bw', 'El gestor de contraseñas del kit'],
+      ['Ente Auth', 'ente.io/auth', 'https://ente.io/auth', '#1DB674', 'En', 'Segundo factor sin SMS — iOS y Android'],
+      ['Aegis', 'getaegis.app', 'https://getaegis.app', '#D6404F', 'Ae', 'Segundo factor sin SMS — Android'],
+      ['YubiKey', 'yubico.com', 'https://www.yubico.com', '#8CB808', 'Yu', 'La llave física. Sólo de acá — jamás usada ni de reventa']
+    ]],
+    ['Navegar', [
+      ['Brave', 'brave.com', 'https://brave.com', '#FB542B', 'Br', 'El navegador default: privado sin configurar nada'],
+      ['Firefox', 'mozilla.org', 'https://www.mozilla.org/firefox/', '#FF7139', 'Fx', 'El motor independiente, con uBlock completo'],
+      ['Mullvad Browser', 'mullvad.net', 'https://mullvad.net/browser', '#294D73', 'Mv', 'El segundo navegador: lo que no va atado a tu identidad'],
+      ['uBlock Origin', 'ublockorigin.com', 'https://ublockorigin.com', '#7E1416', 'uB', 'El único bloqueador que hace falta']
+    ]],
+    ['Red y respaldo', [
+      ['Tailscale', 'tailscale.com', 'https://tailscale.com', '#4A5568', 'Ts', 'Tu red privada entre equipos, sin abrir puertos'],
+      ['NextDNS', 'nextdns.io', 'https://nextdns.io', '#2563EB', 'ND', 'El DNS que filtra y te muestra qué habla tu red'],
+      ['Backblaze', 'backblaze.com', 'https://www.backblaze.com', '#D2242A', 'Bz', 'Backup en nube sin límite'],
+      ['VeraCrypt', 'veracrypt.fr', 'https://veracrypt.fr', '#35597E', 'VC', 'Cifrado de discos externos y pendrives']
+    ]],
+    ['Chequear y ayuda', [
+      ['Have I Been Pwned', 'haveibeenpwned.com', 'https://haveibeenpwned.com', '#3E7C8A', "';--", '¿Tu mail apareció en una filtración?'],
+      ['Dangerzone', 'dangerzone.rocks', 'https://dangerzone.rocks', '#C62E4E', 'Dz', 'Convierte archivos sospechosos en PDF inofensivo'],
+      ['Access Now', 'accessnow.org', 'https://www.accessnow.org/help/', '#E7402C', 'AN', 'Ayuda digital gratuita, 24/7, en español']
+    ]],
+    ['Perfil alto', [
+      ['GrapheneOS', 'grapheneos.org', 'https://grapheneos.org', '#37516E', 'Gr', 'El teléfono endurecido — como segundo equipo, no como principal']
+    ]]
+  ];
+
+  /* ───────── datos: protocolos por evento ───────── */
+  var PROTO = [
+    { id:'sala', n:'Reunión sensible — protocolo de sala',
+      d:'El micrófono más probable es el celular de alguien sentado en ella.',
+      say:'Antes de empezar: esta reunión no se graba ni se transcribe. Si alguien tiene un asistente de IA en su calendario, que lo saque ahora.',
+      secs:[
+        ['Antes',[
+          ['Sala elegida el mismo día','La previsibilidad es lo que se explota — sin sala fija para temas sensibles'],
+          ['Micrófonos fuera: parlantes, Smart TV, asistentes','Desenchufados, no en silencio'],
+          ['Cortinas cerradas si hay línea de visión','La lectura de labios a distancia es real'],
+          ['Barrido rápido si el tema lo amerita','El procedimiento completo está acá abajo']
+        ]],
+        ['Durante',[
+          ['Teléfonos afuera o en bolsa Faraday, a la vista','Que se vea que están guardados también es señal de seriedad'],
+          ['Notas en papel, nada conectado'],
+          ['Puerta cerrada, alguien atento a quién entra'],
+          ['Videollamada: participantes verificados, sin bots','Expulsá lo que no reconozcas antes de hablar']
+        ]],
+        ['Después',[
+          ['Acta con las decisiones, no la discusión','Lo que no existe en texto no se filtra'],
+          ['Papeles a la destructora de corte cruzado'],
+          ['Pizarra borrada']
+        ]]
+      ]},
+    { id:'viaje', n:'Viaje',
+      d:'El equipo que sale de tu vista se trata como comprometido.',
+      secs:[
+        ['Antes de salir',[
+          ['Backup completo hecho'],
+          ['Lo Crítico no viaja','Se baja de la nube al llegar, si hace falta'],
+          ['Modo Restringido activo, bloqueo a 30 segundos'],
+          ['Cargador propio + bloqueador de datos USB','Nunca cargar en puertos USB públicos'],
+          ['Detector de lente y filtro de pantalla en el bolso']
+        ]],
+        ['En tránsito',[
+          ['Datos móviles, no wifi público'],
+          ['Equipos nunca despachados ni fuera de vista'],
+          ['Conexión automática a redes conocidas: apagada'],
+          ['Frontera: equipos apagados antes de migraciones','El cifrado es más fuerte apagado. La estrategia es no llevar lo sensible']
+        ]],
+        ['Alojamiento',[
+          ['Barrido con detector de lente al entrar','Prioridad: lo que apunta a la cama y al baño'],
+          ['Nada sensible en la caja fuerte del hotel','Tienen código maestro'],
+          ['Equipos con vos o en bolsa Faraday']
+        ]],
+        ['Al volver',[
+          ['Revisar equipos: perfiles, apps nuevas, consumo raro'],
+          ['¿Estuvo fuera de tu vista? Comprometido','Claves desde otro equipo'],
+          ['Cerrar sesiones del viaje, olvidar las redes wifi']
+        ]]
+      ]},
+    { id:'salida', n:'Salida de una persona — el día',
+      d:'El daño no depende de si se fue bien o mal: depende de si el acceso quedó vivo.',
+      warn:'Si es un socio, no un empleado: no se corta nada sin abogado. Tiene derechos societarios, y el corte unilateral te deja mal parado en la discusión que viene.',
+      secs:[
+        ['Antes, en silencio',[
+          ['Lista completa de accesos, antes de avisar','Si la armás después, te olvidás de la mitad'],
+          ['Identificar credenciales compartidas que conoce'],
+          ['Respaldar lo que está sólo en su equipo'],
+          ['No cortar nada todavía','Cortar antes de la conversación es el aviso']
+        ]],
+        ['El día, todo el mismo día',[
+          ['Baja de TODAS las cuentas, incluidos terceros','El contable, la facturación, el CRM — los que nadie recuerda'],
+          ['Cerrar sesiones activas','Cambiar la clave no expulsa a quien ya está adentro'],
+          ['Revisar reglas de reenvío de su casilla'],
+          ['Rotar toda credencial compartida que conocía'],
+          ['Devolución de equipos y llaves, con inventario firmado'],
+          ['Salida de grupos, canales y calendarios'],
+          ['Titularidades: dominios, servicios y líneas a su nombre'],
+          ['Recordatorio escrito de confidencialidad']
+        ]],
+        ['Después',[
+          ['A los 7 días: ¿quedó algún acceso vivo?'],
+          ['Confirmación escrita de que eliminó material propio']
+        ]]
+      ]},
+    { id:'barrido', n:'Barrido de la sala',
+      d:'No se anuncia: si hay algo, avisar es dar tiempo a retirarlo.',
+      secs:[
+        ['Preparación',[
+          ['Sala vacía, sin anunciar el barrido'],
+          ['Tu celular queda afuera','Contamina el barrido'],
+          ['Línea base anterior a mano','Sin comparación no hay señal']
+        ]],
+        ['1 · Física — la que más encuentra',[
+          ['Objetos con alimentación: humo, relojes, cargadores, regletas'],
+          ['Agujeros de 1–2 mm, tornillos nuevos en objetos viejos'],
+          ['¿Desde dónde se ve bien la mesa o la pizarra?','Empezá por esos ángulos']
+        ]],
+        ['2 · Lente',[
+          ['A oscuras, barrido lento con el visor, tres alturas','Encuentra cámaras aunque estén apagadas']
+        ]],
+        ['3 · Red',[
+          ['Escaneo y comparación contra el inventario','Fabricantes raros, MAC sin identificar']
+        ]],
+        ['4 · RF y térmico',[
+          ['Espectro comparado contra la línea base','Los grabadores locales no emiten: por eso la física va primera'],
+          ['Puntos tibios donde no debería haber nada']
+        ]],
+        ['Si aparece algo',[
+          ['NO tocar: foto, salir, no hablar ahí adentro, abogado','El playbook completo está en SOS']
+        ]]
+      ]}
+  ];
+  var openProto = {};
+
+  /* ───────── datos: la política (kit cap. 10, condensada fiel) ───────── */
+  var POL = [
+    ['1 · Propósito y alcance', [
+      'Establece cómo se maneja la información de <span class="mark">[Empresa]</span>. Aplica a todo el personal, socios, contratistas y proveedores con acceso — en cualquier dispositivo y en cualquier lugar.',
+      'No es un documento de desconfianza: es un estándar común. Sin reglas explícitas, cada persona aplica su propio criterio, y la información se filtra sin que nadie haya querido que pase.'
+    ]],
+    ['2 · Clasificación de la información', [
+      '• <b>🟢 Público</b> — puede publicarse sin consecuencias',
+      '• <b>🔵 Interno</b> — uso interno; molesta si sale, no hace daño real',
+      '• <b>🟠 Confidencial</b> — daño concreto: nómina, márgenes, contratos, clientes',
+      '• <b>🔴 Crítico</b> — daño grave o irreversible: estrategia, litigios, credenciales, datos personales de terceros',
+      '<b>Ante la duda, el nivel más alto.</b> Bajar la clasificación es siempre una decisión explícita de quien genera el documento o de la dirección.'
+    ]],
+    ['3 · Las seis reglas de canales', [
+      '• <b>WhatsApp no es un canal de negocio.</b> Nunca para Confidencial ni Crítico',
+      '• <b>Nada de la empresa en cuentas personales</b> — mail, nube o dispositivos sin autorización',
+      '• <b>Lo Crítico se habla, no se escribe</b> — en persona o por llamada de Signal',
+      '• <b>La IA de cuenta personal no recibe material sensible</b> — incluye los transcriptores de reuniones',
+      '• <b>Lo sensible que sale va cifrado</b> o por enlace con permiso nominal. Nunca adjunto suelto',
+      '• <b>Ningún cambio de datos de pago ni transferencia sin verificación por segundo canal</b>, a un contacto ya conocido. La urgencia no exime: la agrava. Demorar por verificar no tiene consecuencias; ejecutar uno falso, sí'
+    ]],
+    ['4 · Dispositivos', [
+      '<b>Obligatorio:</b> cifrado de disco · bloqueo de 6+ dígitos a 30 segundos · actualizaciones al día · segundo factor sin SMS · cuenta diaria sin permisos de administrador.',
+      '<b>Prohibido:</b> software de origen desconocido · almacenamiento de terceros conectado · compartir credenciales · equipos desbloqueados sin supervisión.',
+      '<b>Dispositivos personales:</b> mail y calendario sí, cumpliendo los requisitos de arriba. Material Confidencial o Crítico almacenado localmente, no.'
+    ]],
+    ['5 · Credenciales', [
+      '• Cada persona tiene las suyas. <b>No se comparten bajo ninguna circunstancia</b>',
+      '• Todas en el gestor corporativo — nunca en planillas, papeles ni chats',
+      '• Segundo factor en toda cuenta que lo permita; llave física para sistemas críticos',
+      '• Ante sospecha de compromiso: <b>se cambia de inmediato y se avisa, sin esperar confirmación</b>'
+    ]],
+    ['6 · Reuniones', [
+      '• Las reuniones Confidenciales y Críticas <b>no se graban ni se transcriben</b>. Asistentes de IA: prohibidos',
+      '• Quien convoca verifica la lista de participantes antes de tratar temas sensibles',
+      '• Críticas presenciales: teléfonos fuera de la sala',
+      '• Las actas registran <b>decisiones, no la discusión</b>'
+    ]],
+    ['7 · Terceros', [
+      '• Acceso sólo con acuerdo de confidencialidad firmado <b>antes</b>',
+      '• Accesos nominales, con alcance mínimo y <b>fecha de vencimiento</b>. Nunca «cualquiera con el enlace»',
+      '• Al terminar la relación: revocación <b>el mismo día</b> y certificación escrita de destrucción'
+    ]],
+    ['8 · Ingreso y egreso de personal', [
+      '<b>Al ingresar:</b> firma de esta política y del acuerdo de uso · alta con mínimo privilegio · inventario de equipos firmado.',
+      '<b>Al egresar — el mismo día, sin excepción:</b> baja de todas las cuentas incluidos terceros · cierre de sesiones activas · devolución con inventario · rotación de credenciales compartidas · revisión de reenvíos · recordatorio escrito de confidencialidad.',
+      '! La información generada con recursos de la empresa es de la empresa. Nada sale con quien se va.'
+    ]],
+    ['9 · Datos personales — Ley 25.326', [
+      '• <b>Finalidad:</b> los datos se usan sólo para lo que se recolectaron',
+      '• <b>Minimización:</b> no se recolecta ni se conserva de más',
+      '• <b>Supresión</b> cuando dejan de ser necesarios',
+      '• <b>Derechos del titular:</b> acceso, rectificación y supresión, respondidos en plazo',
+      'Resumen operativo, no asesoramiento legal: las obligaciones concretas las determina el abogado, con revisión anual.'
+    ]],
+    ['10 · Incidentes', [
+      'Todo incidente se reporta <b>de inmediato</b>, incluso ante la duda, incluso si fue un error propio.',
+      'Es incidente: pérdida o robo de un dispositivo · acceso no autorizado · envío al destinatario equivocado · phishing · credencial comprometida · dispositivo desconocido · <b>un pedido de instalar acceso remoto</b> · y un pedido de pago o cambio de CBU que no pasó la verificación — <b>aunque no se haya ejecutado</b>.',
+      '! Reportar un error propio no tiene consecuencias disciplinarias. Ocultarlo, sí.'
+    ]],
+    ['11 · Responsable', [
+      'Responsable de seguridad: <span class="mark">[a completar]</span> · Contacto para incidentes (24 h): <span class="mark">[a completar]</span> · Suplente: <span class="mark">[a completar]</span>',
+      'Los datos completos van impresos en el anexo 03, fuera de los sistemas.'
+    ]],
+    ['12 · Vigencia', [
+      'Rige desde su firma. Se revisa anualmente o ante cambios relevantes en la operación. Cada persona firma la constancia de recepción (anexo 04).'
+    ]]
+  ];
+
+  /* ───────── datos: mapa del kit ───────── */
+  var KITMAP = [
+    ['Capítulos', [
+      ['00','Primeras 72 horas — el triage universal, nueve acciones sin costo'],
+      ['01','Perfiles y escenarios — quién necesita esto y por qué'],
+      ['02','Clasificación y canales — los cuatro niveles y la matriz'],
+      ['03','Dispositivos — iOS, Android, macOS, Windows, Linux y navegador'],
+      ['04','Cuentas y robo — SIM swap, segundo factor, los 10 minutos'],
+      ['05','Datos y backups — 3-2-1, copia fría y restauración probada'],
+      ['06','Redes — router, segmentación en tres, DNS, VPN propia'],
+      ['07','Habla segura — canales de voz, bots y protocolo de sala'],
+      ['08','Señales — cámaras, rastreadores y el hardware sin marketing'],
+      ['09','Compras — qué comprar, en qué orden, y qué no'],
+      ['10','Políticas — el documento firmable (está completo acá arriba)'],
+      ['11','Respuesta a incidentes — los cinco pasos y once playbooks'],
+      ['12','Fraude de pagos — las cuatro estafas y su regla']
+    ]],
+    ['Escenarios', [
+      ['V','Venta, inversión o due diligence — cerrada o caída'],
+      ['S','Salida de personas — empleado, socio o proveedor'],
+      ['C','Conflicto — acá la regla se invierte: preservar, no borrar'],
+      ['I','Después de un incidente — reconstruir sobre limpio'],
+      ['E','Exposición pública — reducir la huella rinde más que configurar']
+    ]],
+    ['Checklists', [
+      ['M','Mensual — la rutina de media hora'],
+      ['B','Barrido de señales — con línea base'],
+      ['V','Viaje — antes, tránsito, alojamiento, al volver']
+    ]],
+    ['Plantillas legales (con revisión de abogado)', [
+      ['C','Carta de destrucción de material post-NDA'],
+      ['I','Inventario del data room'],
+      ['A','Acuerdo de uso de información y recursos']
+    ]],
+    ['Anexos imprimibles', [
+      ['01','Matriz de canales — una carilla para pegar'],
+      ['02','Tarjeta de billetera — los 10 minutos del robo'],
+      ['03','Contactos de incidente — a mano, fuera de los sistemas'],
+      ['04','Constancia de firma — sesión grupal'],
+      ['05','Las cuatro estafas — la pared de quien paga']
+    ]]
+  ];
+
+  /* ───────── helpers ───────── */
+  function $(id) { return document.getElementById(id); }
+  function el(tag, cls, html) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (html !== undefined) e.innerHTML = html;
+    return e;
+  }
+
+  /* ───────── navegación ───────── */
+  var views = document.querySelectorAll('.view');
+  var tabs = document.querySelectorAll('nav button');
+  function go(id) {
+    views.forEach(function (v) { v.classList.toggle('on', v.id === id); });
+    tabs.forEach(function (t) { t.classList.toggle('on', t.dataset.go === id); });
+    window.scrollTo(0, 0);
+    if (id === 'v-inicio') renderHome();
+  }
+  document.addEventListener('click', function (e) {
+    var t = e.target.closest('[data-go]');
+    if (t) go(t.dataset.go);
+  });
+
+  /* ───────── hábitos ───────── */
+  function renderHab() {
+    var list = $('hab-list'); list.innerHTML = '';
+    HABITOS.forEach(function (h) {
+      var st = habState(h);
+      var estado = habEstado(h);
+      var wrap = el('div', 'hab' + (st.on ? '' : ' off'));
+      var chip =
+        estado === 'off'     ? '<span class="chip c-dim">apagado</span>' :
+        estado === 'nunca'   ? '<span class="chip c-warn">arrancar</span>' :
+        estado === 'vencido' ? '<span class="chip c-bad">toca</span>' :
+        estado === 'pronto'  ? '<span class="chip c-warn">vence pronto</span>' :
+                               '<span class="chip c-ok">al día</span>';
+      var top = el('div', 'hab-top',
+        '<div><b>' + h.n + '</b><span class="cad">' + h.cadTxt + '</span></div>' +
+        '<label class="sw" title="activar"><input type="checkbox" data-sw="' + h.id + '"' + (st.on ? ' checked' : '') + '><i></i></label>');
+      var why = el('p', 'hab-why', h.why);
+      var foot = el('div', 'hab-foot',
+        '<span class="hab-state">' + (st.on ? habTexto(h) : 'no aplica a tu caso — quedará fuera de «hoy»') + '</span>' +
+        '<span class="hab-actions">' + chip + (st.on ? ' <button class="btn" data-done="' + h.id + '">Lo hice</button>' : '') + '</span>');
+      wrap.appendChild(top); wrap.appendChild(why); wrap.appendChild(foot);
+      list.appendChild(wrap);
+    });
+  }
+  document.addEventListener('change', function (e) {
+    var sw = e.target.closest('[data-sw]');
+    if (!sw) return;
+    var h = HABITOS.filter(function (x) { return x.id === sw.dataset.sw; })[0];
+    habState(h).on = sw.checked;
+    save(); renderHab(); renderHome();
+  });
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest('[data-done]');
+    if (!b) return;
+    var h = HABITOS.filter(function (x) { return x.id === b.dataset.done; })[0];
+    habDone(h);
+  });
+
+  /* ───────── triage ───────── */
+  function renderTriage() {
+    var box = $('triage-list'); box.innerHTML = '';
+    TRIAGE.forEach(function (it, i) {
+      var lab = el('label', 'task');
+      var chk = el('input'); chk.type = 'checkbox'; chk.checked = !!S.triage['t' + i];
+      chk.addEventListener('change', function () {
+        S.triage['t' + i] = chk.checked; save(); renderHome();
+      });
+      var body = el('div', '', '<b>' + it[0] + '<small>' + it[2] + '</small></b><span>' + it[1] + '</span>');
+      lab.appendChild(chk); lab.appendChild(body); box.appendChild(lab);
+    });
+  }
+
+  /* ───────── medir ───────── */
+  function domLevel(k) {
+    var d = S.med[k];
+    return (d && typeof d.lvl === 'number') ? d.lvl : null;
+  }
+  function general() {
+    var vals = [], missing = 0;
+    DOM.forEach(function (d) {
+      var v = domLevel(d[0]);
+      if (v === null) missing++; else vals.push(v);
+    });
+    return { min: vals.length ? Math.min.apply(null, vals) : null, missing: missing };
+  }
+  function renderBoard() {
+    var b = $('board'); b.innerHTML = '';
+    DOM.forEach(function (d) {
+      var v = domLevel(d[0]);
+      var cls = v === null ? 'var(--dim)' : (v >= 3 ? 'var(--ok)' : v >= 2 ? 'var(--warn)' : 'var(--bad)');
+      b.appendChild(el('div', 'cell', '<div class="d">' + d[0] + '</div><div class="v" style="color:' + cls + '">' + (v === null ? '—' : v) + '</div>'));
+    });
+    var g = general();
+    $('med-gen').innerHTML = (g.min === null ? '—' : g.min) + '<small>/4</small>';
+    $('med-note').textContent = g.missing ? 'Faltan ' + g.missing + ' dominios por medir' : 'El mínimo de los nueve — no el promedio';
+  }
+  function renderDoms() {
+    var list = $('dom-list'); list.innerHTML = '';
+    DOM.forEach(function (d) {
+      var key = d[0], nombre = d[1], defs = d[2], evs = d[3];
+      var st = S.med[key] || (S.med[key] = { lvl: null, ev: {} });
+      var wrap = el('div', 'dom');
+      var head = el('div', 'dom-head');
+      head.innerHTML = '<div><b>' + key + ' · ' + nombre + '</b><span class="mini">tocá para medir</span></div>' +
+        '<span class="chip ' + (st.lvl === null ? 'c-dim' : st.lvl >= 3 ? 'c-ok' : st.lvl >= 2 ? 'c-warn' : 'c-bad') + '">' +
+        (st.lvl === null ? 'sin medir' : 'nivel ' + st.lvl) + '</span>';
+      head.addEventListener('click', function () { wrap.classList.toggle('open'); });
+      wrap.appendChild(head);
+
+      var body = el('div', 'dom-body');
+      defs.forEach(function (txt, n) {
+        var row = el('div', 'lvl' + (st.lvl === n ? ' sel' : ''));
+        var needEv = n >= 2;
+        var evOk = !needEv || !!st.ev[n];
+        var inner = '<div class="n">' + n + '</div><div><p>' + txt + '</p>';
+        if (needEv) {
+          inner += '<label class="ev"><input type="checkbox" data-ev="' + n + '"' + (st.ev[n] ? ' checked' : '') + '> ' + evs[n] + '</label>';
+        }
+        inner += '</div>';
+        row.innerHTML = inner;
+        var btn = el('button', 'pick', st.lvl === n ? 'este' : 'acreditar');
+        btn.disabled = needEv && !evOk;
+        btn.addEventListener('click', function () {
+          if (needEv && !st.ev[n]) return;
+          st.lvl = n; save(); renderDoms(); renderBoard(); renderHome();
+        });
+        row.appendChild(btn);
+        body.appendChild(row);
+      });
+      body.addEventListener('change', function (e) {
+        var ev = e.target.closest('[data-ev]');
+        if (!ev) return;
+        var n = +ev.dataset.ev;
+        st.ev[n] = ev.checked;
+        if (!ev.checked && st.lvl === n) st.lvl = n - 1;
+        save(); renderDoms(); renderBoard(); renderHome();
+      });
+      wrap.appendChild(body);
+      list.appendChild(wrap);
+    });
+  }
+
+  /* ───────── guía: decisor ───────── */
+  var selNivel = null, selCanal = null;
+  function renderNiveles() {
+    var box = $('nivel-btns'); box.innerHTML = '';
+    NIVELES.forEach(function (nv) {
+      var b = el('button', 'opt' + (selNivel === nv[0] ? ' on' : ''), nv[1] + '<small>' + nv[2] + '</small>');
+      b.addEventListener('click', function () { selNivel = nv[0]; renderNiveles(); verdict(); });
+      box.appendChild(b);
+    });
+  }
+  function renderCanales() {
+    var box = $('canal-btns'); box.innerHTML = '';
+    CANALES.forEach(function (c, i) {
+      var b = el('button', 'opt' + (selCanal === i ? ' on' : ''), c[0]);
+      b.addEventListener('click', function () { selCanal = i; renderCanales(); verdict(); });
+      box.appendChild(b);
+    });
+  }
+  function verdict() {
+    var v = $('verdict');
+    if (selNivel === null || selCanal === null) { v.className = 'verdict'; return; }
+    var res = CANALES[selCanal][1][selNivel];
+    var glyph = res.charAt(0);
+    var note = res.slice(1).trim().replace(/^—?\s*/, '');
+    var cls = glyph === '✓' ? 'v-ok' : glyph === '△' ? 'v-warn' : 'v-bad';
+    var titulo = glyph === '✓' ? 'Dale' : glyph === '△' ? 'Con cuidado' : 'Por ahí no';
+    var extra = glyph === '✗'
+      ? 'La alternativa: Signal (con temporizador si es Crítico), enlace con permiso nominal, o hablarlo en persona.'
+      : '';
+    v.className = 'verdict show ' + cls;
+    v.innerHTML = '<span class="glyph">' + glyph + '</span><b>' + titulo + '</b>' +
+      (note ? '<p>' + note.charAt(0).toUpperCase() + note.slice(1) + '.</p>' : '') +
+      (extra ? '<p>' + extra + '</p>' : '');
+  }
+
+  /* ───────── guía: marcas ───────── */
+  function renderMarcas() {
+    var box = $('marcas'); box.innerHTML = '';
+    MARCAS.forEach(function (grupo) {
+      var lbl = el('span', 'eyebrow', grupo[0]);
+      lbl.style.marginTop = '14px';
+      lbl.style.fontSize = '8.5px';
+      box.appendChild(lbl);
+      var grid = el('div', 'brands');
+      grupo[1].forEach(function (m) {
+        var a = el('a', 'brand');
+        a.href = m[2]; a.target = '_blank'; a.rel = 'noopener noreferrer';
+        a.innerHTML =
+          '<span class="tile" style="background:' + m[3] + '">' + m[4] + '</span>' +
+          '<span><b>' + m[0] + ' <i>↗</i></b><span>' + m[5] + '</span>' +
+          '<span class="dom">' + m[1] + '</span></span>';
+        grid.appendChild(a);
+      });
+      box.appendChild(grid);
+    });
+  }
+
+  /* ───────── guía: reglas e ideas ───────── */
+  function renderGuia() {
+    var r = $('reglas-list'); r.innerHTML = '';
+    REGLAS.forEach(function (x) {
+      r.appendChild(el('div', 'idea', '<div class="k">R' + x[0] + '</div><p>' + x[1] + '</p>'));
+    });
+    var i = $('ideas-list'); i.innerHTML = '';
+    IDEAS.forEach(function (x) {
+      i.appendChild(el('div', 'idea', '<div class="k">' + x[0] + '</div><p>' + x[1] + '</p>'));
+    });
+  }
+
+  /* ───────── checklist del mes ───────── */
+  var RUT = [
+    'Bajas y accesos: nadie que se fue sigue adentro',
+    'Enlaces «cualquiera con el enlace»: revisados y cerrados',
+    'Reglas de reenvío del mail: cuenta por cuenta',
+    'Cambios de datos de pago del mes: todos verificados por teléfono',
+    'Alertas de filtración revisadas (gestor / HIBP)',
+    'Actualizaciones al día en todos los equipos',
+    'Perfiles y permisos raros en los teléfonos: MDM, accesibilidad, admin de dispositivo',
+    'Backup en nube corriendo sin errores',
+    'Registro DNS: ningún dominio raro con actividad regular',
+    'Firmware del router al día',
+    'Papeles sensibles del mes → destructora'
+  ];
+  function renderRut() {
+    var box = $('rut-list'); box.innerHTML = '';
+    RUT.forEach(function (txt, i) {
+      var lab = el('label', 'task');
+      var chk = el('input'); chk.type = 'checkbox'; chk.checked = !!S.rut['r' + i];
+      chk.addEventListener('change', function () { S.rut['r' + i] = chk.checked; save(); });
+      lab.appendChild(chk);
+      lab.appendChild(el('div', '', '<b>' + txt + '</b>'));
+      box.appendChild(lab);
+    });
+  }
+  $('btn-reset-mes').addEventListener('click', function () {
+    S.rut = {}; save(); renderRut();
+  });
+
+  /* ───────── documentos ───────── */
+  function renderDocs() {
+    var pol = $('pol-list'); pol.innerHTML = '';
+    POL.forEach(function (sec) {
+      var wrap = el('div', 'dom');
+      var head = el('div', 'dom-head');
+      head.innerHTML = '<div><b>' + sec[0] + '</b></div><span class="chip c-dim">leer</span>';
+      head.addEventListener('click', function () { wrap.classList.toggle('open'); });
+      var body = el('div', 'dom-body');
+      sec[1].forEach(function (line) {
+        if (line.charAt(0) === '!') {
+          body.appendChild(el('p', 'doc-hi', '<b>' + line.slice(1).trim() + '</b>'));
+        } else if (line.indexOf('• ') === 0) {
+          body.appendChild(el('p', 'doc-line doc-li', line.slice(2)));
+        } else {
+          body.appendChild(el('p', 'doc-line', line));
+        }
+      });
+      wrap.appendChild(head); wrap.appendChild(body);
+      pol.appendChild(wrap);
+    });
+
+    var km = $('kitmap-list'); km.innerHTML = '';
+    KITMAP.forEach(function (grupo) {
+      var lbl = el('span', 'sec-h', grupo[0]);
+      lbl.style.marginTop = '10px';
+      km.appendChild(lbl);
+      grupo[1].forEach(function (it) {
+        km.appendChild(el('div', 'idea', '<div class="k">' + it[0] + '</div><p>' + it[1] + '</p>'));
+      });
+    });
+  }
+
+  /* ───────── protocolos ───────── */
+  function renderProto() {
+    var list = $('proto-list'); list.innerHTML = '';
+    PROTO.forEach(function (pr) {
+      var st = S.proto[pr.id] || (S.proto[pr.id] = {});
+      var total = 0, done = 0;
+      pr.secs.forEach(function (sec, si) {
+        sec[1].forEach(function (_, ii) { total++; if (st[si + '-' + ii]) done++; });
+      });
+      var wrap = el('div', 'dom' + (openProto[pr.id] ? ' open' : ''));
+      var head = el('div', 'dom-head');
+      head.innerHTML = '<div><b>' + pr.n + '</b><span class="mini">' + pr.d + '</span></div>' +
+        '<span class="chip ' + (done === 0 ? 'c-dim' : done === total ? 'c-ok' : 'c-warn') + '">' +
+        done + '/' + total + '</span>';
+      head.addEventListener('click', function () {
+        openProto[pr.id] = !openProto[pr.id]; renderProto();
+      });
+      var body = el('div', 'dom-body');
+      if (pr.say) body.appendChild(el('p', 'say', '«' + pr.say + '»'));
+      if (pr.warn) body.appendChild(el('p', 'note', '<b>' + pr.warn + '</b>'));
+      pr.secs.forEach(function (sec, si) {
+        body.appendChild(el('span', 'sec-h', sec[0]));
+        sec[1].forEach(function (it, ii) {
+          var lab = el('label', 'task');
+          var chk = el('input'); chk.type = 'checkbox'; chk.checked = !!st[si + '-' + ii];
+          chk.addEventListener('change', function () {
+            st[si + '-' + ii] = chk.checked; save(); renderProto();
+          });
+          lab.appendChild(chk);
+          lab.appendChild(el('div', '', '<b>' + it[0] + '</b>' + (it[1] ? '<span>' + it[1] + '</span>' : '')));
+          body.appendChild(lab);
+        });
+      });
+      var foot = el('p', 'note');
+      var reset = el('button', 'btn ghost', 'Reiniciar para el próximo');
+      reset.addEventListener('click', function () {
+        S.proto[pr.id] = {}; save(); renderProto();
+      });
+      foot.appendChild(reset);
+      if (pr.id === 'barrido') {
+        var reg = el('button', 'btn', 'Registrar el barrido de hoy');
+        reg.style.marginLeft = '6px';
+        reg.addEventListener('click', function () {
+          var hb = HABITOS.filter(function (x) { return x.id === 'barrido'; })[0];
+          habState(hb).on = true; habDone(hb);
+        });
+        foot.appendChild(reg);
+      }
+      body.appendChild(foot);
+      wrap.appendChild(head); wrap.appendChild(body);
+      list.appendChild(wrap);
+    });
+  }
+
+  /* ───────── SOS ───────── */
+  function renderSos() {
+    var list = $('sos-list'); list.innerHTML = '';
+    SOS.forEach(function (s) {
+      var wrap = el('div', 'dom');
+      var head = el('div', 'dom-head');
+      head.innerHTML = '<div><b>' + s[0] + '</b><span class="mini">' + s[1] + '</span></div>' +
+        '<span class="chip c-bad">abrir</span>';
+      head.addEventListener('click', function () { wrap.classList.toggle('open'); });
+      var body = el('div', 'dom-body');
+      s[2].forEach(function (st, i) {
+        body.appendChild(el('div', 'sos-step',
+          '<div class="k">' + (i + 1) + '</div><div><b>' + st[0] + '</b><span>' + st[1] + '</span></div>'));
+      });
+      if (s[3]) body.appendChild(el('p', 'note', '<b>' + s[3] + '</b>'));
+      wrap.appendChild(head); wrap.appendChild(body);
+      list.appendChild(wrap);
+    });
+  }
+
+  /* ───────── generador de claves ───────── */
+  var WORDS = ('tigre gato perro zorro puma lobo oso liebre nutria mono ciervo alce cabra ' +
+    'oveja vaca toro caballo burro pato ganso cisne buho aguila cuervo garza tucan loro ' +
+    'sapo rana tiburon ballena delfin foca pulpo cangrejo abeja avispa hormiga grillo ' +
+    'mosca polilla caracol tortuga lagarto vibora camello jirafa nube piedra rio bosque ' +
+    'cumbre delta faro lago monte pampa sierra valle costa playa duna cueva volcan ' +
+    'glaciar arroyo laguna selva prado cerro isla sol luna cielo brisa trueno rayo nieve ' +
+    'lluvia niebla rocio marea viento aurora ocaso cometa estrella trigo maiz cacao cafe ' +
+    'menta salvia romero tilo limon mango pera uva higo nuez almendra oliva pan queso ' +
+    'miel sal azucar arroz fideo torta mesa silla puerta ventana espejo reloj lampara ' +
+    'clavo martillo serrucho tornillo cable soga vela farol balde tijera aguja hilo ' +
+    'boton frasco caja llave candado ancla remo timon brujula mapa carpa linterna moneda ' +
+    'mano codo hombro rodilla talon dedo ceja espalda puente torre plaza calle vereda ' +
+    'esquina galpon andamio muelle puerto estacion anden hangar tunel refugio cabina ' +
+    'cobre hierro bronce plata oro marmol vidrio barro ambar ceniza carbon tiza arcilla ' +
+    'cuarzo granito lino tambor guitarra flauta violin acorde ritmo verso rima cuento ' +
+    'novela poema carta sobre sello tinta pluma globo papel carton cuerda nudo anzuelo ' +
+    'brasa fogata humo chispa antorcha tronco rama hoja raiz semilla brote espiga tallo ' +
+    'polen musgo helecho junco mimbre corcho resina savia nectar panal colmena nido ' +
+    'huevo concha coral perla arena grava escarcha granizo').split(' ')
+    .filter(function (w, i, a) { return w && a.indexOf(w) === i; });
+
+  var KG_CONS = 'b c d f g l m n p r s t v z'.split(' ');
+  var KG_VOW = 'a e i o u'.split(' ');
+  var KG = { mode: 'palabras', nW: 6, nS: 10, phrase: [] };
+
+  function rnd(n) {
+    var max = Math.floor(4294967296 / n) * n;
+    var a = new Uint32Array(1);
+    do { crypto.getRandomValues(a); } while (a[0] >= max);
+    return a[0] % n;
+  }
+  function genSylWord(n) {
+    var s = '';
+    for (var i = 0; i < n; i++) s += KG_CONS[rnd(KG_CONS.length)] + KG_VOW[rnd(KG_VOW.length)];
+    return s;
+  }
+  function kgBits() {
+    return KG.mode === 'palabras'
+      ? Math.round(KG.nW * Math.log2(WORDS.length))
+      : Math.round(KG.nS * Math.log2(KG_CONS.length * KG_VOW.length));
+  }
+  function kgLenLabel() {
+    return KG.mode === 'palabras' ? KG.nW + ' palabras' : KG.nS + ' silabas — una palabra que no existe';
+  }
+  function kgRender() {
+    var modes = $('kg-modes'); modes.innerHTML = '';
+    [['palabras', 'Frase de palabras', 'tigre faro brisa nudo…'],
+     ['silabas', 'Pronunciable', 'algo como «paralinofu»']].forEach(function (m) {
+      var b = el('button', 'opt' + (KG.mode === m[0] ? ' on' : ''), m[1] + '<small>' + m[2] + '</small>');
+      b.addEventListener('click', function () {
+        KG.mode = m[0]; KG.phrase = []; kgRender();
+      });
+      modes.appendChild(b);
+    });
+    $('kg-lenlab').textContent = kgLenLabel();
+    var out = $('kg-out');
+    if (!KG.phrase.length) { out.className = 'kg-out empty'; out.textContent = 'tocá generar'; }
+    else { out.className = 'kg-out'; out.textContent = KG.phrase.join(' '); }
+    var bits = kgBits();
+    var chip = $('kg-bits');
+    chip.textContent = '≈ ' + bits + ' bits' + (bits >= 60 ? ' · fuerte' : bits >= 44 ? ' · buena' : ' · corta');
+    chip.className = 'chip ' + (bits >= 60 ? 'c-ok' : bits >= 44 ? 'c-warn' : 'c-bad');
+  }
+  function kgGenerate() {
+    if (KG.mode === 'palabras') {
+      KG.phrase = [];
+      var usados = {};
+      while (KG.phrase.length < KG.nW) {
+        var w = WORDS[rnd(WORDS.length)];
+        if (!usados[w]) { usados[w] = 1; KG.phrase.push(w); }
+      }
+    } else {
+      KG.phrase = [genSylWord(KG.nS)];
+    }
+    $('fly-wrap').style.display = 'none';
+    kgRender();
+  }
+  function kgFlyer() {
+    if (!KG.phrase.length) kgGenerate();
+    var reales = KG.phrase.slice();
+    var TOTAL = 16;
+    var senuelos = [];
+    if (KG.mode === 'palabras') {
+      var usados = {};
+      reales.forEach(function (w) { usados[w] = 1; });
+      while (senuelos.length < TOTAL - reales.length) {
+        var w = WORDS[rnd(WORDS.length)];
+        if (!usados[w]) { usados[w] = 1; senuelos.push(w); }
+      }
+    } else {
+      while (senuelos.length < TOTAL - reales.length) senuelos.push(genSylWord(KG.nS));
+    }
+    /* posiciones al azar para las reales, en orden de la frase */
+    var slots = []; for (var i = 0; i < TOTAL; i++) slots.push(i);
+    for (var i = slots.length - 1; i > 0; i--) {
+      var j = rnd(i + 1); var t = slots[i]; slots[i] = slots[j]; slots[j] = t;
+    }
+    var pos = slots.slice(0, reales.length);
+    var lista = new Array(TOTAL); var si = 0;
+    for (var i = 0; i < TOTAL; i++) lista[i] = null;
+    pos.forEach(function (p, k) { lista[p] = reales[k]; });
+    for (var i = 0; i < TOTAL; i++) if (lista[i] === null) lista[i] = senuelos[si++];
+
+    var TITULOS = ['SEÑAL ABIERTA', 'BAJA FRECUENCIA', 'CICLO NOCTURNO', 'NOCHE ANALOGICA', 'SESIONES VERTICE'];
+    var LUGARES = ['club vertice · sala b', 'galpon 9 · dock sur', 'subsuelo · av. rivas 1330', 'ex imprenta · patio'];
+    var SUFIJOS = ['live', 'dj set', 'a/v', 'extended'];
+    var dia = 1 + rnd(28), mes = 9 + rnd(4), vol = 2 + rnd(7);
+    var f = $('flyer');
+    var barras = '';
+    for (var i = 0; i < 26; i++) barras += '<b style="width:' + (1 + rnd(4)) + 'px"></b>';
+    f.innerHTML =
+      '<div class="fly-top"><span>vie ' + (dia < 10 ? '0' : '') + dia + '.' + (mes < 10 ? '0' : '') + mes + ' — 23:59</span><span>puertas 23:00</span></div>' +
+      '<div class="fly-title">' + TITULOS[rnd(TITULOS.length)] + '</div>' +
+      '<div class="fly-vol">ciclo audiovisual · vol ' + vol + '</div>' +
+      '<span class="fly-line">lineup</span>' +
+      '<ol class="fly-list">' + lista.map(function (w) {
+        var suf = rnd(3) === 0 ? '<i>' + SUFIJOS[rnd(SUFIJOS.length)] + '</i>' : '';
+        return '<li><span>' + w + '</span>' + suf + '</li>';
+      }).join('') + '</ol>' +
+      '<div class="fly-bars">' + barras + '</div>' +
+      '<div class="fly-foot"><span>' + LUGARES[rnd(LUGARES.length)] + '</span><span>entrada libre hasta 01</span></div>';
+    $('fly-pos').innerHTML = '<b>Tu orden (no se imprime):</b> ' +
+      pos.map(function (p) { return p + 1; }).join(' · ') +
+      ' — contando el lineup de arriba hacia abajo. Memorizalo o guardalo en otro lado.';
+    $('fly-wrap').style.display = 'block';
+  }
+  function initKeygen() {
+    if (!(window.crypto && crypto.getRandomValues)) {
+      $('kg-out').textContent = 'Este entorno no tiene azar criptográfico — el generador queda apagado antes que usar azar débil.';
+      return;
+    }
+    $('kg-gen').addEventListener('click', kgGenerate);
+    $('kg-less').addEventListener('click', function () {
+      if (KG.mode === 'palabras') KG.nW = Math.max(4, KG.nW - 1); else KG.nS = Math.max(6, KG.nS - 2);
+      KG.phrase = []; kgRender();
+    });
+    $('kg-more').addEventListener('click', function () {
+      if (KG.mode === 'palabras') KG.nW = Math.min(8, KG.nW + 1); else KG.nS = Math.min(12, KG.nS + 2);
+      KG.phrase = []; kgRender();
+    });
+    $('kg-copy').addEventListener('click', function () {
+      if (!KG.phrase.length) return;
+      var txt = KG.phrase.join(' ');
+      try { navigator.clipboard.writeText(txt); } catch (e) {
+        var r = document.createRange(); r.selectNodeContents($('kg-out'));
+        var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+        try { document.execCommand('copy'); } catch (e2) {}
+      }
+    });
+    $('kg-flyer').addEventListener('click', kgFlyer);
+    $('kg-print').addEventListener('click', function () {
+      try { window.print(); } catch (e) {}
+    });
+    kgRender();
+  }
+
+  /* ───────── inicio / hoy ───────── */
+  function renderHome() {
+    /* la lista de hoy: hábitos activos que tocan */
+    var box = $('hoy-box'); box.innerHTML = '';
+    var due = [];
+    HABITOS.forEach(function (h) {
+      var e2 = habEstado(h);
+      if (e2 === 'vencido' || e2 === 'nunca' || e2 === 'pronto') due.push([h, e2]);
+    });
+    if (!due.length) {
+      box.appendChild(el('div', 'calm',
+        '<div class="z">z z z</div><b>Nada vence hoy</b><p>De eso se trata. Los hábitos al día sostienen todo lo demás.</p>'));
+    } else {
+      due.forEach(function (pair) {
+        var h = pair[0], e2 = pair[1];
+        var chip = e2 === 'pronto' ? '<span class="chip c-warn">vence pronto</span>' :
+                   e2 === 'nunca'  ? '<span class="chip c-warn">arrancar</span>' :
+                                     '<span class="chip c-bad">toca</span>';
+        var item = el('div', 'hoy-item',
+          '<div><b>' + h.n + '</b><span>' + h.cadTxt + ' · ' + habTexto(h) + '</span></div>' +
+          '<span>' + chip + ' <button class="btn" data-done="' + h.id + '">Lo hice</button></span>');
+        box.appendChild(item);
+      });
+    }
+
+    var done = TRIAGE.reduce(function (n, _, i) { return n + (S.triage['t' + i] ? 1 : 0); }, 0);
+    $('home-triage').innerHTML = done + '<small>/9</small>';
+    var g = general();
+    $('home-nivel').innerHTML = (g.min === null ? '—' : g.min) + '<small>/4</small>';
+    $('home-med-note').textContent = g.min === null ? 'Sin medir todavía' :
+      g.missing ? 'Medición parcial — faltan ' + g.missing : 'Tu línea base. Se remide en 6 meses';
+  }
+
+  /* ───────── datos propios ───────── */
+  $('btn-dump').addEventListener('click', function () {
+    var t = $('dump');
+    t.value = JSON.stringify(S, null, 2);
+    t.classList.toggle('show');
+  });
+  $('btn-wipe').addEventListener('click', function () {
+    if (!confirm('¿Borrar todos los datos locales de la app? No hay copia en ningún lado — eso es exactamente la promesa.')) return;
+    S = { triage: {}, med: {}, rut: {}, fechas: {}, hab: {}, proto: {} };
+    save(); renderTriage(); renderDoms(); renderBoard(); renderRut(); renderHab(); renderProto(); renderHome();
+    $('dump').classList.remove('show');
+  });
+
+  /* ───────── arranque ───────── */
+  renderHab(); renderTriage(); renderDoms(); renderBoard();
+  renderNiveles(); renderCanales(); renderGuia(); renderMarcas();
+  renderRut(); renderProto(); renderDocs(); renderSos(); initKeygen(); renderHome();
+})();
+</script>
+<script>
+if ('serviceWorker' in navigator) {
+  addEventListener('load', function () {
+    navigator.serviceWorker.register('./sw.js').catch(function () {});
+  });
+}
+</script>
+</body>
+</html>
