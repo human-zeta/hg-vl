@@ -64,6 +64,10 @@
   .note{font-size:9.5px;color:rgba(240,237,230,.4);line-height:1.7;margin-top:16px;border-left:1px solid rgba(184,255,0,.3);padding-left:10px;}
   .note b{color:var(--acid);font-weight:400;}
   @media(max-width:640px){ #panel{width:100%;} .brand{font-size:24px;} }
+
+  /* a11y — foco visible al navegar con teclado + respeto a reduced-motion */
+  :focus-visible{outline:2px solid var(--acid,#b8ff00);outline-offset:2px;}
+  @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important;scroll-behavior:auto !important;}}
 </style></head><body><script src="/gate/gate.js"></script>
 <canvas id="gl"></canvas>
 <div id="top">
@@ -103,7 +107,7 @@
   <h2>4 · mapeo audio → inputs</h2>
   <div id="mapRows"><div class="empty">cargá un shader con INPUTS float para mapear.</div></div>
 
-  <p class="note">Esto es un <b>preview en vivo</b> en el navegador. Para un show real, mapeá estos mismos INPUTS por MIDI/OSC en VDMX o Resolume (probalo con <b>/control/</b>), o exportá el .fs desde <b>/forge/</b> / <b>/aether-2/</b> y pegalo aquí para afinar la reactividad antes de llevarlo a producción.</p>
+  <p class="note">Esto es un <b>preview en vivo</b> en el navegador. Para un show real, mapeá estos mismos INPUTS por MIDI/OSC en VDMX o Resolume (probalo con <b>/control/</b>). Desde <b>/forge/</b> podés mandar tu shader directo con el botón <b>◴ ABRIR EN PULSO</b> (o exportar el .fs y pegarlo acá, igual que con <b>/aether-2/</b>) para afinar la reactividad antes de llevarlo a producción.</p>
 </div>
 <script type="module">
 import { Renderer } from 'https://esm.sh/interactive-shader-format';
@@ -177,7 +181,7 @@ function load(src){
 
 /* ---------- mapeo audio -> inputs ---------- */
 const SOURCES=['ninguno','bass','mid','treble','nivel','pulso'];
-const HEUR={glitch:'pulso',burst:'pulso',distort:'pulso',scale:'bass',size:'bass',zoom:'bass',speed:'mid',rate:'mid',sym:'treble',warp:'treble',hue:'treble'};
+const HEUR={glitch:'pulso',burst:'pulso',distort:'pulso',scale:'bass',size:'bass',zoom:'bass',speed:'mid',rate:'mid',sym:'treble',warp:'treble',hue:'treble',alow:'bass',amid:'mid',ahigh:'treble'};
 let mapping={}; // name -> {source, amount}
 function buildMapRows(){
   const floats=inputs.filter(i=>i.TYPE==='float'||i.TYPE==='long');
@@ -275,6 +279,12 @@ function frame(){
 }
 requestAnimationFrame(frame);
 
-load(sampleSource(curName));
+// puente FORGE → PULSO: si venís de /forge/ con "abrir en PULSO", el .fs llega
+// por localStorage (same-origin) y se carga directo, sin bajar/subir archivos.
+const handoff = new URLSearchParams(location.search).get('from')==='forge'
+  ? localStorage.getItem('hg_pulso_handoff') : null;
+if(handoff){ load(handoff);
+  if(!$('status').classList.contains('err')) status('<b>shader traído del FORGE</b> · mapeá el audio abajo'); }
+else load(sampleSource(curName));
 </script>
 </body></html>

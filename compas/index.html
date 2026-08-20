@@ -42,6 +42,10 @@
   #toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);z-index:20;background:rgba(5,5,5,.94);border:1px solid var(--acid);color:var(--acid);font-size:11px;padding:9px 16px;border-radius:5px;opacity:0;transition:opacity .2s;pointer-events:none;}
   #toast.show{opacity:1;}
   @media(max-width:560px){ .row{flex-direction:column;} }
+
+  /* a11y — foco visible al navegar con teclado + respeto a reduced-motion */
+  :focus-visible{outline:2px solid var(--acid,#b8ff00);outline-offset:2px;}
+  @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important;scroll-behavior:auto !important;}}
 </style></head><body><script src="/gate/gate.js"></script>
 <div class="wrap">
   <header><div class="brand"><b>COMPÁS</b><span class="sub">Human Glitche · BPM → duración de loop frame-accurate</span></div><a href="/labs/">← LABS</a></header>

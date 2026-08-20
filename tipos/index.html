@@ -111,6 +111,10 @@ select.wsel{width:100%;font-family:var(--font);font-size:11px;padding:7px 9px;ba
 .paidnote.on{display:block;}
 .panel::-webkit-scrollbar,.previewwrap::-webkit-scrollbar,.export::-webkit-scrollbar{width:8px;height:8px;}
 .panel::-webkit-scrollbar-thumb,.previewwrap::-webkit-scrollbar-thumb,.export::-webkit-scrollbar-thumb{background:var(--border-strong);border-radius:8px;}
+
+  /* a11y — foco visible al navegar con teclado + respeto a reduced-motion */
+  :focus-visible{outline:2px solid var(--acid,#b8ff00);outline-offset:2px;}
+  @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important;scroll-behavior:auto !important;}}
 </style>
 </head>
 <body>

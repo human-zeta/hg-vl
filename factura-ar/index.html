@@ -55,6 +55,10 @@
   .url a{color:var(--cyan);}
   .hint{font-size:9.5px;color:rgba(240,237,230,.35);line-height:1.6;margin-top:6px;}
   .foot{font-size:10px;color:rgba(240,237,230,.35);letter-spacing:.1em;margin-top:38px;text-align:center;}
+
+  /* a11y — foco visible al navegar con teclado + respeto a reduced-motion */
+  :focus-visible{outline:2px solid var(--acid,#b8ff00);outline-offset:2px;}
+  @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important;scroll-behavior:auto !important;}}
 </style></head><body>
 <div class="wrap">
   <header><div class="brand"><b>FACTURA</b> AR</div><a href="/labs/">← LABS</a></header>

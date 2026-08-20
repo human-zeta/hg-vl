@@ -148,10 +148,13 @@
   #panelbtn{display:none;position:absolute;top:14px;right:14px;z-index:8;
     background:transparent;color:var(--acid);border:1px solid var(--acid);
     font-family:'Space Mono';font-size:11px;letter-spacing:.12em;padding:6px 10px;cursor:pointer;}
+
+  /* a11y — foco visible al navegar con teclado + respeto a reduced-motion */
+  :focus-visible{outline:2px solid var(--acid,#b8ff00);outline-offset:2px;}
+  @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important;scroll-behavior:auto !important;}}
 </style>
 </head>
-<body>
-<script src="/gate/gate.js"></script>
+<body><script src="/gate/gate.js"></script>
 <div id="stage">
   <canvas id="gl"></canvas>
 
@@ -494,7 +497,7 @@ void main(){
 
 const MODEL_OPTIONS={
   gemini:['gemini-2.5-flash-lite','gemini-2.0-flash','gemini-2.5-flash','gemini-2.0-flash-lite'],
-  claude:['claude-sonnet-4-6','claude-opus-4-8','claude-haiku-4-5-20251001'],
+  claude:['claude-sonnet-5','claude-opus-5','claude-haiku-4-5-20251001','claude-sonnet-4-6'],
   grok:['grok-4','grok-3'] };
 const getModel=p=>{ p=p||provSel(); return localStorage.getItem('aether2_model_'+p) || MODEL_OPTIONS[p][0]; };
 const setModel=m=>localStorage.setItem('aether2_model_'+provSel(), m);

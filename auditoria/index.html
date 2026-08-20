@@ -335,6 +335,10 @@
     /* en angosto el detalle va primero para que se vea al seleccionar */
     .ws-detail{order:-1;}
   }
+
+  /* a11y — foco visible al navegar con teclado + respeto a reduced-motion */
+  :focus-visible{outline:2px solid var(--acid,#b8ff00);outline-offset:2px;}
+  @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important;scroll-behavior:auto !important;}}
 </style></head><body>
 
 <!-- GATE OVERLAY: solo cubre las zonas gateadas (alta/edición), NO el tablero público -->

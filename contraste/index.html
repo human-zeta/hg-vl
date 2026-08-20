@@ -1,0 +1,433 @@
+<!doctype html><html lang="es"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CONTRASTE — Human Glitche · accesibilidad de color y daltonismo</title>
+<meta name="description" content="Verificá el contraste de tus colores contra WCAG AA/AAA, arreglá los que no pasan con un clic, armá la grilla de todos los pares de tu paleta y simulá cómo la ve alguien con daltonismo (protanopía, deuteranopía, tritanopía, acromatopsia). También sobre tus propias capturas. 100% en tu navegador.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{ --acid:#b8ff00; --glitch:#ff2d55; --cyan:#3ad0ff; --amber:#ffb020; --violet:#9b6bff; --ink:#f0ede6; --line:rgba(240,237,230,.12); --bg:#050505; }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{min-height:100%;background:var(--bg);color:var(--ink);font-family:'Space Mono',monospace;}
+  body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");z-index:0;pointer-events:none;opacity:.4;}
+  .wrap{position:relative;z-index:1;max-width:1240px;margin:0 auto;padding:28px 22px 90px;}
+  header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;gap:14px;}
+  .brand{font-family:'Bebas Neue',sans-serif;font-size:44px;letter-spacing:.03em;line-height:.82;}
+  .brand b{color:var(--amber);font-weight:400;}
+  .brand .sub{display:block;font-family:'Space Mono';font-size:10px;letter-spacing:.2em;color:rgba(240,237,230,.45);margin-top:8px;}
+  header .nav{display:flex;flex-direction:column;align-items:flex-end;gap:7px;padding-top:6px;}
+  header a{font-size:10px;letter-spacing:.2em;color:rgba(240,237,230,.4);text-decoration:none;} header a:hover{color:var(--amber);}
+  .intro{font-size:12px;color:rgba(240,237,230,.55);line-height:1.8;max-width:80ch;margin-bottom:20px;}
+  .intro b{color:var(--amber);font-weight:400;}
+  .tabs{display:flex;gap:7px;margin-bottom:18px;flex-wrap:wrap;}
+  .tab{font-size:10px;letter-spacing:.14em;text-transform:uppercase;padding:10px 15px;border:1px solid var(--line);border-radius:6px;cursor:pointer;color:rgba(240,237,230,.55);user-select:none;transition:.15s;background:rgba(255,176,32,.02);}
+  .tab:hover{color:var(--ink);} .tab.on{border-color:var(--amber);color:var(--amber);background:rgba(255,176,32,.1);}
+  .view{display:none;} .view.on{display:block;}
+  .layout{display:grid;grid-template-columns:400px 1fr;gap:20px;align-items:start;}
+  @media(max-width:960px){.layout{grid-template-columns:1fr;}}
+  .panel{border:1px solid var(--line);border-radius:8px;padding:17px 16px;background:rgba(255,176,32,.02);margin-bottom:15px;}
+  h2.sec{font-size:9px;letter-spacing:.22em;color:rgba(240,237,230,.45);text-transform:uppercase;margin:0 0 13px;display:flex;justify-content:space-between;gap:8px;align-items:center;}
+  h2.sec b{color:var(--amber);font-weight:400;}
+  h2.sec .hint{font-size:8.5px;letter-spacing:.1em;color:rgba(240,237,230,.35);text-transform:none;}
+  .fld{margin-bottom:12px;} .fld:last-child{margin-bottom:0;}
+  .fld label{display:block;font-size:9px;letter-spacing:.16em;color:rgba(240,237,230,.5);text-transform:uppercase;margin-bottom:6px;}
+  .colorline{display:flex;gap:9px;align-items:center;}
+  .colorline input[type=color]{width:52px;height:40px;border:1px solid var(--line);border-radius:6px;background:#0a0a0a;cursor:pointer;padding:2px;flex:0 0 auto;}
+  .colorline input[type=text]{flex:1;background:#0a0a0a;color:var(--ink);border:1px solid var(--line);font:inherit;font-size:13px;padding:11px 10px;border-radius:5px;text-transform:uppercase;}
+  .colorline input[type=text]:focus{outline:none;border-color:var(--amber);}
+  textarea{width:100%;background:#080808;color:var(--ink);border:1px solid var(--line);border-radius:6px;font-family:'Space Mono',monospace;font-size:12px;line-height:1.7;padding:11px 12px;resize:vertical;min-height:150px;text-transform:uppercase;}
+  textarea:focus{outline:none;border-color:var(--amber);}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;}
+  .chip{font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;padding:7px 10px;border:1px solid var(--line);border-radius:20px;cursor:pointer;color:rgba(240,237,230,.55);user-select:none;transition:.15s;}
+  .chip:hover{color:var(--ink);} .chip.on{border-color:var(--amber);color:var(--amber);background:rgba(255,176,32,.1);}
+  .btn{background:transparent;border:1px solid var(--line);color:var(--ink);font:inherit;font-size:11px;letter-spacing:.1em;padding:10px 13px;cursor:pointer;border-radius:5px;transition:.15s;text-align:center;}
+  .btn:hover:not(:disabled){border-color:var(--amber);color:var(--amber);}
+  .btn.primary{background:var(--amber);color:#050505;border-color:var(--amber);font-weight:700;}
+  .btn.primary:hover{opacity:.85;color:#050505;}
+  .btnrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:11px;} .btnrow .btn{flex:1;min-width:104px;}
+  /* ratio */
+  .ratio{display:flex;align-items:baseline;gap:12px;margin-bottom:14px;}
+  .ratio .num{font-family:'Bebas Neue',sans-serif;font-size:74px;line-height:.82;letter-spacing:.02em;}
+  .ratio .of{font-size:11px;letter-spacing:.2em;color:rgba(240,237,230,.45);text-transform:uppercase;}
+  .badges{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  .badge{border:1px solid var(--line);border-radius:6px;padding:9px 11px;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;display:flex;justify-content:space-between;align-items:center;gap:8px;}
+  .badge .lv{color:rgba(240,237,230,.6);} .badge .st{font-weight:700;}
+  .badge.pass{border-color:rgba(184,255,0,.4);background:rgba(184,255,0,.07);} .badge.pass .st{color:var(--acid);}
+  .badge.fail{border-color:rgba(255,45,85,.35);background:rgba(255,45,85,.06);} .badge.fail .st{color:var(--glitch);}
+  .demo{border:1px solid var(--line);border-radius:8px;overflow:hidden;}
+  .demo .box{padding:24px 22px;}
+  .demo h3{font-family:'Bebas Neue',sans-serif;font-size:34px;letter-spacing:.02em;line-height:1;margin-bottom:10px;}
+  .demo p.big{font-size:19px;line-height:1.5;margin-bottom:9px;}
+  .demo p.norm{font-size:14px;line-height:1.7;margin-bottom:9px;}
+  .demo p.small{font-size:11px;line-height:1.7;opacity:.95;}
+  .demo .uibox{margin-top:14px;display:flex;gap:9px;align-items:center;flex-wrap:wrap;}
+  .demo .uibtn{border:2px solid currentColor;border-radius:6px;padding:8px 14px;font-size:11px;letter-spacing:.1em;text-transform:uppercase;}
+  .demo .uiline{height:3px;flex:1;min-width:60px;background:currentColor;border-radius:2px;}
+  .fixes{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:12px;}
+  .fix{border:1px solid var(--line);border-radius:7px;padding:11px;cursor:pointer;transition:.15s;}
+  .fix:hover{border-color:var(--amber);}
+  .fix .sw{height:34px;border-radius:5px;margin-bottom:8px;border:1px solid rgba(255,255,255,.12);}
+  .fix .lbl{font-size:8.5px;letter-spacing:.14em;text-transform:uppercase;color:rgba(240,237,230,.45);}
+  .fix .hex{font-size:12px;color:var(--ink);margin-top:3px;} .fix .r{font-size:9.5px;color:var(--acid);margin-top:3px;}
+  /* grilla */
+  .gridwrap{overflow-x:auto;border:1px solid var(--line);border-radius:8px;}
+  table.cg{border-collapse:collapse;font-size:10px;min-width:100%;}
+  table.cg th,table.cg td{padding:0;border:1px solid rgba(5,5,5,.55);}
+  table.cg th{background:#0a0a0a;color:rgba(240,237,230,.6);font-weight:400;font-size:9px;letter-spacing:.06em;padding:8px 9px;white-space:nowrap;text-align:left;}
+  table.cg td .cell{padding:9px 8px;text-align:center;line-height:1.35;min-width:74px;}
+  table.cg td .cell .rr{font-size:12px;font-weight:700;} table.cg td .cell .tag{font-size:8px;letter-spacing:.1em;opacity:.85;}
+  /* daltonismo */
+  .cvdgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:13px;}
+  .cvdcard{border:1px solid var(--line);border-radius:8px;padding:13px;background:rgba(255,176,32,.02);}
+  .cvdcard h4{font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--amber);margin-bottom:4px;}
+  .cvdcard .pc{font-size:8.5px;letter-spacing:.08em;color:rgba(240,237,230,.4);margin-bottom:10px;}
+  .swrow{display:flex;border-radius:5px;overflow:hidden;height:44px;border:1px solid rgba(255,255,255,.1);}
+  .swrow div{flex:1;}
+  .cvdcard .warn{font-size:9.5px;line-height:1.6;color:var(--glitch);margin-top:9px;}
+  .cvdcard .okmsg{font-size:9.5px;line-height:1.6;color:var(--acid);margin-top:9px;}
+  .drop{border:1px dashed rgba(240,237,230,.22);border-radius:8px;padding:22px 14px;text-align:center;cursor:pointer;transition:.15s;font-size:11px;color:rgba(240,237,230,.5);line-height:1.7;}
+  .drop:hover,.drop.over{border-color:var(--amber);color:var(--amber);background:rgba(255,176,32,.05);}
+  .drop b{display:block;font-family:'Bebas Neue',sans-serif;font-size:19px;letter-spacing:.05em;color:var(--ink);margin-bottom:4px;}
+  .imgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:13px;margin-top:14px;}
+  .imgrid figure{border:1px solid var(--line);border-radius:8px;overflow:hidden;background:#080808;}
+  .imgrid figcaption{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:rgba(240,237,230,.5);padding:9px 11px;border-bottom:1px solid var(--line);}
+  .imgrid canvas{display:block;width:100%;height:auto;}
+  details{border:1px solid var(--line);border-radius:8px;padding:0 16px;margin-top:16px;background:rgba(255,176,32,.02);}
+  details summary{cursor:pointer;padding:14px 0;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--amber);list-style:none;}
+  details summary::-webkit-details-marker{display:none;}
+  details summary::before{content:'▸ ';} details[open] summary::before{content:'▾ ';}
+  details .body{padding:0 0 18px;font-size:12px;line-height:1.8;color:rgba(240,237,230,.62);}
+  details .body b{color:var(--ink);font-weight:700;} details .body code{background:#0a0a0a;border:1px solid var(--line);border-radius:4px;padding:1px 6px;color:var(--amber);font-size:11px;}
+  details .body ul,details .body ol{margin:8px 0 0 20px;} details .body li{margin-bottom:6px;}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(30px);background:var(--amber);color:#050505;font-size:12px;font-weight:700;letter-spacing:.05em;padding:12px 22px;border-radius:6px;opacity:0;transition:.25s;z-index:50;pointer-events:none;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  .foot{font-size:10px;color:rgba(240,237,230,.35);letter-spacing:.1em;margin-top:44px;text-align:center;line-height:1.9;}
+  .foot a{color:rgba(240,237,230,.5);text-decoration:none;} .foot a:hover{color:var(--amber);}
+
+  /* a11y — foco visible al navegar con teclado + respeto a reduced-motion */
+  :focus-visible{outline:2px solid var(--acid,#b8ff00);outline-offset:2px;}
+  @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important;scroll-behavior:auto !important;}}
+</style></head><body>
+<div class="wrap">
+  <header>
+    <div class="brand"><b>CONTRASTE</b><span class="sub">Human Glitche · el taller</span></div>
+    <div class="nav"><a href="/labs/">← LABS</a><a href="/paleta/">PALETA →</a></div>
+  </header>
+  <p class="intro">Que tus colores <b>se lean</b>. Medí el contraste contra <b>WCAG AA/AAA</b>, arreglá de un clic los que no pasan (te da el tono más cercano que sí), armá la <b>grilla de todos los pares</b> de tu paleta y mirá cómo la ve el <b>8% de los varones</b> con daltonismo — sobre los colores y sobre tus propias capturas.</p>
+
+  <div class="tabs" id="tabs"></div>
+
+  <!-- ============ PAR ============ -->
+  <section class="view on" id="v-par">
+    <div class="layout">
+      <div>
+        <div class="panel">
+          <h2 class="sec"><b>Par de colores</b><span class="hint">texto sobre fondo</span></h2>
+          <div class="fld"><label>Texto / elemento</label>
+            <div class="colorline"><input type="color" id="fg" value="#b8ff00"><input type="text" id="fgx" value="#B8FF00" maxlength="7"></div></div>
+          <div class="fld"><label>Fondo</label>
+            <div class="colorline"><input type="color" id="bg" value="#050505"><input type="text" id="bgx" value="#050505" maxlength="7"></div></div>
+          <div class="btnrow">
+            <button class="btn" id="swap">⇅ INVERTIR</button>
+            <button class="btn" id="rand">✦ AL AZAR</button>
+            <button class="btn" id="copyRep">COPIAR INFORME</button>
+          </div>
+        </div>
+        <div class="panel">
+          <h2 class="sec"><b>Resultado</b></h2>
+          <div class="ratio"><span class="num" id="rNum">—</span><span class="of">: 1 de contraste</span></div>
+          <div class="badges" id="badges"></div>
+        </div>
+        <div class="panel">
+          <h2 class="sec"><b>Si no pasa</b><span class="hint">tocá un tono para usarlo</span></h2>
+          <div id="fixMsg" style="font-size:11px;color:rgba(240,237,230,.5);line-height:1.7">—</div>
+          <div class="fixes" id="fixes"></div>
+        </div>
+      </div>
+      <div>
+        <div class="demo" id="demo">
+          <div class="box" id="demoBox">
+            <h3>Título grande de la sección</h3>
+            <p class="big">Texto grande (19 px): con 3:1 alcanza para AA.</p>
+            <p class="norm">Texto normal (14 px): acá hace falta 4.5:1 para AA y 7:1 para AAA. Este párrafo está para que veas el color en un bloque real y no en un cuadradito.</p>
+            <p class="small">Letra chica (11 px) — la que más sufre: avisos, notas al pie, ayudas de formulario.</p>
+            <div class="uibox">
+              <span class="uibtn">Botón</span><span class="uiline"></span>
+            </div>
+          </div>
+        </div>
+        <div class="panel" style="margin-top:15px">
+          <h2 class="sec"><b>El mismo par, con daltonismo</b></h2>
+          <div class="cvdgrid" id="parCvd"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ GRILLA ============ -->
+  <section class="view" id="v-grid">
+    <div class="layout">
+      <div>
+        <div class="panel">
+          <h2 class="sec"><b>Tu paleta</b><span class="hint">un color por línea</span></h2>
+          <textarea id="pal" spellcheck="false">#050505 fondo
+#0F1210 panel
+#F0EDE6 texto
+#B8FF00 acid
+#FF2D55 glitch
+#3AD0FF cyan
+#FFB020 amber</textarea>
+          <div class="btnrow">
+            <button class="btn primary" id="mkGrid">ARMAR GRILLA</button>
+            <button class="btn" id="palDemo">PALETA HG</button>
+          </div>
+          <div class="fld" style="margin-top:13px"><label>Umbral a marcar</label><div class="chips" id="thr"></div></div>
+        </div>
+        <div class="panel">
+          <h2 class="sec"><b>Cómo se lee</b></h2>
+          <p style="font-size:11px;line-height:1.8;color:rgba(240,237,230,.55)">Cada celda es <b style="color:var(--amber)">fila sobre columna</b>: el color de la fila como texto, el de la columna como fondo. El número es la razón de contraste y la etiqueta dice el nivel más alto que alcanza. Las celdas que no llegan al umbral quedan tachadas.</p>
+        </div>
+      </div>
+      <div>
+        <div class="gridwrap" id="gridwrap"><div style="padding:36px;text-align:center;color:rgba(240,237,230,.35);font-size:12px">Tocá <b>ARMAR GRILLA</b>.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ DALTONISMO ============ -->
+  <section class="view" id="v-cvd">
+    <div class="panel">
+      <h2 class="sec"><b>Tu paleta, con cada tipo de daltonismo</b><span class="hint">se toma de la solapa GRILLA</span></h2>
+      <div class="cvdgrid" id="cvdPal"></div>
+    </div>
+    <div class="panel">
+      <h2 class="sec"><b>Sobre una captura tuya</b><span class="hint">no sale de tu máquina</span></h2>
+      <div class="drop" id="dropI"><b>DROPEÁ UNA IMAGEN</b>captura de la web, poster, flyer — o hacé clic</div>
+      <input type="file" id="fileI" accept="image/*" hidden>
+      <div class="imgrid" id="imgrid"></div>
+    </div>
+  </section>
+
+  <details>
+    <summary>Qué mide y por qué importa</summary>
+    <div class="body">
+      <p><b>La razón de contraste</b> compara la luminancia relativa de dos colores. Va de 1:1 (idénticos) a 21:1 (negro puro sobre blanco puro). WCAG 2.1 pide:</p>
+      <ul>
+        <li><b>AA</b> — 4.5:1 en texto normal, 3:1 en texto grande (≥24 px, o ≥19 px en negrita).</li>
+        <li><b>AAA</b> — 7:1 en texto normal, 4.5:1 en texto grande.</li>
+        <li><b>Componentes</b> — 3:1 para bordes de inputs, íconos y estados de foco. El más olvidado.</li>
+      </ul>
+      <p style="margin-top:12px">La simulación de daltonismo usa las matrices de <b>Viénot–Brettel–Mollon</b> sobre RGB lineal, el mismo método de las herramientas de accesibilidad de referencia. Cubre las tres dicromacías (protanopía ~1% de los varones, deuteranopía ~1%, tritanopía &lt;0.01%) y la acromatopsia. La regla práctica: <b>nunca uses solo el color</b> para comunicar un estado — sumá forma, ícono o texto.</p>
+      <p style="margin-top:12px"><b>Se enchufa con:</b> <a href="/paleta/" style="color:var(--amber)">PALETA</a> (sacá los colores de una imagen y pegalos acá), <a href="/gradientes/" style="color:var(--amber)">GRADIENTES</a> y <a href="/brand-kit/" style="color:var(--amber)">BRAND KIT</a> (validá la identidad antes de entregarla al cliente).</p>
+    </div>
+  </details>
+
+  <p class="foot">HUMAN GLITCHE · ⌘ OBSERVAR ✦ CREAR ☉ EXPANDIR<br><a href="/labs/">← volver al taller</a></p>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const $=id=>document.getElementById(id);
+/* ---------- color ---------- */
+function hex2rgb(h){h=(h||'').trim();if(h[0]==='#')h=h.slice(1);
+  if(h.length===3)h=h.split('').map(c=>c+c).join('');
+  if(!/^[0-9a-fA-F]{6}$/.test(h))return null;
+  return [parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)];}
+function rgb2hex(r){return '#'+r.map(v=>Math.max(0,Math.min(255,Math.round(v))).toString(16).padStart(2,'0')).join('').toUpperCase();}
+function lin(c){c/=255;return c<=.03928?c/12.92:Math.pow((c+.055)/1.055,2.4);}
+function delin(c){return 255*(c<=.0031308?c*12.92:1.055*Math.pow(c,1/2.4)-.055);}
+function lum(rgb){return .2126*lin(rgb[0])+.7152*lin(rgb[1])+.0722*lin(rgb[2]);}
+function ratio(a,b){const l1=lum(a),l2=lum(b);return (Math.max(l1,l2)+.05)/(Math.min(l1,l2)+.05);}
+function rgb2hsl(r){const [R,G,B]=r.map(v=>v/255),mx=Math.max(R,G,B),mn=Math.min(R,G,B),d=mx-mn;
+  let h=0;if(d){h=mx===R?((G-B)/d+(G<B?6:0)):mx===G?((B-R)/d+2):((R-G)/d+4);h*=60;}
+  const l=(mx+mn)/2,s=d?d/(1-Math.abs(2*l-1)):0;return [h,s,l];}
+function hsl2rgb(h,s,l){const c=(1-Math.abs(2*l-1))*s,x=c*(1-Math.abs((h/60)%2-1)),m=l-c/2;
+  let r=[0,0,0];const i=Math.floor(((h%360)+360)%360/60);
+  r=[[c,x,0],[x,c,0],[0,c,x],[0,x,c],[x,0,c],[c,0,x]][i];
+  return r.map(v=>(v+m)*255);}
+const CVD={
+  prot:{name:'Protanopía',pc:'~1% de los varones · sin conos rojos',m:[.170556992,.829443014,0, .170556991,.829443008,0, -.004517144,.004517144,1]},
+  deut:{name:'Deuteranopía',pc:'~1% de los varones · sin conos verdes',m:[.33066007,.66933993,0, .33066007,.66933993,0, -.02785538,.02785538,1]},
+  trit:{name:'Tritanopía',pc:'muy poco frecuente · sin conos azules',m:[1,.1273989,-.1273989, 0,.8739093,.1260907, 0,.8739093,.1260907]},
+  acro:{name:'Acromatopsia',pc:'sin color · también sirve para B/N',m:null}
+};
+function simulate(rgb,key){
+  const c=CVD[key];if(!c)return rgb;
+  const R=lin(rgb[0]),G=lin(rgb[1]),B=lin(rgb[2]);
+  if(!c.m){const y=.2126*R+.7152*G+.0722*B;return [delin(y),delin(y),delin(y)];}
+  const m=c.m;
+  return [delin(Math.max(0,Math.min(1,m[0]*R+m[1]*G+m[2]*B))),
+          delin(Math.max(0,Math.min(1,m[3]*R+m[4]*G+m[5]*B))),
+          delin(Math.max(0,Math.min(1,m[6]*R+m[7]*G+m[8]*B)))];
+}
+function lvl(r,big){ // nivel alcanzado
+  if(big){if(r>=4.5)return ['AAA','pass'];if(r>=3)return ['AA','pass'];return ['—','fail'];}
+  if(r>=7)return ['AAA','pass'];if(r>=4.5)return ['AA','pass'];if(r>=3)return ['AA grande','fail'];return ['—','fail'];}
+
+/* ---------- solapas ---------- */
+const VIEWS=[['par','Par de colores'],['grid','Grilla de la paleta'],['cvd','Daltonismo']];
+VIEWS.forEach(([id,label],i)=>{const d=document.createElement('div');d.className='tab'+(i===0?' on':'');d.textContent=label;
+  d.onclick=()=>{[...$('tabs').children].forEach(c=>c.classList.remove('on'));d.classList.add('on');
+    VIEWS.forEach(([v])=>$('v-'+v).classList.toggle('on',v===id));
+    if(id==='cvd')renderCvdPal();};
+  $('tabs').appendChild(d);});
+
+/* ---------- par ---------- */
+function syncFromPicker(a,b){$(b).value=$(a).value.toUpperCase();update();}
+$('fg').oninput=()=>syncFromPicker('fg','fgx');
+$('bg').oninput=()=>syncFromPicker('bg','bgx');
+['fgx','bgx'].forEach(id=>$(id).oninput=()=>{const v=hex2rgb($(id).value);
+  if(v){$(id.slice(0,2)).value=rgb2hex(v).toLowerCase();update();}});
+$('swap').onclick=()=>{const a=$('fg').value,b=$('bg').value;
+  $('fg').value=b;$('bg').value=a;$('fgx').value=b.toUpperCase();$('bgx').value=a.toUpperCase();update();};
+$('rand').onclick=()=>{const r=()=>Math.floor(Math.random()*256);
+  const f=rgb2hex([r(),r(),r()]),b=rgb2hex([r(),r(),r()]);
+  $('fg').value=f.toLowerCase();$('bg').value=b.toLowerCase();$('fgx').value=f;$('bgx').value=b;update();};
+$('copyRep').onclick=async()=>{
+  const fg=hex2rgb($('fgx').value),bg=hex2rgb($('bgx').value),r=ratio(fg,bg);
+  const rep=['CONTRASTE — '+rgb2hex(fg)+' sobre '+rgb2hex(bg),
+    'Razón: '+r.toFixed(2)+':1','',
+    'AA texto normal (4.5:1): '+(r>=4.5?'PASA':'NO PASA'),
+    'AA texto grande (3:1): '+(r>=3?'PASA':'NO PASA'),
+    'AAA texto normal (7:1): '+(r>=7?'PASA':'NO PASA'),
+    'AAA texto grande (4.5:1): '+(r>=4.5?'PASA':'NO PASA'),
+    'Componentes de interfaz (3:1): '+(r>=3?'PASA':'NO PASA'),'',
+    'Con daltonismo:'].concat(Object.keys(CVD).map(k=>
+      '  '+CVD[k].name+': '+ratio(simulate(fg,k),simulate(bg,k)).toFixed(2)+':1')).join('\n');
+  try{await navigator.clipboard.writeText(rep);toast('informe copiado ⧉');}catch(e){toast('no se pudo copiar');}};
+
+function update(){
+  const fg=hex2rgb($('fgx').value)||[255,255,255],bg=hex2rgb($('bgx').value)||[0,0,0];
+  const r=ratio(fg,bg);
+  $('rNum').textContent=r.toFixed(2);
+  $('rNum').style.color=r>=4.5?'var(--acid)':r>=3?'var(--amber)':'var(--glitch)';
+  const tests=[['AA · texto normal',4.5],['AA · texto grande',3],['AAA · texto normal',7],['AAA · texto grande',4.5],['Componentes de interfaz',3],['Todo el texto AAA',7]];
+  $('badges').innerHTML=tests.slice(0,5).map(([n,t])=>
+    '<div class="badge '+(r>=t?'pass':'fail')+'"><span class="lv">'+n+'</span><span class="st">'+(r>=t?'PASA':'NO')+'</span></div>').join('');
+  const box=$('demoBox');box.style.background=rgb2hex(bg);box.style.color=rgb2hex(fg);
+  // arreglos
+  const need=4.5;
+  if(r>=need){$('fixMsg').innerHTML='Este par ya <b style="color:var(--acid)">pasa AA</b> en texto normal. Si querés AAA (7:1), probá los tonos de abajo.';}
+  else{$('fixMsg').innerHTML='No llega a <b style="color:var(--glitch)">AA (4.5:1)</b>. Estos son los tonos más cercanos que sí — mismo matiz y saturación, distinta luminosidad.';}
+  const target=r>=need?7:need;
+  const opts=[];
+  const dk=nearest(fg,bg,target,-1),lt=nearest(fg,bg,target,1);
+  if(dk)opts.push(['Texto más oscuro',dk]);
+  if(lt)opts.push(['Texto más claro',lt]);
+  const dkb=nearest(bg,fg,target,-1),ltb=nearest(bg,fg,target,1);
+  if(dkb)opts.push(['Fondo más oscuro',dkb,1]);
+  if(ltb)opts.push(['Fondo más claro',ltb,1]);
+  $('fixes').innerHTML=opts.map(([n,c])=>{
+    const rr=ratio(hex2rgb(c),n.indexOf('Fondo')===0?fg:bg);
+    return '<div class="fix" data-c="'+c+'" data-bg="'+(n.indexOf('Fondo')===0?1:0)+'"><div class="sw" style="background:'+c+'"></div>'+
+      '<div class="lbl">'+n+'</div><div class="hex">'+c+'</div><div class="r">'+rr.toFixed(2)+':1</div></div>';}).join('')
+    ||'<div style="font-size:10.5px;color:rgba(240,237,230,.35);grid-column:1/-1">No hay tono de este matiz que llegue a '+target+':1 — cambiá el otro color.</div>';
+  $('fixes').querySelectorAll('.fix').forEach(el=>el.onclick=()=>{
+    const c=el.dataset.c,isBg=el.dataset.bg==='1';
+    $(isBg?'bg':'fg').value=c.toLowerCase();$(isBg?'bgx':'fgx').value=c;update();toast(c+' aplicado');});
+  renderParCvd(fg,bg);
+}
+function nearest(color,other,target,dir){
+  const [h,s,l0]=rgb2hsl(color);
+  for(let i=1;i<=100;i++){
+    const l=l0+dir*i/100;if(l<0||l>1)break;
+    const c=hsl2rgb(h,s,l);
+    if(ratio(c,other)>=target)return rgb2hex(c);}
+  return null;}
+function renderParCvd(fg,bg){
+  $('parCvd').innerHTML=Object.keys(CVD).map(k=>{
+    const f=simulate(fg,k),b=simulate(bg,k),rr=ratio(f,b),r0=ratio(fg,bg);
+    const drop=r0>0?(1-rr/r0):0;
+    return '<div class="cvdcard"><h4>'+CVD[k].name+'</h4><div class="pc">'+CVD[k].pc+'</div>'+
+      '<div class="swrow"><div style="background:'+rgb2hex(b)+'"></div><div style="background:'+rgb2hex(f)+'"></div></div>'+
+      '<div class="'+(rr>=4.5?'okmsg':'warn')+'">'+rr.toFixed(2)+':1 '+(rr>=4.5?'· sigue pasando AA':'· acá ya no pasa AA')+
+      (drop>.25?' (pierde '+Math.round(drop*100)+'% de contraste)':'')+'</div></div>';}).join('');
+}
+
+/* ---------- grilla ---------- */
+let THR=4.5;
+[['3','3:1 componentes'],['4.5','4.5:1 AA'],['7','7:1 AAA']].forEach(([v,l],i)=>{
+  const d=document.createElement('div');d.className='chip'+(i===1?' on':'');d.textContent=l;
+  d.onclick=()=>{THR=+v;[...$('thr').children].forEach(c=>c.classList.remove('on'));d.classList.add('on');buildGrid();};
+  $('thr').appendChild(d);});
+function parsePal(){
+  return $('pal').value.split('\n').map(l=>l.trim()).filter(Boolean).map(l=>{
+    const m=l.match(/#?[0-9a-fA-F]{6}\b|#?[0-9a-fA-F]{3}\b/);if(!m)return null;
+    const rgb=hex2rgb(m[0]);if(!rgb)return null;
+    const name=l.replace(m[0],'').replace(/^[#\s:,-]+/,'').trim();
+    return {hex:rgb2hex(rgb),rgb:rgb,name:name||rgb2hex(rgb)};}).filter(Boolean);
+}
+function buildGrid(){
+  const P=parsePal();
+  if(P.length<2){$('gridwrap').innerHTML='<div style="padding:30px;text-align:center;color:var(--glitch);font-size:12px">Necesito al menos 2 colores en hex.</div>';return;}
+  let h='<table class="cg"><tr><th style="background:#0a0a0a">texto ↓ / fondo →</th>'+
+    P.map(c=>'<th><span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:'+c.hex+';margin-right:6px;vertical-align:middle"></span>'+esc(c.name)+'</th>').join('')+'</tr>';
+  P.forEach(f=>{
+    h+='<tr><th><span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:'+f.hex+';margin-right:6px;vertical-align:middle"></span>'+esc(f.name)+'</th>';
+    P.forEach(b=>{
+      const r=ratio(f.rgb,b.rgb),ok=r>=THR,[tag]=lvl(r,false);
+      h+='<td style="background:'+b.hex+'"><div class="cell" style="color:'+f.hex+(ok?'':';opacity:.5')+'">'+
+        '<div class="rr"'+(ok?'':' style="text-decoration:line-through"')+'>'+r.toFixed(2)+'</div>'+
+        '<div class="tag">'+(tag==='—'?'no pasa':tag)+'</div></div></td>';});
+    h+='</tr>';});
+  $('gridwrap').innerHTML=h+'</table>';
+}
+$('mkGrid').onclick=()=>{buildGrid();toast('grilla armada');};
+$('palDemo').onclick=()=>{$('pal').value='#050505 fondo\n#0F1210 panel\n#F0EDE6 texto\n#B8FF00 acid\n#FF2D55 glitch\n#3AD0FF cyan\n#FFB020 amber\n#9B6BFF violet';buildGrid();};
+
+/* ---------- daltonismo ---------- */
+function renderCvdPal(){
+  const P=parsePal();
+  if(!P.length){$('cvdPal').innerHTML='<div style="font-size:11px;color:rgba(240,237,230,.4)">Cargá una paleta en la solapa GRILLA.</div>';return;}
+  const row=list=>'<div class="swrow">'+list.map(c=>'<div style="background:'+c+'" title="'+c+'"></div>').join('')+'</div>';
+  let h='<div class="cvdcard"><h4>Original</h4><div class="pc">como la ve la mayoría</div>'+row(P.map(c=>c.hex))+'</div>';
+  h+=Object.keys(CVD).map(k=>{
+    const sim=P.map(c=>rgb2hex(simulate(c.rgb,k)));
+    // pares que se vuelven indistinguibles
+    let colision=null;
+    for(let i=0;i<P.length&&!colision;i++)for(let j=i+1;j<P.length;j++){
+      const d0=dist(P[i].rgb,P[j].rgb),d1=dist(hex2rgb(sim[i]),hex2rgb(sim[j]));
+      if(d0>60&&d1<28){colision=P[i].name+' y '+P[j].name;break;}}
+    return '<div class="cvdcard"><h4>'+CVD[k].name+'</h4><div class="pc">'+CVD[k].pc+'</div>'+row(sim)+
+      (colision?'<div class="warn">⚠ '+esc(colision)+' se vuelven casi el mismo color</div>'
+              :'<div class="okmsg">✓ los colores siguen distinguiéndose entre sí</div>')+'</div>';}).join('');
+  $('cvdPal').innerHTML=h;
+}
+function dist(a,b){return Math.sqrt((a[0]-b[0])**2+(a[1]-b[1])**2+(a[2]-b[2])**2);}
+
+const dz=$('dropI'),fi=$('fileI');
+dz.onclick=()=>fi.click();
+fi.onchange=e=>{if(e.target.files[0])loadImg(e.target.files[0]);};
+['dragenter','dragover'].forEach(ev=>dz.addEventListener(ev,e=>{e.preventDefault();dz.classList.add('over');}));
+['dragleave','drop'].forEach(ev=>dz.addEventListener(ev,e=>{e.preventDefault();dz.classList.remove('over');}));
+dz.addEventListener('drop',e=>{const f=e.dataTransfer.files[0];if(f)loadImg(f);});
+function loadImg(file){
+  const r=new FileReader();
+  r.onload=()=>{const im=new Image();im.onload=()=>simImage(im);im.src=r.result;};
+  r.readAsDataURL(file);}
+function simImage(im){
+  const MAXW=520,sc=Math.min(1,MAXW/im.width),W=Math.round(im.width*sc),H=Math.round(im.height*sc);
+  const base=document.createElement('canvas');base.width=W;base.height=H;
+  base.getContext('2d').drawImage(im,0,0,W,H);
+  const src=base.getContext('2d').getImageData(0,0,W,H);
+  const cards=[['orig','Original']].concat(Object.keys(CVD).map(k=>[k,CVD[k].name]));
+  $('imgrid').innerHTML=cards.map(([k,n])=>'<figure><figcaption>'+n+'</figcaption><canvas id="cv-'+k+'"></canvas></figure>').join('');
+  const L=new Float32Array(256);for(let i=0;i<256;i++)L[i]=lin(i);
+  cards.forEach(([k])=>{
+    const cv=$('cv-'+k);cv.width=W;cv.height=H;const g=cv.getContext('2d');
+    if(k==='orig'){g.putImageData(src,0,0);return;}
+    const out=g.createImageData(W,H),s=src.data,o=out.data,m=CVD[k].m;
+    for(let i=0;i<s.length;i+=4){
+      const R=L[s[i]],G=L[s[i+1]],B=L[s[i+2]];
+      let r,gg,b;
+      if(!m){const y=.2126*R+.7152*G+.0722*B;r=gg=b=y;}
+      else{r=m[0]*R+m[1]*G+m[2]*B;gg=m[3]*R+m[4]*G+m[5]*B;b=m[6]*R+m[7]*G+m[8]*B;}
+      o[i]=delin(Math.max(0,Math.min(1,r)));o[i+1]=delin(Math.max(0,Math.min(1,gg)));
+      o[i+2]=delin(Math.max(0,Math.min(1,b)));o[i+3]=s[i+3];}
+    g.putImageData(out,0,0);});
+  toast('imagen simulada ✓');}
+
+function esc(s){return String(s).replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));}
+function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),1600);}
+update();buildGrid();
+</script>
+</body></html>

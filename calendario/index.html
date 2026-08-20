@@ -37,6 +37,10 @@
   .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--acid);color:#050505;font-size:11px;font-weight:700;letter-spacing:.08em;padding:10px 18px;border-radius:6px;opacity:0;pointer-events:none;transition:.25s;z-index:30;} .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
   .prtitle{display:none;}
   @media print{ @page{margin:10mm landscape;} body::before{display:none;} body{background:#fff;color:#12100c;} .wrap{max-width:none;padding:0;} header,.intro,.bar .btn,.foot,.toast{display:none!important;} .bar{border:none;background:none;padding:0;justify-content:center;} .month{color:#12100c;} .day{background:#fff;border-color:#ccc;} .day .dn{color:#666;} .dow{color:#333;} .post{border:1px solid rgba(0,0,0,.1);} }
+
+  /* a11y — foco visible al navegar con teclado + respeto a reduced-motion */
+  :focus-visible{outline:2px solid var(--acid,#b8ff00);outline-offset:2px;}
+  @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important;scroll-behavior:auto !important;}}
 </style></head><body>
 <div class="wrap">
   <header>

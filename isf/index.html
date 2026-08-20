@@ -1,0 +1,489 @@
+<!doctype html><html lang="es"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PUENTE ISF — Human Glitche · de Shadertoy a VDMX/Resolume</title>
+<meta name="description" content="Convertí cualquier shader de Shadertoy o GLSL suelto en un archivo ISF (.fs) listo para VDMX, Resolume o Millumin: traduce los uniforms, arma el encabezado JSON, detecta tus controles y los previsualiza en vivo con sliders. 100% en tu navegador.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{ --acid:#b8ff00; --glitch:#ff2d55; --cyan:#3ad0ff; --amber:#ffb020; --violet:#9b6bff; --ink:#f0ede6; --line:rgba(240,237,230,.12); --bg:#050505; }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{min-height:100%;background:var(--bg);color:var(--ink);font-family:'Space Mono',monospace;}
+  body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");z-index:0;pointer-events:none;opacity:.4;}
+  .wrap{position:relative;z-index:1;max-width:1320px;margin:0 auto;padding:28px 22px 90px;}
+  header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;gap:14px;}
+  .brand{font-family:'Bebas Neue',sans-serif;font-size:44px;letter-spacing:.03em;line-height:.82;}
+  .brand b{color:var(--cyan);font-weight:400;}
+  .brand .sub{display:block;font-family:'Space Mono';font-size:10px;letter-spacing:.2em;color:rgba(240,237,230,.45);margin-top:8px;}
+  header .nav{display:flex;flex-direction:column;align-items:flex-end;gap:7px;padding-top:6px;}
+  header a{font-size:10px;letter-spacing:.2em;color:rgba(240,237,230,.4);text-decoration:none;} header a:hover{color:var(--cyan);}
+  .intro{font-size:12px;color:rgba(240,237,230,.55);line-height:1.8;max-width:82ch;margin-bottom:22px;}
+  .intro b{color:var(--cyan);font-weight:400;}
+  .layout{display:grid;grid-template-columns:1fr 420px;gap:20px;align-items:start;}
+  @media(max-width:1080px){.layout{grid-template-columns:1fr;}}
+  .panel{border:1px solid var(--line);border-radius:8px;padding:16px;background:rgba(58,208,255,.02);margin-bottom:15px;}
+  h2.sec{font-size:9px;letter-spacing:.22em;color:rgba(240,237,230,.45);text-transform:uppercase;margin:0 0 12px;display:flex;justify-content:space-between;align-items:center;gap:8px;}
+  h2.sec b{color:var(--cyan);font-weight:400;}
+  h2.sec .hint{font-size:8.5px;letter-spacing:.1em;color:rgba(240,237,230,.35);text-transform:none;}
+  textarea{width:100%;background:#080808;color:#d8f5ff;border:1px solid var(--line);border-radius:6px;font-family:'Space Mono',monospace;font-size:11px;line-height:1.55;padding:11px 12px;resize:vertical;tab-size:2;}
+  textarea:focus{outline:none;border-color:var(--cyan);}
+  #src{min-height:300px;} #out{min-height:230px;color:#d8ffd0;}
+  .fld{margin-bottom:11px;} .fld:last-child{margin-bottom:0;}
+  .fld label{display:block;font-size:9px;letter-spacing:.16em;color:rgba(240,237,230,.5);text-transform:uppercase;margin-bottom:5px;}
+  .fld input[type=text],.fld select{width:100%;background:#0a0a0a;color:var(--ink);border:1px solid var(--line);font:inherit;font-size:12px;padding:8px 9px;border-radius:5px;}
+  .fld input:focus,.fld select:focus{outline:none;border-color:var(--cyan);}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;}
+  .chip{font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;padding:7px 10px;border:1px solid var(--line);border-radius:20px;cursor:pointer;color:rgba(240,237,230,.55);user-select:none;transition:.15s;}
+  .chip:hover{color:var(--ink);} .chip.on{border-color:var(--cyan);color:var(--cyan);background:rgba(58,208,255,.1);}
+  .btn{background:transparent;border:1px solid var(--line);color:var(--ink);font:inherit;font-size:11px;letter-spacing:.1em;padding:10px 13px;cursor:pointer;border-radius:5px;transition:.15s;text-align:center;}
+  .btn:hover:not(:disabled){border-color:var(--cyan);color:var(--cyan);}
+  .btn:disabled{opacity:.35;cursor:not-allowed;}
+  .btn.primary{background:var(--cyan);color:#050505;border-color:var(--cyan);font-weight:700;}
+  .btn.primary:hover:not(:disabled){opacity:.85;color:#050505;}
+  .btnrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:11px;} .btnrow .btn{flex:1;min-width:104px;}
+  .stage-wrap{position:sticky;top:16px;}
+  .stagebar{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:rgba(240,237,230,.45);}
+  .stagebar b{color:var(--cyan);font-weight:400;}
+  #gl{display:block;width:100%;aspect-ratio:16/9;border:1px solid var(--line);border-radius:8px;background:#080808;}
+  .status{font-size:10px;letter-spacing:.08em;padding:9px 11px;border-radius:6px;margin-top:9px;line-height:1.65;word-break:break-word;}
+  .status.ok{background:rgba(184,255,0,.08);border:1px solid rgba(184,255,0,.3);color:var(--acid);}
+  .status.err{background:rgba(255,45,85,.08);border:1px solid rgba(255,45,85,.35);color:var(--glitch);white-space:pre-wrap;font-size:10px;max-height:190px;overflow:auto;}
+  .status.info{background:rgba(58,208,255,.06);border:1px solid rgba(58,208,255,.22);color:rgba(216,245,255,.8);}
+  table.inputs{width:100%;border-collapse:collapse;font-size:10px;}
+  table.inputs th{text-align:left;font-size:8.5px;letter-spacing:.14em;text-transform:uppercase;color:rgba(240,237,230,.4);font-weight:400;padding:0 5px 7px 0;}
+  table.inputs td{padding:3px 5px 3px 0;vertical-align:middle;}
+  table.inputs input,table.inputs select{width:100%;background:#0a0a0a;color:var(--ink);border:1px solid var(--line);font:inherit;font-size:10px;padding:6px 6px;border-radius:4px;}
+  table.inputs input:focus,table.inputs select:focus{outline:none;border-color:var(--cyan);}
+  table.inputs .del{cursor:pointer;color:rgba(240,237,230,.35);padding:0 3px;font-size:13px;} table.inputs .del:hover{color:var(--glitch);}
+  .live{display:flex;flex-direction:column;gap:9px;}
+  .live .row{display:flex;align-items:center;gap:9px;font-size:9.5px;letter-spacing:.1em;color:rgba(240,237,230,.55);text-transform:uppercase;}
+  .live .row label{flex:0 0 116px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .live .row input[type=range]{flex:1;accent-color:var(--cyan);}
+  .live .row input[type=color]{width:34px;height:26px;border:1px solid var(--line);border-radius:4px;background:#0a0a0a;padding:2px;cursor:pointer;}
+  .live .row b{flex:0 0 46px;text-align:right;color:var(--cyan);font-weight:400;}
+  details{border:1px solid var(--line);border-radius:8px;padding:0 16px;margin-top:15px;background:rgba(58,208,255,.02);}
+  details summary{cursor:pointer;padding:14px 0;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--cyan);list-style:none;}
+  details summary::-webkit-details-marker{display:none;}
+  details summary::before{content:'▸ ';} details[open] summary::before{content:'▾ ';}
+  details .body{padding:0 0 18px;font-size:12px;line-height:1.8;color:rgba(240,237,230,.62);}
+  details .body b{color:var(--ink);font-weight:700;} details .body code{background:#0a0a0a;border:1px solid var(--line);border-radius:4px;padding:1px 6px;color:var(--cyan);font-size:11px;}
+  details .body ol,details .body ul{margin:8px 0 0 20px;} details .body li{margin-bottom:6px;}
+  details .body table{width:100%;border-collapse:collapse;margin-top:10px;font-size:11px;}
+  details .body th,details .body td{text-align:left;padding:5px 8px 5px 0;border-bottom:1px solid var(--line);}
+  details .body th{color:rgba(240,237,230,.45);font-size:9px;letter-spacing:.14em;text-transform:uppercase;font-weight:400;}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(30px);background:var(--cyan);color:#050505;font-size:12px;font-weight:700;letter-spacing:.05em;padding:12px 22px;border-radius:6px;opacity:0;transition:.25s;z-index:50;pointer-events:none;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  .foot{font-size:10px;color:rgba(240,237,230,.35);letter-spacing:.1em;margin-top:44px;text-align:center;line-height:1.9;}
+  .foot a{color:rgba(240,237,230,.5);text-decoration:none;} .foot a:hover{color:var(--cyan);}
+
+  /* a11y — foco visible al navegar con teclado + respeto a reduced-motion */
+  :focus-visible{outline:2px solid var(--acid,#b8ff00);outline-offset:2px;}
+  @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important;scroll-behavior:auto !important;}}
+</style></head><body>
+<div class="wrap">
+  <header>
+    <div class="brand"><b>PUENTE ISF</b><span class="sub">Human Glitche · el taller</span></div>
+    <div class="nav"><a href="/labs/">← LABS</a><a href="/forge/">THE FORGE →</a></div>
+  </header>
+  <p class="intro">Pegá un shader de <b>Shadertoy</b> (o GLSL suelto) y salí con un <b>.fs de ISF</b> listo para arrastrar a VDMX, Resolume o Millumin. Traduce los uniforms (<code>iTime</code> → <code>TIME</code>, <code>iResolution</code> → <code>RENDERSIZE</code>, <code>texture(iChannel0,…)</code> → <code>IMG_NORM_PIXEL(inputImage,…)</code>), arma el encabezado JSON, detecta tus controles y te los deja como <b>sliders reales</b> — el preview de acá abajo es un mini host ISF: si acá compila y se mueve, en VDMX también.</p>
+
+  <div class="layout">
+    <div class="left">
+      <div class="panel">
+        <h2 class="sec"><b>1 ·</b> Shader de origen <span class="hint">pegá el código completo</span></h2>
+        <div class="chips" id="dialects"></div>
+        <textarea id="src" spellcheck="false" placeholder="void mainImage( out vec4 fragColor, in vec2 fragCoord ){ ... }"></textarea>
+        <div class="btnrow">
+          <button class="btn" id="ex1">EJEMPLO GENERADOR</button>
+          <button class="btn" id="ex2">EJEMPLO FILTRO</button>
+          <button class="btn" id="clear">LIMPIAR</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2 class="sec"><b>2 ·</b> Controles ISF <span class="hint">se detectan solos · podés agregar</span></h2>
+        <table class="inputs"><thead><tr><th style="width:30%">Nombre</th><th style="width:22%">Tipo</th><th>Min</th><th>Max</th><th>Default</th><th></th></tr></thead><tbody id="inRows"></tbody></table>
+        <div class="btnrow">
+          <button class="btn" id="addIn">+ CONTROL</button>
+          <button class="btn" id="promote">PROMOVER CONSTANTES</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2 class="sec"><b>3 ·</b> Ficha del shader</h2>
+        <div class="two">
+          <div class="fld"><label>Nombre del archivo</label><input type="text" id="mName" value="mi-shader" placeholder="mi-shader"></div>
+          <div class="fld"><label>Crédito</label><input type="text" id="mCredit" placeholder="autor original / vos"></div>
+        </div>
+        <div class="fld"><label>Descripción</label><input type="text" id="mDesc" placeholder="qué hace el shader"></div>
+        <div class="fld"><label>Categorías (coma)</label><input type="text" id="mCats" value="Generator" placeholder="Generator, Filter, Glitch"></div>
+      </div>
+
+      <div class="panel">
+        <h2 class="sec"><b>4 ·</b> ISF resultante <span class="hint">.fs — arrastralo a VDMX/Resolume</span></h2>
+        <textarea id="out" spellcheck="false" readonly></textarea>
+        <div class="btnrow">
+          <button class="btn primary" id="conv">⇄ CONVERTIR</button>
+          <button class="btn" id="dl">DESCARGAR .fs</button>
+          <button class="btn" id="copy">COPIAR</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="stage-wrap">
+      <div class="stagebar"><span>Preview · mini host ISF</span><b id="fpsTag">—</b></div>
+      <canvas id="gl" width="640" height="360"></canvas>
+      <div class="status info" id="status">Pegá un shader y tocá <b>⇄ CONVERTIR</b>.</div>
+      <div class="panel" style="margin-top:13px">
+        <h2 class="sec"><b>Controles en vivo</b><span class="hint" id="liveHint">sin controles</span></h2>
+        <div class="live" id="live"></div>
+      </div>
+      <div class="btnrow" style="margin-top:0">
+        <button class="btn" id="reset">↺ REINICIAR TIEMPO</button>
+        <button class="btn" id="pause">⏸ PAUSAR</button>
+      </div>
+
+      <details>
+        <summary>Qué traduce · y dónde cae el archivo</summary>
+        <div class="body">
+          <table>
+            <tr><th>Shadertoy</th><th>ISF</th></tr>
+            <tr><td><code>iTime</code></td><td><code>TIME</code></td></tr>
+            <tr><td><code>iResolution.xy</code></td><td><code>RENDERSIZE</code></td></tr>
+            <tr><td><code>iTimeDelta</code></td><td><code>TIMEDELTA</code></td></tr>
+            <tr><td><code>iFrame</code></td><td><code>FRAMEINDEX</code></td></tr>
+            <tr><td><code>iDate</code></td><td><code>DATE</code></td></tr>
+            <tr><td><code>iMouse</code></td><td>input <code>point2D</code> llamado <code>mouse</code></td></tr>
+            <tr><td><code>texture(iChannel0,uv)</code></td><td><code>IMG_NORM_PIXEL(inputImage,uv)</code></td></tr>
+            <tr><td><code>fragCoord</code> / <code>fragColor</code></td><td><code>gl_FragCoord.xy</code> / <code>gl_FragColor</code></td></tr>
+          </table>
+          <p style="margin-top:12px"><b>Dónde va el .fs:</b> en macOS, <code>~/Library/Graphics/ISF/</code> lo levantan VDMX, CoGe y Millumin. Resolume lee ISF desde <code>Documents/Resolume Arena/Extra Effects/ISF/</code>. En los tres, un shader con <code>inputImage</code> aparece como <b>efecto</b> y uno sin imagen como <b>fuente/generador</b>.</p>
+          <p style="margin-top:12px"><b>Lo que el puente no puede hacer:</b> shaders de Shadertoy con varios <i>buffers</i> (Buffer A/B/C), realimentación de cuadro anterior o cubemaps necesitan armarse a mano como ISF multi-pass. Si el código dice <code>iChannel1</code> apuntando a otro buffer, el preview te lo va a marcar.</p>
+          <p style="margin-top:12px"><b>Se enchufa con:</b> <a href="/forge/" style="color:var(--cyan)">THE FORGE</a> (generá el shader ahí y traelo acá), <a href="/pulso/" style="color:var(--cyan)">PULSO</a> (probalo reaccionando al audio) y <a href="/aether-2/" style="color:var(--cyan)">AETHER 2.0</a>.</p>
+        </div>
+      </details>
+    </div>
+  </div>
+
+  <p class="foot">HUMAN GLITCHE · ⌘ OBSERVAR ✦ CREAR ☉ EXPANDIR<br><a href="/labs/">← volver al taller</a></p>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const $=id=>document.getElementById(id);
+const RESERVED=['TIME','TIMEDELTA','RENDERSIZE','FRAMEINDEX','DATE','PASSINDEX','isf_FragNormCoord','gl_FragCoord','gl_FragColor'];
+const TYPES=['float','bool','long','color','point2D','image'];
+let dialect='auto', inputs=[], compiled=null, paused=false;
+
+/* ================= conversión ================= */
+function detectDialect(src){
+  if(/\/\*\s*\{[\s\S]*"INPUTS"[\s\S]*\}\s*\*\//.test(src)||/\bRENDERSIZE\b/.test(src))return 'isf';
+  if(/void\s+mainImage\s*\(/.test(src))return 'shadertoy';
+  return 'glsl';
+}
+function stripISFHeader(src){return src.replace(/^\s*\/\*\s*\{[\s\S]*?\}\s*\*\//,'');}
+function parseISFHeader(src){const m=src.match(/^\s*\/\*\s*(\{[\s\S]*?\})\s*\*\//);
+  if(!m)return null;try{return JSON.parse(m[1]);}catch(e){return null;}}
+function importISF(h){
+  if(!h)return 0;let n=0;
+  if(h.DESCRIPTION&&!$('mDesc').value)$('mDesc').value=h.DESCRIPTION;
+  if(h.CREDIT&&!$('mCredit').value)$('mCredit').value=h.CREDIT;
+  if(h.CATEGORIES&&h.CATEGORIES.length)$('mCats').value=h.CATEGORIES.join(', ');
+  (h.INPUTS||[]).forEach(i=>{
+    if(!i.NAME||inputs.some(x=>x.name===i.NAME))return;
+    const t=i.TYPE||'float';
+    let def=i.DEFAULT;
+    if(t==='color')def=Array.isArray(def)?arrToHex(def):'#3ad0ff';
+    else if(t==='point2D')def=Array.isArray(def)?def[0]:.5;
+    else if(t==='image')def=0;
+    else def=(def===undefined?.5:+def);
+    inputs.push({name:i.NAME,type:t,min:i.MIN===undefined?0:+i.MIN,max:i.MAX===undefined?1:+i.MAX,def:def});n++;});
+  return n;}
+function arrToHex(a){const h=x=>Math.max(0,Math.min(255,Math.round((+x||0)*255))).toString(16).padStart(2,'0');
+  return '#'+h(a[0])+h(a[1])+h(a[2]);}
+
+function convertBody(src,d){
+  let s=src, notes=[];
+  s=stripISFHeader(s);
+  // GLSL ES 3 → ES 1
+  s=s.replace(/^\s*#version[^\n]*\n/gm,'');
+  s=s.replace(/^\s*(precision\s+\w+\s+float\s*;)\s*$/gm,'');
+  s=s.replace(/\btextureLod\s*\(/g,'texture2D(');
+  s=s.replace(/\btexture\s*\(/g,'texture2D(');
+  if(d!=='isf'){
+    // uniforms de shadertoy
+    s=s.replace(/\biResolution\.xy\b/g,'RENDERSIZE');
+    s=s.replace(/\biResolution\.x\b/g,'RENDERSIZE.x').replace(/\biResolution\.y\b/g,'RENDERSIZE.y');
+    s=s.replace(/\biResolution\b/g,'vec3(RENDERSIZE,1.0)');
+    s=s.replace(/\bi(Global)?Time\b/g,'TIME');
+    s=s.replace(/\biTimeDelta\b/g,'TIMEDELTA');
+    s=s.replace(/\biFrameRate\b/g,'(1.0/max(TIMEDELTA,0.0001))');
+    s=s.replace(/\biFrame\b/g,'FRAMEINDEX');
+    s=s.replace(/\biDate\b/g,'DATE');
+    if(/\biMouse\b/.test(s)){
+      s=s.replace(/\biMouse\b/g,'vec4(mouse*RENDERSIZE,0.0,0.0)');
+      if(!inputs.some(i=>i.name==='mouse'))
+        {inputs.push({name:'mouse',type:'point2D',min:0,max:1,def:0.5});notes.push('iMouse → control point2D "mouse"');}
+    }
+    // canales
+    const chans=[...new Set((s.match(/iChannel\d/g)||[]))].sort();
+    chans.forEach((ch,idx)=>{
+      const name=idx===0?'inputImage':('inputImage'+idx);
+      s=s.replace(new RegExp('texture2D\\s*\\(\\s*'+ch+'\\s*,','g'),'IMG_NORM_PIXEL('+name+',');
+      s=s.replace(new RegExp('\\biChannelResolution\\s*\\[\\s*'+idx+'\\s*\\]','g'),'vec3(IMG_SIZE('+name+'),1.0)');
+      s=s.replace(new RegExp('\\b'+ch+'\\b','g'),name);
+      if(!inputs.some(i=>i.name===name)){inputs.push({name:name,type:'image',min:0,max:1,def:0});
+        notes.push(ch+' → input image "'+name+'"');}
+    });
+    s=s.replace(/\biChannelResolution\s*\[\s*\d+\s*\]/g,'vec3(RENDERSIZE,1.0)');
+  }
+  // out vec4 sueltos (ES3)
+  s=s.replace(/^\s*out\s+vec4\s+(\w+)\s*;\s*$/gm,(m,n)=>{s=s;return '';});
+  // envoltura de mainImage
+  const yaTieneMain=/\bvoid\s+main\s*\(\s*(void)?\s*\)/.test(s);
+  if(/void\s+mainImage\s*\(/.test(s)&&!yaTieneMain){
+    s=s.replace(/void\s+mainImage\s*\(\s*out\s+vec4\s+(\w+)\s*,\s*(?:in\s+)?vec2\s+(\w+)\s*\)/,
+      'void mainImage( out vec4 $1, in vec2 $2 )');
+    s=s.trimEnd()+'\n\nvoid main(){\n\tvec4 c = vec4(0.0);\n\tmainImage(c, gl_FragCoord.xy);\n\tgl_FragColor = c;\n}\n';
+    notes.push('mainImage() envuelta en main() con gl_FragColor');
+  }else if(!yaTieneMain&&!/void\s+mainImage\s*\(/.test(s)){
+    notes.push('⚠ no encontré ni mainImage() ni main(): revisá que hayas pegado el shader completo');
+  }
+  return {body:s.replace(/\n{3,}/g,'\n\n').trim()+'\n',notes};
+}
+
+function scanUniforms(src){
+  const found=[];const re=/uniform\s+(float|int|bool|vec2|vec3|vec4|sampler2D)\s+(\w+)\s*;/g;let m;
+  while((m=re.exec(src))){
+    const t=m[1],n=m[2];
+    if(RESERVED.indexOf(n)>=0||/^i[A-Z]/.test(n))continue;
+    const type=t==='float'?'float':t==='int'?'long':t==='bool'?'bool':t==='vec2'?'point2D':t==='sampler2D'?'image':'color';
+    found.push({name:n,type:type,min:0,max:1,def:type==='float'?.5:type==='bool'?0:.5});
+  }
+  return found;
+}
+function stripUniformDecls(src){
+  return src.replace(/^[ \t]*uniform\s+(float|int|bool|vec2|vec3|vec4|sampler2D)\s+\w+\s*;[ \t]*\n?/gm,'');
+}
+
+function buildISF(body){
+  const cats=($('mCats').value||'Generator').split(',').map(s=>s.trim()).filter(Boolean);
+  const head={DESCRIPTION:$('mDesc').value||'',CREDIT:$('mCredit').value||'',ISFVSN:'2',CATEGORIES:cats,INPUTS:[]};
+  inputs.forEach(i=>{
+    const o={NAME:i.name,TYPE:i.type};
+    if(i.type==='float'||i.type==='long'){o.DEFAULT=+i.def;o.MIN=+i.min;o.MAX=+i.max;}
+    else if(i.type==='bool'){o.DEFAULT=+i.def?1:0;}
+    else if(i.type==='color'){o.DEFAULT=hexToArr(i.def);}
+    else if(i.type==='point2D'){o.DEFAULT=[+i.def,+i.def];}
+    head.INPUTS.push(o);
+  });
+  return '/*'+JSON.stringify(head,null,2)+'*/\n\n'+body;
+}
+function hexToArr(h){if(typeof h!=='string'||h[0]!=='#')return [1,1,1,1];
+  return [parseInt(h.slice(1,3),16)/255,parseInt(h.slice(3,5),16)/255,parseInt(h.slice(5,7),16)/255,1];}
+
+/* ================= tabla de controles ================= */
+function renderRows(){
+  const tb=$('inRows');tb.innerHTML='';
+  if(!inputs.length){tb.innerHTML='<tr><td colspan="6" style="color:rgba(240,237,230,.3);padding:8px 0;font-size:10px">Sin controles. Se detectan de los <code>uniform</code> del código, o agregá uno.</td></tr>';}
+  inputs.forEach((it,i)=>{
+    const tr=document.createElement('tr');
+    const num=it.type==='float'||it.type==='long';
+    tr.innerHTML='<td><input type="text" value="'+esc(it.name)+'" data-k="name"></td>'+
+      '<td><select data-k="type">'+TYPES.map(t=>'<option'+(t===it.type?' selected':'')+'>'+t+'</option>').join('')+'</select></td>'+
+      '<td>'+(num?'<input type="number" step="any" value="'+it.min+'" data-k="min">':'—')+'</td>'+
+      '<td>'+(num?'<input type="number" step="any" value="'+it.max+'" data-k="max">':'—')+'</td>'+
+      '<td>'+(it.type==='color'?'<input type="color" value="'+(typeof it.def==='string'?it.def:'#3ad0ff')+'" data-k="def">'
+        :it.type==='image'?'—':'<input type="number" step="any" value="'+it.def+'" data-k="def">')+'</td>'+
+      '<td><span class="del" title="quitar">✕</span></td>';
+    tr.querySelectorAll('[data-k]').forEach(el=>el.onchange=()=>{
+      const k=el.dataset.k;inputs[i][k]=(k==='name'||k==='type'||el.type==='color')?el.value:+el.value;
+      if(k==='type'){if(el.value==='color'&&typeof inputs[i].def!=='string')inputs[i].def='#3ad0ff';
+        if(el.value!=='color'&&typeof inputs[i].def==='string')inputs[i].def=.5;}
+      renderRows();convert();});
+    tr.querySelector('.del').onclick=()=>{inputs.splice(i,1);renderRows();convert();};
+    tb.appendChild(tr);
+  });
+}
+$('addIn').onclick=()=>{inputs.push({name:'control'+(inputs.length+1),type:'float',min:0,max:1,def:.5});renderRows();convert();};
+$('promote').onclick=()=>{
+  const src=$('src').value;const re=/^[ \t]*const\s+float\s+(\w+)\s*=\s*([-\d.eE]+)\s*;[ \t]*$/gm;
+  let m,n=0,out=src;
+  while((m=re.exec(src))){
+    const name=m[1],val=parseFloat(m[2]);
+    if(inputs.some(i=>i.name===name))continue;
+    const rd=x=>+(+x).toFixed(4);
+    inputs.push({name:name,type:'float',min:rd(Math.min(0,val*2)),max:rd(val===0?1:Math.abs(val)*3),def:rd(val)});
+    out=out.replace(m[0]+'\n','').replace(m[0],'');n++;
+  }
+  if(n){$('src').value=out;renderRows();convert();toast(n+' constante'+(n>1?'s':'')+' → control');}
+  else toast('no encontré const float sueltos');
+};
+
+/* ================= WebGL host ================= */
+const cv=$('gl');let gl=null,prog=null,t0=performance.now(),pausedAt=0,tex=null,frame=0,lastT=0,fpsAcc=0,fpsN=0;
+function initGL(){
+  gl=cv.getContext('webgl',{preserveDrawingBuffer:false,antialias:false});
+  if(!gl){setStatus('err','Tu navegador no expone WebGL — el preview no va a andar, pero la conversión sí.');return;}
+  const buf=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,buf);
+  gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,3,-1,-1,3]),gl.STATIC_DRAW);
+  tex=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,tex);
+  const S=64,px=new Uint8Array(S*S*4);
+  for(let y=0;y<S;y++)for(let x=0;x<S;x++){const i=(y*S+x)*4;const c=((x>>3)+(y>>3))%2;
+    px[i]=c?230:20;px[i+1]=Math.round(255*x/S);px[i+2]=Math.round(255*y/S);px[i+3]=255;}
+  gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,S,S,0,gl.RGBA,gl.UNSIGNED_BYTE,px);
+  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.REPEAT);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.REPEAT);
+  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
+}
+const VS='attribute vec2 p;varying vec2 isf_FragNormCoord;void main(){isf_FragNormCoord=p*0.5+0.5;gl_Position=vec4(p,0.0,1.0);}';
+function preamble(){
+  let u='precision highp float;\nuniform vec2 RENDERSIZE;\nuniform float TIME;\nuniform float TIMEDELTA;\nuniform int FRAMEINDEX;\nuniform vec4 DATE;\nvarying vec2 isf_FragNormCoord;\n'+
+    '#define IMG_NORM_PIXEL(i,uv) texture2D(i,uv)\n#define IMG_THIS_NORM_PIXEL(i) texture2D(i,isf_FragNormCoord)\n'+
+    '#define IMG_PIXEL(i,uv) texture2D(i,(uv)/RENDERSIZE)\n#define IMG_THIS_PIXEL(i) texture2D(i,isf_FragNormCoord)\n#define IMG_SIZE(i) RENDERSIZE\n';
+  inputs.forEach(i=>{
+    const t=i.type==='float'?'float':i.type==='long'?'int':i.type==='bool'?'bool':i.type==='point2D'?'vec2':i.type==='color'?'vec4':'sampler2D';
+    u+='uniform '+t+' '+i.name+';\n';});
+  return u;
+}
+function compile(body){
+  if(!gl)return {ok:false,log:'sin WebGL'};
+  const pre=preamble(),full=pre+'\n'+body;
+  const vs=gl.createShader(gl.VERTEX_SHADER);gl.shaderSource(vs,VS);gl.compileShader(vs);
+  const fs=gl.createShader(gl.FRAGMENT_SHADER);gl.shaderSource(fs,full);gl.compileShader(fs);
+  if(!gl.getShaderParameter(fs,gl.COMPILE_STATUS)){
+    const raw=gl.getShaderInfoLog(fs)||'';const off=pre.split('\n').length;
+    const log=raw.split('\n').filter(Boolean).map(l=>l.replace(/(\d+):(\d+):/,(m,a,b)=>a+':'+Math.max(1,(+b)-off)+' (cuerpo):')).join('\n');
+    gl.deleteShader(vs);gl.deleteShader(fs);return {ok:false,log:log||raw};}
+  const p=gl.createProgram();gl.attachShader(p,vs);gl.attachShader(p,fs);gl.linkProgram(p);
+  if(!gl.getProgramParameter(p,gl.LINK_STATUS))return {ok:false,log:gl.getProgramInfoLog(p)};
+  if(prog)gl.deleteProgram(prog);
+  prog=p;gl.useProgram(p);
+  const loc=gl.getAttribLocation(p,'p');gl.enableVertexAttribArray(loc);gl.vertexAttribPointer(loc,2,gl.FLOAT,false,0,0);
+  return {ok:true,log:''};
+}
+function renderLive(){
+  const host=$('live');host.innerHTML='';
+  const ctrl=inputs.filter(i=>i.type!=='image');
+  $('liveHint').textContent=ctrl.length?ctrl.length+' control'+(ctrl.length>1?'es':''):'sin controles';
+  ctrl.forEach(it=>{
+    const row=document.createElement('div');row.className='row';
+    if(it.type==='color'){
+      row.innerHTML='<label title="'+esc(it.name)+'">'+esc(it.name)+'</label>';
+      const c=document.createElement('input');c.type='color';c.value=typeof it.def==='string'?it.def:'#3ad0ff';
+      c.oninput=()=>{it.live=c.value;};it.live=c.value;row.appendChild(c);
+    }else if(it.type==='bool'){
+      row.innerHTML='<label>'+esc(it.name)+'</label>';
+      const c=document.createElement('input');c.type='checkbox';c.checked=!!+it.def;c.style.accentColor='var(--cyan)';
+      c.onchange=()=>{it.live=c.checked?1:0;};it.live=c.checked?1:0;row.appendChild(c);
+    }else{
+      const min=+it.min,max=+it.max,val=+it.def;
+      row.innerHTML='<label title="'+esc(it.name)+'">'+esc(it.name)+'</label>';
+      const r=document.createElement('input');r.type='range';r.min=min;r.max=max;r.step=(max-min)/200||.01;r.value=val;
+      const b=document.createElement('b');b.textContent=(+val).toFixed(2);
+      r.oninput=()=>{it.live=+r.value;b.textContent=(+r.value).toFixed(2);};it.live=val;
+      row.appendChild(r);row.appendChild(b);
+    }
+    host.appendChild(row);
+  });
+}
+function frameLoop(){
+  requestAnimationFrame(frameLoop);
+  if(!gl||!prog||!compiled)return;
+  const now=performance.now();
+  const dt=Math.min(.1,(now-lastT)/1000)||.016;lastT=now;
+  if(!paused){frame++;}
+  const t=paused?pausedAt:(now-t0)/1000;
+  if(!paused)pausedAt=t;
+  fpsAcc+=dt;fpsN++;if(fpsAcc>.5){$('fpsTag').textContent=Math.round(fpsN/fpsAcc)+' fps · '+cv.width+'×'+cv.height;fpsAcc=0;fpsN=0;}
+  const W=cv.clientWidth||640;
+  if(cv.width!==Math.round(W)){cv.width=Math.round(W);cv.height=Math.round(W*9/16);}
+  gl.viewport(0,0,cv.width,cv.height);
+  gl.useProgram(prog);
+  const U=n=>gl.getUniformLocation(prog,n);
+  gl.uniform2f(U('RENDERSIZE'),cv.width,cv.height);
+  gl.uniform1f(U('TIME'),t);gl.uniform1f(U('TIMEDELTA'),dt);gl.uniform1i(U('FRAMEINDEX'),frame);
+  const d=new Date();gl.uniform4f(U('DATE'),d.getFullYear(),d.getMonth()+1,d.getDate(),d.getHours()*3600+d.getMinutes()*60+d.getSeconds());
+  let unit=0;
+  inputs.forEach(it=>{const l=U(it.name);if(!l)return;
+    if(it.type==='image'){gl.activeTexture(gl.TEXTURE0+unit);gl.bindTexture(gl.TEXTURE_2D,tex);gl.uniform1i(l,unit);unit++;}
+    else if(it.type==='color'){const a=hexToArr(it.live||it.def);gl.uniform4f(l,a[0],a[1],a[2],a[3]);}
+    else if(it.type==='point2D'){const v=it.live===undefined?+it.def:+it.live;gl.uniform2f(l,v,v);}
+    else if(it.type==='bool'){gl.uniform1i(l,(it.live===undefined?+it.def:+it.live)?1:0);}
+    else if(it.type==='long'){gl.uniform1i(l,Math.round(it.live===undefined?+it.def:+it.live));}
+    else gl.uniform1f(l,it.live===undefined?+it.def:+it.live);});
+  gl.drawArrays(gl.TRIANGLES,0,3);
+}
+
+/* ================= flujo ================= */
+function convert(){
+  const raw=$('src').value.trim();
+  if(!raw){setStatus('info','Pegá un shader y tocá <b>⇄ CONVERTIR</b>.');$('out').value='';compiled=null;return;}
+  const d=dialect==='auto'?detectDialect(raw):dialect;
+  const imported=importISF(parseISFHeader(raw));
+  // controles detectados de los uniform del código fuente
+  scanUniforms(raw).forEach(u=>{if(!inputs.some(i=>i.name===u.name))inputs.push(u);});
+  const r=convertBody(stripUniformDecls(raw),d);
+  const body=r.body;
+  const isf=buildISF(body);
+  $('out').value=isf;
+  renderRows();renderLive();
+  const c=compile(body);
+  compiled=c.ok?body:null;
+  if(c.ok){
+    const extra=imported?['encabezado ISF leído: '+imported+' control'+(imported>1?'es':'')+' importado'+(imported>1?'s':'')]:[];
+    setStatus('ok','<b>Compila ✓</b> — dialecto detectado: '+d+(r.notes.concat(extra).length?'<br>· '+r.notes.concat(extra).join('<br>· '):''));
+    if(!paused){t0=performance.now();frame=0;}
+  }else{
+    setStatus('err','No compila:\n'+c.log+'\n\n(las líneas están renumeradas al cuerpo del shader, sin el preámbulo ISF)');
+  }
+}
+function setStatus(kind,html){const s=$('status');s.className='status '+kind;s.innerHTML=html;}
+$('conv').onclick=convert;
+$('src').addEventListener('input',()=>{clearTimeout(window._t);window._t=setTimeout(convert,700);});
+['mDesc','mCredit','mCats'].forEach(id=>$(id).oninput=()=>{if($('out').value)$('out').value=buildISF(compiled||convertBody(stripUniformDecls($('src').value),dialect==='auto'?detectDialect($('src').value):dialect).body);});
+$('clear').onclick=()=>{$('src').value='';$('out').value='';inputs=[];compiled=null;renderRows();renderLive();setStatus('info','Listo para un shader nuevo.');};
+$('reset').onclick=()=>{t0=performance.now();pausedAt=0;frame=0;};
+$('pause').onclick=()=>{paused=!paused;if(!paused)t0=performance.now()-pausedAt*1000;$('pause').textContent=paused?'▶ SEGUIR':'⏸ PAUSAR';};
+$('dl').onclick=()=>{if(!$('out').value)return toast('convertí primero');
+  const name=($('mName').value||'mi-shader').replace(/[^\w-]+/g,'-')+'.fs';
+  const b=new Blob([$('out').value],{type:'text/plain'});const a=document.createElement('a');
+  a.href=URL.createObjectURL(b);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),3000);toast(name+' ⬇');};
+$('copy').onclick=async()=>{try{await navigator.clipboard.writeText($('out').value);toast('ISF copiado ⧉');}catch(e){toast('no se pudo copiar');}};
+
+(function dial(){const h=$('dialects');[['auto','Detectar solo'],['shadertoy','Shadertoy'],['glsl','GLSL suelto'],['isf','Ya es ISF']].forEach(([v,l])=>{
+  const d=document.createElement('div');d.className='chip'+(v==='auto'?' on':'');d.textContent=l;
+  d.onclick=()=>{dialect=v;[...h.children].forEach(c=>c.classList.remove('on'));d.classList.add('on');convert();};h.appendChild(d);});})();
+
+const EX1=`// generador — plasma con control de velocidad y escala
+const float speed = 0.6;
+const float scale = 3.0;
+
+void mainImage( out vec4 fragColor, in vec2 fragCoord ){
+    vec2 uv = (fragCoord - 0.5*iResolution.xy) / iResolution.y;
+    uv *= scale;
+    float t = iTime * speed;
+    float v = sin(uv.x + t) + sin(uv.y + t*1.3)
+            + sin(length(uv)*2.0 - t*2.0);
+    vec3 col = 0.5 + 0.5*cos(vec3(0.0,2.0,4.0) + v*1.6);
+    col *= 0.6 + 0.4*sin(uv.x*8.0 + t*3.0);
+    fragColor = vec4(col, 1.0);
+}`;
+const EX2=`// filtro — desplazamiento RGB sobre la imagen de entrada
+uniform float amount;
+
+void mainImage( out vec4 fragColor, in vec2 fragCoord ){
+    vec2 uv = fragCoord / iResolution.xy;
+    float w = amount * 0.04 * (0.5 + 0.5*sin(iTime*3.0 + uv.y*40.0));
+    float r = texture(iChannel0, uv + vec2( w, 0.0)).r;
+    float g = texture(iChannel0, uv).g;
+    float b = texture(iChannel0, uv + vec2(-w, 0.0)).b;
+    fragColor = vec4(r, g, b, 1.0);
+}`;
+$('ex1').onclick=()=>{inputs=[];$('src').value=EX1;$('mName').value='plasma-hg';$('mDesc').value='Plasma con velocidad y escala';$('mCats').value='Generator';convert();$('promote').click();};
+$('ex2').onclick=()=>{inputs=[];$('src').value=EX2;$('mName').value='rgb-shift-hg';$('mDesc').value='Desplazamiento RGB animado';$('mCats').value='Filter, Glitch';convert();};
+
+function esc(s){return String(s).replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));}
+function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),1600);}
+initGL();renderRows();renderLive();frameLoop();
+</script>
+</body></html>

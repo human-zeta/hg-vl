@@ -43,6 +43,10 @@
   .rrow button:hover{border-color:var(--acid);color:var(--acid);}
   .note{font-size:10px;color:rgba(240,237,230,.4);line-height:1.7;margin-top:22px;border-left:1px solid rgba(184,255,0,.3);padding-left:12px;}
   .note b{color:var(--acid);font-weight:400;}
+
+  /* a11y — foco visible al navegar con teclado + respeto a reduced-motion */
+  :focus-visible{outline:2px solid var(--acid,#b8ff00);outline-offset:2px;}
+  @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important;scroll-behavior:auto !important;}}
 </style></head><body><script src="/gate/gate.js"></script>
 <div class="wrap">
   <header>
@@ -67,6 +71,7 @@
       <div class="ctrl"><label>duración <b data-v="dur">3.0s</b></label><input type="range" id="dur" min="0.5" max="15" step="0.1" value="3"></div>
       <div class="ctrl"><label>fps <b data-v="fps">12</b></label><input type="range" id="fps" min="5" max="24" step="1" value="12"></div>
       <div class="ctrl"><label>ancho <b data-v="width">480px</b></label><input type="range" id="width" min="160" max="720" step="20" value="480"></div>
+      <div class="ctrl"><label>tramado (dither) <b id="dithV">off</b></label><input type="checkbox" id="dith" style="accent-color:var(--acid);width:16px;height:16px;cursor:pointer;"></div>
       <button id="go">⚡ CONVERTIR A GIF</button>
       <div id="bar"><i></i></div>
       <div id="status"></div>
@@ -119,6 +124,7 @@ function loadVideo(file){
 const labels={ start:v=>v.toFixed(1)+'s', dur:v=>v.toFixed(1)+'s', fps:v=>String(v|0), width:v=>(v|0)+'px' };
 function syncLabels(){ ['start','dur','fps','width'].forEach(id=>{ const el=document.querySelector('[data-v="'+id+'"]'); if(el) el.textContent=labels[id](+$(id).value); }); }
 ['start','dur','fps','width'].forEach(id=>$(id).addEventListener('input', syncLabels));
+$('dith').addEventListener('change',()=>{ $('dithV').textContent=$('dith').checked?'on':'off'; });
 
 function seek(t){ return new Promise(res=>{ const h=()=>{ video.removeEventListener('seeked',h); res(); }; video.addEventListener('seeked',h); video.currentTime=t; }); }
 
@@ -133,13 +139,32 @@ async function convert(){
 
   $('go').disabled=true; $('bar').classList.add('on'); $('result').classList.remove('on');
   const gif = GIFEncoder();
+  // tramado ordenado Bayer 4×4: rompe el banding de los degradés al bajar a 256 colores
+  const BAYER=[[0,8,2,10],[12,4,14,6],[3,11,1,9],[15,7,13,5]];
+  const ditherOn=$('dith').checked;
+  function bayer(data,w,h){ const k=22;
+    for(let y=0;y<h;y++){ const row=BAYER[y&3];
+      for(let x=0;x<w;x++){ const i=(y*w+x)*4, t=(row[x&3]/16-0.5)*k;
+        data[i]+=t; data[i+1]+=t; data[i+2]+=t; } } }
   try{
+    // pasada 0: paleta GLOBAL con hasta 8 muestras del clip — cuantizar por frame
+    // hacía parpadear los colores entre frames
+    $('status').innerHTML='calculando paleta global…';
+    const nSamp=Math.min(8,total); const picks=[];
+    for(let s=0;s<nSamp;s++){
+      const t=Math.min(start + (s+0.5)/nSamp*dur, (video.duration||start+dur));
+      await seek(t); ctx.drawImage(video,0,0,width,height);
+      picks.push(ctx.getImageData(0,0,width,height).data);
+    }
+    const cat=new Uint8ClampedArray(picks.reduce((n,a)=>n+a.length,0));
+    { let o=0; for(const a of picks){ cat.set(a,o); o+=a.length; } }
+    const palette=quantize(cat,256);
     for(let i=0;i<total;i++){
       const t = Math.min(start + i/fps, (video.duration||start+dur));
       await seek(t);
       ctx.drawImage(video, 0,0, width, height);
       const { data } = ctx.getImageData(0,0,width,height);
-      const palette = quantize(data, 256);
+      if(ditherOn) bayer(data,width,height);
       const index = applyPalette(data, palette);
       gif.writeFrame(index, width, height, { palette, delay });
       const p = Math.round((i+1)/total*100);

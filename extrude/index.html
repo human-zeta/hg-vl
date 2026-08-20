@@ -84,6 +84,10 @@ input[type=file]{display:none;}
 .err{color:var(--red);font-size:9.5px;margin-top:8px;line-height:1.5;display:none;}
 .panel::-webkit-scrollbar{width:8px;}
 .panel::-webkit-scrollbar-thumb{background:var(--border-strong);border-radius:8px;}
+
+  /* a11y — foco visible al navegar con teclado + respeto a reduced-motion */
+  :focus-visible{outline:2px solid var(--acid,#b8ff00);outline-offset:2px;}
+  @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important;scroll-behavior:auto !important;}}
 </style>
 </head>
 <body>

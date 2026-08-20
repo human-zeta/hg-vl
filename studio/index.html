@@ -117,6 +117,10 @@ html,body{background:var(--black);color:var(--white);font-family:var(--mono);ove
   #creds{gap:1.2rem;bottom:11vh;}
 }
 @media(prefers-reduced-motion:reduce){ .enter{animation:none;} #hint .a{animation:none;} }
+
+  /* a11y — foco visible al navegar con teclado + respeto a reduced-motion */
+  :focus-visible{outline:2px solid var(--acid,#b8ff00);outline-offset:2px;}
+  @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important;scroll-behavior:auto !important;}}
 </style>
 </head>
 <body>

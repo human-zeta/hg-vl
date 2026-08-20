@@ -78,6 +78,10 @@
     .catbtn .cname small,.catbtn .ccount{display:none;}
     .brandbox .brand{font-size:46px;}
   }
+
+  /* a11y — foco visible al navegar con teclado + respeto a reduced-motion */
+  :focus-visible{outline:2px solid var(--acid,#b8ff00);outline-offset:2px;}
+  @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important;scroll-behavior:auto !important;}}
 </style></head><body>
 <canvas id="bg"></canvas>
 <div class="scrim"></div>
@@ -135,8 +139,9 @@ const CATS=[
   {id:'marca',ico:'🎨',name:'Marca / Creador',sub:'identidad · contenido'},
 ];
 const APPS=[
-  {cat:'shaders',ico:'⚡',name:'THE FORGE',href:'/forge/',tag:'shaders · procedural',feat:1,desc:`Generador de shaders con 18 familias (kaleido, fractal, raymarch, voronoi…). GENERAR re-rollea infinitas variantes. Export .fs para VDMX.`},
+  {cat:'shaders',ico:'⚡',name:'THE FORGE',href:'/forge/',tag:'shaders · procedural',feat:1,desc:`Generador de shaders con 46 familias (kaleido, fractal, raymarch, orbit trap, phasor…) y 15 efectos. Semillas reproducibles y compartibles por link, presets, historial, audio-reactivo por micrófono, export PNG en alta, grabación WebM y .fs de ISF para VDMX/Resolume con dropdown de familias.`},
   {cat:'shaders',ico:'✦',name:'AETHER 2.0',href:'/aether-2/',tag:'shaders · IA',feat:1,desc:`El forge con IA: describís un shader y un modelo (Gemini/Claude/Grok) lo genera, compila y se autocorrige hasta renderear. Más laboratorio de controles.`},
+  {cat:'shaders',ico:'⇄',name:'PUENTE ISF',href:'/isf/',tag:'shaders · vdmx/resolume',feat:1,desc:`Pegá un shader de Shadertoy (o GLSL suelto) y salí con un .fs de ISF listo para VDMX, Resolume o Millumin: traduce los uniforms, arma el encabezado JSON, detecta tus controles y te los deja como sliders. El preview es un mini host ISF: si compila acá, compila allá.`},
   {cat:'video',ico:'🎞️',name:'VIDEO → GIF',href:'/gif/',tag:'video · conversión',desc:`Convertí clips a GIF para web. Recortás, elegís fps y ancho, y descargás. 100% local.`},
   {cat:'video',ico:'∞',name:'LOOP',href:'/loop/',tag:'video · seamless',desc:`Loops sin salto de clips cortos: boomerang (ida y vuelta) o crossfade. Output GIF o WebM.`},
   {cat:'video',ico:'▦',name:'FRAMES',href:'/frames/',tag:'video · fotogramas',desc:`Extraé N fotogramas de un video. Descargá cada uno o un contact sheet con todos.`},
@@ -149,11 +154,15 @@ const APPS=[
   {cat:'audio',ico:'⏱',name:'COMPÁS',href:'/compas/',tag:'audio · loop frame-accurate',desc:`Calculá la duración exacta de un loop a partir de BPM, fps y compases. Te dice si hay drift y te sugiere el BPM ideal para que el loop cierre sin salto.`},
   {cat:'audio',ico:'◴',name:'PULSO',href:'/pulso/',tag:'audio reactivo · shader',desc:`Conectá un audio o el micrófono a un shader ISF en vivo: mapeá graves/medios/agudos y pulso a los parámetros del shader y reaccioná en tiempo real.`},
   {cat:'audio',ico:'◫',name:'STEMS',href:'/stems/',tag:'audio · separación ML',feat:1,desc:`Separá un tema en voz, batería, bajo y resto con IA (Demucs), 100% en tu navegador. Escuchá cada stem solo/muteado y descargalos en WAV.`},
+  {cat:'audio',ico:'▮',name:'CLICK',href:'/click/',tag:'metrónomo · mapa de tempo',desc:`Metrónomo que entiende la estructura del tema: armás el mapa (intro, verso, drop…) con el BPM y el compás de cada parte y te llevás el click track en WAV para la DAW más los marcadores en CSV con timecode para Premiere o Resolve. Tap tempo, subdivisiones y cuenta de entrada.`},
+  {cat:'audio',ico:'◎',name:'AUDIOGRAMA',href:'/audiograma/',tag:'audio · video vertical',feat:1,desc:`Tu tema convertido en video: onda animada con el espectro real, arte de tapa y título. Elegís el fragmento (15s, 30s, 1 min o completo), el formato (9:16, 4:5, 1:1, 16:9) y uno de 5 estilos de onda. Graba con el audio adentro, en mp4 o webm según tu navegador. Análisis y grabación 100% locales.`},
   {cat:'color',ico:'◩',name:'LUT MAKER',href:'/lut/',tag:'color · grading · .cube',desc:`Diseñá un look con sliders (temperatura, contraste, split-tone…) o capturá cualquier filtro externo con Hald CLUT. Exportás .cube para Resolve, Premiere, VDMX o Resolume.`},
   {cat:'color',ico:'◨',name:'GRADIENTES',href:'/gradientes/',tag:'degradé · css/svg/png',desc:`Generá degradés linear, radial, conic y mesh (mezcla de varios puntos de color que arrastrás). Editás stops, ángulo y posición, GENERAR re-rollea combinaciones armónicas (análoga, complementaria, triádica), y exportás CSS, SVG y PNG en el tamaño que quieras.`},
+  {cat:'color',ico:'◑',name:'CONTRASTE',href:'/contraste/',tag:'color · accesibilidad · wcag',desc:`Que tus colores se lean: razón de contraste contra WCAG AA/AAA, arreglo de un clic con el tono más cercano que sí pasa, grilla de todos los pares de la paleta y simulador de daltonismo (protanopía, deuteranopía, tritanopía, acromatopsia) sobre los colores y sobre tus propias capturas.`},
   {cat:'tipografia',ico:'Aa',name:'TIPOS',href:'/tipos/',tag:'tipografía · pares · export web',desc:`Combinaciones tipográficas infinitas: GENERAR re-rollea pares (título + cuerpo) con reglas de contraste, fijás el que te gusta con candado y ajustás escala/interlineado/tracking. Banco grande (todo Google Fonts) con filtro gratis/pagas. Export directo a tu web.`},
   {cat:'tipografia',ico:'Ⓐ',name:'LETRAS',href:'/letras/',tag:'lettering · graffiti · logos',feat:1,desc:`Hacé logos de palabra con muchos estilos: brutalista, display, caligrafía de pluma, graffiti + efectos — contornos múltiples, profundidad 3D, cromo, degradé, glow neón, curva/arco, inclinación y textura spray. GENERAR re-rollea estilos infinitos. Export PNG transparente en alta (2×/4×).`},
   {cat:'tipografia',ico:'🔠',name:'KINETIC TYPE',href:'/kinetic/',tag:'texto animado · .webm alpha',desc:`Animaciones de texto para videos y streams: typewriter, scramble/decode, glitch reveal, pop, wave y neón. Elegís fuente, color y ritmo, y exportás un .webm con canal alpha real (para OBS, Premiere o After Effects) o un PNG del texto final. La grabación pasa en tu máquina.`},
+  {cat:'marca',ico:'▣',name:'AFICHE',href:'/afiche/',tag:'flyer · show · print',feat:1,desc:`El flyer de la fecha sin abrir un editor: line-up, día, lugar, entrada y QR de entradas, en 5 composiciones (brutal, centro, franjas, diagonal, festival) y 5 formatos (story, post, cuadrado, A4, A5). Fondo generativo o tu foto en duotono. GENERAR re-rollea. PNG 1× y 2× para imprenta.`},
   {cat:'control',ico:'◉',name:'CONTROL',href:'/control/',tag:'midi · osc',desc:`Control surface web (faders, knobs, pads, XY) que dispara MIDI a VDMX/Resolume/Ableton vía puerto virtual — sin controladora. Configurable y guardable. OSC por WebSocket.`},
   {cat:'control',ico:'▤',name:'SMPTE',href:'/smpte/',tag:'timecode · LTC · sync',desc:`Generador y checker de timecode LTC: creá un tono de test (24/25/30/29.97df) y descargalo en WAV, o escuchá tu instalación real por mic/línea para verificar lock, fps y errores. Incluye guía de cómo armar el circuito de audio de un show.`},
   {cat:'control',ico:'📺',name:'TEST PATTERNS',href:'/test-patterns/',tag:'calibración · pantalla · venue',desc:`Cartas de ajuste para calibrar proyectores y pantallas: barras SMPTE, convergencia, foco, geometría/overscan, escala de grises, PLUGE y campos sólidos para píxeles muertos. Mandás a pantalla completa sobre la salida real con detección de resolución/refresh, ciclás R/G/B/W/K y exportás PNG.`},

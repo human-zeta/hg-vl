@@ -65,6 +65,10 @@
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
   .foot{font-size:10px;color:rgba(240,237,230,.35);letter-spacing:.1em;margin-top:44px;text-align:center;line-height:1.9;}
   .foot a{color:rgba(240,237,230,.5);text-decoration:none;} .foot a:hover{color:var(--violet);}
+
+  /* a11y — foco visible al navegar con teclado + respeto a reduced-motion */
+  :focus-visible{outline:2px solid var(--acid,#b8ff00);outline-offset:2px;}
+  @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important;scroll-behavior:auto !important;}}
 </style></head><body>
 <div class="wrap">
   <header>
@@ -273,6 +277,40 @@ async function alphaOk(type){try{const cv=document.createElement('canvas');cv.wi
   const oc=document.createElement('canvas');oc.width=oc.height=64;const ox=oc.getContext('2d');ox.fillStyle='#0f0';ox.fillRect(0,0,64,64);ox.drawImage(v,0,0,64,64);
   const cc=ox.getImageData(2,2,1,1).data;return cc[1]>150&&cc[0]<120&&cc[2]<120;}catch(e){return false;}}
 
+/* Chrome no escribe Duration en los WebM de MediaRecorder → no seekeable en Premiere/AE.
+   Patch EBML (Segment→Info+Duration) si es seguro; si no, devuelve el blob tal cual.
+   Re-implementación propia de la técnica del paquete MIT fix-webm-duration. */
+async function fixWebmDuration(blob, durationMs){
+  try{
+    const u8=new Uint8Array(await blob.arrayBuffer()); let pos=0;
+    const rv=(keep)=>{ if(pos>=u8.length)return null; const f=u8[pos]; if(!f)return null;
+      let len=1; for(let m=0x80;!(f&m);m>>=1)len++;
+      if(len>8||pos+len>u8.length)return null;
+      let val=keep?f:f&(0xFF>>len); let ones=!keep&&val===(0xFF>>len);
+      for(let i=1;i<len;i++){ val=val*256+u8[pos+i]; if(u8[pos+i]!==0xFF)ones=false; }
+      pos+=len; return {val,len,unknown:ones&&!keep}; };
+    let segC=-1, segUnk=false;
+    while(pos<u8.length){ const id=rv(true); if(!id)return blob; const sz=rv(false); if(!sz)return blob;
+      if(id.val===0x18538067){ segC=pos; segUnk=sz.unknown; break; } pos+=sz.val; }
+    if(segC<0||!segUnk) return blob;
+    pos=segC; let infoId=-1, infoC=-1, infoSz=0;
+    while(pos<u8.length){ const ip=pos; const id=rv(true); if(!id)return blob;
+      const sz=rv(false); if(!sz||sz.unknown)return blob;
+      if(id.val===0x114D9B74||id.val===0x1F43B675) return blob;
+      if(id.val===0x1549A966){ infoId=ip; infoC=pos; infoSz=sz.val; break; } pos+=sz.val; }
+    if(infoC<0) return blob;
+    pos=infoC; let scale=1e6;
+    while(pos<infoC+infoSz){ const id=rv(true); if(!id)return blob; const sz=rv(false); if(!sz)return blob;
+      if(id.val===0x4489) return blob;
+      if(id.val===0x2AD7B1){ let v=0; for(let i=0;i<sz.val;i++)v=v*256+u8[pos+i]; if(v)scale=v; } pos+=sz.val; }
+    const dur=new Uint8Array(11); dur[0]=0x44; dur[1]=0x89; dur[2]=0x88;
+    new DataView(dur.buffer).setFloat64(3, durationMs*1e6/scale);
+    const ns=infoSz+11, sv=new Uint8Array(8); sv[0]=0x01;
+    for(let i=7,v=ns;i>=1;i--){ sv[i]=v&0xFF; v=Math.floor(v/256); }
+    return new Blob([u8.slice(0,infoId+4),sv,u8.slice(infoC,infoC+infoSz),dur,u8.slice(infoC+infoSz)],{type:blob.type||'video/webm'});
+  }catch(e){ return blob; }
+}
+
 async function record(){
   const type=['video/webm;codecs=vp9','video/webm;codecs=vp8'].find(t=>MediaRecorder.isTypeSupported(t));
   if(!type){toast('sin soporte de grabación webm');return;}
@@ -289,7 +327,7 @@ async function record(){
   await new Promise(res=>{function fr(){const t=(performance.now()-t0)/1000*cfg.spd;const p=Math.min(1,t/dur);eng2.drawFrame(Math.min(t,dur));$('recinfo').textContent='grabando '+Math.round(p*100)+'%';if(t<dur){requestAnimationFrame(fr);}else res();}fr();});
   await new Promise(r=>setTimeout(r,100));
   mr.stop();await done;
-  const blob=new Blob(chunks,{type});
+  const blob=await fixWebmDuration(new Blob(chunks,{type}), performance.now()-t0);
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='hg-kinetic.webm';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),3000);
   $('recinfo').textContent='✓ listo · '+(blob.size/1024|0)+' KB · '+dur.toFixed(1)+'s';
   $('rec').disabled=false;$('replay').disabled=false;$('rec').textContent='⏺ GRABAR .webm';

@@ -102,6 +102,10 @@
     .wrap{max-width:none;padding:0;} header,.intro,.foot,.toast{display:none!important;}
     .cols{display:block;} .editor{position:static;border:none;background:none;padding:0;margin-bottom:16px;max-height:none;}
     .doc{box-shadow:none;border-radius:0;padding:0;} .opt:not(.on){display:none;} .na:not(.on){display:none;} .cta a{border:1px solid #333;color:#000;background:none;} }
+
+  /* a11y — foco visible al navegar con teclado + respeto a reduced-motion */
+  :focus-visible{outline:2px solid var(--acid,#b8ff00);outline-offset:2px;}
+  @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important;scroll-behavior:auto !important;}}
 </style></head><body>
 <div class="wrap">
   <header>

@@ -49,6 +49,10 @@
   .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--acid);color:#050505;font-size:11px;font-weight:700;letter-spacing:.08em;padding:10px 18px;border-radius:6px;opacity:0;pointer-events:none;transition:.25s;z-index:9;} .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
   .foot{font-size:10px;color:rgba(240,237,230,.35);letter-spacing:.1em;margin-top:36px;text-align:center;}
   @media print{ @page{margin:15mm;} body::before{display:none;} body{background:#fff;} .wrap{max-width:none;padding:0;} header,.intro,.editor,.foot,.toast{display:none!important;} .cols{display:block;} .doc{box-shadow:none;border-radius:0;padding:0;} }
+
+  /* a11y — foco visible al navegar con teclado + respeto a reduced-motion */
+  :focus-visible{outline:2px solid var(--acid,#b8ff00);outline-offset:2px;}
+  @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important;scroll-behavior:auto !important;}}
 </style></head><body>
 <div class="wrap">
   <header>

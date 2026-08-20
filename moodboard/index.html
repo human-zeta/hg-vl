@@ -30,6 +30,10 @@
   .prtitle{display:none;}
   @media print{ @page{margin:12mm;} body::before{display:none;} body{background:#fff;} .wrap{max-width:none;padding:0;} header,.intro,.bar,.foot,.toast,.tile .rm{display:none!important;}
     .prtitle{display:block;font-family:'Bebas Neue',sans-serif;font-size:26px;color:#12100c;margin-bottom:14px;} .board{column-count:3;} .tile{border-color:#ddd;background:#fff;} .tile .note{color:#12100c;} .tile .clabel{color:#333;} }
+
+  /* a11y — foco visible al navegar con teclado + respeto a reduced-motion */
+  :focus-visible{outline:2px solid var(--acid,#b8ff00);outline-offset:2px;}
+  @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important;scroll-behavior:auto !important;}}
 </style></head><body>
 <div class="wrap">
   <header>

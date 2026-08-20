@@ -176,6 +176,10 @@ footer a{color:rgba(184,255,0,0.6);text-decoration:none;}
   .nl-form button{flex:1 1 100%;}
   .btn-row{gap:0.8rem;}
 }
+
+  /* a11y — foco visible al navegar con teclado + respeto a reduced-motion */
+  :focus-visible{outline:2px solid var(--acid,#b8ff00);outline-offset:2px;}
+  @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important;scroll-behavior:auto !important;}}
 </style>
 </head>
 <body>
