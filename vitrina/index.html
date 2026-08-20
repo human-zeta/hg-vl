@@ -340,20 +340,34 @@ function allText(){
 }
 function copy(t,msg){ if(navigator.clipboard) navigator.clipboard.writeText(t).then(function(){toast(msg||'Copiado');},function(){prompt('Copiá:',t);}); else prompt('Copiá:',t); }
 
-/* ============ BUSCAR EN GOOGLE (Places, patrón de AUDITORÍA) ============ */
-var GMAPS_KEY='AIzaSyCnXWhyWR6VxayZBDcTUu7AkkeH60bU180';
+/* ============ BUSCAR EN GOOGLE (Places, patrón de AUDITORÍA) ============
+   La clave NUNCA va en el código (esquema Depo Zeta, 2026-08-20): vive en
+   localStorage['hg_gmaps_key'] de este dispositivo — la MISMA que usa
+   AUDITORÍA en este dominio, así se pega una sola vez. */
+var GKEY_LS='hg_gmaps_key';
+function getGKey(){ try{ return localStorage.getItem(GKEY_LS)||''; }catch(e){ return ''; } }
+function setGKey(v){ try{ localStorage.setItem(GKEY_LS,v); }catch(e){} }
 var mapsPromise=null;
 function loadMaps(){
   if(window.google&&google.maps&&google.maps.places) return Promise.resolve();
+  if(!getGKey()) return Promise.reject(new Error('nokey'));
   if(mapsPromise) return mapsPromise;
   mapsPromise=new Promise(function(res,rej){
     window.__vitrinaMapsCb=function(){ res(); };
     var s=document.createElement('script');
-    s.src='https://maps.googleapis.com/maps/api/js?key='+GMAPS_KEY+'&libraries=places&callback=__vitrinaMapsCb';
-    s.async=true; s.onerror=function(){ rej(new Error('maps')); };
+    s.src='https://maps.googleapis.com/maps/api/js?key='+encodeURIComponent(getGKey())+'&libraries=places&callback=__vitrinaMapsCb';
+    s.async=true; s.onerror=function(){ mapsPromise=null; rej(new Error('maps')); };
     document.head.appendChild(s);
   });
   return mapsPromise;
+}
+function showKeyPrompt(){
+  $('gResults').innerHTML='<div class="gmsg">La búsqueda usa Google Places y necesita tu clave de Maps — se guarda solo en este dispositivo (la misma que AUDITORÍA y Depo Zeta).<br><input type="password" id="gKeyIn" placeholder="AIza…" style="margin:.5rem 0;width:min(300px,90%);padding:6px 8px;background:transparent;border:1px solid rgba(255,255,255,.25);color:inherit;border-radius:6px;"> <button type="button" id="gKeyBtn">Guardar y buscar</button></div>';
+  $('gKeyBtn').addEventListener('click',function(){
+    var v=$('gKeyIn').value.trim();
+    if(!v){ toast('Pegá una clave primero'); return; }
+    setGKey(v); doSearch();
+  });
 }
 var RUBRO_MAP={restaurant:'restaurante',cafe:'cafetería',bakery:'panadería',bar:'bar',meal_takeaway:'rotisería',meal_delivery:'delivery',clothing_store:'tienda de ropa',store:'tienda',beauty_salon:'peluquería',hair_care:'peluquería',spa:'spa',gym:'gimnasio',pharmacy:'farmacia',florist:'florería',book_store:'librería',hardware_store:'ferretería',car_repair:'taller mecánico',veterinary_care:'veterinaria',dentist:'odontología',lodging:'hotel',real_estate_agency:'inmobiliaria',supermarket:'supermercado',jewelry_store:'joyería',shoe_store:'zapatería',electronics_store:'electrónica',furniture_store:'mueblería',liquor_store:'vinoteca',cafe_bar:'bar'};
 function typeToRubro(types){ if(!types) return ''; for(var i=0;i<types.length;i++){ if(RUBRO_MAP[types[i]]) return RUBRO_MAP[types[i]]; } return (types[0]||'').replace(/_/g,' ').replace('point of interest','').replace('establishment','').trim(); }
@@ -365,6 +379,7 @@ function renderGPhoto(){
 }
 function doSearch(){
   var q=$('gq').value.trim(); if(!q){ toast('Escribí el nombre + ciudad'); return; }
+  if(!getGKey()){ showKeyPrompt(); return; }
   $('gResults').innerHTML='<div class="gmsg">Buscando en Google…</div>';
   var done=false;
   var to=setTimeout(function(){ if(done) return; done=true;
