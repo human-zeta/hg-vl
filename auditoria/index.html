@@ -581,7 +581,9 @@
         <button class="btn sm" onclick="searchGooglePlaces()">⌖ BUSCAR EN GOOGLE MAPS</button>
         <button class="btn sm" onclick="relevarZona()">⟲ RELEVAR ZONA (12 rubros)</button>
         <button class="btn sm" onclick="searchAllCities()">🌎 BUSCAR LAS 25 CIUDADES</button>
+        <button class="btn ghost sm" onclick="scanContactos()" id="scan-contactos-btn">📇 ESCANEAR CONTACTOS (webs)</button>
       </div>
+      <p id="scan-contactos-status" class="status-msg" style="margin:-.2rem 0 .4rem;"></p>
       <p style="font-size:.7rem;color:rgba(240,237,230,.4);margin:-.3rem 0 .5rem;">
         "Buscar en Google Maps" (un lugar, el que escribas) trae hasta ~60 resultados y, al guardar,
         completa <b>web y teléfono</b> desde la ficha de Google automáticamente (las redes
@@ -1028,6 +1030,13 @@ function selectBiz(id, kind){
   side.innerHTML = `<h3>${escHtml(b.name)}${kind==='pending'?'<span class="pendtag">PENDIENTE</span>':''}<button onclick="closeSide()">✕ cerrar</button></h3>
   ${b.photo ? `<img class="side-photo" src="${escHtml(b.photo)}" alt="Foto de ${escHtml(b.name)}" loading="lazy" onerror="this.remove()">` : ''}
   <p style="font-size:11px;color:rgba(240,237,230,.5);margin-bottom:.3rem">${escHtml(b.type||'Comercio')}${b.city?' · 🏙 '+escHtml(b.city):''} · 📍 ${escHtml(b.address||'sin dirección')}${b.phone?' · ☎ '+escHtml(b.phone):''}</p>
+  ${(b.waPhone||b.email||b.igUrl||b.fbUrl||b.ttUrl) ? `<div class="side-apps" style="margin-bottom:.4rem">${[
+    b.waPhone ? `<a class="btn ghost sm" href="https://wa.me/${escHtml(b.waPhone)}" target="_blank" rel="noopener">💬 WhatsApp</a>` : '',
+    b.email ? `<a class="btn ghost sm" href="mailto:${escHtml(b.email)}">✉ ${escHtml(b.email)}</a>` : '',
+    b.igUrl ? `<a class="btn ghost sm" href="${escHtml(b.igUrl)}" target="_blank" rel="noopener">📷 Instagram</a>` : '',
+    b.fbUrl ? `<a class="btn ghost sm" href="${escHtml(b.fbUrl)}" target="_blank" rel="noopener">👍 Facebook</a>` : '',
+    b.ttUrl ? `<a class="btn ghost sm" href="${escHtml(b.ttUrl)}" target="_blank" rel="noopener">🎵 TikTok</a>` : ''
+  ].filter(Boolean).join('')}</div>` : ''}
   <div class="dash-score"><div class="ds-top"><span>Salud digital · <b style="font-size:11px;font-family:'Space Mono',monospace;color:rgba(240,237,230,.6)">${scoreLabel(sc)}</b></span><b>${sc}<span style="font-size:13px;color:rgba(240,237,230,.4)">/100</span></b></div><div class="ds-bar"><div class="ds-fill" style="width:${sc}%"></div></div></div>
   <div class="dash-metrics">
     <div class="dm"><div class="v">${b.rating!=null?'★ '+b.rating:'—'}${deltaHtml('rating')}</div><div class="l">Rating Google</div></div>
@@ -1420,6 +1429,9 @@ async function enrichRedes(record){
     if(d.alive === true) record.web = true;
     let hit = false;
     for(const k of ['ig','fb','wa','tt']){ if(d[k]===true){ record[k]=true; hit=true; } }
+    // contactos concretos (agenda, 2026-08-20): el worker extendido también
+    // devuelve URLs/teléfono/email — versiones viejas del worker no los traen.
+    if(d.contacts){ for(const k of ['igUrl','fbUrl','ttUrl','waPhone','email']){ if(d.contacts[k]) record[k]=d.contacts[k]; } }
     if(hit || d.alive!==null){
       record.notes = (record.notes||'').replace(
         /Instagram\/Facebook\/WhatsApp\/TikTok SIN VERIFICAR[^.]*\./,
@@ -1428,6 +1440,65 @@ async function enrichRedes(record){
         + ' — confirmar a mano antes de aprobar.');
     }
   }catch(e){ /* fallo transitorio: redes quedan como estaban */ }
+}
+
+// ── AGENDA DE CONTACTOS (2026-08-20) — batch de moderador sobre confirmados ──
+// Recorre los comercios confirmados que tienen website y aún ningún dato de
+// contacto concreto, escanea cada web con el redes-worker y PATCHea los campos
+// hallados (igUrl/fbUrl/ttUrl/waPhone/email) + sube flags a true. Nunca baja un
+// flag a false (no encontrado ≠ no tiene). Requiere: worker redesplegado con
+// `contacts` y reglas nuevas pegadas en Console (si no, corta con aviso honesto).
+let scanContactosRunning = false;
+async function scanContactos(){
+  const statusEl = $('scan-contactos-status');
+  const btn = $('scan-contactos-btn');
+  if(!session || !isModerator){ statusEl.textContent='Solo moderadores.'; statusEl.className='status-msg err'; return; }
+  if(scanContactosRunning) return;
+  const targets = Object.entries(comercios).filter(([id,b])=>
+    b && b.website && !(b.igUrl||b.fbUrl||b.ttUrl||b.waPhone||b.email));
+  if(!targets.length){ statusEl.textContent='Nada para escanear: ningún confirmado con web sin contactos todavía.'; statusEl.className='status-msg'; return; }
+  scanContactosRunning = true; btn.disabled = true;
+  let done=0, found=0, sinDatos=0, muertas=0, errores=0, rulesFail=false, workerViejo=false;
+  try{
+    const token = await freshToken(session);
+    for(const [id,b] of targets){
+      done++;
+      statusEl.className='status-msg';
+      statusEl.textContent=`Escaneando ${done}/${targets.length}: ${b.name}…`;
+      try{
+        const r = await fetch(REDES_WORKER_URL+'?url='+encodeURIComponent(b.website), {cache:'no-store'});
+        if(!r.ok){ errores++; continue; }
+        const d = await r.json();
+        if(d.contacts === undefined){ workerViejo = true; break; }
+        if(d.alive === false){ muertas++; continue; }
+        const patch = {};
+        for(const k of ['igUrl','fbUrl','ttUrl','waPhone','email']){ if(d.contacts[k]) patch[k]=d.contacts[k]; }
+        for(const k of ['ig','fb','wa','tt']){ if(d[k]===true && !b[k]) patch[k]=true; }
+        if(!Object.keys(patch).length){ sinDatos++; continue; }
+        const resp = await fetch(`${FB_URL}/comercios/${id}.json?auth=${token}`, {
+          method:'PATCH', headers:{'Content-Type':'application/json'}, body: JSON.stringify(patch)
+        });
+        if(!resp.ok){
+          // 400 con campos nuevos = reglas viejas sin igUrl/…: no tiene sentido seguir
+          rulesFail = true; break;
+        }
+        Object.assign(comercios[id], patch);
+        found++;
+      }catch(e){ errores++; }
+      await sleep(350);
+    }
+  }finally{ scanContactosRunning = false; btn.disabled = false; }
+  if(workerViejo){
+    statusEl.textContent = 'El worker desplegado es la versión vieja (sin `contacts`) — falta redesplegar redes-worker/worker.js en Cloudflare (encolado en cola_aprobacion.md).';
+    statusEl.className = 'status-msg err';
+  } else if(rulesFail){
+    statusEl.textContent = `Firebase rechazó los campos nuevos — faltan pegar las reglas (auditoria.rules.json) en Console (encolado en cola_aprobacion.md). Avancé ${found} antes de cortar.`;
+    statusEl.className = 'status-msg err';
+  } else {
+    statusEl.textContent = `Listo: ${found} con contactos nuevos, ${sinDatos} sin datos en su web, ${muertas} web(s) muertas, ${errores} error(es), de ${targets.length} escaneados.`;
+    statusEl.className = 'status-msg ok';
+    renderCards(); if(selectedId && comercios[selectedId]) selectBiz(selectedId, 'confirmed');
+  }
 }
 
 async function searchGooglePlaces(){
@@ -1794,6 +1865,11 @@ function openModEdit(id){
     <div class="f-field"><label>Teléfono</label><input type="text" id="e-phone" value="${escHtml(b.phone||'')}"></div>
     <div class="f-field"><label>Web</label><input type="text" id="e-website" value="${escHtml(b.website||'')}"></div>
     <div class="f-field full"><label>Foto — URL directa de imagen o link de Drive compartido ("cualquiera con el link")</label><input type="text" id="e-photo" placeholder="https://drive.google.com/file/d/… o https://…/foto.jpg" value="${escHtml(b.photo||'')}"></div>
+    <div class="f-field"><label>WhatsApp (solo dígitos, con país: 549221…)</label><input type="text" id="e-waphone" value="${escHtml(b.waPhone||'')}"></div>
+    <div class="f-field"><label>Email</label><input type="text" id="e-email" value="${escHtml(b.email||'')}"></div>
+    <div class="f-field"><label>Instagram (URL)</label><input type="text" id="e-igurl" placeholder="https://instagram.com/…" value="${escHtml(b.igUrl||'')}"></div>
+    <div class="f-field"><label>Facebook (URL)</label><input type="text" id="e-fburl" placeholder="https://facebook.com/…" value="${escHtml(b.fbUrl||'')}"></div>
+    <div class="f-field"><label>TikTok (URL)</label><input type="text" id="e-tturl" placeholder="https://tiktok.com/@…" value="${escHtml(b.ttUrl||'')}"></div>
   </div>
   <div class="chk-row">
     <label><input type="checkbox" id="e-web" ${b.web?'checked':''}> Web</label>
@@ -1823,6 +1899,16 @@ async function saveModEdit(id){
     // limpia las URLs viejas de Google que quedaron muertas.
     const ph = normalizePhotoUrl($('e-photo').value);
     if(ph) updated.photo = ph; else delete updated.photo;
+    // Contactos de agenda — mismo criterio set-o-borra que la foto.
+    const contactos = {
+      waPhone: $('e-waphone').value.replace(/\D/g,''),
+      email: $('e-email').value.trim().toLowerCase(),
+      igUrl: $('e-igurl').value.trim(), fbUrl: $('e-fburl').value.trim(), ttUrl: $('e-tturl').value.trim()
+    };
+    for(const [k,v] of Object.entries(contactos)){
+      const valido = k==='waPhone' ? v.length>=8 : k==='email' ? v.includes('@') : /^https:\/\//.test(v);
+      if(v && valido) updated[k]=v; else delete updated[k];
+    }
     await fetch(`${FB_URL}/comercios/${id}.json?auth=${token}`, { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(updated) });
     await loadComercios();
     updateStats(); renderCards(); if(gmap) renderMapMarkers();
@@ -1879,11 +1965,13 @@ function renderCRMPanel(){
 }
 function exportCSV(){
   const list = poolList();
-  const cols = ['ciudad','nombre','tipo','direccion','rating','reviews','web','ig','fb','wa','tt','oportunidades','estado','nota'];
+  const cols = ['ciudad','nombre','tipo','direccion','telefono','whatsapp','email','instagram','facebook','tiktok','web_url','rating','reviews','web','ig','fb','wa','tt','oportunidades','estado','nota'];
   const rows = list.map(b=>{
     const c = crmStore[b.id] || {};
     return [
-      b.city||'', b.name||'', b.type||'', b.address||'', b.rating||'', b.reviews||'',
+      b.city||'', b.name||'', b.type||'', b.address||'',
+      b.phone||'', b.waPhone||'', b.email||'', b.igUrl||'', b.fbUrl||'', b.ttUrl||'', b.website||'',
+      b.rating||'', b.reviews||'',
       b.web?'si':'no', b.ig?'si':'no', b.fb?'si':'no', b.wa?'si':'no', b.tt?'si':'no',
       getOpp(b).join('; '), CRM_LABELS[c.status]||'', (c.note||'').replace(/\n/g,' ')
     ];
@@ -1900,7 +1988,7 @@ function exportCSV(){
 }
 
 window.selectBiz=selectBiz; window.closeSide=closeSide; window.setFilter=setFilter; window.switchTab=switchTab; window.highlightMarker=highlightMarker;
-window.setType=setType; window.setSort=setSort;
+window.setType=setType; window.setSort=setSort; window.scanContactos=scanContactos;
 window.approvePending=approvePending; window.rejectPending=rejectPending; window.openModEdit=openModEdit; window.saveModEdit=saveModEdit; window.googleSearchEdit=googleSearchEdit;
 window.filterCity=filterCity; window.changePage=changePage; window.saveCRMNote=saveCRMNote; window.exportCSV=exportCSV;
 window.toggleFav=toggleFav; window.doSearch=doSearch; window.onCardDrag=onCardDrag; window.goApp=goApp; window.goAppFor=goAppFor; window.setChartMetric=setChartMetric; window.saveGKey=saveGKey; window.clearGKey=clearGKey;
