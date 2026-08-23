@@ -32,6 +32,10 @@
 }
 html{scroll-behavior:smooth;}
 body{background:var(--black);color:var(--white);font-family:var(--body);overflow-x:hidden;cursor:none;}
+/* interacción base: sin doble-tap delay en touch y foco visible con teclado
+   (el cursor custom no existe para quien navega con Tab) */
+a,button{touch-action:manipulation;}
+:focus-visible{outline:2px solid var(--acid);outline-offset:3px;}
 
 /* CURSOR */
 #cursor{position:fixed;width:8px;height:8px;background:var(--acid);border-radius:50%;pointer-events:none;z-index:9999;transition:transform 0.1s,background-color 1.5s;mix-blend-mode:difference;}
@@ -487,7 +491,9 @@ section{min-height:100vh;display:flex;align-items:center;position:relative;paddi
 #nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:2rem 8vw;display:flex;justify-content:space-between;align-items:center;}
 .nav-logo{font-family:var(--mono);font-size:11px;letter-spacing:0.2em;color:rgba(240,237,230,0.4);}
 .nav-links{display:flex;gap:2.5rem;}
-.nav-links a{font-family:var(--mono);font-size:10px;letter-spacing:0.25em;color:rgba(240,237,230,0.25);text-decoration:none;transition:color 0.2s;}
+/* contraste en reposo legible (antes 0.25) y área táctil real sin mover el
+   layout: el padding agranda el target y el margen negativo lo compensa */
+.nav-links a{font-family:var(--mono);font-size:10px;letter-spacing:0.25em;color:rgba(240,237,230,0.5);text-decoration:none;transition:color 0.2s ease;padding:10px 8px;margin:-10px -8px;}
 .nav-links a:hover{color:var(--acid);}
 /* accesos a contenido de comunidad: ocultos por defecto (sin flash); el script
    los revela sólo a sesiones de comunidad, espejando /gate/gate.js */
@@ -495,9 +501,11 @@ section{min-height:100vh;display:flex;align-items:center;position:relative;paddi
 .nav-auth-btn,.nav-area-btn{
   border:1px solid rgba(184,255,0,0.25);border-radius:2px;padding:6px 12px;
   color:rgba(184,255,0,0.55) !important;letter-spacing:0.18em !important;
-  background:rgba(184,255,0,0.04);transition:all 0.2s;
+  background:rgba(184,255,0,0.04);
+  transition:background-color 0.2s ease,border-color 0.2s ease,color 0.2s ease,transform 160ms cubic-bezier(0.23,1,0.32,1);
 }
 .nav-auth-btn:hover,.nav-area-btn:hover{background:rgba(184,255,0,0.1);border-color:rgba(184,255,0,0.5);color:var(--acid) !important;}
+.nav-auth-btn:active,.nav-area-btn:active{transform:scale(0.97);}
 .nav-area-btn{border-color:rgba(184,255,0,0.4);background:rgba(184,255,0,0.07);color:var(--acid) !important;}
 
 /* HERO — capas con profundidad: el shader queda "atrás", la tipografía "flota" delante */
@@ -707,10 +715,11 @@ body.visual-mode #exit-visual{z-index:9000!important;}
   color:var(--black);background:var(--acid);
   text-decoration:none;padding:8px 18px;
   border:1px solid var(--acid);
-  transition:background 0.2s,color 0.2s,border-color 1.5s;
+  transition:background 0.2s,color 0.2s,border-color 1.5s,transform 160ms cubic-bezier(0.23,1,0.32,1);
   display:inline-block;
 }
 .aether-app-btn:hover{background:transparent;color:var(--acid);}
+.aether-app-btn:active{transform:scale(0.97);}
 .viz-stat{display:flex;gap:4rem;margin-top:3rem;}
 .stat-num{font-family:var(--display);font-size:4rem;color:var(--acid);line-height:1;transition:color 1.5s;}
 .stat-label{font-family:var(--mono);font-size:9px;letter-spacing:0.3em;color:rgba(240,237,230,0.3);margin-top:3px;}
@@ -721,7 +730,7 @@ body.visual-mode #exit-visual{z-index:9000!important;}
 .sec-title{font-family:var(--display);font-size:clamp(3rem,6vw,6rem);line-height:0.9;}
 .sec-link{font-family:var(--mono);font-size:10px;letter-spacing:0.2em;color:var(--acid);text-decoration:none;border-bottom:1px solid var(--acid);padding-bottom:2px;transition:color 1.5s,border-color 1.5s;}
 .blog-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:1px;background:rgba(240,237,230,0.06);width:100%;}
-.bcard{background:var(--black);padding:2.2rem 1.8rem;cursor:none;position:relative;overflow:hidden;transition:background 0.3s;}
+.bcard{display:block;background:var(--black);padding:2.2rem 1.8rem;cursor:none;position:relative;overflow:hidden;transition:background 0.3s;text-decoration:none;color:inherit;}
 .bcard::before{content:'';position:absolute;inset:0;background:var(--acid);transform:translateY(101%);transition:transform 0.45s cubic-bezier(0.16,1,0.3,1),background-color 1.5s;z-index:0;}
 .bcard:hover::before{transform:translateY(0);}
 .bcard:hover .cnum,.bcard:hover .ctitle,.bcard:hover .cmeta,.bcard:hover .ctag{color:var(--black)!important;}
@@ -739,15 +748,19 @@ body.visual-mode #exit-visual{z-index:9000!important;}
 /* EXPERIENCIAS (comunidad) */
 .exp-intro{font-family:var(--mono);font-size:10px;letter-spacing:0.2em;color:rgba(184,255,0,0.55);margin:3.5rem 0 1rem;}
 .exp-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:3.5rem;}
-.exp-chip{font-family:var(--mono);font-size:9px;letter-spacing:0.14em;color:rgba(240,237,230,0.55);border:1px solid rgba(240,237,230,0.14);border-radius:999px;padding:8px 14px;text-decoration:none;transition:all 0.2s;}
+.exp-chip{font-family:var(--mono);font-size:9px;letter-spacing:0.14em;color:rgba(240,237,230,0.55);border:1px solid rgba(240,237,230,0.14);border-radius:999px;padding:8px 14px;text-decoration:none;transition:color 0.2s ease,border-color 0.2s ease,transform 160ms cubic-bezier(0.23,1,0.32,1);}
 .exp-chip:hover{color:var(--acid);border-color:rgba(184,255,0,0.5);}
+.exp-chip:active{transform:scale(0.96);}
 /* MAPA / ACCESOS DIRECTOS */
 #mapa{flex-direction:column;padding:10vh 8vw;}
 .mapa-group{font-family:var(--mono);font-size:10px;letter-spacing:0.24em;color:rgba(240,237,230,0.4);margin:2.4rem 0 0.9rem;}
 .mapa-group b{color:var(--acid);font-weight:400;}
 .access-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;width:100%;}
-.acc{display:flex;flex-direction:column;gap:7px;border:1px solid rgba(240,237,230,0.12);border-radius:8px;padding:16px 15px;text-decoration:none;background:rgba(184,255,0,0.015);transition:all 0.2s;min-height:104px;}
-.acc:hover{border-color:rgba(184,255,0,0.5);background:rgba(184,255,0,0.05);transform:translateY(-3px);}
+.acc{display:flex;flex-direction:column;gap:7px;border:1px solid rgba(240,237,230,0.12);border-radius:8px;padding:16px 15px;text-decoration:none;background:rgba(184,255,0,0.015);transition:border-color 0.2s ease,background-color 0.2s ease,transform 0.2s cubic-bezier(0.23,1,0.32,1);min-height:104px;}
+.acc:hover{border-color:rgba(184,255,0,0.5);background:rgba(184,255,0,0.05);}
+/* el lift solo con puntero real — en touch el hover pegajoso deja la tarjeta flotando */
+@media(hover:hover) and (pointer:fine){ .acc:hover{transform:translateY(-3px);} }
+.acc:active{transform:scale(0.98);}
 .acc .ai{font-size:16px;color:var(--acid);}
 .acc h4{font-family:var(--display);font-size:20px;letter-spacing:0.03em;color:var(--acid);line-height:0.9;font-weight:400;}
 .acc p{font-family:var(--body);font-weight:300;font-size:12.5px;letter-spacing:0.01em;color:rgba(240,237,230,0.55);line-height:1.6;}
@@ -799,7 +812,8 @@ body.visual-mode #exit-visual{z-index:9000!important;}
 .pfeat li{font-family:var(--body);font-weight:300;font-size:13px;color:rgba(240,237,230,0.55);padding:0.45rem 0;border-bottom:1px solid rgba(240,237,230,0.05);line-height:1.55;}
 .pfeat li::before{content:'→ ';color:var(--acid);transition:color 1.5s;}
 .plan.feat .pfeat li{color:rgba(240,237,230,0.65);}
-.pcta{display:block;margin-top:2rem;font-family:var(--mono);font-size:10px;letter-spacing:0.2em;text-decoration:none;padding:0.9rem;border:1px solid rgba(240,237,230,0.15);text-align:center;color:var(--white);transition:all 0.3s;}
+.pcta{display:block;margin-top:2rem;font-family:var(--mono);font-size:10px;letter-spacing:0.2em;text-decoration:none;padding:0.9rem;border:1px solid rgba(240,237,230,0.15);text-align:center;color:var(--white);transition:background-color 0.2s ease,color 0.2s ease,border-color 0.2s ease,transform 160ms cubic-bezier(0.23,1,0.32,1);}
+.pcta:active{transform:scale(0.98);}
 .plan.feat .pcta{
   background:var(--acid); color:var(--black); border-color:var(--acid);
   mix-blend-mode:normal;
@@ -1050,7 +1064,7 @@ body.visual-mode #exit-visual{z-index:9000!important;}
 <!-- AUTH MODAL -->
 <div id="auth-overlay">
   <div id="auth-modal">
-    <button id="auth-close">✕</button>
+    <button id="auth-close" aria-label="Cerrar ingreso">✕</button>
     <div id="auth-tabs">
       <button class="auth-tab active" data-mode="register">REGISTRO</button>
       <button class="auth-tab" data-mode="login">INGRESAR</button>
@@ -1086,7 +1100,7 @@ body.visual-mode #exit-visual{z-index:9000!important;}
   <div id="profile-panel">
     <div id="profile-header">
       <span id="profile-htitle">PERFIL HG</span>
-      <button id="profile-close">✕</button>
+      <button id="profile-close" aria-label="Cerrar perfil">✕</button>
     </div>
     <div id="profile-body">
 
@@ -1147,7 +1161,7 @@ body.visual-mode #exit-visual{z-index:9000!important;}
 <!-- SHADER DOCK — todo lo relacionado a shaders vive acá (lateral ocultable) -->
 <button id="dock-tab">⬡ SHADERS</button>
 <aside id="shader-dock">
-<div id="dock-head"><span>SHADER DECK</span><button id="dock-close">✕</button></div>
+<div id="dock-head"><span>SHADER DECK</span><button id="dock-close" aria-label="Cerrar shader deck">✕</button></div>
 
 <div id="drop-zone">
   <div id="drop-inner">
@@ -1191,7 +1205,7 @@ body.visual-mode #exit-visual{z-index:9000!important;}
   <div id="gallery-header">
     <span id="gallery-title">SHADER LIBRARY</span>
     <span id="gallery-count">0</span>
-    <button id="gallery-close">✕</button>
+    <button id="gallery-close" aria-label="Cerrar galería de shaders">✕</button>
   </div>
   <div id="gallery-list">
     <div id="gallery-empty">Todavía no guardaste shaders.<br>Droppeá un .fs y se guarda solo.</div>
@@ -1204,7 +1218,7 @@ body.visual-mode #exit-visual{z-index:9000!important;}
     <span id="repo-title">SHADER REPO GLOBAL</span>
     <span id="repo-live"></span>
     <span id="repo-count">—</span>
-    <button id="repo-close">✕</button>
+    <button id="repo-close" aria-label="Cerrar repositorio">✕</button>
   </div>
   <div id="repo-upload">
     <label id="repo-upload-label" for="repo-file">⬆ SUBIR MI .FS A LA COMUNIDAD</label>
@@ -1351,15 +1365,15 @@ body.visual-mode #exit-visual{z-index:9000!important;}
       <a href="/es/blog/" class="sec-link">VER TODO →</a>
     </div>
     <div class="blog-grid">
-      <div class="bcard" data-url="/es/blog/aether-isf-infinito/"><div class="cnum">001</div><div class="ctitle">AETHER ISF INFINITO</div><div class="cmeta">6 min read</div><div class="ctag">SHADERS</div></div>
-      <div class="bcard" data-url="/es/blog/manual-de-cocina-para-vj/"><div class="cnum">002</div><div class="ctitle">MANUAL DE COCINA PARA VJ</div><div class="cmeta">7 min read</div><div class="ctag">VJ / WORKFLOW</div></div>
-      <div class="bcard" data-url="/es/blog/manual-de-cocina-para-artistas-2026/"><div class="cnum">003</div><div class="ctitle">MANUAL ARTISTAS 2026</div><div class="cmeta">8 min read</div><div class="ctag">CREACIÓN</div></div>
-      <div class="bcard" data-url="/es/blog/elegi-tu-mac/"><div class="cnum">004</div><div class="ctitle">ELEGÍ TU MAC</div><div class="cmeta">4 min read</div><div class="ctag">HARDWARE</div></div>
-      <div class="bcard" data-url="/es/blog/elegi-tu-software/"><div class="cnum">005</div><div class="ctitle">ELEGÍ TU SOFTWARE</div><div class="cmeta">5 min read</div><div class="ctag">SOFTWARE</div></div>
-      <div class="bcard" data-url="/es/blog/que-es-human-glitche/"><div class="cnum">006</div><div class="ctitle">QUÉ ES HUMAN GLITCHE</div><div class="cmeta">9 min read</div><div class="ctag">MANIFIESTO</div></div>
-      <div class="bcard" data-url="/es/blog/muchas-apps/"><div class="cnum">007</div><div class="ctitle">MUCHAS APPS</div><div class="cmeta">5 min read</div><div class="ctag">TOOLS</div></div>
-      <div class="bcard" data-url="/es/blog/primer-dia-de-resolume/"><div class="cnum">008</div><div class="ctitle">PRIMER DÍA RESOLUME</div><div class="cmeta">5 min read</div><div class="ctag">TUTORIAL</div></div>
-      <div class="bcard" data-url="/es/blog/luck-ra-ags-2022-visuales-en-tiempo-real/"><div class="cnum">009</div><div class="ctitle">LUCK RA – AGS 2022</div><div class="cmeta">5 min read</div><div class="ctag">SHOW REAL</div></div>
+      <a class="bcard" href="/es/blog/aether-isf-infinito/"><div class="cnum">001</div><div class="ctitle">AETHER ISF INFINITO</div><div class="cmeta">6 min read</div><div class="ctag">SHADERS</div></a>
+      <a class="bcard" href="/es/blog/manual-de-cocina-para-vj/"><div class="cnum">002</div><div class="ctitle">MANUAL DE COCINA PARA VJ</div><div class="cmeta">7 min read</div><div class="ctag">VJ / WORKFLOW</div></a>
+      <a class="bcard" href="/es/blog/manual-de-cocina-para-artistas-2026/"><div class="cnum">003</div><div class="ctitle">MANUAL ARTISTAS 2026</div><div class="cmeta">8 min read</div><div class="ctag">CREACIÓN</div></a>
+      <a class="bcard" href="/es/blog/elegi-tu-mac/"><div class="cnum">004</div><div class="ctitle">ELEGÍ TU MAC</div><div class="cmeta">4 min read</div><div class="ctag">HARDWARE</div></a>
+      <a class="bcard" href="/es/blog/elegi-tu-software/"><div class="cnum">005</div><div class="ctitle">ELEGÍ TU SOFTWARE</div><div class="cmeta">5 min read</div><div class="ctag">SOFTWARE</div></a>
+      <a class="bcard" href="/es/blog/que-es-human-glitche/"><div class="cnum">006</div><div class="ctitle">QUÉ ES HUMAN GLITCHE</div><div class="cmeta">9 min read</div><div class="ctag">MANIFIESTO</div></a>
+      <a class="bcard" href="/es/blog/muchas-apps/"><div class="cnum">007</div><div class="ctitle">MUCHAS APPS</div><div class="cmeta">5 min read</div><div class="ctag">TOOLS</div></a>
+      <a class="bcard" href="/es/blog/primer-dia-de-resolume/"><div class="cnum">008</div><div class="ctitle">PRIMER DÍA RESOLUME</div><div class="cmeta">5 min read</div><div class="ctag">TUTORIAL</div></a>
+      <a class="bcard" href="/es/blog/luck-ra-ags-2022-visuales-en-tiempo-real/"><div class="cnum">009</div><div class="ctitle">LUCK RA – AGS 2022</div><div class="cmeta">5 min read</div><div class="ctag">SHOW REAL</div></a>
     </div>
   </section>
 
@@ -2684,10 +2698,7 @@ const obs=new IntersectionObserver(entries=>{
 },{threshold:0.12});
 document.querySelectorAll('.rev,.mline').forEach(el=>obs.observe(el));
 
-// Blog cards
-document.querySelectorAll('.bcard').forEach(c=>{
-  c.addEventListener('click',()=>{const u=c.dataset.url;if(!u)return; u.startsWith('http')?window.open(u,'_blank'):location.href=u;});
-});
+// Blog cards: ahora son <a href> de verdad — navegación nativa, sin handler.
 
 // ─────────────────────────────────────────────
 // AUTH — Firebase Auth (REST) + perfil en Realtime DB
