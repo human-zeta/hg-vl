@@ -1,0 +1,261 @@
+<!doctype html><html lang="es"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>HUMAN GLITCHE · VISUAL LAB — el viaje al sol</title>
+<meta name="description" content="Visual Lab en la superficie, Human Glitche en el núcleo. Un dominio, una profundidad.">
+<link rel="canonical" href="https://www.hg-vl.com/">
+<meta property="og:title" content="HUMAN GLITCHE · VISUAL LAB">
+<meta property="og:description" content="Visual Lab en la superficie, Human Glitche en el núcleo.">
+<meta name="theme-color" content="#050505">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="preload" as="fetch" href="/entrada-tunel/assets/compiled.glsl?v=202608111208" crossorigin>
+<style>
+  :root{
+    --black:#050505; --white:#f0ede6; --acid:#b8ff00; --glitch:#ff2d55; --cyan:#3ad0ff;
+    --line:rgba(240,237,230,.12);
+    --mono:'Space Mono',monospace; --display:'Bebas Neue',sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  @media(prefers-reduced-motion:reduce){ html{scroll-behavior:auto;} }
+  body{background:var(--black);color:var(--white);font-family:var(--mono);
+    -webkit-font-smoothing:antialiased;overflow-x:hidden;}
+  a{color:inherit;text-decoration:none;}
+
+  #stage{position:fixed;inset:0;display:block;width:100%;height:100%;
+    pointer-events:none;z-index:0;}
+
+  /* Velo mucho mas suave que en la version de dos puertas: aca el texto no
+     ocupa dos columnas fijas sino que baja, y un velo fuerte apagaria la
+     escalera justo donde se la esta recorriendo. */
+  #scrim{position:fixed;inset:0;z-index:1;pointer-events:none;
+    background:radial-gradient(88% 62% at 50% 50%, rgba(5,5,5,.62), rgba(5,5,5,.10) 78%);}
+
+  /* --- Loader --- */
+  #loader{position:fixed;inset:0;z-index:30;display:grid;place-content:center;gap:14px;
+    background:var(--black);transition:opacity .6s ease;}
+  #loader.is-done{opacity:0;pointer-events:none;}
+  .loader__bar{width:150px;height:1px;background:rgba(240,237,230,.14);overflow:hidden;}
+  .loader__bar i{display:block;height:100%;width:100%;background:var(--cyan);
+    transform:scaleX(0);transform-origin:left;}
+  .loader__pct{font-size:10px;letter-spacing:.2em;color:rgba(240,237,230,.45);
+    text-align:center;font-variant-numeric:tabular-nums;}
+
+  /* --- Cabecera y medidor de profundidad --- */
+  .topbar{position:fixed;top:0;left:0;right:0;z-index:12;display:flex;
+    justify-content:space-between;align-items:center;padding:20px 26px;
+    mix-blend-mode:difference;}
+  .logo{font-family:var(--display);font-size:26px;letter-spacing:.04em;}
+  .logo b{color:var(--acid);font-weight:400;}
+  .topbar .q{font-size:10px;letter-spacing:.2em;color:rgba(240,237,230,.55);}
+
+  /* El medidor no es adorno: en un scroll largo sin secciones visibles hace
+     falta saber cuanto falta. Muestra profundidad, no porcentaje. */
+  .depth{position:fixed;right:26px;top:50%;transform:translateY(-50%);z-index:12;
+    display:flex;flex-direction:column;align-items:flex-end;gap:10px;
+    font-size:9px;letter-spacing:.18em;color:rgba(240,237,230,.38);
+    font-variant-numeric:tabular-nums;}
+  .depth__track{width:1px;height:34vh;background:rgba(240,237,230,.14);position:relative;}
+  .depth__fill{position:absolute;left:0;top:0;width:1px;height:0;
+    background:linear-gradient(180deg,var(--cyan),var(--acid));}
+  .depth__mark{position:absolute;right:12px;white-space:nowrap;transform:translateY(-50%);
+    font-size:8.5px;color:rgba(240,237,230,.30);}
+
+  /* --- Secciones del viaje al sol --- */
+  main{position:relative;z-index:2;}
+  section{min-height:100svh;display:flex;flex-direction:column;justify-content:center;
+    padding:14vh max(1.5rem,env(safe-area-inset-left)) 14vh max(1.5rem,env(safe-area-inset-right));
+    max-width:74rem;margin:0 auto;}
+
+  .kick{font-size:10px;letter-spacing:.28em;text-transform:uppercase;
+    color:rgba(240,237,230,.42);margin-bottom:18px;}
+  h1{font-family:var(--display);font-size:clamp(56px,9vw,132px);line-height:.84;
+    letter-spacing:.02em;}
+  h2{font-family:var(--display);font-size:clamp(40px,6vw,84px);line-height:.86;
+    letter-spacing:.02em;}
+  .lead{font-size:13.5px;line-height:1.85;color:rgba(240,237,230,.66);
+    max-width:38ch;margin-top:22px;}
+
+  .surface h1{color:var(--white);}
+  .surface .hint{margin-top:44px;font-size:10px;letter-spacing:.24em;
+    color:rgba(240,237,230,.42);display:flex;align-items:center;gap:12px;}
+  .surface .hint i{display:block;width:1px;height:38px;
+    background:linear-gradient(180deg,rgba(240,237,230,.5),transparent);}
+
+  /* --- Placa de cristal liquido (VISUAL LAB) --- */
+  .plate{align-items:flex-start;}
+  .lcd{
+    position:relative;width:min(100%,46rem);padding:34px 34px 30px;
+    /* El desenfoque actua sobre lo que hay DETRAS: la escalera y el sistema
+       solar. Por eso la placa se siente apoyada dentro de la escena y no
+       pegada encima — es la unica forma de que un panel translucido lea como
+       material y no como un rectangulo con opacidad. */
+    backdrop-filter:blur(13px) saturate(1.45);
+    -webkit-backdrop-filter:blur(13px) saturate(1.45);
+    background:linear-gradient(160deg, rgba(58,208,255,.085), rgba(5,5,5,.34) 60%);
+    border:1px solid rgba(58,208,255,.26);
+    box-shadow:inset 0 1px 0 rgba(58,208,255,.20), 0 30px 90px rgba(0,0,0,.55);
+    overflow:hidden;
+  }
+  /* Trama de subpixel: lineas finisimas, como la rejilla de un panel LCD. */
+  .lcd::before{content:'';position:absolute;inset:0;pointer-events:none;
+    background:repeating-linear-gradient(0deg, rgba(240,237,230,.055) 0 1px, transparent 1px 3px);
+    mix-blend-mode:overlay;}
+  /* Barrido lento, el refresco del panel. */
+  .lcd::after{content:'';position:absolute;left:0;right:0;height:22%;pointer-events:none;
+    background:linear-gradient(180deg, transparent, rgba(58,208,255,.09), transparent);
+    animation:sweep 5.5s linear infinite;}
+  @keyframes sweep{ from{top:-25%} to{top:105%} }
+
+  .lcd h2{color:var(--cyan);}
+  .lcd .lead{color:rgba(240,237,230,.72);}
+  .lcd .enter{margin-top:26px;display:inline-flex;align-items:center;gap:10px;
+    font-size:11px;letter-spacing:.24em;color:var(--cyan);}
+  .lcd .enter .arw{transition:transform .25s;}
+  .lcd .enter:hover .arw{transform:translateX(6px);}
+
+  /* Celdas de preview. Placeholders: reemplazar por trabajo real de VL. */
+  .previews{margin-top:28px;display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+  .previews .cell{position:relative;aspect-ratio:16/10;overflow:hidden;
+    border:1px solid rgba(58,208,255,.16);
+    background:linear-gradient(135deg, rgba(58,208,255,.16), rgba(5,5,5,.5));}
+  .previews .cell::after{content:'';position:absolute;inset:0;
+    background:repeating-linear-gradient(0deg, rgba(0,0,0,.34) 0 1px, transparent 1px 2px);}
+  /* Cada celda parpadea con su propio retardo: sincronizadas se leen como una
+     animacion; desfasadas, como señales independientes llegando. */
+  .previews .cell{animation:flicker 3.4s steps(1,end) infinite;}
+  .previews .cell:nth-child(2){animation-delay:.7s;animation-duration:4.1s;}
+  .previews .cell:nth-child(3){animation-delay:1.9s;animation-duration:2.9s;}
+  .previews .cell:nth-child(4){animation-delay:2.6s;animation-duration:3.7s;}
+  @keyframes flicker{
+    0%,86%{opacity:.85} 87%{opacity:.28} 88%{opacity:.92}
+    90%{opacity:.4} 91%,100%{opacity:.85}
+  }
+  @media(prefers-reduced-motion:reduce){
+    .previews .cell,.lcd::after{animation:none;}
+  }
+  .previews .tag{position:absolute;left:6px;bottom:5px;z-index:2;font-size:7.5px;
+    letter-spacing:.16em;color:rgba(240,237,230,.6);}
+
+  /* --- Transito --- */
+  .transit{align-items:center;text-align:center;}
+  .transit .lead{max-width:30ch;}
+
+  /* --- Nucleo (HUMAN GLITCHE) --- */
+  .core{align-items:flex-end;text-align:right;}
+  .core h1{color:var(--acid);}
+  .core .lead{margin-left:auto;}
+  .core .enter{margin-top:30px;display:inline-flex;align-items:center;gap:10px;
+    font-size:11px;letter-spacing:.24em;color:var(--acid);}
+  .core .enter .arw{transition:transform .25s;}
+  .core .enter:hover .arw{transform:translateX(6px);}
+  .core .tags{margin-top:26px;display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end;}
+  .core .tags span{font-size:9px;letter-spacing:.14em;text-transform:uppercase;
+    color:rgba(240,237,230,.42);border:1px solid var(--line);border-radius:999px;padding:5px 11px;}
+
+  footer{position:relative;z-index:2;text-align:center;padding:8vh 1.5rem 10vh;
+    font-size:9.5px;letter-spacing:.14em;color:rgba(240,237,230,.32);}
+  footer a:hover{color:var(--acid);}
+
+  [data-line]{opacity:0;transform:translateY(16px);will-change:opacity,transform;}
+  .is-fallback [data-line]{opacity:1!important;transform:none!important;}
+
+  @media(max-width:640px){
+    .previews{grid-template-columns:repeat(2,1fr);}
+    .depth{display:none;}
+    .lcd{padding:24px 20px;}
+    .core{align-items:flex-start;text-align:left;}
+    .core .tags{justify-content:flex-start;}
+    .core .lead{margin-left:0;}
+  }
+</style>
+<noscript><style>#loader{display:none}[data-line]{opacity:1!important;transform:none!important}</style></noscript>
+</head><body>
+
+<canvas id="stage" aria-hidden="true"></canvas>
+<div id="scrim" aria-hidden="true"></div>
+
+<div id="loader">
+  <div class="loader__bar"><i></i></div>
+  <div class="loader__pct" aria-live="polite">00</div>
+</div>
+
+<div class="topbar">
+  <div class="logo"><b>HG</b>·VL</div>
+  <a class="q" href="/home.html#manifiesto">¿QUÉ ES ESTO?</a>
+</div>
+
+<aside class="depth" aria-hidden="true">
+  <span id="depth-label">SUPERFICIE</span>
+  <div class="depth__track"><div class="depth__fill" id="depth-fill"></div></div>
+</aside>
+
+<main>
+
+  <section class="surface" data-section>
+    <p class="kick" data-line>Un dominio, una distancia</p>
+    <h1 data-line>ENTRÁ</h1>
+    <p class="lead" data-line>
+      Afuera está la vidriera: lo que el estudio hace y vende. En el centro,
+      donde todo lo demás orbita, está por qué lo hace. Es la misma casa —
+      cambia a qué distancia estás.
+    </p>
+    <div class="hint" data-line><i></i> SEGUÍ ENTRANDO</div>
+  </section>
+
+  <section class="plate" data-section>
+    <div class="lcd" data-line>
+      <p class="kick">La vidriera · borde del sistema</p>
+      <h2>VISUAL<br>LAB</h2>
+      <p class="lead">
+        La rama comercial. Galería, servicios y el trabajo del estudio, en un
+        solo lugar.
+      </p>
+
+      <div class="previews">
+        <div class="cell"><span class="tag">MAPEO</span></div>
+        <div class="cell"><span class="tag">VJ SET</span></div>
+        <div class="cell"><span class="tag">MOTION</span></div>
+        <div class="cell"><span class="tag">LIVE</span></div>
+      </div>
+
+      <a class="enter" href="/vl/">ENTRAR AL ESTUDIO <span class="arw">→</span></a>
+    </div>
+  </section>
+
+  <section class="transit" data-section>
+    <p class="kick" data-line>Tránsito</p>
+    <p class="lead" data-line>
+      Se pasa cerca de los cuerpos. El sistema se cierra sobre su centro: las
+      órbitas se acortan, todo acelera, y lo que afuera era un sistema abierto
+      acá adentro es una sola cosa ardiendo.
+    </p>
+  </section>
+
+  <section class="core" data-section>
+    <p class="kick" data-line>El centro</p>
+    <h1 data-line>HUMAN<br>GLITCHE</h1>
+    <p class="lead" data-line>
+      La casa madre. Manifiesto, diario, academia, comunidad y todas las
+      herramientas de creación. Acá no se vende nada: acá está el porqué.
+    </p>
+    <a class="enter" href="/home.html" data-line>ENTRAR A LA COMUNIDAD <span class="arw">→</span></a>
+    <div class="tags" data-line>
+      <span>Manifiesto</span><span>Diario</span><span>Labs</span>
+      <span>Academia</span><span>Comunidad</span>
+    </div>
+  </section>
+
+</main>
+
+<footer data-line>
+  HUMAN GLITCHE · VISUAL LAB &nbsp;·&nbsp;
+  <a href="/studio/">▶ intro cinematic</a> &nbsp;·&nbsp;
+  <a href="/privacidad.html">Privacidad</a> &nbsp;·&nbsp;
+  <a href="/terminos.html">Términos</a>
+</footer>
+
+<script>window.__BUILD="202608111208";</script>
+<script type="module" src="/entrada-tunel/src/main.js?v=202608111208"></script>
+</body></html>

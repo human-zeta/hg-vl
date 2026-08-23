@@ -1,0 +1,606 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HUMAN GLITCHE · VISUAL LAB — el viaje al sol</title>
+<meta name="description" content="Visual Lab en la superficie, Human Glitche en el núcleo. Un dominio, una profundidad. Estudio de visuales en vivo, mapping y shaders en Buenos Aires.">
+<meta property="og:title" content="HUMAN GLITCHE · VISUAL LAB — el viaje al sol">
+<meta property="og:description" content="Visual Lab en la superficie, Human Glitche en el núcleo. Un dominio, una profundidad.">
+<meta name="theme-color" content="#050505">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%23050505'/%3E%3Ccircle cx='8' cy='8' r='4.5' fill='none' stroke='%23b8ff00' stroke-width='1.5'/%3E%3Ccircle cx='8' cy='8' r='1.6' fill='%23ff2d55'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  /* Brand tokens, read from the repo. Not negotiated with. */
+  --black:#050505; --white:#f0ede6; --acid:#b8ff00; --glitch:#ff2d55;
+  /* UMBRAL vive en el shader: violeta de película delgada, celeste y verde
+     agua de la dispersión. El sol arde en estos tres. */
+  --violet:#7d7bff; --celeste:#7de8ff; --agua:#6fffcf;
+  --ink-muted:#a9a69f;
+  --display:'Bebas Neue',Impact,sans-serif;
+  --body:'DM Sans',system-ui,sans-serif;
+  --mono:'Space Mono',ui-monospace,monospace;
+
+  --s1:.25rem; --s2:.5rem; --s3:.75rem; --s4:1rem; --s6:1.5rem;
+  --s8:2rem; --s12:3rem; --s16:4rem;
+  --pad:clamp(1.25rem,5vw,5.5rem);
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-behavior:auto}
+body{
+  margin:0; background:var(--black); color:var(--white);
+  font-family:var(--body); font-size:clamp(1rem,.94rem + .25vw,1.0625rem);
+  line-height:1.6; -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+
+/* ---------- the stage: one fixed world, the page travels through it ------- */
+/* .world es solo agrupación de marcado: display:contents lo saca del layout y
+   las tres capas quedan como hermanas fijas, igual que antes. */
+.world{display:contents}
+.world > *{position:fixed; inset:0; width:100%; height:100%; display:block;
+  z-index:0; pointer-events:none}
+
+/* Cuando matter.js arranca, ÉL es el mundo: compone el sol y el clip del pico
+   como texturas y les dibuja las partículas encima, todo en un canvas opaco.
+   Las otras dos capas se apagan acá — siguen renderizando en su buffer (de ahí
+   las lee) pero ya no se componen por CSS.
+   Esto no es una optimización: mezclar por CSS con mix-blend-mode promueve esa
+   capa en el compositor, Chromium la ordena por encima de main y la materia
+   pinta sobre el texto. Sin capas con blend, el problema desaparece. */
+html.world-composited #stage,
+html.world-composited #peakClip{opacity:0; mix-blend-mode:normal}
+.noscript-bg{position:fixed; inset:0; z-index:0;
+  background:radial-gradient(circle at 50% 55%, #7d7bff 0%, #2a1660 28%, #0a0722 62%, #050505 100%)}
+
+/* ---------- UMBRAL film: grain + vignette over everything ---------------- */
+.vig{position:fixed; inset:0; pointer-events:none; z-index:1;
+  background:radial-gradient(120% 100% at 50% 45%, transparent 48%, rgba(2,3,7,.6) 100%)}
+.grain{position:fixed; inset:0; pointer-events:none; z-index:5; opacity:.5;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 240 240' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E")}
+
+/* ---------- the holographic ramp — UMBRAL's iridescence as type ---------- */
+.holo{
+  background:linear-gradient(100deg,
+    var(--agua) 0%, var(--celeste) 22%, var(--violet) 48%,
+    var(--celeste) 68%, var(--white) 84%, var(--agua) 100%);
+  background-size:280% 100%;
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+  animation:holoShift 9s linear infinite;
+}
+@keyframes holoShift{to{background-position:280% 0}}
+.t-outline{
+  -webkit-text-stroke:1.5px var(--white); color:transparent;
+  paint-order:stroke;
+}
+@supports not (-webkit-text-stroke:1px #fff){ .t-outline{color:var(--white)} }
+
+/* ---------- chrome: fine HUD, UMBRAL grammar ----------------------------- */
+/* Chrome sits on its own scrim, not on a text-shadow. The ground reaches
+   white-hot at the core and a shadow does not survive that. */
+.hud{position:fixed; z-index:3; font-family:var(--mono); pointer-events:none;
+  color:var(--white); font-size:.5625rem; letter-spacing:.26em;
+  text-transform:uppercase;
+  background:rgba(5,5,5,.82); padding:var(--s2) var(--s3);
+  backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px)}
+.hud--tl{top:var(--s6); left:var(--pad)}
+.hud--bc{bottom:calc(var(--s6) + 2.4rem); left:50%; transform:translateX(-50%);
+  transition:opacity .6s; white-space:nowrap; max-width:92vw}
+.pulse-dot{display:inline-block; width:5px; height:5px; border-radius:50%;
+  background:var(--acid); margin-right:8px; vertical-align:1px;
+  animation:pd 2.4s infinite}
+@keyframes pd{0%,100%{opacity:.25}50%{opacity:1}}
+
+.gauge{
+  position:fixed; z-index:3; top:var(--s6); right:var(--pad);
+  font-family:var(--mono); font-size:.5625rem; letter-spacing:.2em;
+  text-align:right; color:var(--white); pointer-events:none;
+  background:rgba(5,5,5,.85); padding:var(--s3) var(--s4);
+  backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
+}
+.gauge__n{display:block; font-size:1.625rem; line-height:1.1; font-weight:700;
+  letter-spacing:.02em}
+
+.mark{
+  position:fixed; z-index:3; bottom:var(--s6); left:var(--pad);
+  font-family:var(--mono); font-size:.5625rem; letter-spacing:.16em;
+  color:var(--white); pointer-events:none;
+  background:rgba(5,5,5,.85); padding:var(--s2) var(--s3);
+  backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
+}
+
+/* The depth line: full-height at the right edge, filled acid→violet as you
+   fall. Replaces the old gauge bar — the whole viewport edge is the gauge. */
+#prog{position:fixed; top:0; right:0; width:2px; height:100vh; z-index:3;
+  background:rgba(240,237,230,.07)}
+#prog i{position:absolute; top:0; left:0; width:100%; height:0;
+  background:linear-gradient(180deg,var(--agua),var(--celeste),var(--violet))}
+
+@media (max-width:900px){
+  .mark,.hud--tl{display:none}
+  .hud--bc{font-size:.5rem; letter-spacing:.18em; bottom:var(--s6)}
+  .hint2{display:none}
+  .gauge{padding:var(--s2) var(--s3)}
+  .gauge__n{font-size:1.125rem}
+}
+
+/* ---------- acts ---------------------------------------------------------- */
+main{position:relative; z-index:2}
+.act{position:relative; padding-inline:var(--pad); display:flex; align-items:center}
+.act__in{width:100%; max-width:74rem; margin-inline:auto}
+
+/* Every text block sits on a plate — the ground is iridescent and has no
+   stable luminance, so type never sits directly on it. But the plate is a
+   viewfinder now, not a box: scrim + corner brackets, no side bar. */
+.plate{
+  position:relative;
+  background:linear-gradient(165deg, rgba(5,5,5,.95), rgba(9,7,14,.91));
+  border:1px solid rgba(240,237,230,.07);
+  padding:clamp(1.5rem,3vw,2.5rem) clamp(1.25rem,3vw,2.75rem);
+  max-width:46rem;
+  backdrop-filter:blur(14px) saturate(.85);
+  -webkit-backdrop-filter:blur(14px) saturate(.85);
+}
+.plate::before,.plate::after{
+  content:""; position:absolute; width:14px; height:14px; pointer-events:none;
+  border:0 solid var(--acid);
+}
+.plate::before{top:-1px; left:-1px; border-top-width:2px; border-left-width:2px}
+.plate::after{bottom:-1px; right:-1px; border-bottom-width:2px; border-right-width:2px}
+.plate--tight{padding:var(--s4) var(--s6)}
+.plate--core::before,.plate--core::after{border-color:var(--glitch)}
+
+h1,h2,h3{font-family:var(--display); font-weight:400; margin:0; letter-spacing:.01em}
+h1{font-size:clamp(3rem,1.8rem + 6.5vw,9.5rem); line-height:.88}
+h2{font-size:clamp(2.2rem,1.3rem + 4vw,5.5rem); line-height:.92}
+h3{font-size:clamp(1.05rem,.95rem + .5vw,1.5rem); line-height:1.1; letter-spacing:.02em}
+p{margin:0; max-width:58ch}
+p + p{margin-top:var(--s4)}
+.muted{color:var(--ink-muted)}
+.kicker{font-family:var(--mono); font-size:.625rem; letter-spacing:.3em;
+  text-transform:uppercase; color:var(--acid); margin-bottom:var(--s4)}
+.kicker .ix{color:var(--white); opacity:.38; letter-spacing:.1em; margin-right:.9em}
+.lede{font-size:clamp(1.05rem,1rem + .35vw,1.3rem); line-height:1.5}
+
+/* ---------- act 1 · el logo Z en vidrio líquido -------------------------- */
+/* Por defecto manda el h1 de texto. logo.js marca <html class="zlogo-on">
+   apenas confirma WebGL2, y lo devuelve si la malla no carga. */
+.zwrap{position:relative}
+.zwrap canvas{display:none}
+html.zlogo-on .zwrap{width:clamp(220px,42vw,380px); aspect-ratio:1;
+  margin:0 0 var(--s2) -4%}
+html.zlogo-on .zwrap canvas{display:block; position:absolute; inset:0;
+  width:100%; height:100%; opacity:0; transition:opacity .9s ease}
+html.zlogo-on .zwrap.on canvas{opacity:1}
+html.zlogo-on .zwrap h1{position:absolute; width:1px; height:1px;
+  overflow:hidden; clip-path:inset(50%); white-space:nowrap}
+.wordmark{font-family:var(--mono); font-size:clamp(.625rem,.52rem + .38vw,.875rem);
+  letter-spacing:.24em; text-transform:uppercase; color:var(--white);
+  margin-top:var(--s4)}
+.wordmark span{color:var(--acid)}
+.sub-mono{font-family:var(--mono); font-size:.6875rem; letter-spacing:.24em;
+  text-transform:uppercase; color:var(--ink-muted)}
+
+a{color:var(--acid); text-decoration:underline; text-underline-offset:.2em;
+  text-decoration-thickness:1px}
+a:hover{text-decoration-thickness:2px}
+a:focus-visible{outline:2px solid var(--acid); outline-offset:4px}
+
+.reveal{will-change:transform,opacity}
+
+/* ---------- act 3 · las fechas ------------------------------------------- */
+/* Tira de clips propios que se desplaza con el scroll (world.js la ata a #a3).
+   Sangra fuera de la plate a propósito: el trabajo hecho ocupa más ancho que
+   la ficha que lo nombra. */
+.gigs{margin-top:clamp(1.5rem,4vh,3rem); width:100%}
+.gigs__k{font-family:var(--mono); font-size:.5625rem; letter-spacing:.28em;
+  text-transform:uppercase; color:var(--ink-muted);
+  margin:0 0 var(--s3); padding-inline:var(--pad); max-width:none}
+.gigs__k .dot{display:inline-block; width:5px; height:5px; border-radius:50%;
+  background:var(--celeste); margin-right:8px; vertical-align:1px}
+.gigs__win{overflow:hidden; width:100%}
+.gigs__track{display:flex; gap:var(--s3); padding-inline:var(--pad);
+  width:max-content; will-change:transform}
+.gig{position:relative; margin:0; flex:0 0 auto;
+  width:clamp(126px,20vw,190px); aspect-ratio:3/4; overflow:hidden;
+  border:1px solid rgba(240,237,230,.12); background:#0b0a12}
+.gig video{width:100%; height:100%; object-fit:cover; display:block;
+  filter:contrast(1.06) saturate(1.12) brightness(.92)}
+.gig figcaption{position:absolute; left:0; bottom:0; z-index:2;
+  font-family:var(--mono); font-size:.5rem; letter-spacing:.16em;
+  padding:4px 8px; background:rgba(5,5,5,.92); color:var(--celeste)}
+.gig::after{content:""; position:absolute; inset:0; pointer-events:none;
+  background:linear-gradient(180deg, transparent 55%, rgba(5,5,5,.5) 100%)}
+
+/* ---------- act 4 · satellites ------------------------------------------- */
+#a4 .pinwrap{position:relative; height:100vh; display:flex; align-items:center; width:100%}
+.sats{position:absolute; inset:0; overflow:hidden; pointer-events:none}
+.sat{
+  position:absolute; width:clamp(140px,17vw,300px); aspect-ratio:4/3;
+  --o:0; overflow:hidden; background:transparent;
+  border:1px solid rgba(240,237,230,calc(.16 * var(--o)));
+  will-change:transform;
+}
+.sat img{opacity:var(--o)}
+.sat::after{opacity:var(--o)}
+/* The label reaches full strength early and holds — a passing object you
+   cannot name is decoration. */
+.sat__tag{opacity:clamp(0, calc(var(--o) * 2.8), 1)}
+/* A grade, not a duotone: pulls stragglers toward acid/glitch without
+   erasing the frames that arrived correct. */
+.sat img{width:100%; height:100%; object-fit:cover; display:block;
+  filter:grayscale(.42) contrast(1.14) brightness(.84) saturate(1.2)}
+.sat::after{content:""; position:absolute; inset:0; z-index:1; pointer-events:none;
+  background:linear-gradient(150deg, rgba(125,123,255,.32), rgba(111,255,207,.22));
+  mix-blend-mode:overlay}
+.sat__tag{position:absolute; left:0; bottom:0; z-index:2; font-family:var(--mono);
+  font-size:.5625rem; letter-spacing:.1em; padding:3px 7px;
+  background:rgba(5,5,5,.92); color:var(--acid)}
+.sat--a{top:8%;  left:4%}
+.sat--b{top:56%; left:12%}
+.sat--c{top:18%; right:6%}
+.sat--d{top:64%; right:14%}
+.sat--e{top:38%; left:44%}
+.sat--f{top:6%;  left:58%}
+.sat--g{top:70%; left:34%}
+.sat--h{top:26%; left:26%}
+
+/* Eight orbiting thumbnails at 140px on a 390px screen is clutter. Phone
+   gets five, with more room each. */
+@media (max-width:760px){
+  #a2{min-height:52vh}
+  #a3{min-height:95vh}
+  .sat--f,.sat--g,.sat--h{display:none}
+  .sat{width:clamp(150px,42vw,220px)}
+  .sat--a{top:6%;  left:2%}
+  .sat--b{top:58%; left:6%}
+  .sat--c{top:20%; right:2%}
+  .sat--d{top:70%; right:4%}
+  .sat--e{top:40%; left:30%}
+}
+
+.svc{list-style:none; margin:var(--s6) 0 0; padding:0; columns:2; column-gap:var(--s8)}
+@media (max-width:760px){ .svc{columns:1} }
+.svc li{font-family:var(--mono); font-size:.75rem; letter-spacing:.06em;
+  color:var(--ink-muted); padding:var(--s2) 0; break-inside:avoid;
+  border-bottom:1px solid rgba(240,237,230,.08)}
+.svc li b{color:var(--white); font-weight:400; font-family:var(--body)}
+
+/* ---------- act 6 · the peak --------------------------------------------- */
+#a6 .pinwrap{position:relative; height:100vh; width:100%;
+  display:flex; align-items:center; justify-content:center}
+/* El clip vive fuera del pinwrap: un ancestro con transform (el pin de GSAP)
+   aislaría su mezcla. Con matter.js activo se compone en GPU; el blend de CSS
+   de acá es el camino de respaldo, para cuando no hay WebGL2. */
+#peakClip{
+  object-fit:cover; mix-blend-mode:screen; opacity:0; will-change:opacity;
+}
+.peak__word{
+  position:relative; font-family:var(--display);
+  font-size:clamp(3rem,1.5rem + 9vw,12rem); line-height:.85;
+  letter-spacing:.04em; opacity:0; will-change:transform,opacity;
+  color:var(--black);
+  padding:.1em .28em;
+  background:rgba(240,237,230,.93);
+  box-shadow:-4px 0 0 rgba(125,232,255,.7), 4px 0 0 rgba(125,123,255,.7),
+             0 0 90px rgba(240,237,230,.35);
+}
+
+/* ---------- act 7 · kinetic ---------------------------------------------- */
+.thesis{font-family:var(--display); font-size:clamp(2.4rem,1.2rem + 5vw,6.5rem);
+  line-height:.94; margin:0}
+.thesis .ln{display:block; overflow:hidden}
+.thesis .ln > span{display:block; will-change:transform}
+.thesis .glitchword{color:var(--glitch);
+  text-shadow:-2px 0 rgba(125,232,255,.5), 2px 0 rgba(125,123,255,.5)}
+
+/* ---------- act 9 · la credencial + las puertas --------------------------- */
+/* La credencial de operador de ZETA LABS, colgando en la llegada: péndulo
+   hacia el puntero, shader holo-térmico del logo Z adentro. */
+.ac-hang{position:relative; display:flex; flex-direction:column; align-items:center;
+  width:fit-content; margin:var(--s8) auto 0; transform-origin:top center;
+  will-change:transform}
+.ac-strap{width:44px; height:clamp(70px,10vh,110px);
+  background:repeating-linear-gradient(180deg,var(--acid) 0 8px,#a3e600 8px 16px);
+  display:flex; align-items:center; justify-content:center; overflow:hidden}
+.ac-strap span{writing-mode:vertical-rl; font-family:var(--mono); font-weight:700;
+  font-size:9px; letter-spacing:.3em; color:#050505; white-space:nowrap;
+  overflow:hidden; max-height:100%}
+.ac-clip{width:58px; height:20px; border-radius:5px; margin-top:-2px;
+  background:linear-gradient(180deg,#d9d9d9,#8f8f8f 55%,#c8c8c8);
+  position:relative; z-index:1}
+.ac-clip::after{content:""; position:absolute; left:50%; top:8px; width:24px;
+  height:6px; transform:translateX(-50%); border-radius:4px; background:#3a3a3a;
+  box-shadow:inset 0 1px 2px rgba(0,0,0,.8)}
+.ac-badge{position:relative; width:min(300px,74vw); aspect-ratio:.68;
+  border-radius:18px; overflow:hidden; margin-top:-3px;
+  box-shadow:0 24px 60px rgba(2,3,9,.7), 0 0 0 1px rgba(240,237,230,.12)}
+.ac-gl{position:absolute; inset:0; width:100%; height:100%; display:block}
+.ac-fallback{position:absolute; inset:0; z-index:1; opacity:.9;
+  background:linear-gradient(140deg,#0a0722,#4c1eb0 30%,#7a2fff 52%,#3fd4ff 76%,#2fffc0 100%)}
+.ac-badge.gl-on .ac-fallback{opacity:0}
+.ac-slot{position:absolute; left:50%; top:13px; transform:translateX(-50%);
+  width:60px; height:10px; border-radius:9999px; background:#050505; z-index:3}
+.ac-head{position:absolute; top:36px; left:18px; right:18px; z-index:3;
+  display:flex; justify-content:space-between; align-items:baseline}
+.ac-head b{font-family:var(--display); font-weight:400; font-size:28px;
+  line-height:.85; letter-spacing:.04em; color:#fff;
+  text-shadow:0 1px 8px rgba(0,0,20,.8)}
+.ac-head span{font-family:var(--mono); font-size:9px; letter-spacing:.22em;
+  color:#eafeff; border:1px solid rgba(160,240,255,.65); border-radius:20px;
+  padding:3px 9px; text-shadow:0 0 10px rgba(80,200,255,.8)}
+.ac-body{position:absolute; left:18px; bottom:68px; z-index:3; text-align:left}
+.ac-body .ar{font-family:var(--mono); font-size:9px; letter-spacing:.26em;
+  color:rgba(255,255,255,.8); text-shadow:0 1px 6px rgba(0,0,20,.8)}
+.ac-body .an{font-family:var(--display); font-size:32px; line-height:.9;
+  letter-spacing:.03em; color:#fff; margin-top:4px;
+  text-shadow:0 0 16px rgba(125,123,255,.8), 0 2px 10px rgba(0,0,20,.7)}
+.ac-foot{position:absolute; left:18px; right:18px; bottom:14px; z-index:3;
+  display:flex; flex-direction:column; gap:6px}
+.ac-bar{height:24px; border-radius:4px; opacity:.9;
+  background:repeating-linear-gradient(90deg,#f0ede6 0 2px,transparent 2px 5px,
+    #f0ede6 5px 6px,transparent 6px 10px,#f0ede6 10px 13px,transparent 13px 17px)}
+.ac-id{font-family:var(--mono); font-size:9px; letter-spacing:.2em;
+  color:rgba(255,255,255,.85); text-shadow:0 1px 6px rgba(0,0,20,.8);
+  display:flex; justify-content:space-between}
+
+.doors{display:grid; gap:var(--s4); margin-top:var(--s8)}
+@media (min-width:820px){ .doors{grid-template-columns:1.25fr 1fr; gap:var(--s6)} }
+.door{
+  display:block; text-decoration:none; color:var(--white);
+  border:1px solid rgba(240,237,230,.14); padding:clamp(1.25rem,2.4vw,2rem);
+  background:rgba(5,5,5,.93); min-height:44px; position:relative;
+  transition:border-color .25s, background .25s, transform .25s;
+}
+.door:hover,.door:focus-visible{border-color:var(--acid); background:rgba(5,5,5,.98);
+  transform:translateY(-2px)}
+.door--core{border-left:2px solid var(--glitch)}
+.door--core:hover,.door--core:focus-visible{border-color:var(--glitch)}
+.door__k{font-family:var(--mono); font-size:.5625rem; letter-spacing:.24em;
+  text-transform:uppercase; color:var(--ink-muted); display:block}
+.door__t{font-family:var(--display); font-size:clamp(1.8rem,1.2rem + 2.4vw,3.4rem);
+  line-height:1; display:block; margin:var(--s3) 0 var(--s2)}
+.door__d{font-size:.9375rem; color:var(--ink-muted); max-width:44ch; display:block}
+/* CTA pastilla, como el "Entrar al laboratorio" del login de labs */
+.door__go{background:var(--acid); color:var(--black); font-family:var(--mono);
+  font-weight:700; font-size:.6875rem; letter-spacing:.14em;
+  display:inline-block; margin-top:var(--s4); padding:11px 22px;
+  border-radius:9999px; transition:transform .25s, filter .25s}
+.door:hover .door__go{transform:translateX(4px); filter:brightness(1.08)}
+.door--core .door__go{background:var(--glitch)}
+
+.colophon{margin-top:var(--s16); font-family:var(--mono); font-size:.625rem;
+  letter-spacing:.12em; color:var(--ink-muted)}
+
+.skip{position:absolute; left:-9999px; top:0; z-index:10; background:var(--black);
+  color:var(--acid); padding:var(--s3) var(--s4); font-family:var(--mono); font-size:.75rem}
+.skip:focus{left:var(--pad); top:var(--s3)}
+
+@media (prefers-reduced-motion:reduce){
+  .reveal,.sat,.peak__word,.thesis .ln > span{opacity:1 !important; transform:none !important}
+  #peakClip{display:none}
+  .holo,.pulse-dot{animation:none}
+}
+</style>
+</head>
+
+<body>
+<a class="skip" href="#a9">Saltar al final — las puertas</a>
+
+<!-- El mundo entero en un grupo de blend aislado: sol + materia + pico. -->
+<div class="world" aria-hidden="true">
+  <canvas id="stage"></canvas>
+  <canvas id="matter"></canvas>
+  <video id="peakClip" muted playsinline preload="metadata"
+         poster="assets/peak-poster.webp">
+    <source src="assets/peak.webm" type="video/webm" data-src-mobile="assets/peak-m.webm">
+    <source src="assets/peak.mp4"  type="video/mp4"  data-src-mobile="assets/peak-m.mp4">
+  </video>
+</div>
+<noscript><div class="noscript-bg" aria-hidden="true"></div></noscript>
+<div class="vig" aria-hidden="true"></div>
+<div class="grain" aria-hidden="true"></div>
+
+<div class="hud hud--tl" aria-hidden="true"><span class="pulse-dot"></span>LA PUERTA · HG-VL<br>
+  <span id="hgClock">--:--:--</span> · ACCESO RESTRINGIDO</div>
+<div class="gauge" aria-hidden="true">
+  <span class="gauge__n" id="gaugeN">1.00</span>
+  <span id="gaugeL">UA AL NÚCLEO</span>
+</div>
+<div class="mark" aria-hidden="true">BUENOS AIRES — AR · 34°36′S 58°22′O · EST. 2022</div>
+<div class="hud hud--bc" id="hint" aria-hidden="true">SCROLLEÁ — CAÉS AL NÚCLEO<span class="hint2"> · MOVÉ — LA MATERIA TE ESQUIVA · CLICK — ONDA</span></div>
+<div id="prog" aria-hidden="true"><i id="progFill"></i></div>
+
+<main>
+
+  <!-- act 1 · flow · 1.0vh — órbita exterior -->
+  <section class="act" id="a1" style="min-height:100vh">
+    <div class="act__in">
+      <div class="plate reveal">
+        <p class="kicker"><span class="ix">01 / 09</span>Órbita exterior</p>
+        <!-- El título es la malla Z en vidrio líquido (logo.js). El h1 de
+             texto queda como respaldo: sin JS, sin WebGL2 o sin la malla,
+             vuelve a mostrarse. -->
+        <div class="zwrap" id="zwrap">
+          <canvas id="zlogo" aria-hidden="true"></canvas>
+          <h1>HUMAN&nbsp;GLITCHE<br><span class="t-outline">VISUAL&nbsp;LAB</span></h1>
+        </div>
+        <p class="wordmark">HUMAN GLITCHE <span>·</span> VISUAL LAB</p>
+        <p class="sub-mono" style="margin-top:.75rem">el viaje al sol</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- act 2 · drift · 0.8vh — el punto se resuelve -->
+  <section class="act" id="a2" style="min-height:80vh">
+    <div class="act__in">
+      <div class="plate plate--tight reveal">
+        <p class="lede">Visual&nbsp;Lab en la superficie. Human&nbsp;Glitche en el núcleo.</p>
+        <p class="muted" style="margin-top:.75rem">Un dominio, una profundidad.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- act 3 · reveal · 1.2vh — VISUAL LAB se nombra, y muestra fechas -->
+  <section class="act" id="a3" style="min-height:150vh; flex-direction:column;
+           justify-content:center; align-items:stretch">
+    <div class="act__in">
+      <div class="plate reveal">
+        <p class="kicker"><span class="ix">03 / 09</span>La superficie</p>
+        <h2 class="holo">VISUAL LAB</h2>
+        <p class="muted" style="margin-top:1rem">
+          La rama comercial. Galería, servicios y el trabajo del estudio.
+        </p>
+      </div>
+    </div>
+    <!-- Las fechas antes de los servicios: primero el trabajo hecho, después
+         la lista de lo que se ofrece. Material propio, capturado de @feka.vj. -->
+    <div class="gigs reveal">
+      <p class="gigs__k"><span class="dot"></span>Fechas · material propio</p>
+      <div class="gigs__win">
+        <div class="gigs__track" id="gigTrack">
+          <figure class="gig"><video src="assets/gigs/gig-01.mp4" poster="assets/gigs/gig-01.jpg" muted loop playsinline preload="none"></video><figcaption>BOOTH</figcaption></figure>
+          <figure class="gig"><video src="assets/gigs/gig-02.mp4" poster="assets/gigs/gig-02.jpg" muted loop playsinline preload="none"></video><figcaption>CLUB</figcaption></figure>
+          <figure class="gig"><video src="assets/gigs/gig-03.mp4" poster="assets/gigs/gig-03.jpg" muted loop playsinline preload="none"></video><figcaption>LED WALL</figcaption></figure>
+          <figure class="gig"><video src="assets/gigs/gig-04.mp4" poster="assets/gigs/gig-04.jpg" muted loop playsinline preload="none"></video><figcaption>ESCENARIO</figcaption></figure>
+          <figure class="gig"><video src="assets/gigs/gig-05.mp4" poster="assets/gigs/gig-05.jpg" muted loop playsinline preload="none"></video><figcaption>MONTAJE</figcaption></figure>
+          <figure class="gig"><video src="assets/gigs/gig-06.mp4" poster="assets/gigs/gig-06.jpg" muted loop playsinline preload="none"></video><figcaption>CONTENIDO</figcaption></figure>
+          <figure class="gig"><video src="assets/gigs/gig-07.mp4" poster="assets/gigs/gig-07.jpg" muted loop playsinline preload="none"></video><figcaption>AL AIRE LIBRE</figcaption></figure>
+          <figure class="gig"><video src="assets/gigs/gig-08.mp4" poster="assets/gigs/gig-08.jpg" muted loop playsinline preload="none"></video><figcaption>EN VIVO</figcaption></figure>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- act 4 · pin · 2.2vh — los servicios pasan como satélites -->
+  <section class="act" id="a4" style="min-height:220vh; align-items:flex-start">
+    <div class="pinwrap">
+      <div class="sats" aria-hidden="true">
+        <figure class="sat sat--a"><img src="assets/sat-01.webp" alt=""><figcaption class="sat__tag">BOOTH</figcaption></figure>
+        <figure class="sat sat--b"><img src="assets/sat-02.webp" alt=""><figcaption class="sat__tag">HAZE</figcaption></figure>
+        <figure class="sat sat--c"><img src="assets/sat-03.webp" alt=""><figcaption class="sat__tag">MAPPING</figcaption></figure>
+        <figure class="sat sat--d"><img src="assets/sat-04.webp" alt=""><figcaption class="sat__tag">EN VIVO</figcaption></figure>
+        <figure class="sat sat--e"><img src="assets/sat-05.webp" alt=""><figcaption class="sat__tag">ESTUDIO</figcaption></figure>
+        <figure class="sat sat--f"><img src="assets/sat-06.webp" alt=""><figcaption class="sat__tag">PATCH</figcaption></figure>
+        <figure class="sat sat--g"><img src="assets/sat-07.webp" alt=""><figcaption class="sat__tag">RIG</figcaption></figure>
+        <figure class="sat sat--h"><img src="assets/sat-08.webp" alt=""><figcaption class="sat__tag">LED</figcaption></figure>
+      </div>
+      <div class="act__in">
+        <div class="plate">
+          <p class="kicker"><span class="ix">04 / 09</span>Lo que orbita</p>
+          <ul class="svc">
+            <li><b>Visuales en vivo</b><br>Resolume · VDMX · TouchDesigner</li>
+            <li><b>Shaders &amp; código visual</b><br>ISF · GLSL · herramientas propias</li>
+            <li><b>IA generativa aplicada</b><br>pipelines, sin perder la mirada humana</li>
+            <li><b>Diseño 3D &amp; render</b><br>Cinema 4D · Octane · Insydium</li>
+            <li><b>Post &amp; edición</b><br>suite Adobe completa</li>
+            <li><b>Contenido para redes</b><br>piezas, calendarios, estrategia</li>
+            <li><b>Web para artistas y comercios</b><br>sitios a medida — como éste</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- act 5 · drift · 0.5vh — SILENCIO. Authored hold: no copy, by design. -->
+  <section class="act" id="a5" style="min-height:50vh" data-sc-hold aria-hidden="true"></section>
+
+  <!-- act 6 · scrub · 3.0vh — PICO · la caída al núcleo -->
+  <section class="act" id="a6" style="min-height:300vh; align-items:flex-start">
+    <div class="pinwrap">
+      <p class="peak__word" id="peakWord">NÚCLEO</p>
+    </div>
+  </section>
+
+  <!-- act 7 · kinetic · 1.8vh — la tesis -->
+  <section class="act" id="a7" style="min-height:180vh">
+    <div class="act__in">
+      <div class="plate plate--core">
+        <h2 class="thesis" id="thesis">
+          <span class="ln"><span>LA REALIDAD</span></span>
+          <span class="ln"><span>ES UNA</span></span>
+          <span class="ln"><span class="glitchword">INTERFAZ.</span></span>
+        </h2>
+        <p class="muted" style="margin-top:1.5rem">
+          Diseñada por alguien, en algún momento, con alguna intención.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- act 8 · pin · 1.6vh — el núcleo -->
+  <section class="act" id="a8" style="min-height:160vh">
+    <div class="act__in">
+      <div class="plate plate--core reveal">
+        <p class="kicker" style="color:var(--glitch)"><span class="ix">08 / 09</span>El núcleo</p>
+        <h2>HUMAN GLITCHE</h2>
+        <p class="lede" style="margin-top:1rem">
+          La casa madre. Acá no se vende nada: acá está el porqué.
+        </p>
+        <p class="muted" style="margin-top:1rem">
+          Manifiesto, diario, academia y comunidad. Todo lo demás orbita.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- act 9 · flow — la credencial y las puertas -->
+  <section class="act" id="a9" style="min-height:150vh">
+    <div class="act__in">
+      <div class="reveal">
+        <p class="kicker"><span class="ix">09 / 09</span>Llegaste. Credencial de operador.</p>
+
+        <div class="ac-hang" id="acHang" aria-hidden="true">
+          <div class="ac-strap"><span>HUMAN GLITCHE · VISUAL LAB · HUMAN GLITCHE · VISUAL LAB</span></div>
+          <div class="ac-clip"></div>
+          <div class="ac-badge" id="acBadge">
+            <canvas class="ac-gl" id="acGL"></canvas>
+            <div class="ac-fallback"></div>
+            <div class="ac-slot"></div>
+            <div class="ac-head"><b>HG<br>VL</b><span>OPERADOR</span></div>
+            <div class="ac-body"><div class="ar">ACREDITACIÓN</div><div class="an">HUMAN<br>GLITCHE</div></div>
+            <div class="ac-foot"><div class="ac-bar"></div>
+              <span class="ac-id"><span>HG-ENTRADA-001</span><span>ACCESO TOTAL</span></span></div>
+          </div>
+        </div>
+
+        <nav class="doors" aria-label="Entradas al sitio">
+          <a class="door door--core" href="/home.html">
+            <span class="door__k">El núcleo · no comercial</span>
+            <span class="door__t">HUMAN GLITCHE</span>
+            <span class="door__d">Manifiesto, diario, academia y comunidad. El porqué.</span>
+            <span class="door__go">ENTRAR A LA COMUNIDAD →</span>
+          </a>
+          <a class="door" href="/vl/">
+            <span class="door__k">La superficie · el estudio</span>
+            <span class="door__t">VISUAL LAB</span>
+            <span class="door__d">Galería, servicios y el trabajo del estudio.</span>
+            <span class="door__go">ENTRAR AL ESTUDIO →</span>
+          </a>
+        </nav>
+        <p class="colophon">
+          © 2026 HUMAN GLITCHE — VISUAL LAB — BUENOS AIRES ·
+          QUIEN VE LA INTERFAZ, YA NO PUEDE DEJAR DE REDISEÑARLA.
+        </p>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<script src="assets/vendor/gsap.min.js"></script>
+<script src="assets/vendor/ScrollTrigger.min.js"></script>
+<!-- flujo.js define el shader que world.js inyecta en el peel: va antes -->
+<script src="assets/flujo.js"></script>
+<script src="assets/world.js"></script>
+<script src="assets/matter.js"></script>
+<script src="assets/logo.js"></script>
+<script src="assets/gigs.js"></script>
+<script src="assets/credencial.js"></script>
+</body>
+</html>
