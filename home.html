@@ -16,7 +16,9 @@
 <meta name="twitter:description" content="Laboratorio de visuales en tiempo real, shaders y comunidad.">
 <meta name="twitter:image" content="https://www.hg-vl.com/assets/og/home.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Bebas+Neue&family=DM+Sans:wght@300;400;500&family=Archivo+Black&family=IBM+Plex+Mono:wght@500;700&family=Playfair+Display:ital,wght@0,700;1,700&family=Syne:wght@700;800&family=Courier+Prime:wght@700&display=swap" rel="stylesheet">
+<!-- El trío canon de la casa — el mismo de /, /vl/ y academia. Nada más:
+     display=Bebas · cuerpo=DM Sans · telemetría=Space Mono. -->
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 :root{
@@ -38,6 +40,15 @@ body{background:var(--black);color:var(--white);font-family:var(--body);overflow
 /* SHADER CANVAS BG */
 #shader-canvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:0;transition:opacity 2.5s ease;}
 #shader-canvas.active{opacity:1;}
+/* MAREA — el fondo en reposo de la casa: Navier-Stokes en vivo (assets/cara/marea.js).
+   Vive debajo del canvas ISF: cuando el deck activa un shader, la marea se
+   apaga y le cede el fondo; al resetear, vuelve sola. */
+#marea-bg{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:0;transition:opacity 1.8s ease;}
+#marea-bg.marea-on{opacity:1;}
+#marea-bg.oculto{opacity:0;}
+/* velo: vignette suave para que la tipografía flote sobre el agua sin pelearla */
+#marea-veil{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(120% 100% at 50% 42%, transparent 40%, rgba(2,3,7,.58) 100%);}
 
 /* NOISE */
 body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");z-index:1;pointer-events:none;opacity:0.4;}
@@ -555,7 +566,7 @@ section{min-height:100vh;display:flex;align-items:center;position:relative;paddi
     0 0 3px rgba(255,255,255,0.75);
   filter:saturate(1.5) brightness(1.2);
 }
-.hero-sub{font-family:var(--mono);font-size:12px;color:rgba(240,237,230,0.35);margin-top:1.5rem;max-width:420px;line-height:1.9;transition:transform 0.3s ease-out;will-change:transform;}
+.hero-sub{font-family:var(--body);font-weight:300;font-size:15px;color:rgba(240,237,230,0.55);margin-top:1.5rem;max-width:440px;line-height:1.75;transition:transform 0.3s ease-out;will-change:transform;}
 .hero-socials{display:flex;gap:2rem;margin-top:2.5rem;transition:transform 0.35s ease-out;will-change:transform;}
 .hero-socials a{font-family:var(--mono);font-size:10px;letter-spacing:0.2em;color:rgba(240,237,230,0.3);text-decoration:none;transition:color 0.2s;}
 .hero-socials a:hover{color:var(--acid);}
@@ -563,6 +574,18 @@ section{min-height:100vh;display:flex;align-items:center;position:relative;paddi
 .hero-scroll::after{content:'';display:block;width:1px;height:60px;background:var(--acid);animation:sline 1.5s ease-in-out infinite;transition:background-color 1.5s;}
 @keyframes sline{0%{height:0;opacity:0}50%{height:60px;opacity:1}100%{height:0;opacity:0}}
 .hero-tag{position:absolute;top:3rem;right:calc(230px + 2rem);font-family:var(--mono);font-size:10px;letter-spacing:0.2em;color:rgba(240,237,230,0.18);}
+
+/* Telemetría HUD — el mismo lenguaje de chips de la puerta (/) y del portal
+   de demos: mono chico, mayúsculas, vidrio oscuro con blur. */
+.hud-chip{position:absolute;z-index:2;font-family:var(--mono);font-size:9px;
+  letter-spacing:0.22em;text-transform:uppercase;color:rgba(240,237,230,0.6);
+  background:rgba(5,5,5,0.6);padding:0.5rem 0.75rem;line-height:1.8;
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);pointer-events:none;}
+.hud-chip .pdot{display:inline-block;width:5px;height:5px;border-radius:50%;
+  background:var(--acid);margin-right:7px;vertical-align:1px;animation:pdot 2.4s infinite;}
+@keyframes pdot{0%,100%{opacity:.25}50%{opacity:1}}
+.hud-chip--tl{top:7.5rem;left:8vw;}
+@media(max-width:860px){.hud-chip{display:none;}}
 
 /* GLITCH */
 .glitch{position:relative;}
@@ -580,7 +603,7 @@ section{min-height:100vh;display:flex;align-items:center;position:relative;paddi
 .mline:nth-child(2) span{transition-delay:0.08s;}
 .mline:nth-child(3) span{transition-delay:0.16s;}
 .mline:nth-child(4) span{transition-delay:0.25s;color:var(--acid);transition:color 1.5s,transform 0.9s cubic-bezier(0.16,1,0.3,1) 0.25s;}
-.mfine{font-family:var(--mono);font-size:11px;color:rgba(240,237,230,0.3);margin-top:3rem;letter-spacing:0.15em;line-height:1.9;max-width:460px;}
+.mfine{font-family:var(--body);font-weight:300;font-size:15px;color:rgba(240,237,230,0.5);margin-top:3rem;letter-spacing:0.01em;line-height:1.8;max-width:520px;}
 
 /* FULLSCREEN / VISUAL MODE BTN */
 #fs-btn{
@@ -676,7 +699,7 @@ body.visual-mode #exit-visual{z-index:9000!important;}
 #aether-sec{flex-direction:column;min-height:80vh;padding:8vh 8vw;}
 .aether-badge{font-family:var(--mono);font-size:9px;letter-spacing:0.3em;color:var(--acid);border:1px solid rgba(184,255,0,0.3);padding:5px 14px;display:inline-block;margin-bottom:2rem;transition:color 1.5s,border-color 1.5s;}
 .aether-title{font-family:var(--display);font-size:clamp(3rem,7vw,8rem);line-height:0.9;margin-bottom:1.5rem;}
-.aether-desc{font-family:var(--mono);font-size:11px;line-height:2;color:rgba(240,237,230,0.4);max-width:400px;margin-bottom:2.5rem;}
+.aether-desc{font-family:var(--body);font-weight:300;font-size:15px;line-height:1.8;color:rgba(240,237,230,0.55);max-width:440px;margin-bottom:2.5rem;}
 .aether-links{display:flex;gap:1.5rem;align-items:center;flex-wrap:wrap;}
 .aether-link{font-family:var(--mono);font-size:10px;letter-spacing:0.2em;color:var(--acid);text-decoration:none;border-bottom:1px solid var(--acid);padding-bottom:2px;transition:color 1.5s,border-color 1.5s;}
 .aether-app-btn{
@@ -727,7 +750,7 @@ body.visual-mode #exit-visual{z-index:9000!important;}
 .acc:hover{border-color:rgba(184,255,0,0.5);background:rgba(184,255,0,0.05);transform:translateY(-3px);}
 .acc .ai{font-size:16px;color:var(--acid);}
 .acc h4{font-family:var(--display);font-size:20px;letter-spacing:0.03em;color:var(--acid);line-height:0.9;font-weight:400;}
-.acc p{font-family:var(--mono);font-size:9px;letter-spacing:0.04em;color:rgba(240,237,230,0.5);line-height:1.7;}
+.acc p{font-family:var(--body);font-weight:300;font-size:12.5px;letter-spacing:0.01em;color:rgba(240,237,230,0.55);line-height:1.6;}
 .acc.vl .ai,.acc.vl h4{color:#3ad0ff;}
 .acc.vl:hover{border-color:rgba(58,208,255,0.55);background:rgba(58,208,255,0.05);}
 @media(max-width:768px){.access-grid{grid-template-columns:repeat(2,1fr);}}
@@ -773,7 +796,7 @@ body.visual-mode #exit-visual{z-index:9000!important;}
 .pper{font-family:var(--mono);font-size:10px;color:rgba(240,237,230,0.35);margin-bottom:2rem;}
 .pname{font-family:var(--display);font-size:1.7rem;line-height:1;margin-bottom:1.3rem;}
 .pfeat{list-style:none;}
-.pfeat li{font-family:var(--mono);font-size:10px;color:rgba(240,237,230,0.45);padding:0.45rem 0;border-bottom:1px solid rgba(240,237,230,0.05);line-height:1.6;}
+.pfeat li{font-family:var(--body);font-weight:300;font-size:13px;color:rgba(240,237,230,0.55);padding:0.45rem 0;border-bottom:1px solid rgba(240,237,230,0.05);line-height:1.55;}
 .pfeat li::before{content:'→ ';color:var(--acid);transition:color 1.5s;}
 .plan.feat .pfeat li{color:rgba(240,237,230,0.65);}
 .pcta{display:block;margin-top:2rem;font-family:var(--mono);font-size:10px;letter-spacing:0.2em;text-decoration:none;padding:0.9rem;border:1px solid rgba(240,237,230,0.15);text-align:center;color:var(--white);transition:all 0.3s;}
@@ -807,8 +830,8 @@ body.visual-mode #exit-visual{z-index:9000!important;}
   color:var(--white);
 }
 .start-card .sc-desc{
-  font-family:var(--mono); font-size:10px; line-height:1.7;
-  color:rgba(240,237,230,0.35); flex:1;
+  font-family:var(--body); font-weight:300; font-size:13px; line-height:1.6;
+  color:rgba(240,237,230,0.5); flex:1;
 }
 .start-card .sc-arrow{
   font-family:var(--mono); font-size:9px; letter-spacing:0.25em;
@@ -1016,7 +1039,10 @@ body.visual-mode #exit-visual{z-index:9000!important;}
 
 <div id="cursor"></div>
 <div id="cursor-ring"></div>
+<canvas id="marea-bg" aria-hidden="true"></canvas>
 <canvas id="shader-canvas"></canvas>
+<div id="marea-veil" aria-hidden="true"></div>
+<script src="assets/cara/marea.js"></script>
 
 <!-- SALIR MODO VISUAL -->
 <button id="exit-visual">✕ SALIR VISUAL</button>
@@ -1230,6 +1256,9 @@ body.visual-mode #exit-visual{z-index:9000!important;}
 
   <section id="hero" style="padding:0 8vw 10vh;">
     <span class="hero-tag">VISUAL LAB × HUMAN GLITCHE</span>
+    <div class="hud-chip hud-chip--tl" aria-hidden="true"><span class="pdot"></span>LA CASA · HG-VL · <span id="hgClock">--:--:--</span><br>
+      FONDO — MAREA · NAVIER-STOKES EN VIVO · MOVÉ, EL AGUA EMPUJA<br>
+      BUENOS AIRES — AR · 34°36′S 58°22′O · EST. 2022</div>
     <div class="hero-glass" aria-hidden="true"></div>
     <h1 class="hero-title glitch" data-text="VISUAL-LAB">VISUAL<br><span class="ac">--LAB-</span></h1>
     <p class="hero-sub">La realidad es una interfaz — diseñada por alguien, en algún momento, con alguna intención. Human Glitche es el laboratorio de quienes la ven, la cuestionan y construyen la versión siguiente.</p>
@@ -1302,6 +1331,7 @@ body.visual-mode #exit-visual{z-index:9000!important;}
       <p class="aether-desc rev rd2">Describí un efecto, el motor lo compila y lo ves <strong>renderizando ahí mismo</strong> — con controles auto-generados. Si el shader falla, el bucle cerrado <em>genera→compila→corrige</em> lo arregla antes de mostrártelo. Después lo bajás como <code style="color:#fff;font-size:10px">.fs</code> para VDMX6 / Resolume / cualquier host ISF.</p>
       <div class="aether-links rev rd3">
         <a href="aether-2/" class="aether-app-btn">⚡ ENTRAR AL FORGE</a>
+        <a href="labs/shaders-lab/" class="aether-link">⌘ LAB — 5 PIEZAS ÉPICAS →</a>
         <a href="aether.html" class="aether-link">VERSIÓN 1.0 →</a>
         <a href="https://github.com/human-zeta/Aether-ISF-generator" class="aether-link" target="_blank">GITHUB →</a>
       </div>
@@ -1502,47 +1532,9 @@ document.addEventListener('mousemove',e=>{
   apply();
 })();
 
-// ─────────────────────────────────────────────
-// GLITCH DE TIPOGRAFÍAS — cada tanto, los títulos cambian de familia
-// tipográfica varias veces en una fracción de segundo (como una falla
-// de renderizado) y vuelven a su fuente original. Cada elemento corre
-// con su propio temporizador aleatorio para que no glitcheen todos
-// juntos — más orgánico, menos sincronizado.
-// ─────────────────────────────────────────────
-(function fontGlitch(){
-  const FONTS = [
-    "'Archivo Black',sans-serif",
-    "'IBM Plex Mono',monospace",
-    "'Playfair Display',serif",
-    "'Syne',sans-serif",
-    "'Courier Prime',monospace",
-    "'DM Sans',sans-serif"
-  ];
-  /* Solo títulos standalone de ancho completo — sacar .ctitle, .sname, .mline
-     evita que el cambio de familia reflow las columnas de texto adyacente */
-  const targets = document.querySelectorAll('.hero-title, .aether-title, .live-t');
-  if(!targets.length) return;
-
-  targets.forEach(el=>{
-    function burst(){
-      let i = 0;
-      const swaps = 4 + Math.floor(Math.random()*4); // 4–7 cambios
-      const iv = setInterval(()=>{
-        el.style.fontFamily = FONTS[Math.floor(Math.random()*FONTS.length)];
-        i++;
-        if(i >= swaps){
-          clearInterval(iv);
-          el.style.fontFamily = ''; // vuelve a la tipografía definida en CSS (--display)
-        }
-      }, 55 + Math.random()*35);
-    }
-    function loop(){
-      burst();
-      setTimeout(loop, 5000 + Math.random()*9000); // próximo glitch entre 5 y 14s
-    }
-    setTimeout(loop, 800 + Math.random()*4000); // arranque desfasado por elemento
-  });
-})();
+/* El glitch de tipografías (swap aleatorio entre 6 familias) se retiró con la
+   cara nueva: la identidad vive en el trío canon y en el glitch cromático CSS.
+   Se ahorran además ~5 familias de Google Fonts que solo existían para eso. */
 
 (function tick(){rx+=(mx-rx)*0.12;ry+=(my-ry)*0.12;ring.style.left=rx-16+'px';ring.style.top=ry-16+'px';requestAnimationFrame(tick);})();
 document.querySelectorAll('a,button,.bcard,.srow,.plan').forEach(el=>{
@@ -2366,11 +2358,35 @@ function loadRandomShader(){
   }
 }
 
-// Cargar shader por defecto al iniciar — RIPPLE GRID es la pieza curada de entrada
-setTimeout(()=>{
-  const def = BUILTIN_SHADERS.find(s=>s.name==='RIPPLE GRID') || BUILTIN_SHADERS[0];
-  loadShaderFromCode(def.code, def.name);
-}, 600);
+// ─────────────────────────────────────────────
+// FONDO EN REPOSO — MAREA (Navier-Stokes del laboratorio de shaders).
+// Reemplaza al autoload de RIPPLE GRID: la cara de la casa ahora es agua.
+// El deck ISF sigue intacto: cuando el usuario carga un shader, la marea se
+// pausa y se apaga; al resetear el deck, vuelve. Si no hay WebGL2 (o el
+// visitante pide reduced-motion), no se monta y queda el negro con grano.
+// ─────────────────────────────────────────────
+(function mareaFondo(){
+  const cv = document.getElementById('marea-bg');
+  if(!cv || !window.HGMarea) return;
+  const ctrl = HGMarea.mount(cv, {});   // paleta UMBRAL por defecto
+  if(!ctrl) return;
+  const isf = document.getElementById('shader-canvas');
+  function sync(){
+    const tapado = isf.classList.contains('active') || document.body.classList.contains('visual-mode');
+    cv.classList.toggle('oculto', tapado);
+    if(tapado) ctrl.pause(); else ctrl.resume();
+  }
+  new MutationObserver(sync).observe(isf, {attributes:true, attributeFilter:['class']});
+  new MutationObserver(sync).observe(document.body, {attributes:true, attributeFilter:['class']});
+  sync();
+})();
+
+// reloj del HUD — la misma telemetría de la puerta (/)
+(function reloj(){
+  const el=document.getElementById('hgClock'); if(!el) return;
+  function tick(){ el.textContent=new Date().toLocaleTimeString('es-AR',{hour12:false}); }
+  tick(); setInterval(tick,1000);
+})();
 
 // ─────────────────────────────────────────────
 // REPOSITORIO GLOBAL — Firebase Realtime DB

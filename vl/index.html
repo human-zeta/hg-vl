@@ -117,10 +117,41 @@
   footer a.hg:hover{color:var(--acid);}
   footer .fine{margin-top:22px;color:rgba(240,237,230,.28);}
 
+  /* ===== MAREA — la misma agua del home, entonada en cyan (la casa VL).
+     Navier-Stokes en vivo de assets/cara/marea.js; sutil, detrás de todo,
+     con velo para que la vidriera se lea. Sin WebGL2 queda el negro+grano. ===== */
+  #marea-bg{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:0;transition:opacity 1.8s ease;}
+  #marea-bg.marea-on{opacity:.62;}
+  #marea-veil{position:fixed;inset:0;z-index:1;pointer-events:none;
+    background:radial-gradient(115% 95% at 50% 30%, rgba(5,5,5,.28) 0%, rgba(5,5,5,.68) 74%, rgba(2,3,7,.86) 100%);}
+
+  /* telemetría HUD — el lenguaje de chips de la puerta (/) y el portal de demos */
+  .hud-chip{position:absolute;right:0;top:96px;z-index:2;font-family:var(--mono);font-size:9px;
+    letter-spacing:.2em;text-transform:uppercase;color:rgba(240,237,230,.5);text-align:right;
+    background:rgba(5,5,5,.55);padding:.5rem .7rem;line-height:1.8;pointer-events:none;
+    backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);}
+  .hud-chip .pdot{display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--cyan);
+    margin-right:7px;vertical-align:1px;animation:pdot 2.4s infinite;}
+  @keyframes pdot{0%,100%{opacity:.25}50%{opacity:1}}
+  @media(max-width:860px){.hud-chip{display:none;}}
+
   /* a11y — foco visible al navegar con teclado + respeto a reduced-motion */
   :focus-visible{outline:2px solid var(--acid,#b8ff00);outline-offset:2px;}
   @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important;scroll-behavior:auto !important;}}
 </style></head><body>
+<canvas id="marea-bg" aria-hidden="true"></canvas>
+<div id="marea-veil" aria-hidden="true"></div>
+<script src="../assets/cara/marea.js"></script>
+<script>
+/* la marea de VL: más calma que la del home (ambiente bajo) y en cyan */
+(function(){
+  var cv=document.getElementById('marea-bg');
+  if(cv && window.HGMarea) HGMarea.mount(cv,{
+    mid:[0.075,0.38,0.80], alto:[0.227,0.816,1.0], acento:[0.184,1.0,0.753],
+    ambiente:0.7, simMax:420
+  });
+})();
+</script>
 <div class="shell">
 
   <nav class="vlnav">
@@ -132,6 +163,10 @@
       <a class="cta" href="/contacto.html">CONTACTO →</a>
     </div>
   </nav>
+
+  <div class="hud-chip" aria-hidden="true"><span class="pdot"></span>LA VIDRIERA · VL · <span id="vlClock">--:--:--</span><br>
+    FONDO — MAREA · NAVIER-STOKES EN CYAN<br>
+    BUENOS AIRES — AR · 34°36′S 58°22′O</div>
 
   <section class="hero">
     <div class="kick">La vidriera del estudio</div>
@@ -327,4 +362,11 @@
   </footer>
 
 </div>
+<script>
+(function reloj(){
+  var el=document.getElementById('vlClock'); if(!el) return;
+  function tick(){ el.textContent=new Date().toLocaleTimeString('es-AR',{hour12:false}); }
+  tick(); setInterval(tick,1000);
+})();
+</script>
 </body></html>

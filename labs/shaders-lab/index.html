@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LABORATORIO DE SHADERS — Human Glitche</title>
+<meta name="theme-color" content="#050505">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --black:#050505; --white:#f0ede6; --acid:#b8ff00; --glitch:#ff2d55;
+  --violet:#7d7bff; --celeste:#7de8ff; --agua:#6fffcf; --ink-muted:#a9a69f;
+  --display:'Bebas Neue',Impact,sans-serif;
+  --body:'DM Sans',system-ui,sans-serif;
+  --mono:'Space Mono',ui-monospace,monospace;
+  --pad:clamp(.9rem,2.6vw,2rem);
+}
+*,*::before,*::after{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--black);color:var(--white);font-family:var(--body);
+  overflow:hidden;-webkit-font-smoothing:antialiased}
+#gl{position:fixed;inset:0;width:100%;height:100%;display:block;z-index:0;
+  background:var(--black)}
+.grain{position:fixed;inset:0;pointer-events:none;z-index:4;opacity:.4;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 240 240' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E")}
+
+.hud{position:fixed;z-index:5;font-family:var(--mono);font-size:.5625rem;
+  letter-spacing:.24em;text-transform:uppercase;line-height:1.8;
+  background:rgba(5,5,5,.86);padding:.5rem .75rem;pointer-events:none}
+.hud--tl{top:var(--pad);left:var(--pad);color:var(--white)}
+.hud--tr{top:var(--pad);right:var(--pad);text-align:right;color:var(--ink-muted)}
+.hud b{color:var(--acid);font-weight:400}
+.dot{display:inline-block;width:5px;height:5px;border-radius:50%;
+  background:var(--acid);margin-right:7px;vertical-align:1px;animation:pd 2.4s infinite}
+@keyframes pd{0%,100%{opacity:.25}50%{opacity:1}}
+
+/* ficha del shader activo */
+.ficha{position:fixed;z-index:5;left:var(--pad);bottom:calc(var(--pad) + 4.2rem);
+  max-width:min(30rem,68vw);background:rgba(5,5,5,.9);padding:.9rem 1.1rem;
+  border-left:2px solid var(--celeste)}
+.ficha h1{font-family:var(--display);font-weight:400;margin:0;
+  font-size:clamp(1.6rem,1.1rem+1.8vw,2.6rem);line-height:1;letter-spacing:.02em}
+.ficha .tec{font-family:var(--mono);font-size:.5625rem;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--celeste);margin:.5rem 0 .55rem}
+.ficha p{margin:0;font-size:.8125rem;line-height:1.6;color:var(--ink-muted)}
+
+/* selector */
+.barra{position:fixed;z-index:5;left:var(--pad);right:var(--pad);bottom:var(--pad);
+  display:flex;gap:.4rem;flex-wrap:wrap}
+.barra button{font-family:var(--mono);font-size:.5625rem;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--ink-muted);background:rgba(5,5,5,.9);
+  border:1px solid rgba(240,237,230,.16);padding:.6rem .9rem;cursor:pointer;
+  transition:color .2s,border-color .2s,background .2s}
+.barra button:hover{color:var(--white);border-color:rgba(240,237,230,.4)}
+.barra button[aria-current="true"]{color:var(--black);background:var(--acid);
+  border-color:var(--acid);font-weight:700}
+.barra button:focus-visible{outline:2px solid var(--celeste);outline-offset:3px}
+
+.aviso{position:fixed;inset:0;z-index:9;display:grid;place-content:center;
+  text-align:center;font-family:var(--mono);font-size:.75rem;line-height:2;
+  color:var(--ink-muted);padding:2rem;background:var(--black)}
+@media (max-width:700px){ .ficha{max-width:none;right:var(--pad)} .hud--tr{display:none} }
+</style>
+</head>
+<body>
+<canvas id="gl"></canvas>
+<div class="grain" aria-hidden="true"></div>
+
+<div class="hud hud--tl"><span class="dot"></span>LABORATORIO DE SHADERS · <b>HG</b><br>
+  MOVÉ EL PUNTERO · CLICK — IMPULSO</div>
+<div class="hud hud--tr"><span id="fps">-- FPS</span><br><span id="res">--</span></div>
+
+<div class="ficha">
+  <h1 id="nombre">—</h1>
+  <p class="tec" id="tec">—</p>
+  <p id="desc">—</p>
+</div>
+
+<nav class="barra" id="barra" aria-label="Shaders"></nav>
+
+<script src="sh/catedral.js"></script>
+<script src="sh/prisma.js"></script>
+<script src="sh/resaca.js"></script>
+<script src="sh/marea.js"></script>
+<script src="sh/cardumen.js"></script>
+<script src="lab.js"></script>
+</body>
+</html>
