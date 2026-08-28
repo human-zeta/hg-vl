@@ -169,12 +169,16 @@
         <h2>exportar</h2>
         <button class="ghostbtn" id="btnExpAlpha" disabled>⤓ PNG con alfa (recorte)</button>
         <button class="ghostbtn" id="btnExpDepth" disabled>⤓ PNG mapa de profundidad</button>
+        <button class="ghostbtn" id="btnPackVDMX" disabled>⤓ pack VDMX6 — ISF + assets (.zip)</button>
+        <button class="ghostbtn" id="btnPackTD" disabled>⤓ pack TouchDesigner — GLSL + assets (.zip)</button>
+        <button class="ghostbtn" id="btnPackRes" disabled>⤓ pack Resolume — assets + receta (.zip)</button>
+        <button class="ghostbtn" id="btnLoop" disabled>● grabar loop 10s (video del efecto)</button>
         <button class="ghostbtn warn" id="btnResetAll">⟲ RESET TOTAL</button>
       </div>
     </div>
   </div>
 
-  <p class="note">Flujo: sacá una <b>foto del escenario parándote donde está la lente del proyector</b> (así la perspectiva ya viene alineada), subila acá, dale a <b>QUITAR FONDO</b> para aislar el sujeto (todo lo negro no se proyecta) y después a <b>MAPA DE PROFUNDIDAD</b>. Los efectos leen esa profundidad: contornos que recorren el relieve, barridos por distancia, luz que orbita la superficie. Con <b>PANTALLA COMPLETA</b> en el proyector ya estás mapeando; ajustá el encaje con zoom/x/y. La IA (quitar fondo + Depth Anything V2) corre <b>100% en tu navegador</b> — la primera vez baja los modelos (~50-100 MB) y quedan cacheados; después funciona hasta sin internet. Para meterlo en <b>Resolume/VDMX/OBS</b> capturá esta ventana como fuente de video, igual que con MAPEO. Los PNG exportados (recorte con alfa + depth map) también sirven como assets en cualquier software de VJ. <b>¿Tenés iPhone/iPad Pro con LiDAR?</b> Capturá la escena con una app tipo Record3D, Polycam o Halide, exportá el depth map como imagen y traelo con <b>importar depth</b>: es profundidad medida de verdad (mejor que la estimada por IA), y encima el alfa sale gratis — activá <b>recortar máscara por distancia</b> y todo lo que esté más lejos que el escenario desaparece, sin segmentación. El recorte por distancia también funciona sobre la profundidad generada por IA. Si el depth viene con los valores al revés (cerca oscuro), simplemente cruzá los sliders cerca/lejos. <b>EN VIVO</b>: con la app <b>Record3D</b> (extensión de WiFi Streaming) el iPhone transmite RGB + profundidad LiDAR en tiempo real por WebRTC — activá el streaming WiFi en la app, apretá el botón rojo, poné la IP que muestra y conectá: todos los efectos corren sobre el stream y el alfa se calcula por distancia en la GPU, cuadro a cuadro (gente moviéndose incluida; rango 0–3 m). Probá el <b>demo en vivo</b> para verlo sin iPhone. Ojo: el iPhone sirve HTTP — si esta página está en https el navegador bloquea la conexión; abrila en http o permití "contenido inseguro" para el sitio.</p>
+  <p class="note">Flujo: sacá una <b>foto del escenario parándote donde está la lente del proyector</b> (así la perspectiva ya viene alineada), subila acá, dale a <b>QUITAR FONDO</b> para aislar el sujeto (todo lo negro no se proyecta) y después a <b>MAPA DE PROFUNDIDAD</b>. Los efectos leen esa profundidad: contornos que recorren el relieve, barridos por distancia, luz que orbita la superficie. Con <b>PANTALLA COMPLETA</b> en el proyector ya estás mapeando; ajustá el encaje con zoom/x/y. La IA (quitar fondo + Depth Anything V2) corre <b>100% en tu navegador</b> — la primera vez baja los modelos (~50-100 MB) y quedan cacheados; después funciona hasta sin internet. Para meterlo en <b>Resolume/VDMX/OBS</b> capturá esta ventana como fuente de video, igual que con MAPEO. Los PNG exportados (recorte con alfa + depth map) también sirven como assets en cualquier software de VJ. <b>¿Tenés iPhone/iPad Pro con LiDAR?</b> Capturá la escena con una app tipo Record3D, Polycam o Halide, exportá el depth map como imagen y traelo con <b>importar depth</b>: es profundidad medida de verdad (mejor que la estimada por IA), y encima el alfa sale gratis — activá <b>recortar máscara por distancia</b> y todo lo que esté más lejos que el escenario desaparece, sin segmentación. El recorte por distancia también funciona sobre la profundidad generada por IA. Si el depth viene con los valores al revés (cerca oscuro), simplemente cruzá los sliders cerca/lejos. <b>EN VIVO</b>: con la app <b>Record3D</b> (extensión de WiFi Streaming) el iPhone transmite RGB + profundidad LiDAR en tiempo real por WebRTC — activá el streaming WiFi en la app, apretá el botón rojo, poné la IP que muestra y conectá: todos los efectos corren sobre el stream y el alfa se calcula por distancia en la GPU, cuadro a cuadro (gente moviéndose incluida; rango 0–3 m). Probá el <b>demo en vivo</b> para verlo sin iPhone. <b>Exportar a tu software de VJ</b>: el pack <b>VDMX6</b> es un generator ISF con tus valores como defaults (modo, velocidad, intensidad y demás quedan como sliders en VDMX) + los PNG que importa; el pack <b>TouchDesigner</b> trae el shader para GLSL TOP con receta de cableado; <b>Resolume Arena</b> no corre shaders externos, así que su pack lleva los assets + receta (captura de ventana, o grabá un <b>loop</b> con el botón y convertilo a DXV con Alley). El loop de video le sirve a cualquier software como clip. Ojo: el iPhone sirve HTTP — si esta página está en https el navegador bloquea la conexión; abrila en http o permití "contenido inseguro" para el sitio.</p>
 </div>
 <div id="toast"></div>
 
@@ -284,7 +288,7 @@ function setPhotoFromSource(src,sw,sh,name){
   depthCanvas=grayCanvas(photoW,photoH,'#808080');
   hasMask=false; hasDepth=false;
   $('srcname').textContent='fuente: '+(name||'foto')+` · ${photoW}×${photoH}`;
-  for(const id of ['btnAlpha','btnDepth','btnDepthLuma','btnImportDepth','btnBrush','btnExpAlpha','btnExpDepth']) $(id).disabled=false;
+  for(const id of ['btnAlpha','btnDepth','btnDepthLuma','btnImportDepth','btnBrush','btnExpAlpha','btnExpDepth','btnPackVDMX','btnPackTD','btnPackRes','btnLoop']) $(id).disabled=false;
   $('cutOn').disabled=false; $('cutOn').checked=false; $('cutCtl').style.display='none'; maskBase=null;
   status('foto lista. paso 1: QUITAR FONDO. paso 2: MAPA DE PROFUNDIDAD.');
   setupStage(); uploadPhotoTex(); uploadDepthTex();
@@ -408,6 +412,7 @@ liveVideo.addEventListener('resize',liveSizeSync);
 function startLiveUI(msg){
   live=true;
   $('btnLiveStop').style.display='block';
+  $('btnLoop').disabled=false;
   $('cutOn').disabled=false;
   if(!$('cutOn').checked){ $('cutOn').checked=true; $('cutCtl').style.display='block'; }
   liveSizeSync(); liveStatus(msg);
@@ -708,5 +713,202 @@ $('fileProject').onchange=async e=>{
   }catch(err){ toast('No pude cargar ese proyecto: '+err.message); }
 };
 $('btnResetAll').onclick=()=>{ if(confirm('¿Reset total? Se pierde la foto, la máscara y la profundidad.')) location.reload(); };
+
+/* ---------- packs VJ: zip propio (store, sin librerías) ---------- */
+const CRC_T=(()=>{ const t=[]; for(let n=0;n<256;n++){ let c=n; for(let k=0;k<8;k++) c=c&1?0xEDB88320^(c>>>1):c>>>1; t[n]=c>>>0; } return t; })();
+function crc32(b){ let r=0xFFFFFFFF; for(let i=0;i<b.length;i++) r=CRC_T[(r^b[i])&0xFF]^(r>>>8); return (r^0xFFFFFFFF)>>>0; }
+function makeZip(files){ // files: [{name, data:Uint8Array}]
+  const enc=new TextEncoder(), parts=[], central=[]; let off=0;
+  for(const f of files){
+    const nm=enc.encode(f.name), d=f.data, crc=crc32(d);
+    const lo=new Uint8Array(30+nm.length), lv=new DataView(lo.buffer);
+    lv.setUint32(0,0x04034b50,true); lv.setUint16(4,20,true);
+    lv.setUint32(14,crc,true); lv.setUint32(18,d.length,true); lv.setUint32(22,d.length,true);
+    lv.setUint16(26,nm.length,true); lo.set(nm,30);
+    parts.push(lo,d);
+    const cd=new Uint8Array(46+nm.length), cv=new DataView(cd.buffer);
+    cv.setUint32(0,0x02014b50,true); cv.setUint16(4,20,true); cv.setUint16(6,20,true);
+    cv.setUint32(16,crc,true); cv.setUint32(20,d.length,true); cv.setUint32(24,d.length,true);
+    cv.setUint16(28,nm.length,true); cv.setUint32(42,off,true); cd.set(nm,46);
+    central.push(cd); off+=lo.length+d.length;
+  }
+  const cdSize=central.reduce((a,c)=>a+c.length,0);
+  const end=new Uint8Array(22), ev=new DataView(end.buffer);
+  ev.setUint32(0,0x06054b50,true); ev.setUint16(8,files.length,true); ev.setUint16(10,files.length,true);
+  ev.setUint32(12,cdSize,true); ev.setUint32(16,off,true);
+  return new Blob([...parts,...central,end],{type:'application/zip'});
+}
+const txtU8=s=>new TextEncoder().encode(s);
+async function pngU8(c){ const b=await new Promise(r=>c.toBlob(r,'image/png')); return new Uint8Array(await b.arrayBuffer()); }
+function dlBlob(blob,name){ const u=URL.createObjectURL(blob); dl(u,name); setTimeout(()=>URL.revokeObjectURL(u),4000); }
+const V=id=>+$(id).value, F=id=>(+$(id).value).toFixed(3);
+
+/* la lógica de efectos compartida, en GLSL clásico (sirve para ISF y casi igual en TD) */
+function fxBody(){ return `
+vec3 pal(float t){ return 0.5+0.5*cos(6.28318*(t+vec3(0.0,0.33,0.67))+matiz); }
+float ajustaD(float d){
+  if(invertir) d=1.0-d;
+  d=clamp((d-0.5)*dContraste+0.5,0.0,1.0);
+  return pow(d,dGamma);
+}
+vec3 efecto(int m, float d, float t, vec3 foto, vec2 uv){
+  vec3 col=vec3(0.0);
+  if(m==0){ col=foto; }
+  else if(m==1){
+    float f=abs(fract(d*8.0*escala-t*0.6)-0.5)*2.0;
+    col=pal(d+t*0.03)*smoothstep(0.22,0.02,f)*intensidad+foto*0.07;
+  }else if(m==2){
+    float p=fract(t*0.22);
+    float band=smoothstep(0.16/escala,0.0,abs(d-p));
+    float tail=smoothstep(0.5,0.0,abs(d-p))*0.15;
+    col=pal(p*0.7)*(band+tail)*intensidad+foto*0.05;
+  }else if(m==3){
+    vec2 e=EPS;
+    vec2 uvr=uv+vec2(e.x,0.0); vec2 uvl=uv-vec2(e.x,0.0);
+    vec2 uvu=uv+vec2(0.0,e.y); vec2 uvd=uv-vec2(0.0,e.y);
+    float dx=ajustaD(DEPTH_AT(uvr))-ajustaD(DEPTH_AT(uvl));
+    float dy=ajustaD(DEPTH_AT(uvu))-ajustaD(DEPTH_AT(uvd));
+    vec3 n=normalize(vec3(-dx*6.0*escala,dy*6.0*escala,0.45));
+    vec3 L=normalize(vec3(cos(t*0.8),sin(t*0.55),0.62));
+    float diff=max(dot(n,L),0.0);
+    float spec=pow(max(dot(reflect(-L,n),vec3(0.0,0.0,1.0)),0.0),18.0);
+    col=(foto*0.30+pal(d*0.6+0.1)*0.70)*diff*intensidad+vec3(spec)*intensidad*0.8;
+  }else if(m==4){
+    col=pal(d*escala-t*0.1)*(0.30+0.70*d)*intensidad;
+  }else{ col=vec3(d); }
+  return col;
+}`; }
+
+function isfSource(){
+  const header={
+    DESCRIPTION:'RELIEVE — mapping por profundidad (contornos, barrido, relieve, espectro). Generado desde hg-vl.com/relieve',
+    CREDIT:'Human Glitche — hg-vl.com',
+    ISFVSN:'2', CATEGORIES:['GENERATOR'],
+    INPUTS:[
+      {NAME:'modo',TYPE:'long',VALUES:[0,1,2,3,4,5],LABELS:['FOTO','CONTORNOS','BARRIDO','RELIEVE','ESPECTRO','VER DEPTH'],DEFAULT:(mode===6?5:mode)},
+      {NAME:'velocidad',TYPE:'float',MIN:0,MAX:3,DEFAULT:+F('uSpeed')},
+      {NAME:'intensidad',TYPE:'float',MIN:0,MAX:2,DEFAULT:+F('uIntensity')},
+      {NAME:'escala',TYPE:'float',MIN:0.2,MAX:4,DEFAULT:+F('uScale')},
+      {NAME:'matiz',TYPE:'float',MIN:0,MAX:6.28,DEFAULT:+F('uHue')},
+      {NAME:'dContraste',TYPE:'float',MIN:0.2,MAX:3,DEFAULT:+F('uDContrast')},
+      {NAME:'dGamma',TYPE:'float',MIN:0.3,MAX:3,DEFAULT:+F('uDGamma')},
+      {NAME:'invertir',TYPE:'bool',DEFAULT:$('uDInvert').checked}
+    ],
+    IMPORTED:{fotoAlfa:{PATH:'relieve-foto-alfa.png'},depthMap:{PATH:'relieve-depth.png'}}
+  };
+  const body=fxBody()
+    .replace(/DEPTH_AT\(([^)]*)\)/g,'IMG_NORM_PIXEL(depthMap,$1).r')
+    .replace(/EPS/g,'(1.5/IMG_SIZE(depthMap))');
+  return '/*'+JSON.stringify(header,null,1)+'*/\n'+body+`
+void main(){
+  vec2 uv=isf_FragNormCoord;
+  vec4 foto=IMG_NORM_PIXEL(fotoAlfa,uv);
+  float d=ajustaD(IMG_NORM_PIXEL(depthMap,uv).r);
+  float t=TIME*velocidad;
+  int m=(modo==5)?6:modo;
+  vec3 col=efecto(m,d,t,foto.rgb,uv);
+  gl_FragColor=vec4(col*foto.a,1.0);
+}`;
+}
+
+function tdSource(){
+  return `// RELIEVE — GLSL TOP para TouchDesigner (generado desde hg-vl.com/relieve)
+// Cableado: Movie File In (relieve-foto-alfa.png) -> input 0 del GLSL TOP
+//           Movie File In (relieve-depth.png)     -> input 1
+// En la página Vectors del GLSL TOP agregá: uniform "uTime" con expresión absTime.seconds
+// modo: 0 FOTO · 1 CONTORNOS · 2 BARRIDO · 3 RELIEVE · 4 ESPECTRO · 6 VER DEPTH
+uniform float uTime;
+const int   modo       = ${mode};
+const float velocidad  = ${F('uSpeed')};
+const float intensidad = ${F('uIntensity')};
+const float escala     = ${F('uScale')};
+const float matiz      = ${F('uHue')};
+const float dContraste = ${F('uDContrast')};
+const float dGamma     = ${F('uDGamma')};
+const bool  invertir   = ${$('uDInvert').checked};
+out vec4 fragColor;
+`+fxBody()
+    .replace(/DEPTH_AT\(([^)]*)\)/g,'texture(sTD2DInputs[1],$1).r')
+    .replace(/EPS/g,'(1.5/vec2(textureSize(sTD2DInputs[1],0)))')+`
+void main(){
+  vec2 uv=vUV.st;
+  vec4 foto=texture(sTD2DInputs[0],uv);
+  float d=ajustaD(texture(sTD2DInputs[1],uv).r);
+  vec3 col=efecto(modo,d,uTime*velocidad,foto.rgb,uv);
+  fragColor=TDOutputSwizzle(vec4(col*foto.a,1.0));
+}`;
+}
+
+window.__relieveExport={isfSource,tdSource,makeZip,crc32}; // hook de verificación
+async function packAssets(){ return [
+  {name:'relieve-foto-alfa.png',data:await pngU8(combinedPhoto())},
+  {name:'relieve-depth.png',data:await pngU8(depthCanvas)}
+];}
+$('btnPackVDMX').onclick=async()=>{
+  if(!photoRGB) return;
+  const files=await packAssets();
+  files.unshift({name:'RELIEVE.fs',data:txtU8(isfSource())});
+  files.push({name:'LEEME.txt',data:txtU8(
+`RELIEVE → VDMX6 (ISF)
+1. Descomprimí TODO en una carpeta (el .fs busca los PNG por nombre, tienen que quedar juntos).
+2. Copiá la carpeta a ~/Library/Application Support/VDMX/ISF (o arrastrá RELIEVE.fs a VDMX).
+3. Apareceré como GENERATOR "RELIEVE": modo, velocidad, intensidad, escala, matiz y ajustes de depth como sliders.
+Los defaults son los valores que tenías al exportar. Lo negro (fuera del alfa) no proyecta.
+Human Glitche — hg-vl.com/relieve`)});
+  dlBlob(makeZip(files),'relieve-vdmx.zip'); toast('Pack VDMX (ISF) descargado');
+};
+$('btnPackTD').onclick=async()=>{
+  if(!photoRGB) return;
+  const files=await packAssets();
+  files.unshift({name:'relieve_glsl_top.frag',data:txtU8(tdSource())});
+  files.push({name:'LEEME.txt',data:txtU8(
+`RELIEVE → TouchDesigner (GLSL TOP)
+1. Movie File In TOP con relieve-foto-alfa.png -> input 0 de un GLSL TOP.
+2. Movie File In TOP con relieve-depth.png     -> input 1.
+3. Cargá relieve_glsl_top.frag como Pixel Shader del GLSL TOP.
+4. En la página Vectors agregá el uniform uTime con la expresión: absTime.seconds
+Los valores del efecto van como const arriba del shader (editalos ahí o convertilos en uniforms).
+Human Glitche — hg-vl.com/relieve`)});
+  dlBlob(makeZip(files),'relieve-touchdesigner.zip'); toast('Pack TouchDesigner descargado');
+};
+$('btnPackRes').onclick=async()=>{
+  if(!photoRGB) return;
+  const files=await packAssets();
+  files.push({name:'LEEME.txt',data:txtU8(
+`RELIEVE → Resolume Arena
+Arena no corre shaders externos (ISF/GLSL), así que tenés tres caminos:
+A) EN VIVO: dale PANTALLA COMPLETA a RELIEVE en una pantalla y en Arena creá una
+   fuente Screen Capture / Window Capture (Arena 7.9+) apuntando a esa ventana.
+B) LOOP: grabá un loop desde RELIEVE (botón "grabar loop") y convertilo a DXV con
+   Alley (viene con Resolume) para reproducirlo como clip sin costo de CPU.
+C) ASSETS: relieve-foto-alfa.png como capa/máscara (lo negro no proyecta) y
+   relieve-depth.png como fuente para efectos o para armar el patch en Wire.
+Human Glitche — hg-vl.com/relieve`)});
+  dlBlob(makeZip(files),'relieve-resolume.zip'); toast('Pack Resolume descargado');
+};
+
+/* ---------- loop de video del efecto (sirve para Resolume/VDMX/TD/todo) ---------- */
+let recording=false;
+$('btnLoop').onclick=()=>{
+  if(recording||(!photoRGB&&!live)) return;
+  const mp4=window.MediaRecorder&&MediaRecorder.isTypeSupported('video/mp4;codecs=avc1.42E01E');
+  const mime=mp4?'video/mp4;codecs=avc1.42E01E':(MediaRecorder.isTypeSupported('video/webm;codecs=vp9')?'video/webm;codecs=vp9':'video/webm');
+  const ext=mp4?'mp4':'webm';
+  const stream=canvas.captureStream(30);
+  const rec=new MediaRecorder(stream,{mimeType:mime,videoBitsPerSecond:12_000_000});
+  const chunks=[];
+  rec.ondataavailable=e=>{ if(e.data.size) chunks.push(e.data); };
+  rec.onstop=()=>{
+    recording=false; $('btnLoop').textContent='● grabar loop 10s (video del efecto)';
+    stream.getTracks().forEach(t=>t.stop());
+    dlBlob(new Blob(chunks,{type:mime.split(';')[0]}),'relieve-loop.'+ext);
+    toast('Loop descargado (.'+ext+')'+(ext==='webm'?' — para Resolume convertilo a DXV con Alley':''));
+  };
+  recording=true; rec.start();
+  let left=10;
+  $('btnLoop').textContent='● grabando… '+left+'s';
+  const tick=setInterval(()=>{ left--; if(left<=0){ clearInterval(tick); rec.stop(); } else $('btnLoop').textContent='● grabando… '+left+'s'; },1000);
+  toast('Grabando 10s del efecto en pantalla');
+};
 </script>
 </body></html>
