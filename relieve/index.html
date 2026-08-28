@@ -1,0 +1,712 @@
+<!doctype html><html lang="es"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RELIEVE — Human Glitche · mapping por profundidad con IA (quitar fondo + depth map + shaders)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{ --acid:#b8ff00; --glitch:#ff2d55; --cyan:#3ad0ff; --ink:#f0ede6; --line:rgba(240,237,230,.12); --bg:#050505; }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{min-height:100%;background:var(--bg);color:var(--ink);font-family:'Space Mono',monospace;}
+  body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");z-index:0;pointer-events:none;opacity:.4;}
+  .wrap{position:relative;z-index:1;max-width:1220px;margin:0 auto;padding:28px 22px 80px;}
+  header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px;}
+  .brand{font-family:'Bebas Neue',sans-serif;font-size:42px;letter-spacing:.03em;line-height:.82;}
+  .brand b{color:var(--acid);font-weight:400;}
+  .brand .sub{display:block;font-size:10px;letter-spacing:.2em;color:rgba(240,237,230,.45);margin-top:7px;}
+  header a{font-size:10px;letter-spacing:.2em;color:rgba(240,237,230,.4);text-decoration:none;} header a:hover{color:var(--acid);}
+  .toolbar{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;align-items:center;}
+  .toolbar button{font:inherit;font-size:10px;letter-spacing:.08em;padding:9px 12px;cursor:pointer;border-radius:5px;border:1px solid var(--line);background:rgba(184,255,0,.03);color:var(--ink);}
+  .toolbar button:hover{border-color:var(--acid);color:var(--acid);}
+  .toolbar button.acc{background:var(--acid);color:#050505;border:none;font-weight:700;}
+  .toolbar button.acc:hover{color:#050505;opacity:.85;}
+  .toolbar .sep{width:1px;height:22px;background:var(--line);margin:0 4px;}
+  .toolbar .srcname{font-size:9.5px;color:rgba(240,237,230,.45);}
+  .main{display:grid;grid-template-columns:1fr 290px;gap:18px;align-items:start;}
+  .stagebox{border:1px solid var(--line);border-radius:8px;background:#000;overflow:hidden;}
+  .stagewrap{position:relative;width:100%;aspect-ratio:var(--ar,16/9);background:#000;}
+  .stagewrap canvas{position:absolute;inset:0;width:100%;height:100%;display:block;}
+  #brushOverlay{cursor:none;display:none;}
+  .stagewrap.brushing #brushOverlay{display:block;}
+  .stagewrap:fullscreen{aspect-ratio:auto;}
+  .stagewrap:fullscreen canvas{width:100vw;height:100vh;object-fit:contain;background:#000;}
+  .panel{display:flex;flex-direction:column;gap:14px;}
+  .box{border:1px solid var(--line);border-radius:7px;padding:14px;}
+  .box h2{font-size:9px;letter-spacing:.2em;color:rgba(240,237,230,.45);text-transform:uppercase;margin-bottom:10px;}
+  .box input[type=text]{width:100%;font:inherit;font-size:10.5px;padding:9px 10px;margin-bottom:8px;border-radius:5px;border:1px solid var(--line);background:rgba(240,237,230,.03);color:var(--ink);}
+  .box input[type=text]:focus{border-color:var(--cyan);outline:none;}
+  .row{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:10px;color:rgba(240,237,230,.6);margin-bottom:9px;}
+  .row label{letter-spacing:.05em;text-transform:uppercase;font-size:9px;color:rgba(240,237,230,.45);}
+  .row output{color:var(--acid);font-size:9.5px;min-width:34px;text-align:right;}
+  .row input[type=range]{flex:1;accent-color:var(--acid);min-width:0;}
+  .fxbtns{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:11px;}
+  .fxbtns button{font:inherit;font-size:9.5px;letter-spacing:.06em;padding:8px 4px;border:1px solid var(--line);background:transparent;color:var(--ink);cursor:pointer;border-radius:4px;}
+  .fxbtns button.on{border-color:var(--acid);color:var(--acid);background:rgba(184,255,0,.07);}
+  .iabtn{width:100%;font:inherit;font-size:10.5px;letter-spacing:.08em;padding:10px;border:1px solid var(--cyan);background:rgba(58,208,255,.06);color:var(--cyan);cursor:pointer;border-radius:5px;margin-bottom:8px;}
+  .iabtn:hover{background:rgba(58,208,255,.14);}
+  .iabtn:disabled{opacity:.35;cursor:default;}
+  .ghostbtn{width:100%;font:inherit;font-size:10px;letter-spacing:.06em;padding:8px;border:1px solid var(--line);background:transparent;color:var(--ink);cursor:pointer;border-radius:5px;margin-bottom:6px;}
+  .ghostbtn:hover{border-color:var(--acid);color:var(--acid);}
+  .ghostbtn.warn:hover{border-color:var(--glitch);color:var(--glitch);}
+  .ghostbtn.on{border-color:var(--cyan);color:var(--cyan);background:rgba(58,208,255,.07);}
+  .checkrow{display:flex;align-items:center;gap:8px;font-size:10.5px;color:rgba(240,237,230,.6);cursor:pointer;margin-bottom:9px;}
+  .checkrow input{accent-color:var(--acid);}
+  #status{font-size:9.5px;color:rgba(240,237,230,.5);line-height:1.6;min-height:16px;}
+  #status.busy{color:var(--cyan);}
+  #status.err{color:var(--glitch);}
+  #progressWrap{height:3px;background:rgba(240,237,230,.08);border-radius:2px;overflow:hidden;margin-top:7px;display:none;}
+  #progressBar{height:100%;width:0%;background:var(--cyan);transition:width .25s;}
+  .brushrow{display:flex;gap:6px;margin-bottom:9px;}
+  .brushrow button{flex:1;font:inherit;font-size:9.5px;padding:7px;border:1px solid var(--line);background:transparent;color:var(--ink);cursor:pointer;border-radius:4px;}
+  .brushrow button.on{border-color:var(--glitch);color:var(--glitch);background:rgba(255,45,85,.07);}
+  .brushrow button.on.plus{border-color:var(--acid);color:var(--acid);background:rgba(184,255,0,.07);}
+  .note{font-size:10px;color:rgba(240,237,230,.4);line-height:1.7;margin-top:22px;border-left:1px solid rgba(184,255,0,.3);padding-left:12px;}
+  .note b{color:var(--acid);font-weight:400;}
+  #toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);z-index:30;background:rgba(5,5,5,.94);border:1px solid var(--acid);color:var(--acid);font-size:11px;padding:9px 16px;border-radius:5px;opacity:0;transition:opacity .2s;pointer-events:none;max-width:80vw;}
+  #toast.show{opacity:1;}
+  @media(max-width:860px){ .main{grid-template-columns:1fr;} }
+  :focus-visible{outline:2px solid var(--acid,#b8ff00);outline-offset:2px;}
+  @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important;scroll-behavior:auto !important;}}
+</style></head><body><script src="/gate/gate.js"></script>
+<div class="wrap">
+  <header><div class="brand"><b>RELIEVE</b><span class="sub">Human Glitche · mapping por profundidad con IA</span></div><a href="/labs/">← LABS</a></header>
+
+  <div class="toolbar">
+    <button id="btnPhoto">⤓ FOTO DEL ESCENARIO</button>
+    <button id="btnSample">◍ EJEMPLO</button>
+    <span class="srcname" id="srcname">sin foto — subí una o probá el ejemplo</span>
+    <input type="file" id="filePhoto" accept="image/*" style="display:none">
+    <div class="sep"></div>
+    <button id="btnFull" class="acc">⛶ PANTALLA COMPLETA</button>
+    <div class="sep"></div>
+    <button id="btnSave">⤓ GUARDAR PROYECTO</button>
+    <button id="btnLoad">⤒ CARGAR PROYECTO</button>
+    <input type="file" id="fileProject" accept="application/json" style="display:none">
+  </div>
+
+  <div class="main">
+    <div class="stagebox">
+      <div class="stagewrap" id="stageWrap">
+        <canvas id="gl"></canvas>
+        <canvas id="brushOverlay"></canvas>
+      </div>
+    </div>
+    <div class="panel">
+
+      <div class="box">
+        <h2>1 · alfa y profundidad (ia local)</h2>
+        <button class="iabtn" id="btnAlpha" disabled>✂ QUITAR FONDO</button>
+        <button class="iabtn" id="btnDepth" disabled>≋ MAPA DE PROFUNDIDAD</button>
+        <button class="ghostbtn" id="btnDepthLuma" disabled>≋ profundidad desde brillo (sin IA)</button>
+        <button class="ghostbtn" id="btnImportDepth" disabled>⤒ importar depth (LiDAR / escáner)</button>
+        <input type="file" id="fileDepth" accept="image/*" style="display:none">
+        <div id="status">cargá una foto para empezar.</div>
+        <div id="progressWrap"><div id="progressBar"></div></div>
+      </div>
+
+      <div class="box">
+        <h2>alfa desde profundidad</h2>
+        <label class="checkrow"><input type="checkbox" id="cutOn" disabled> recortar máscara por distancia</label>
+        <div id="cutCtl" style="display:none;">
+          <div class="row"><label>cerca</label><input type="range" id="cutNear" min="0" max="1" step="0.005" value="0.35"><output>0.35</output></div>
+          <div class="row"><label>lejos</label><input type="range" id="cutFar" min="0" max="1" step="0.005" value="1"><output>1.00</output></div>
+          <div class="row"><label>pluma</label><input type="range" id="cutFeather" min="0" max="0.3" step="0.005" value="0.04"><output>0.04</output></div>
+        </div>
+      </div>
+
+      <div class="box">
+        <h2>retocar máscara</h2>
+        <button class="ghostbtn" id="btnBrush" disabled>✎ PINCEL DE MÁSCARA</button>
+        <div id="brushCtl" style="display:none;">
+          <div class="brushrow">
+            <button id="brushMinus" class="on">− BORRAR</button>
+            <button id="brushPlus" class="plus">+ RESTAURAR</button>
+          </div>
+          <div class="row"><label>tamaño</label><input type="range" id="brushSize" min="4" max="120" value="34"><output id="brushSizeV">34</output></div>
+        </div>
+      </div>
+
+      <div class="box">
+        <h2>2 · efecto</h2>
+        <div class="fxbtns" id="fxbtns">
+          <button data-mode="1" class="on">CONTORNOS</button>
+          <button data-mode="2">BARRIDO</button>
+          <button data-mode="3">RELIEVE</button>
+          <button data-mode="4">ESPECTRO</button>
+          <button data-mode="0">FOTO</button>
+          <button data-mode="6">VER DEPTH</button>
+        </div>
+        <div class="row"><label>velocidad</label><input type="range" id="uSpeed" min="0" max="3" step="0.01" value="1"><output>1.00</output></div>
+        <div class="row"><label>intensidad</label><input type="range" id="uIntensity" min="0" max="2" step="0.01" value="1"><output>1.00</output></div>
+        <div class="row"><label>escala</label><input type="range" id="uScale" min="0.2" max="4" step="0.01" value="1"><output>1.00</output></div>
+        <div class="row"><label>color</label><input type="range" id="uHue" min="0" max="6.28" step="0.01" value="0"><output>0.00</output></div>
+      </div>
+
+      <div class="box">
+        <h2>profundidad · ajuste</h2>
+        <div class="row"><label>contraste</label><input type="range" id="uDContrast" min="0.2" max="3" step="0.01" value="1"><output>1.00</output></div>
+        <div class="row"><label>gamma</label><input type="range" id="uDGamma" min="0.3" max="3" step="0.01" value="1"><output>1.00</output></div>
+        <label class="checkrow"><input type="checkbox" id="uDInvert"> invertir profundidad</label>
+      </div>
+
+      <div class="box">
+        <h2>3 · encaje sobre el escenario</h2>
+        <div class="row"><label>zoom</label><input type="range" id="uZoom" min="0.5" max="2" step="0.005" value="1"><output>1.00</output></div>
+        <div class="row"><label>x</label><input type="range" id="uOffX" min="-0.5" max="0.5" step="0.002" value="0"><output>0.00</output></div>
+        <div class="row"><label>y</label><input type="range" id="uOffY" min="-0.5" max="0.5" step="0.002" value="0"><output>0.00</output></div>
+        <button class="ghostbtn" id="btnResetFit">↺ resetear encaje</button>
+      </div>
+
+      <div class="box">
+        <h2>4 · en vivo — lidar por wifi (record3d)</h2>
+        <input type="text" id="liveIP" placeholder="ip del iphone (192.168.…)" autocomplete="off">
+        <button class="iabtn" id="btnLiveConnect">▶ CONECTAR AL IPHONE</button>
+        <button class="ghostbtn" id="btnLiveDemo">◍ demo en vivo (sin iphone)</button>
+        <button class="ghostbtn warn" id="btnLiveStop" style="display:none;">■ DETENER VIVO</button>
+        <div id="liveStatus" style="font-size:9.5px;color:rgba(240,237,230,.5);line-height:1.6;"></div>
+      </div>
+
+      <div class="box">
+        <h2>exportar</h2>
+        <button class="ghostbtn" id="btnExpAlpha" disabled>⤓ PNG con alfa (recorte)</button>
+        <button class="ghostbtn" id="btnExpDepth" disabled>⤓ PNG mapa de profundidad</button>
+        <button class="ghostbtn warn" id="btnResetAll">⟲ RESET TOTAL</button>
+      </div>
+    </div>
+  </div>
+
+  <p class="note">Flujo: sacá una <b>foto del escenario parándote donde está la lente del proyector</b> (así la perspectiva ya viene alineada), subila acá, dale a <b>QUITAR FONDO</b> para aislar el sujeto (todo lo negro no se proyecta) y después a <b>MAPA DE PROFUNDIDAD</b>. Los efectos leen esa profundidad: contornos que recorren el relieve, barridos por distancia, luz que orbita la superficie. Con <b>PANTALLA COMPLETA</b> en el proyector ya estás mapeando; ajustá el encaje con zoom/x/y. La IA (quitar fondo + Depth Anything V2) corre <b>100% en tu navegador</b> — la primera vez baja los modelos (~50-100 MB) y quedan cacheados; después funciona hasta sin internet. Para meterlo en <b>Resolume/VDMX/OBS</b> capturá esta ventana como fuente de video, igual que con MAPEO. Los PNG exportados (recorte con alfa + depth map) también sirven como assets en cualquier software de VJ. <b>¿Tenés iPhone/iPad Pro con LiDAR?</b> Capturá la escena con una app tipo Record3D, Polycam o Halide, exportá el depth map como imagen y traelo con <b>importar depth</b>: es profundidad medida de verdad (mejor que la estimada por IA), y encima el alfa sale gratis — activá <b>recortar máscara por distancia</b> y todo lo que esté más lejos que el escenario desaparece, sin segmentación. El recorte por distancia también funciona sobre la profundidad generada por IA. Si el depth viene con los valores al revés (cerca oscuro), simplemente cruzá los sliders cerca/lejos. <b>EN VIVO</b>: con la app <b>Record3D</b> (extensión de WiFi Streaming) el iPhone transmite RGB + profundidad LiDAR en tiempo real por WebRTC — activá el streaming WiFi en la app, apretá el botón rojo, poné la IP que muestra y conectá: todos los efectos corren sobre el stream y el alfa se calcula por distancia en la GPU, cuadro a cuadro (gente moviéndose incluida; rango 0–3 m). Probá el <b>demo en vivo</b> para verlo sin iPhone. Ojo: el iPhone sirve HTTP — si esta página está en https el navegador bloquea la conexión; abrila en http o permití "contenido inseguro" para el sitio.</p>
+</div>
+<div id="toast"></div>
+
+<script type="module">
+const $=id=>document.getElementById(id);
+function toast(t){ const el=$('toast'); el.textContent=t; el.classList.add('show'); clearTimeout(el._h); el._h=setTimeout(()=>el.classList.remove('show'),2400); }
+function status(t,cls){ const el=$('status'); el.textContent=t; el.className=cls||''; }
+function progress(p){ const w=$('progressWrap'); if(p==null){w.style.display='none';return;} w.style.display='block'; $('progressBar').style.width=Math.max(2,Math.min(100,p))+'%'; }
+
+/* ---------- estado ---------- */
+const MAXSIDE=1600, MLSIDE=1024;
+let photoW=0, photoH=0;
+let photoRGB=null;        // ImageData rgb original (a=255)
+let maskCanvas=null;      // canvas gris: blanco=sujeto, negro=fondo
+let depthCanvas=null;     // canvas gris: profundidad
+let hasMask=false, hasDepth=false, busy=false;
+
+/* ---------- worker de IA (transformers.js) ---------- */
+const workerCode=`
+import { pipeline, RawImage, env } from 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.7.1';
+env.allowLocalModels=false;
+// ya corremos en un worker: ni proxy-worker ni hilos anidados de ORT (revientan con errores numericos)
+if(env.backends?.onnx?.wasm){ env.backends.onnx.wasm.proxy=false; env.backends.onnx.wasm.numThreads=1; }
+let segPipe=null, segAlt=null, depPipe=null;
+// wasm a proposito: BiRefNet/DepthAnything tienen ops rotas en el backend webgpu de ORT
+const report=file=>p=>{ if(p.status==='progress'&&p.total) self.postMessage({type:'progress',percent:Math.round(p.progress||0),file:p.file||file}); };
+// modnet como titular: BiRefNet/ormbg abortan con errores numericos en el ORT wasm actual
+async function getSeg(){
+  if(!segPipe) segPipe=await pipeline('image-segmentation','Xenova/modnet',{device:'wasm',progress_callback:report('modnet')});
+  return segPipe;
+}
+async function getSegAlt(){
+  if(!segAlt) segAlt=await pipeline('background-removal','onnx-community/BiRefNet_lite-ONNX',{device:'wasm',progress_callback:report('BiRefNet_lite')});
+  return segAlt;
+}
+async function getDep(){
+  if(!depPipe) depPipe=await pipeline('depth-estimation','onnx-community/depth-anything-v2-small',{device:'wasm',progress_callback:report('depth-anything-v2')});
+  return depPipe;
+}
+function shipGray(img,kind){
+  // img: RawImage cualquier canales -> Uint8 1 canal
+  const {data,width,height,channels}=img;
+  const out=new Uint8Array(width*height);
+  for(let i=0;i<width*height;i++) out[i]=data[i*channels];
+  self.postMessage({type:kind,width,height,pixels:out.buffer},[out.buffer]);
+}
+self.onmessage=async({data:msg})=>{
+  try{
+    const img=await RawImage.fromBlob(new Blob([msg.buffer],{type:msg.mime||'image/png'}));
+    if(msg.type==='alpha'){
+      let res;
+      try{
+        const p=await getSeg();
+        self.postMessage({type:'phase',text:'separando sujeto y fondo…'});
+        res=await p(img);
+      }catch(e1){
+        self.postMessage({type:'phase',text:'plan B: probando con otro modelo (modnet)…'});
+        const p2=await getSegAlt();
+        res=await p2(img);
+      }
+      let out=Array.isArray(res)?res[0]:res;
+      if(out.mask) out=out.mask;               // image-segmentation → {mask}
+      if(out.channels===4){                     // background-removal → RGBA con alfa
+        const {data,width,height}=out, a=new Uint8Array(width*height);
+        for(let i=0;i<width*height;i++) a[i]=data[i*4+3];
+        self.postMessage({type:'alpha-result',width,height,pixels:a.buffer},[a.buffer]);
+      } else shipGray(out,'alpha-result');
+    } else if(msg.type==='depth'){
+      const p=await getDep();
+      self.postMessage({type:'phase',text:'midiendo la distancia de cada píxel…'});
+      const res=await p(img);
+      shipGray(res.depth,'depth-result');
+    }
+  }catch(e){ self.postMessage({type:'error',message:String(e?.message||e)}); }
+};
+`;
+let worker=null;
+function getWorker(){
+  if(worker) return worker;
+  worker=new Worker(URL.createObjectURL(new Blob([workerCode],{type:'text/javascript'})),{type:'module'});
+  worker.onmessage=({data:m})=>{
+    if(m.type==='progress'){ status(`bajando modelo (${m.file||'…'}) — solo la primera vez`, 'busy'); progress(m.percent); }
+    else if(m.type==='phase'){ status(m.text,'busy'); progress(92); }
+    else if(m.type==='alpha-result'){ applyGrayResult(m,'mask'); }
+    else if(m.type==='depth-result'){ applyGrayResult(m,'depth'); }
+    else if(m.type==='error'){ endBusy(); status('falló la IA: '+m.message+' — podés usar el pincel o "profundidad desde brillo".','err'); toast('La IA falló — hay plan B abajo'); }
+  };
+  worker.onerror=e=>{ endBusy(); status('no se pudo levantar el worker de IA ('+(e.message||'error')+').','err'); };
+  return worker;
+}
+
+/* ---------- carga de foto ---------- */
+function fitSize(w,h,max){ const s=Math.min(1,max/Math.max(w,h)); return [Math.round(w*s),Math.round(h*s)]; }
+function grayCanvas(w,h,fill){ const c=document.createElement('canvas'); c.width=w; c.height=h; const x=c.getContext('2d'); x.fillStyle=fill; x.fillRect(0,0,w,h); return c; }
+async function loadPhotoFile(file){
+  const img=await createImageBitmap(file).catch(()=>null);
+  if(!img){ toast('No pude leer esa imagen'); return; }
+  setPhotoFromSource(img,img.width,img.height,file.name);
+  img.close?.();
+}
+function setPhotoFromSource(src,sw,sh,name){
+  [photoW,photoH]=fitSize(sw,sh,MAXSIDE);
+  const c=document.createElement('canvas'); c.width=photoW; c.height=photoH;
+  const x=c.getContext('2d'); x.drawImage(src,0,0,photoW,photoH);
+  photoRGB=x.getImageData(0,0,photoW,photoH);
+  maskCanvas=grayCanvas(photoW,photoH,'#fff');   // sin recorte: todo es sujeto
+  depthCanvas=grayCanvas(photoW,photoH,'#808080');
+  hasMask=false; hasDepth=false;
+  $('srcname').textContent='fuente: '+(name||'foto')+` · ${photoW}×${photoH}`;
+  for(const id of ['btnAlpha','btnDepth','btnDepthLuma','btnImportDepth','btnBrush','btnExpAlpha','btnExpDepth']) $(id).disabled=false;
+  $('cutOn').disabled=false; $('cutOn').checked=false; $('cutCtl').style.display='none'; maskBase=null;
+  status('foto lista. paso 1: QUITAR FONDO. paso 2: MAPA DE PROFUNDIDAD.');
+  setupStage(); uploadPhotoTex(); uploadDepthTex();
+}
+
+/* foto → blob rgb (sin alfa) reescalada para los modelos */
+async function photoBlobForML(){
+  const [w,h]=fitSize(photoW,photoH,MLSIDE);
+  const c=document.createElement('canvas'); c.width=w; c.height=h;
+  const s=document.createElement('canvas'); s.width=photoW; s.height=photoH;
+  s.getContext('2d').putImageData(photoRGB,0,0);
+  c.getContext('2d').drawImage(s,0,0,w,h);
+  return new Promise(r=>c.toBlob(r,'image/png'));
+}
+
+function startBusy(txt){ busy=true; status(txt,'busy'); progress(3); $('btnAlpha').disabled=true; $('btnDepth').disabled=true; }
+function endBusy(){ busy=false; progress(null); $('btnAlpha').disabled=!photoRGB; $('btnDepth').disabled=!photoRGB; }
+
+function applyGrayResult(m,kind){
+  const pix=new Uint8Array(m.pixels);
+  const c=document.createElement('canvas'); c.width=m.width; c.height=m.height;
+  const x=c.getContext('2d'); const im=x.createImageData(m.width,m.height);
+  for(let i=0;i<pix.length;i++){ const v=pix[i]; im.data[i*4]=v; im.data[i*4+1]=v; im.data[i*4+2]=v; im.data[i*4+3]=255; }
+  x.putImageData(im,0,0);
+  // reescalar al tamaño de la foto
+  const full=document.createElement('canvas'); full.width=photoW; full.height=photoH;
+  const fx=full.getContext('2d'); fx.imageSmoothingQuality='high'; fx.drawImage(c,0,0,photoW,photoH);
+  if(kind==='mask'){ maskCanvas=full; hasMask=true; uploadPhotoTex(); status('fondo afuera. retocá con el pincel si hace falta y generá la profundidad.'); toast('Alfa listo — lo negro no se proyecta'); }
+  else{ depthCanvas=full; hasDepth=true; uploadDepthTex(); status(`profundidad lista (${m.width}×${m.height}). elegí un efecto y a proyectar.`); toast('Depth map listo'); if(mode===0) setMode(1); }
+  endBusy();
+}
+
+$('btnAlpha').onclick=async()=>{ if(busy||!photoRGB) return; startBusy('preparando IA de recorte…'); const b=await photoBlobForML(); const buf=await b.arrayBuffer(); getWorker().postMessage({type:'alpha',buffer:buf,mime:'image/png'},[buf]); };
+$('btnDepth').onclick=async()=>{ if(busy||!photoRGB) return; startBusy('preparando Depth Anything V2…'); const b=await photoBlobForML(); const buf=await b.arrayBuffer(); getWorker().postMessage({type:'depth',buffer:buf,mime:'image/png'},[buf]); };
+
+/* plan B sin IA: profundidad desde brillo (luminancia suavizada) */
+$('btnDepthLuma').onclick=()=>{
+  if(!photoRGB) return;
+  const w=photoW,h=photoH,src=photoRGB.data;
+  let a=new Float32Array(w*h);
+  for(let i=0;i<w*h;i++) a[i]=src[i*4]*0.299+src[i*4+1]*0.587+src[i*4+2]*0.114;
+  // 3 pasadas de box blur separable
+  const tmp=new Float32Array(w*h), R=Math.max(2,Math.round(Math.min(w,h)/90));
+  for(let pass=0;pass<3;pass++){
+    for(let y=0;y<h;y++){ let acc=0; for(let x=-R;x<=R;x++) acc+=a[y*w+Math.min(w-1,Math.max(0,x))]; for(let x=0;x<w;x++){ tmp[y*w+x]=acc/(2*R+1); const xo=Math.max(0,x-R), xn=Math.min(w-1,x+R+1); acc+=a[y*w+xn]-a[y*w+xo]; } }
+    for(let x=0;x<w;x++){ let acc=0; for(let y=-R;y<=R;y++) acc+=tmp[Math.min(h-1,Math.max(0,y))*w+x]; for(let y=0;y<h;y++){ a[y*w+x]=acc/(2*R+1); const yo=Math.max(0,y-R), yn=Math.min(h-1,y+R+1); acc+=tmp[yn*w+x]-tmp[yo*w+x]; } }
+  }
+  let mn=1e9,mx=-1e9; for(let i=0;i<w*h;i++){ if(a[i]<mn)mn=a[i]; if(a[i]>mx)mx=a[i]; }
+  const c=document.createElement('canvas'); c.width=w; c.height=h; const x2=c.getContext('2d'); const im=x2.createImageData(w,h);
+  for(let i=0;i<w*h;i++){ const v=Math.round((a[i]-mn)/(mx-mn+1e-6)*255); im.data[i*4]=v; im.data[i*4+1]=v; im.data[i*4+2]=v; im.data[i*4+3]=255; }
+  x2.putImageData(im,0,0); depthCanvas=c; hasDepth=true; uploadDepthTex();
+  status('pseudo-profundidad por brillo lista (no es geometría real, pero para efectos alcanza).');
+  if(mode===0) setMode(1);
+};
+
+/* ---------- depth importado (LiDAR / escáner / cualquier depth map) ---------- */
+$('btnImportDepth').onclick=()=>$('fileDepth').click();
+$('fileDepth').onchange=async e=>{
+  const f=e.target.files[0]; e.target.value=''; if(!f||!photoRGB) return;
+  const img=await createImageBitmap(f).catch(()=>null);
+  if(!img){ toast('No pude leer ese depth map'); return; }
+  const c=document.createElement('canvas'); c.width=photoW; c.height=photoH;
+  const x=c.getContext('2d'); x.imageSmoothingQuality='high'; x.drawImage(img,0,0,photoW,photoH); img.close?.();
+  const im=x.getImageData(0,0,photoW,photoH);           // a gris por luminancia (por si viene con colormap)
+  for(let i=0;i<photoW*photoH;i++){ const v=Math.round(im.data[i*4]*0.299+im.data[i*4+1]*0.587+im.data[i*4+2]*0.114); im.data[i*4]=v; im.data[i*4+1]=v; im.data[i*4+2]=v; im.data[i*4+3]=255; }
+  x.putImageData(im,0,0);
+  depthCanvas=c; hasDepth=true; uploadDepthTex();
+  if($('cutOn').checked) scheduleCut();
+  status('depth importado ('+f.name+'). si viene de LiDAR podés recortar el alfa por distancia acá abajo.');
+  toast('Depth map importado'); if(mode===0) setMode(1);
+};
+
+/* ---------- alfa desde profundidad: recorte cerca/lejos con pluma ---------- */
+let maskBase=null, cutPending=false;
+function snapshotMaskBase(){ const c=document.createElement('canvas'); c.width=photoW; c.height=photoH; c.getContext('2d').drawImage(maskCanvas,0,0); maskBase=c; }
+function applyDepthCut(){
+  if(!maskBase||!depthCanvas) return;
+  const w=photoW,h=photoH;
+  const base=maskBase.getContext('2d').getImageData(0,0,w,h).data;
+  const dep=depthCanvas.getContext('2d').getImageData(0,0,w,h).data;
+  const n=+$('cutNear').value,f=+$('cutFar').value,ft=Math.max(1e-4,+$('cutFeather').value);
+  const lo=Math.min(n,f), hi=Math.max(n,f);
+  const im=new ImageData(w,h), dst=im.data;
+  const ss=(e0,e1,x2)=>{ const t=Math.min(1,Math.max(0,(x2-e0)/(e1-e0))); return t*t*(3-2*t); };
+  for(let i=0;i<w*h;i++){
+    const d=dep[i*4]/255;
+    const win=ss(lo-ft,lo,d)*(1-ss(hi,hi+ft,d));
+    const v=Math.round(base[i*4]*win);
+    dst[i*4]=v; dst[i*4+1]=v; dst[i*4+2]=v; dst[i*4+3]=255;
+  }
+  maskCanvas.getContext('2d').putImageData(im,0,0);
+  hasMask=true; uploadPhotoTex();
+}
+function scheduleCut(){ if(cutPending) return; cutPending=true; requestAnimationFrame(()=>{ cutPending=false; applyDepthCut(); }); }
+$('cutOn').onchange=()=>{
+  const on=$('cutOn').checked;
+  $('cutCtl').style.display=on?'block':'none';
+  if(live) return; // en vivo el recorte lo hace el shader, por-frame
+  if(!maskCanvas) return;
+  if(on){ snapshotMaskBase(); applyDepthCut(); status('recorte por distancia activo: movete con cerca/lejos hasta que quede solo el sujeto.'); }
+  else if(maskBase){ maskCanvas.getContext('2d').drawImage(maskBase,0,0); uploadPhotoTex(); }
+};
+for(const id of ['cutNear','cutFar','cutFeather']){
+  const el=$(id);
+  el.oninput=()=>{ el.parentElement.querySelector('output').textContent=(+el.value).toFixed(2); if($('cutOn').checked&&!live) scheduleCut(); };
+}
+
+/* ---------- en vivo: record3d wifi (webrtc) + demo sintético ---------- */
+const liveVideo=document.createElement('video');
+liveVideo.muted=true; liveVideo.playsInline=true; liveVideo.autoplay=true;
+let live=false, livePC=null, liveDemoRAF=0, liveDemoStream=null;
+function liveStatus(t){ $('liveStatus').textContent=t; }
+function liveSizeSync(){
+  const w=liveVideo.videoWidth, h=liveVideo.videoHeight;
+  if(!w||!h||!live) return;
+  canvas.width=Math.round(w/2); canvas.height=h;
+  stageWrap.style.setProperty('--ar',Math.round(w/2)+'/'+h);
+}
+liveVideo.addEventListener('loadedmetadata',liveSizeSync);
+liveVideo.addEventListener('resize',liveSizeSync);
+function startLiveUI(msg){
+  live=true;
+  $('btnLiveStop').style.display='block';
+  $('cutOn').disabled=false;
+  if(!$('cutOn').checked){ $('cutOn').checked=true; $('cutCtl').style.display='block'; }
+  liveSizeSync(); liveStatus(msg);
+}
+function stopLive(){
+  live=false; $('btnLiveStop').style.display='none';
+  if(livePC){ try{livePC.close();}catch(e){} livePC=null; }
+  if(liveDemoRAF){ cancelAnimationFrame(liveDemoRAF); liveDemoRAF=0; }
+  if(liveDemoStream){ liveDemoStream.getTracks().forEach(t=>t.stop()); liveDemoStream=null; }
+  liveVideo.srcObject=null;
+  liveStatus('vivo detenido.');
+  if(photoRGB) setupStage();
+}
+$('btnLiveStop').onclick=stopLive;
+$('btnLiveConnect').onclick=async()=>{
+  const ip=$('liveIP').value.trim();
+  if(!ip){ liveStatus('poné la ip que record3d muestra arriba del botón rojo (misma wifi).'); return; }
+  stopLive();
+  if(location.protocol==='https:') liveStatus('⚠ esta página es https y el iphone sirve http: si no conecta, abrí la versión http o permití "contenido inseguro" para este sitio en el candado del navegador.');
+  const base='http://'+ip.replace(/^https?:\/\//,'').replace(/\/$/,'');
+  try{
+    liveStatus('pidiendo oferta a '+base+' …');
+    const offer=await (await fetch(base+'/getOffer')).json();
+    livePC=new RTCPeerConnection();
+    livePC.ontrack=ev=>{ liveVideo.srcObject=ev.streams[0]; liveVideo.play(); startLiveUI('● EN VIVO desde '+ip+' — profundidad LiDAR real (0–3 m), alfa por distancia en gpu.'); };
+    livePC.onicecandidate=ev=>{
+      if(ev.candidate===null){
+        fetch(base+'/answer',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({type:'answer',data:livePC.localDescription.sdp})})
+          .catch(()=>liveStatus('no pude mandar la respuesta al iphone.'));
+      }
+    };
+    await livePC.setRemoteDescription(offer);
+    await livePC.setLocalDescription(await livePC.createAnswer());
+    fetch(base+'/metadata').then(r=>r.json()).then(m=>console.log('record3d metadata',m)).catch(()=>{});
+  }catch(e){
+    liveStatus('no pude conectar con '+base+' — ¿misma wifi? ¿streaming wifi activado y el botón rojo apretado? ¿ya hay otro peer conectado? (solo acepta uno)');
+  }
+};
+/* demo sintético: mismo formato que el stream real (izq = depth HSV hue 0-1, der = rgb) */
+$('btnLiveDemo').onclick=()=>{
+  stopLive();
+  const w=640,h=360, c=document.createElement('canvas'); c.width=w*2; c.height=h;
+  const x=c.getContext('2d'), t0=performance.now();
+  const hueCss=hh=>'hsl('+Math.round(hh*360)+',100%,50%)';
+  function draw(){
+    if(!live&&liveDemoRAF===0) return;
+    const t=(performance.now()-t0)/1000;
+    x.fillStyle=hueCss(0.95); x.fillRect(0,0,w,h);      // fondo lejano (~2.85m)
+    x.fillStyle='#101418'; x.fillRect(w,0,w,h);
+    const blobs=[
+      {bx:w*0.5+Math.sin(t*0.7)*w*0.2, by:h*0.55+Math.cos(t*0.9)*h*0.10, r:90, hu:0.12, col:'#c9bfae'},
+      {bx:w*0.3+Math.cos(t*0.5)*w*0.1, by:h*0.40,                        r:60, hu:0.30, col:'#8d8377'},
+      {bx:w*0.7,                        by:h*0.35+Math.sin(t*1.3)*h*0.12, r:45, hu:0.45, col:'#6b7d8d'},
+    ];
+    for(const b of blobs){
+      // profundidad con gradiente radial (centro mas cerca que el borde), como una superficie real
+      const g=x.createRadialGradient(b.bx,b.by,0,b.bx,b.by,b.r);
+      g.addColorStop(0,hueCss(b.hu)); g.addColorStop(1,hueCss(b.hu+0.18));
+      x.fillStyle=g; x.beginPath(); x.arc(b.bx,b.by,b.r,0,7); x.fill();
+      x.fillStyle=b.col; x.beginPath(); x.arc(w+b.bx,b.by,b.r,0,7); x.fill();
+    }
+    liveDemoRAF=requestAnimationFrame(draw);
+  }
+  liveDemoRAF=1; draw();
+  liveDemoStream=c.captureStream(30);
+  liveVideo.srcObject=liveDemoStream; liveVideo.play();
+  startLiveUI('● DEMO EN VIVO sintético — tres formas moviéndose en profundidad, mismo formato que record3d.');
+};
+
+/* ---------- ejemplo procedural (sin red): estatua falsa ---------- */
+$('btnSample').onclick=()=>{
+  const w=1280,h=720;
+  const c=document.createElement('canvas'); c.width=w; c.height=h; const x=c.getContext('2d');
+  x.fillStyle='#1a1714'; x.fillRect(0,0,w,h);
+  x.fillStyle='#2e2a24'; x.fillRect(0,h*0.78,w,h*0.22);                       // piso
+  const cx=w/2;
+  const blob=(bx,by,rx,ry,c1,c2)=>{ const g=x.createRadialGradient(bx-rx*0.3,by-ry*0.3,rx*0.15,bx,by,Math.max(rx,ry)); g.addColorStop(0,c1); g.addColorStop(1,c2); x.fillStyle=g; x.beginPath(); x.ellipse(bx,by,rx,ry,0,0,7); x.fill(); };
+  blob(cx,h*0.72,150,60,'#6b6258','#3a352e');                                  // base
+  blob(cx,h*0.52,95,150,'#8d8377','#4a443c');                                  // torso
+  blob(cx,h*0.25,62,70,'#a29786','#575046');                                   // cabeza
+  blob(cx-95,h*0.45,34,95,'#7d7468','#403b34'); blob(cx+95,h*0.45,34,95,'#7d7468','#403b34'); // brazos
+  setPhotoFromSource(c,w,h,'ejemplo (estatua)');
+  // máscara y profundidad procedurales para jugar sin IA
+  const mk=grayCanvas(w,h,'#000'), mx2=mk.getContext('2d');
+  mx2.fillStyle='#fff';
+  const ell=(ctx,bx,by,rx,ry)=>{ ctx.beginPath(); ctx.ellipse(bx,by,rx,ry,0,0,7); ctx.fill(); };
+  ell(mx2,cx,h*0.72,150,60); ell(mx2,cx,h*0.52,95,150); ell(mx2,cx,h*0.25,62,70); ell(mx2,cx-95,h*0.45,34,95); ell(mx2,cx+95,h*0.45,34,95);
+  maskCanvas=mk; hasMask=true;
+  const dp=grayCanvas(w,h,'#000'), dx=dp.getContext('2d');
+  const dg=(bx,by,rx,ry,near)=>{ const g=dx.createRadialGradient(bx,by,0,bx,by,Math.max(rx,ry)); g.addColorStop(0,`rgb(${near},${near},${near})`); g.addColorStop(1,'rgb(30,30,30)'); dx.fillStyle=g; ell(dx,bx,by,rx,ry); };
+  dg(cx,h*0.72,150,60,150); dg(cx,h*0.52,95,150,235); dg(cx,h*0.25,62,70,255); dg(cx-95,h*0.45,34,95,190); dg(cx+95,h*0.45,34,95,190);
+  depthCanvas=dp; hasDepth=true;
+  uploadPhotoTex(); uploadDepthTex(); setMode(1);
+  status('ejemplo cargado con alfa y profundidad ya hechos — jugá con los efectos. con tu foto real, la IA hace estos dos pasos.');
+};
+
+/* ---------- webgl ---------- */
+const canvas=$('gl'), stageWrap=$('stageWrap');
+const gl=canvas.getContext('webgl2',{preserveDrawingBuffer:true});
+function compile(src,type){ const s=gl.createShader(type); gl.shaderSource(s,src); gl.compileShader(s); if(!gl.getShaderParameter(s,gl.COMPILE_STATUS)) console.error(gl.getShaderInfoLog(s)); return s; }
+const prog=(()=>{ const p=gl.createProgram();
+gl.attachShader(p,compile(`#version 300 es
+in vec2 aPos; out vec2 vUV;
+void main(){ vUV=aPos*0.5+0.5; gl_Position=vec4(aPos,0.,1.); }`,gl.VERTEX_SHADER));
+gl.attachShader(p,compile(`#version 300 es
+precision highp float;
+in vec2 vUV; out vec4 o;
+uniform sampler2D uPhoto;   // rgb foto + alfa máscara
+uniform sampler2D uDepth;   // r profundidad
+uniform sampler2D uVideo;   // stream record3d: izq=depth HSV, der=rgb
+uniform float uTime,uSpeed,uIntensity,uScale,uHue,uDContrast,uDGamma;
+uniform float uZoom; uniform vec2 uOff;
+uniform int uMode; uniform bool uDInvert;
+uniform bool uLive,uCutOn; uniform vec3 uCut; // near,far,pluma
+float rgb2hue(vec3 c){
+  float mx=max(c.r,max(c.g,c.b)), mn=min(c.r,min(c.g,c.b)), dl=mx-mn;
+  if(dl<1e-5) return 0.0;
+  float h;
+  if(mx==c.r) h=mod((c.g-c.b)/dl,6.0);
+  else if(mx==c.g) h=(c.b-c.r)/dl+2.0;
+  else h=(c.r-c.g)/dl+4.0;
+  return h/6.0;
+}
+float rawDepth(vec2 uv){
+  if(uLive) return 1.0-rgb2hue(texture(uVideo,vec2(uv.x*0.5,uv.y)).rgb); // hue 0-1 = 0-3m; cerca -> 1
+  return texture(uDepth,uv).r;
+}
+float depthAt(vec2 uv){
+  float d=rawDepth(uv);
+  if(uDInvert) d=1.0-d;
+  d=clamp((d-0.5)*uDContrast+0.5,0.0,1.0);
+  return pow(d,uDGamma);
+}
+vec3 pal(float t){ return 0.5+0.5*cos(6.28318*(t+vec3(0.0,0.33,0.67))+uHue); }
+void main(){
+  vec2 uv=(vUV-0.5)/uZoom-uOff+0.5;
+  if(uv.x<0.0||uv.x>1.0||uv.y<0.0||uv.y>1.0){ o=vec4(0.,0.,0.,1.); return; }
+  vec4 photo; float a;
+  if(uLive){
+    photo=vec4(texture(uVideo,vec2(0.5+uv.x*0.5,uv.y)).rgb,1.0);
+    if(uCutOn){
+      float dr=rawDepth(uv), lo=min(uCut.x,uCut.y), hi=max(uCut.x,uCut.y), ft=max(uCut.z,1e-4);
+      a=smoothstep(lo-ft,lo,dr)*(1.0-smoothstep(hi,hi+ft,dr));
+    } else a=1.0;
+  } else { photo=texture(uPhoto,uv); a=photo.a; }
+  float d=depthAt(uv);
+  float t=uTime*uSpeed;
+  vec3 col=vec3(0.0);
+  if(uMode==0){ col=photo.rgb; }
+  else if(uMode==1){ // contornos: curvas de nivel recorriendo el relieve
+    float bands=d*8.0*uScale-t*0.6;
+    float f=abs(fract(bands)-0.5)*2.0;
+    float line=smoothstep(0.22,0.02,f);
+    col=pal(d+t*0.03)*line*uIntensity+photo.rgb*0.07;
+  }
+  else if(uMode==2){ // barrido: un plano de luz cruza la profundidad
+    float p=fract(t*0.22);
+    float band=smoothstep(0.16/uScale,0.0,abs(d-p));
+    float tail=smoothstep(0.5,0.0,abs(d-p))*0.15;
+    col=pal(p*0.7)* (band+tail)*uIntensity+photo.rgb*0.05;
+  }
+  else if(uMode==3){ // relieve: luz orbitando, normales desde la profundidad
+    vec2 e=1.5/(uLive?vec2(textureSize(uVideo,0))*vec2(0.5,1.0):vec2(textureSize(uDepth,0)));
+    float dx=depthAt(uv+vec2(e.x,0.))-depthAt(uv-vec2(e.x,0.));
+    float dy=depthAt(uv+vec2(0.,e.y))-depthAt(uv-vec2(0.,e.y));
+    vec3 n=normalize(vec3(-dx*6.0*uScale,dy*6.0*uScale,0.45));
+    vec3 L=normalize(vec3(cos(t*0.8),sin(t*0.55),0.62));
+    float diff=max(dot(n,L),0.0);
+    float spec=pow(max(dot(reflect(-L,n),vec3(0.,0.,1.)),0.0),18.0);
+    col=(photo.rgb*0.30+pal(d*0.6+0.1)*0.70)*diff*uIntensity+vec3(spec)*uIntensity*0.8;
+  }
+  else if(uMode==4){ // espectro: color puro por distancia
+    col=pal(d*uScale-t*0.1)*(0.30+0.70*d)*uIntensity;
+  }
+  else if(uMode==6){ col=vec3(d); }
+  o=vec4(col*a,1.0);
+}`,gl.FRAGMENT_SHADER));
+gl.linkProgram(p); if(!gl.getProgramParameter(p,gl.LINK_STATUS)) console.error(gl.getProgramInfoLog(p)); return p; })();
+gl.useProgram(prog);
+const vao=gl.createVertexArray(); gl.bindVertexArray(vao);
+const vb=gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER,vb);
+gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1, 3,-1, -1,3]),gl.STATIC_DRAW);
+gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0,2,gl.FLOAT,false,0,0);
+const U=n=>gl.getUniformLocation(prog,n);
+const texPhoto=gl.createTexture(), texDepth=gl.createTexture(), texVideo=gl.createTexture();
+function bindTexDefaults(){ gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR); }
+gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,true);
+function setupStage(){ canvas.width=photoW; canvas.height=photoH; stageWrap.style.setProperty('--ar',photoW+'/'+photoH); const b=$('brushOverlay'); b.width=photoW; b.height=photoH; }
+function combinedPhoto(){ // rgb foto + alfa desde maskCanvas
+  const c=document.createElement('canvas'); c.width=photoW; c.height=photoH; const x=c.getContext('2d');
+  x.putImageData(photoRGB,0,0);
+  const im=x.getImageData(0,0,photoW,photoH);
+  const md=maskCanvas.getContext('2d').getImageData(0,0,photoW,photoH).data;
+  for(let i=0;i<photoW*photoH;i++) im.data[i*4+3]=md[i*4];
+  x.putImageData(im,0,0); return c;
+}
+function uploadPhotoTex(){ if(!photoRGB) return; gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D,texPhoto); gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,combinedPhoto()); bindTexDefaults(); }
+function uploadDepthTex(){ if(!depthCanvas) return; gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D,texDepth); gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,depthCanvas); bindTexDefaults(); }
+
+/* ---------- controles ---------- */
+let mode=1;
+function setMode(m){ mode=m; document.querySelectorAll('#fxbtns button').forEach(b=>b.classList.toggle('on',+b.dataset.mode===m)); }
+document.querySelectorAll('#fxbtns button').forEach(b=>b.onclick=()=>setMode(+b.dataset.mode));
+const sliders=['uSpeed','uIntensity','uScale','uHue','uDContrast','uDGamma','uZoom','uOffX','uOffY'];
+for(const id of sliders){ const el=$(id); el.oninput=()=>{ el.parentElement.querySelector('output').textContent=(+el.value).toFixed(2); }; }
+$('brushSize').oninput=()=>$('brushSizeV').textContent=$('brushSize').value;
+$('btnResetFit').onclick=()=>{ for(const [id,v] of [['uZoom',1],['uOffX',0],['uOffY',0]]){ $(id).value=v; $(id).parentElement.querySelector('output').textContent=(+v).toFixed(2);} };
+
+/* ---------- pincel de máscara ---------- */
+let brushing=false, brushMode='minus', painting=false;
+$('btnBrush').onclick=()=>{ brushing=!brushing; $('btnBrush').classList.toggle('on',brushing); $('brushCtl').style.display=brushing?'block':'none'; stageWrap.classList.toggle('brushing',brushing); };
+$('brushMinus').onclick=()=>{ brushMode='minus'; $('brushMinus').classList.add('on'); $('brushPlus').classList.remove('on'); };
+$('brushPlus').onclick=()=>{ brushMode='plus'; $('brushPlus').classList.add('on'); $('brushMinus').classList.remove('on'); };
+const overlay=$('brushOverlay');
+function evPos(e){ const r=overlay.getBoundingClientRect(); return [ (e.clientX-r.left)*photoW/r.width, (e.clientY-r.top)*photoH/r.height ]; }
+function paint(e){
+  const [x,y]=evPos(e), R=+$('brushSize').value;
+  const fill=c=>{ const mx=c.getContext('2d'); mx.fillStyle=brushMode==='minus'?'#000':'#fff'; mx.beginPath(); mx.arc(x,y,R,0,7); mx.fill(); };
+  fill(maskCanvas);
+  if($('cutOn').checked&&maskBase) fill(maskBase); // que el trazo sobreviva al recorte por distancia
+  hasMask=true; uploadPhotoTex();
+}
+function cursor(e){
+  const [x,y]=evPos(e), R=+$('brushSize').value;
+  const ox=overlay.getContext('2d'); ox.clearRect(0,0,photoW,photoH);
+  ox.strokeStyle=brushMode==='minus'?'rgba(255,45,85,.9)':'rgba(184,255,0,.9)';
+  ox.lineWidth=Math.max(1.5,photoW/600); ox.beginPath(); ox.arc(x,y,R,0,7); ox.stroke();
+}
+overlay.addEventListener('pointerdown',e=>{ if(!brushing||!photoRGB) return; painting=true; overlay.setPointerCapture(e.pointerId); paint(e); });
+overlay.addEventListener('pointermove',e=>{ if(!brushing||!photoRGB) return; cursor(e); if(painting) paint(e); });
+overlay.addEventListener('pointerup',()=>painting=false);
+overlay.addEventListener('pointerleave',()=>{ overlay.getContext('2d')?.clearRect(0,0,photoW||1,photoH||1); });
+
+/* ---------- loop ---------- */
+const t0=performance.now();
+function frame(){
+  requestAnimationFrame(frame);
+  if(!photoRGB&&!live){ gl.clearColor(0,0,0,1); gl.clear(gl.COLOR_BUFFER_BIT); return; }
+  if(live&&liveVideo.readyState>=2){
+    if(canvas.width!==Math.round(liveVideo.videoWidth/2)) liveSizeSync();
+    gl.activeTexture(gl.TEXTURE2); gl.bindTexture(gl.TEXTURE_2D,texVideo);
+    gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,liveVideo);
+    bindTexDefaults();
+  }
+  gl.viewport(0,0,canvas.width,canvas.height);
+  gl.useProgram(prog); gl.bindVertexArray(vao);
+  gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D,texPhoto);
+  gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D,texDepth);
+  gl.activeTexture(gl.TEXTURE2); gl.bindTexture(gl.TEXTURE_2D,texVideo);
+  gl.uniform1i(U('uPhoto'),0); gl.uniform1i(U('uDepth'),1); gl.uniform1i(U('uVideo'),2);
+  gl.uniform1i(U('uLive'),live?1:0);
+  gl.uniform1i(U('uCutOn'),$('cutOn').checked?1:0);
+  gl.uniform3f(U('uCut'),+$('cutNear').value,+$('cutFar').value,+$('cutFeather').value);
+  gl.uniform1f(U('uTime'),(performance.now()-t0)/1000);
+  gl.uniform1f(U('uSpeed'),+$('uSpeed').value);
+  gl.uniform1f(U('uIntensity'),+$('uIntensity').value);
+  gl.uniform1f(U('uScale'),+$('uScale').value);
+  gl.uniform1f(U('uHue'),+$('uHue').value);
+  gl.uniform1f(U('uDContrast'),+$('uDContrast').value);
+  gl.uniform1f(U('uDGamma'),+$('uDGamma').value);
+  gl.uniform1i(U('uDInvert'),$('uDInvert').checked?1:0);
+  gl.uniform1f(U('uZoom'),+$('uZoom').value);
+  gl.uniform2f(U('uOff'),+$('uOffX').value,-$('uOffY').value);
+  gl.uniform1i(U('uMode'),mode);
+  gl.drawArrays(gl.TRIANGLES,0,3);
+}
+frame();
+
+/* ---------- io ---------- */
+$('btnPhoto').onclick=()=>$('filePhoto').click();
+$('filePhoto').onchange=e=>{ const f=e.target.files[0]; if(f) loadPhotoFile(f); e.target.value=''; };
+$('btnFull').onclick=()=>{ if(!document.fullscreenElement) stageWrap.requestFullscreen?.(); else document.exitFullscreen?.(); };
+function dl(url,name){ const a=document.createElement('a'); a.href=url; a.download=name; a.click(); }
+$('btnExpAlpha').onclick=()=>{ if(!photoRGB) return; dl(combinedPhoto().toDataURL('image/png'),'relieve-recorte-alfa.png'); };
+$('btnExpDepth').onclick=()=>{ if(!depthCanvas) return; dl(depthCanvas.toDataURL('image/png'),'relieve-depth.png'); };
+$('btnSave').onclick=()=>{
+  if(!photoRGB){ toast('No hay proyecto que guardar'); return; }
+  const pc=document.createElement('canvas'); pc.width=photoW; pc.height=photoH; pc.getContext('2d').putImageData(photoRGB,0,0);
+  const st={}; for(const id of sliders) st[id]=+$(id).value;
+  const data={app:'relieve-hg',v:1,mode,invert:$('uDInvert').checked,sliders:st,
+    photo:pc.toDataURL('image/jpeg',0.9),mask:hasMask?maskCanvas.toDataURL('image/png'):null,depth:hasDepth?depthCanvas.toDataURL('image/png'):null};
+  dl(URL.createObjectURL(new Blob([JSON.stringify(data)],{type:'application/json'})),'relieve-proyecto.json');
+};
+$('btnLoad').onclick=()=>$('fileProject').click();
+$('fileProject').onchange=async e=>{
+  const f=e.target.files[0]; e.target.value=''; if(!f) return;
+  try{
+    const d=JSON.parse(await f.text());
+    if(d.app!=='relieve-hg') throw new Error('no es un proyecto de RELIEVE');
+    const im=(src)=>new Promise((ok,ko)=>{ const i=new Image(); i.onload=()=>ok(i); i.onerror=ko; i.src=src; });
+    const ph=await im(d.photo);
+    setPhotoFromSource(ph,ph.width,ph.height,'proyecto cargado');
+    if(d.mask){ const mi=await im(d.mask); maskCanvas.getContext('2d').drawImage(mi,0,0,photoW,photoH); hasMask=true; uploadPhotoTex(); }
+    if(d.depth){ const di=await im(d.depth); depthCanvas.getContext('2d').drawImage(di,0,0,photoW,photoH); hasDepth=true; uploadDepthTex(); }
+    for(const id of sliders){ if(d.sliders?.[id]!=null){ $(id).value=d.sliders[id]; $(id).parentElement.querySelector('output').textContent=(+d.sliders[id]).toFixed(2);} }
+    $('uDInvert').checked=!!d.invert; setMode(d.mode??1);
+    toast('Proyecto cargado');
+  }catch(err){ toast('No pude cargar ese proyecto: '+err.message); }
+};
+$('btnResetAll').onclick=()=>{ if(confirm('¿Reset total? Se pierde la foto, la máscara y la profundidad.')) location.reload(); };
+</script>
+</body></html>
