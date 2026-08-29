@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Clima Sur Service · Service de aire acondicionado</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..125,400..800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   KIT URGENCIA v3 — "instrumento"
+   Un solo sistema para los nueve rubros: la tipografía y el
+   ritmo son los mismos en todos; cambia el acento y la foto.
+
+   La regla que ordena todo:
+     · Archivo (grotesca, eje wdth) para DECIR.
+     · JetBrains Mono para todo lo que es DATO — horas, minutos,
+       precios, matrículas, índices de sección, cobertura.
+   En una urgencia el número es el argumento de venta, así que
+   el número es el que tiene voz propia.
+
+   Superficies: hairline antes que sombra. Radio casi cuadrado.
+   La sombra queda reservada a lo que de verdad flota (la banda
+   de números y la barra fija).
+   ============================================================ */
+
+:root {
+  --ink: 28 34 42;
+  --paper: 245 247 250;
+  --paper-2: 236 240 245;
+  --muted: 118 128 142;
+  --hair: 28 34 42;
+  --accent: 38 100 158;
+  --on-accent: 240 248 255;
+  --accent-hi: 68 141 210;
+  --rad: 2px;
+  --rad-lg: 5px;
+  --display: 'Archivo', system-ui, sans-serif;
+  --texto: 'Archivo', system-ui, sans-serif;
+  --mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--texto);
+  font-variation-settings: "wdth" 100;
+  background: rgb(var(--paper-2)); color: rgb(var(--ink));
+  font-size: 16px; line-height: 1.62;
+  -webkit-font-smoothing: antialiased; overflow-x: hidden;
+  padding-bottom: 74px;
+}
+::selection { background: rgb(var(--ink)); color: rgb(var(--paper)); }
+:focus-visible { outline: 2px solid rgb(var(--accent)); outline-offset: 3px; }
+a { color: inherit; text-decoration: none; }
+img { max-width: 100%; display: block; }
+button, select { font: inherit; cursor: pointer; }
+
+.wrap { width: 100%; max-width: 1120px; margin-inline: auto; padding-inline: 22px; }
+
+/* ---------- Tipografía ---------- */
+h1 {
+  font-family: var(--display); font-weight: 800; font-stretch: 112%;
+  font-size: clamp(38px, 8.8vw, 78px); line-height: .97; letter-spacing: -0.038em;
+  text-wrap: balance;
+}
+h2 {
+  font-family: var(--display); font-weight: 800; font-stretch: 108%;
+  font-size: clamp(27px, 5.4vw, 43px); line-height: 1.06; letter-spacing: -0.032em;
+  text-wrap: balance;
+}
+h3 { font-family: var(--display); font-weight: 700; font-stretch: 104%; font-size: 19px; letter-spacing: -0.018em; }
+.lead { font-size: clamp(16.5px, 2.2vw, 19px); line-height: 1.58; color: rgb(var(--muted)); text-wrap: pretty; }
+
+/* El rótulo es mono: es una etiqueta de instrumento, no una frase */
+.rotulo {
+  font-family: var(--mono); font-size: 11px; font-weight: 500;
+  letter-spacing: .17em; text-transform: uppercase; color: rgb(var(--accent));
+}
+
+/* Todo lo que es cifra: mono, tabular, sin ligaduras raras */
+.dato, .tel-num, .num-c b, .vivo-c b, .precio b, .zona-out b, .cierre a.num,
+.op .estrellas, .conf span, .precios-nota, .tec-cap, .pie, .cinta span {
+  font-family: var(--mono); font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1;
+}
+
+/* ---------- Encabezado de sección ---------- */
+/* Índice en una casilla monoespaciada + rótulo + filete que se apaga */
+.sh { display: grid; gap: 13px; margin-bottom: 6px; }
+.sh-top { display: flex; align-items: center; gap: 13px; }
+.sh-top i {
+  font-style: normal; font-family: var(--mono); font-weight: 700; font-size: 11.5px;
+  color: rgb(var(--accent)); border: 1px solid rgb(var(--accent) / .34);
+  border-radius: var(--rad); padding: 4px 8px; line-height: 1; flex-shrink: 0;
+}
+.sh-top .lin { flex: 1; height: 1px; background: linear-gradient(to right, rgb(var(--accent) / .5), rgb(var(--hair) / .07)); }
+section { padding-block: 60px; }
+
+.ph { background-repeat: no-repeat; background-size: cover; background-color: rgb(var(--ink) / .06); }
+.ph-a { background-image: url("data:image/webp;base64,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"); }
+
+/* ---------- Header ---------- */
+.top {
+  position: sticky; top: 0; z-index: 60;
+  background: rgb(var(--paper) / .93); backdrop-filter: blur(14px) saturate(1.4);
+  border-bottom: 1px solid transparent; transition: border-color .25s, background .25s;
+}
+.top.stuck { border-bottom-color: rgb(var(--hair) / .14); }
+.top-in { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding-block: 14px; }
+.top b { font-family: var(--display); font-size: 17px; font-weight: 800; font-stretch: 106%; letter-spacing: -0.022em; white-space: nowrap; }
+.top .estado {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-family: var(--mono); font-size: 10.5px; font-weight: 500;
+  letter-spacing: .12em; text-transform: uppercase; color: rgb(var(--muted));
+  border: 1px solid rgb(var(--hair) / .13); padding: 6px 12px; border-radius: var(--rad);
+}
+.top .estado::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: rgb(var(--accent)); box-shadow: 0 0 0 0 rgb(var(--accent) / .55); animation: lat 2.4s ease-out infinite; flex-shrink: 0; }
+@keyframes lat {
+  0%   { opacity: 1; box-shadow: 0 0 0 0 rgb(var(--accent) / .5); }
+  70%  { opacity: .55; box-shadow: 0 0 0 7px rgb(var(--accent) / 0); }
+  100% { opacity: 1; box-shadow: 0 0 0 0 rgb(var(--accent) / 0); }
+}
+.top .tel-min { display: none; }
+
+/* ---------- Botones ---------- */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  font-family: var(--display); font-weight: 700; font-stretch: 104%; font-size: 16px;
+  letter-spacing: -.01em; padding: 15px 24px; border-radius: var(--rad);
+  background: rgb(var(--accent)); color: rgb(var(--on-accent)); border: 1px solid rgb(var(--accent));
+  box-shadow: 0 1px 0 rgb(var(--ink) / .04), 0 8px 22px rgb(var(--accent) / .24);
+  transition: transform .16s cubic-bezier(.2,.7,.3,1), box-shadow .16s, background .16s;
+}
+.btn:hover { transform: translateY(-2px); box-shadow: 0 1px 0 rgb(var(--ink) / .04), 0 13px 30px rgb(var(--accent) / .34); }
+.btn:active { transform: translateY(0); }
+.btn-2 {
+  background: rgb(var(--paper)); color: rgb(var(--ink));
+  border-color: rgb(var(--hair) / .16); box-shadow: none; font-weight: 600;
+}
+.btn-2:hover { box-shadow: 0 6px 18px rgb(var(--ink) / .09); border-color: rgb(var(--hair) / .26); }
+.btn-sm { padding: 9px 15px; font-size: 14px; }
+.tel-num { font-size: clamp(21px, 5.4vw, 29px); font-weight: 700; letter-spacing: -0.035em; white-space: nowrap; }
+.btn-sm .tel-num, .tel-min { font-size: 14px; letter-spacing: -.02em; }
+
+/* ============================================================
+   PORTADA
+   La foto se parte en dos capas que corren a distinta velocidad
+   (parallax de scroll) y además respiran solas (deriva lenta).
+   Con una sola foto por rubro alcanza: la de atrás va borrosa y
+   agrandada, la de adelante nítida y enmascarada. Encima, una
+   barrida de luz y grano.
+   ============================================================ */
+.hero { position: relative; overflow: hidden; background: rgb(var(--ink)); color: rgb(var(--paper)); }
+
+/* MOBILE: banda inferior. Cubrir todo el hero con una foto 16:9
+   obligaba a un recorte del 36% del ancho (zoom feo). Con banda
+   se ve el 65% de la foto. */
+.hero-esc {
+  position: absolute; inset: auto 0 0 0; height: 58%; z-index: 0; overflow: hidden;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 30%, #000 100%);
+  mask-image: linear-gradient(to bottom, transparent 0%, #000 30%, #000 100%);
+}
+/* La capa recibe el parallax (--py, lo escribe el JS). */
+.hero-capa { position: absolute; inset: -16% -7%; transform: translate3d(0, var(--py, 0px), 0); will-change: transform; }
+/* La foto de adentro hace la deriva. Dos transforms, dos elementos:
+   así el parallax y el Ken Burns no se pisan. */
+.hero-foto { position: absolute; inset: 0; background-position: 62% 50%; transform-origin: 62% 50%; }
+
+.hero-c1 .hero-foto {
+  filter: blur(18px) saturate(.85) brightness(.72);
+  animation: deriva-a 46s ease-in-out infinite alternate;
+}
+/* La nítida se desvanece en los bordes y deja ver la borrosa: eso
+   es lo que da la sensación de profundidad con una sola foto. */
+.hero-c2 {
+  -webkit-mask-image: radial-gradient(145% 125% at 62% 50%, #000 46%, rgb(0 0 0 / .55) 76%, transparent 96%);
+  mask-image: radial-gradient(145% 125% at 62% 50%, #000 46%, rgb(0 0 0 / .55) 76%, transparent 96%);
+}
+.hero-c2 .hero-foto { animation: deriva-b 32s ease-in-out infinite alternate; }
+
+@keyframes deriva-a { from { transform: scale(1.20) translate3d(0,0,0); } to { transform: scale(1.30) translate3d(-1.8%, -1.2%, 0); } }
+@keyframes deriva-b { from { transform: scale(1.03) translate3d(0,0,0); } to { transform: scale(1.13) translate3d(1.9%, -1.4%, 0); } }
+
+.hero-velo {
+  position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  background: linear-gradient(to bottom, rgb(var(--ink) / .58) 0%, rgb(var(--ink) / .14) 42%, rgb(var(--ink) / .64) 82%, rgb(var(--ink) / .9) 100%);
+}
+/* Barrida de luz: un reflejo lento que cruza la portada. */
+.hero-luz {
+  position: absolute; inset: -45% -65%; z-index: 2; pointer-events: none;
+  background: linear-gradient(74deg,
+    transparent 34%,
+    rgb(var(--accent-hi) / .17) 45%,
+    rgb(255 255 255 / .1) 50%,
+    rgb(var(--accent-hi) / .13) 55%,
+    transparent 66%);
+  mix-blend-mode: screen; opacity: .5;
+  animation: barrida 15s ease-in-out infinite;
+}
+@keyframes barrida { 0%, 100% { transform: translate3d(-27%, 0, 0); } 50% { transform: translate3d(27%, 0, 0); } }
+
+/* Grano: le saca el plástico a la foto y disimula el banding del
+   degradado del velo. */
+.hero-grano {
+  position: absolute; inset: -60px; z-index: 3; pointer-events: none; opacity: .09;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.86' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)'/%3E%3C/svg%3E");
+  animation: grano .68s steps(3) infinite;
+}
+@keyframes grano {
+  0%   { transform: translate3d(0,0,0); }
+  33%  { transform: translate3d(-9px, 6px, 0); }
+  66%  { transform: translate3d(7px, -8px, 0); }
+  100% { transform: translate3d(0,0,0); }
+}
+
+.hero-in { position: relative; z-index: 5; padding-block: 32px 96px; }
+.hero p.lead { margin-top: 15px; max-width: 38ch; color: rgb(var(--paper) / .76); }
+.hero-cta { margin-top: 26px; display: flex; flex-direction: column; gap: 10px; }
+.hero-cta .btn { padding-block: 17px; flex-shrink: 0; white-space: nowrap; }
+.hero .btn-2 { color: rgb(var(--paper)); border-color: rgb(var(--paper) / .3); background: rgb(var(--ink) / .42); backdrop-filter: blur(8px); box-shadow: none; }
+.hero .btn-2:hover { border-color: rgb(var(--paper) / .5); background: rgb(var(--ink) / .55); }
+
+/* ---------- El panel vivo: reloj y llegada ---------- */
+/* Esto antes no tenía regla base: era texto suelto. Ahora es un
+   instrumento — casilla, hairline y cifras monoespaciadas. */
+.vivo {
+  margin-top: 26px; max-width: 26rem;
+  border: 1px solid rgb(var(--hair) / .12); border-radius: var(--rad-lg);
+  padding: 15px 17px 16px; background: rgb(var(--paper));
+}
+.hero .vivo { border-color: rgb(var(--paper) / .17); background: rgb(var(--ink) / .46); backdrop-filter: blur(12px) saturate(1.3); }
+.vivo .est {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-family: var(--mono); font-size: 10.5px; font-weight: 500;
+  letter-spacing: .14em; text-transform: uppercase; color: rgb(var(--accent-hi));
+}
+.vivo .est::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: rgb(var(--accent-hi)); animation: lat 2.4s ease-out infinite; flex-shrink: 0; }
+.vivo-h { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; margin-top: 14px; padding-top: 14px; border-top: 1px solid rgb(var(--paper) / .15); }
+.vivo-c small {
+  display: block; font-family: var(--mono); font-size: 9.5px; letter-spacing: .15em;
+  text-transform: uppercase; margin-bottom: 5px; font-weight: 500;
+}
+.vivo-c b { font-size: 27px; font-weight: 700; letter-spacing: -.045em; line-height: 1; display: block; }
+.vivo-c:last-child { text-align: right; }
+.hero .vivo-c b { color: rgb(var(--paper)); }
+.hero .vivo-c:last-child b { color: rgb(var(--accent-hi)); }
+.hero .vivo-c small { color: rgb(var(--paper) / .5); }
+
+/* ---------- La ruta: el camión que va llegando ---------- */
+/* Tampoco tenía regla base — el camión quedaba quieto al lado de
+   la hora. Ahora es un riel punteado con el vehículo en camino. */
+.ruta { position: relative; flex: 1; height: 22px; min-width: 62px; align-self: center; }
+.ruta i { position: absolute; left: 0; right: 0; top: 50%; border-top: 1px dashed rgb(var(--hair) / .28); }
+.hero .ruta i { border-top-color: rgb(var(--paper) / .26); }
+.ruta u {
+  position: absolute; left: 0; top: 50%; margin-top: -1px; height: 2px; width: 0;
+  background: linear-gradient(to right, rgb(var(--accent-hi) / 0), rgb(var(--accent-hi)));
+  border-radius: 2px; animation: avance 5.2s cubic-bezier(.5,0,.5,1) infinite;
+}
+.ruta s {
+  position: absolute; top: 50%; left: 0; transform: translate(-50%, -50%);
+  color: rgb(var(--accent-hi)); line-height: 0;
+  animation: viaja 5.2s cubic-bezier(.5,0,.5,1) infinite;
+}
+.ruta s svg { display: block; }
+@keyframes avance { 0% { width: 0; opacity: 0; } 12% { opacity: 1; } 88% { opacity: 1; } 100% { width: 100%; opacity: 0; } }
+@keyframes viaja  { 0% { left: 0; opacity: 0; } 12% { opacity: 1; } 88% { opacity: 1; } 100% { left: 100%; opacity: 0; } }
+
+/* ---------- Foto lateral (solo desktop, variante clara) ---------- */
+.hero-img { display: none; }
+
+/* ============================================================
+   BANDA DE NÚMEROS
+   Antes: tres tarjetas blancas flotando con sombra.
+   Ahora: una sola regleta de instrumento, dividida por hairlines.
+   ============================================================ */
+.nums { margin-top: -46px; position: relative; z-index: 6; }
+.nums-g {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  background: rgb(var(--paper)); border: 1px solid rgb(var(--hair) / .1);
+  border-radius: var(--rad-lg); overflow: hidden;
+  box-shadow: 0 2px 4px rgb(var(--ink) / .05), 0 18px 44px rgb(var(--ink) / .1);
+}
+.num-c { text-align: center; padding: 20px 8px; border-right: 1px solid rgb(var(--hair) / .09); }
+.num-c:last-child { border-right: 0; }
+.num-c b {
+  font-size: clamp(27px, 7.4vw, 40px); font-weight: 700; display: block;
+  line-height: 1; letter-spacing: -.05em; color: rgb(var(--accent));
+}
+.num-c small {
+  display: block; margin-top: 9px; font-family: var(--mono); font-size: 9.5px;
+  letter-spacing: .14em; text-transform: uppercase; color: rgb(var(--muted)); font-weight: 500;
+}
+
+/* ---------- Servicios ---------- */
+.serv .ico {
+  width: 42px; height: 42px; border-radius: var(--rad); display: grid; place-items: center;
+  margin-bottom: 15px; background: rgb(var(--accent) / .1); color: rgb(var(--accent));
+  border: 1px solid rgb(var(--accent) / .2);
+}
+.servs { margin-top: 28px; display: grid; grid-template-columns: 1fr; gap: 12px; }
+.serv {
+  background: rgb(var(--paper)); border: 1px solid rgb(var(--hair) / .1);
+  border-radius: var(--rad-lg); padding: 22px;
+  transition: transform .22s cubic-bezier(.2,.7,.3,1), box-shadow .22s, border-color .22s;
+  position: relative; overflow: hidden;
+}
+.serv:hover { transform: translateY(-3px); box-shadow: 0 12px 30px rgb(var(--ink) / .09); border-color: rgb(var(--hair) / .18); }
+.serv .rotulo { display: block; margin-bottom: 5px; }
+.serv p { margin-top: 7px; font-size: 14.5px; color: rgb(var(--muted)); max-width: 46ch; }
+/* .mas tampoco tenía base: era texto plano. Es el pie del servicio. */
+.mas {
+  display: inline-flex; align-items: center; gap: 7px; margin-top: 14px;
+  font-family: var(--mono); font-size: 10.5px; font-weight: 500;
+  letter-spacing: .13em; text-transform: uppercase; color: rgb(var(--accent));
+}
+.mas span { transition: transform .2s cubic-bezier(.2,.7,.3,1); }
+.serv:hover .mas span { transform: translateX(4px); }
+.serv:first-child { background: rgb(var(--ink)); color: rgb(var(--paper)); border-color: transparent; }
+.serv:first-child p { color: rgb(var(--paper) / .72); }
+.serv:first-child .mas { color: rgb(var(--accent-hi)); }
+.serv:first-child .ico { background: rgb(var(--accent-hi)); color: rgb(var(--ink)); border-color: transparent; }
+.serv:first-child::after { content: ""; position: absolute; right: -70px; top: -70px; width: 190px; height: 190px; border-radius: 50%; background: rgb(var(--accent-hi) / .12); }
+
+/* ---------- Chips de confianza ---------- */
+.conf { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 26px; }
+.conf span {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 11px; font-weight: 500; letter-spacing: .09em; text-transform: uppercase;
+  background: transparent; border: 1px solid rgb(var(--hair) / .16);
+  padding: 9px 14px; border-radius: var(--rad); color: rgb(var(--muted));
+}
+.conf svg { color: rgb(var(--accent)); flex-shrink: 0; }
+
+/* ============================================================
+   PRECIOS — lista con líder de puntos
+   Es la forma en que un presupuesto se lee de toda la vida: el
+   concepto a la izquierda, el número a la derecha, y los puntos
+   llevando el ojo de uno al otro.
+   ============================================================ */
+.precios {
+  margin-top: 28px; background: rgb(var(--paper));
+  border: 1px solid rgb(var(--hair) / .1); border-radius: var(--rad-lg); overflow: hidden;
+}
+.precio {
+  display: flex; align-items: baseline; gap: 0;
+  padding: 16px 20px; border-bottom: 1px solid rgb(var(--hair) / .07);
+  font-size: 15.5px; transition: background .18s;
+}
+.precio:last-of-type { border-bottom: 0; }
+.precio:hover { background: rgb(var(--accent) / .045); }
+/* El span se vuelve contenedor flex para que los puntos estiren */
+.precio > span { display: flex; align-items: baseline; flex: 1; min-width: 0; }
+.precio > span::after {
+  content: ""; flex: 1 1 auto; min-width: 22px; height: 0;
+  margin: 0 10px 5px 12px;
+  border-bottom: 1px dotted rgb(var(--hair) / .34);
+}
+.precio b { font-size: 16px; font-weight: 700; white-space: nowrap; color: rgb(var(--accent)); letter-spacing: -.03em; flex-shrink: 0; }
+/* En pantalla angosta el concepto envuelve y los puntos quedan en un
+   muñón feo: el ::after sigue empujando el precio a la derecha, pero
+   sin puntear. */
+@media (max-width: 619px) {
+  .precio > span::after { min-width: 0; margin: 0 0 0 14px; border-bottom: 0; }
+}
+.precios-nota {
+  margin: 0; padding: 14px 20px; background: rgb(var(--ink) / .03);
+  border-top: 1px solid rgb(var(--hair) / .07);
+  font-size: 11px; letter-spacing: .05em; line-height: 1.6; color: rgb(var(--muted));
+}
+
+/* ---------- Sección técnica (blueprint) ---------- */
+.tec { background: rgb(var(--ink)); color: rgb(var(--paper)); position: relative; overflow: hidden; }
+.tec::before {
+  content: ""; position: absolute; inset: 0; pointer-events: none; opacity: .5;
+  background-image: linear-gradient(rgb(var(--paper) / .045) 1px, transparent 1px), linear-gradient(90deg, rgb(var(--paper) / .045) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+.tec-in { position: relative; display: grid; grid-template-columns: 1fr; gap: 28px; align-items: center; }
+.tec .rotulo { color: rgb(var(--accent-hi)); }
+.tec .sh-top i { color: rgb(var(--accent-hi)); border-color: rgb(var(--accent-hi) / .4); }
+.tec .sh-top .lin { background: linear-gradient(to right, rgb(var(--accent-hi) / .5), rgb(var(--paper) / .07)); }
+.tec h2 { margin-top: 12px; }
+.tec .lead { color: rgb(var(--paper) / .72); margin-top: 13px; max-width: 44ch; }
+.tec-pts { margin-top: 24px; display: grid; gap: 14px; list-style: none; }
+.tec-pts li { display: flex; gap: 13px; font-size: 14.5px; line-height: 1.55; color: rgb(var(--paper) / .85); }
+.tec-pts .n {
+  flex-shrink: 0; width: 23px; height: 23px; border-radius: var(--rad);
+  background: rgb(var(--accent-hi) / .14); border: 1px solid rgb(var(--accent-hi) / .3);
+  color: rgb(var(--accent-hi)); font-family: var(--mono); font-size: 11px; font-weight: 700;
+  display: grid; place-items: center; margin-top: 2px;
+}
+.tec-fig { background: rgb(var(--paper) / .03); border: 1px solid rgb(var(--paper) / .1); border-radius: var(--rad-lg); padding: 17px; }
+.tec-fig svg { width: 100%; height: auto; display: block; }
+.tec-cap { margin-top: 11px; display: flex; justify-content: space-between; gap: 12px; font-size: 9.5px; letter-spacing: .15em; text-transform: uppercase; color: rgb(var(--paper) / .42); }
+.tec text { fill: currentColor; }
+
+/* ---------- Cinta ---------- */
+.cinta { overflow: hidden; padding-block: 12px; background: rgb(var(--ink)); color: rgb(var(--paper)); margin-top: 48px; }
+.cinta-run { display: flex; gap: 30px; width: max-content; animation: corre 38s linear infinite; }
+.cinta:hover .cinta-run { animation-play-state: paused; }
+.cinta span {
+  font-size: 11px; font-weight: 500; letter-spacing: .16em; text-transform: uppercase;
+  opacity: .8; white-space: nowrap; display: flex; align-items: center; gap: 30px;
+}
+.cinta span::after { content: ""; width: 3px; height: 3px; border-radius: 50%; background: rgb(var(--accent-hi)); flex-shrink: 0; }
+@keyframes corre { to { transform: translateX(-50%); } }
+
+/* ---------- Consulta de zona ---------- */
+.zona-caja { margin-top: 26px; display: grid; gap: 12px; }
+.zona-in { background: rgb(var(--paper)); border: 1px solid rgb(var(--hair) / .1); border-radius: var(--rad-lg); padding: 20px; }
+.zona-in p { margin-top: 13px; font-size: 13px; color: rgb(var(--muted)); }
+.zona-in select {
+  font-family: var(--mono); font-size: 15px; padding: 14px 16px; border-radius: var(--rad);
+  border: 1px solid rgb(var(--hair) / .18); background: rgb(var(--paper-2)); color: rgb(var(--ink)); width: 100%;
+  appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, currentColor 50%), linear-gradient(135deg, currentColor 50%, transparent 50%);
+  background-position: calc(100% - 20px) calc(1em + 4px), calc(100% - 15px) calc(1em + 4px);
+  background-size: 5px 5px, 5px 5px; background-repeat: no-repeat;
+}
+.zona-out { border-radius: var(--rad-lg); padding: 22px; background: rgb(var(--ink)); color: rgb(var(--paper)); }
+.zona-out .rotulo { display: block; color: rgb(var(--accent-hi)); }
+.zona-out b { display: block; font-size: clamp(25px, 6.2vw, 34px); font-weight: 700; letter-spacing: -.05em; margin-top: 10px; line-height: 1.05; color: rgb(var(--accent-hi)); }
+.zona-out span { display: block; margin-top: 10px; font-size: 14px; color: rgb(var(--paper) / .72); }
+
+/* ---------- Banda a sangre ---------- */
+.banda { padding: 0; position: relative; overflow: hidden; }
+.banda-marco { position: relative; aspect-ratio: 3/2; overflow: hidden; }
+.banda-img { position: absolute; inset: -12% 0; background-position: 55% 45%; transform: translate3d(0, var(--py, 0px), 0); will-change: transform; }
+.banda-txt {
+  position: absolute; inset-inline: 0; bottom: 0; z-index: 2; padding-block: 26px; color: #fff;
+  background: linear-gradient(to top, rgb(var(--ink) / .92), rgb(var(--ink) / .4) 55%, transparent);
+}
+.banda-txt b { font-family: var(--display); display: block; font-size: clamp(28px, 8.4vw, 46px); font-weight: 800; font-stretch: 110%; letter-spacing: -0.035em; line-height: 1; }
+.banda-txt span { font-family: var(--mono); font-size: 11px; letter-spacing: .13em; text-transform: uppercase; opacity: .8; display: block; margin-top: 9px; }
+
+/* ---------- Mientras llegamos ---------- */
+.pasos { margin-top: 32px; display: grid; grid-template-columns: 1fr; }
+.paso { display: flex; gap: 16px; padding-bottom: 26px; position: relative; }
+.paso:last-child { padding-bottom: 0; }
+.paso::before { content: ""; position: absolute; left: 17px; top: 40px; bottom: 4px; width: 1px; background: linear-gradient(to bottom, rgb(var(--accent) / .45), rgb(var(--accent) / .04)); }
+.paso:last-child::before { display: none; }
+.pn {
+  flex-shrink: 0; width: 35px; height: 35px; border-radius: var(--rad);
+  background: rgb(var(--paper)); border: 1px solid rgb(var(--accent) / .45); color: rgb(var(--accent));
+  font-family: var(--mono); font-size: 13px; font-weight: 700; display: grid; place-items: center;
+}
+.paso .rotulo { display: block; margin-bottom: 5px; }
+.paso p { margin-top: 6px; font-size: 14.5px; color: rgb(var(--muted)); max-width: 46ch; }
+
+/* ---------- Reseñas ---------- */
+.ops { margin-top: 28px; display: flex; gap: 12px; overflow-x: auto; margin-inline: -22px; padding: 4px 22px 8px; scroll-snap-type: x mandatory; scrollbar-width: none; }
+.ops::-webkit-scrollbar { display: none; }
+.op { flex: 0 0 84%; scroll-snap-align: start; background: rgb(var(--paper)); border: 1px solid rgb(var(--hair) / .1); border-radius: var(--rad-lg); padding: 22px; }
+.op .estrellas { color: rgb(var(--accent)); font-size: 12px; letter-spacing: 3px; }
+.op blockquote { margin-top: 13px; font-size: 16px; line-height: 1.55; text-wrap: pretty; }
+.op figcaption { margin-top: 16px; padding-top: 14px; border-top: 1px solid rgb(var(--hair) / .09); display: flex; align-items: center; gap: 11px; font-family: var(--mono); font-size: 10.5px; letter-spacing: .09em; text-transform: uppercase; color: rgb(var(--muted)); }
+.op .av { width: 32px; height: 32px; border-radius: var(--rad); background: rgb(var(--accent) / .11); border: 1px solid rgb(var(--accent) / .22); color: rgb(var(--accent)); display: grid; place-items: center; font-family: var(--mono); font-size: 11px; font-weight: 700; flex-shrink: 0; letter-spacing: 0; }
+
+/* ---------- Preguntas ---------- */
+.faq { margin-top: 24px; max-width: 46rem; display: grid; gap: 8px; }
+.faq details { background: rgb(var(--paper)); border: 1px solid rgb(var(--hair) / .1); border-radius: var(--rad); overflow: hidden; transition: border-color .2s; }
+.faq details[open] { border-color: rgb(var(--accent) / .3); }
+.faq summary { cursor: pointer; list-style: none; padding: 16px 19px; font-family: var(--display); font-weight: 700; font-stretch: 104%; font-size: 16px; letter-spacing: -.018em; display: flex; justify-content: space-between; align-items: center; gap: 14px; }
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary::after {
+  content: "+"; flex-shrink: 0; width: 24px; height: 24px; border-radius: var(--rad);
+  border: 1px solid rgb(var(--accent) / .28); background: rgb(var(--accent) / .08); color: rgb(var(--accent));
+  font-family: var(--mono); display: grid; place-items: center; font-size: 15px; transition: transform .25s;
+}
+.faq details[open] summary::after { transform: rotate(135deg); }
+.faq details p { padding: 0 19px 18px; font-size: 14.5px; line-height: 1.65; color: rgb(var(--muted)); text-wrap: pretty; }
+
+/* ---------- Cierre ---------- */
+.cierre { background: rgb(var(--ink)); color: rgb(var(--paper)); text-align: center; position: relative; overflow: hidden; }
+.cierre::before { content: ""; position: absolute; left: 50%; bottom: -42%; width: 620px; height: 620px; transform: translateX(-50%); border-radius: 50%; background: radial-gradient(circle, rgb(var(--accent-hi) / .2), transparent 62%); pointer-events: none; }
+.cierre .wrap { position: relative; }
+.cierre .rotulo { color: rgb(var(--paper) / .55); }
+.cierre a.num { display: block; margin-top: 14px; font-size: clamp(34px, 11vw, 82px); font-weight: 700; letter-spacing: -.055em; line-height: 1; color: rgb(var(--accent-hi)); }
+.cierre p { margin-top: 16px; font-size: 14px; color: rgb(var(--paper) / .62); }
+
+/* ---------- Pie y barra ---------- */
+.pie { padding-block: 26px 36px; display: grid; gap: 8px; font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; color: rgb(var(--muted)); }
+.pie a { color: rgb(var(--accent)); }
+.barra {
+  position: fixed; inset-inline: 0; bottom: 0; z-index: 50; display: flex; gap: 9px;
+  padding: 11px 18px; padding-bottom: calc(11px + env(safe-area-inset-bottom));
+  background: rgb(var(--paper) / .95); backdrop-filter: blur(14px) saturate(1.4);
+  border-top: 1px solid rgb(var(--hair) / .13);
+}
+.barra .btn { flex: 1; }
+
+.rev { opacity: 0; transform: translateY(13px); transition: opacity .6s cubic-bezier(.2,.7,.3,1), transform .6s cubic-bezier(.2,.7,.3,1); }
+.rev.in { opacity: 1; transform: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .rev { opacity: 1; transform: none; transition: none; }
+  .cinta-run, .ruta u, .ruta s, .top .estado::before, .vivo .est::before,
+  .hero-c1 .hero-foto, .hero-c2 .hero-foto, .hero-luz, .hero-grano, .hero-img-foto { animation: none; }
+  .hero-capa, .banda-img, .hero-img-foto { transform: none; }
+  .hero-c1 .hero-foto { transform: scale(1.24); }
+  .ruta s { left: 50%; opacity: 1; } .ruta u { width: 50%; opacity: 1; }
+  html { scroll-behavior: auto; }
+}
+
+@media (min-width: 780px) {
+  body { padding-bottom: 0; }
+  .barra { display: none; }
+  .top .tel-min { display: inline-flex; }
+  section { padding-block: 92px; }
+  .hero { padding-top: 46px; }
+  .hero-in { padding-block: 64px 100px; }
+
+  /* DESKTOP · variante clara: la foto pasa al costado sobre papel */
+  .hero.claro { background: rgb(var(--paper-2)); color: rgb(var(--ink)); }
+  .hero.claro .hero-esc, .hero.claro .hero-velo, .hero.claro .hero-luz { display: none; }
+  .hero.claro .hero-grano { opacity: .05; }
+  .hero.claro .hero-in { display: grid; grid-template-columns: 1.05fr .95fr; gap: 52px; align-items: center; }
+  /* En la variante clara el titular vive en media pantalla: al tamaño
+     de la oscura entraban siete caracteres por línea. */
+  .hero.claro h1 { font-size: clamp(38px, 5vw, 61px); }
+  .hero.claro p.lead { color: rgb(var(--muted)); }
+  .hero.claro .rotulo { color: rgb(var(--accent)); }
+  .hero.claro .btn-2 { background: rgb(var(--paper)); color: rgb(var(--ink)); border-color: rgb(var(--hair) / .16); backdrop-filter: none; }
+  .hero.claro .vivo { background: rgb(var(--paper)); border-color: rgb(var(--hair) / .11); backdrop-filter: none; }
+  .hero.claro .vivo-c b { color: rgb(var(--ink)); }
+  .hero.claro .vivo-c:last-child b { color: rgb(var(--accent)); }
+  .hero.claro .vivo-c small { color: rgb(var(--muted)); }
+  .hero.claro .vivo .est { color: rgb(var(--accent)); }
+  .hero.claro .vivo .est::before { background: rgb(var(--accent)); }
+  .hero.claro .vivo-h { border-top-color: rgb(var(--hair) / .11); }
+  .hero.claro .ruta i { border-top-color: rgb(var(--hair) / .26); }
+  .hero.claro .ruta s, .hero.claro .ruta u { color: rgb(var(--accent)); }
+  .hero.claro .ruta u { background: linear-gradient(to right, rgb(var(--accent) / 0), rgb(var(--accent))); }
+
+  .hero.claro .hero-img {
+    display: block; position: relative; aspect-ratio: 16/11; overflow: hidden;
+    border-radius: var(--rad-lg); border: 1px solid rgb(var(--hair) / .1);
+    box-shadow: 0 2px 4px rgb(var(--ink) / .05), 0 24px 60px rgb(var(--ink) / .13);
+  }
+  .hero-img-foto {
+    position: absolute; inset: -8%; background-position: 62% 50%;
+    transform-origin: 62% 50%;
+    animation: deriva-b 30s ease-in-out infinite alternate;
+  }
+  .hero-img::after {
+    content: "Manómetro de carga"; position: absolute; left: 14px; bottom: 13px; z-index: 2;
+    font-family: var(--mono); font-size: 9.5px; font-weight: 500; letter-spacing: .14em; text-transform: uppercase;
+    color: #fff; background: rgb(0 0 0 / .48); backdrop-filter: blur(6px);
+    padding: 7px 11px; border-radius: var(--rad);
+  }
+
+  /* DESKTOP · variante oscura: la escena ocupa toda la portada */
+  .hero.oscuro .hero-in { max-width: 44rem; }
+  .hero.oscuro .hero-esc {
+    inset: 0; height: auto;
+    -webkit-mask-image: none; mask-image: none;
+  }
+  .hero.oscuro .hero-velo {
+    background:
+      linear-gradient(to right, rgb(var(--ink) / .93) 0%, rgb(var(--ink) / .7) 48%, rgb(var(--ink) / .22) 100%),
+      linear-gradient(to bottom, rgb(var(--ink) / .45) 0%, transparent 38%, rgb(var(--ink) / .38) 100%);
+  }
+
+  .hero-cta { flex-direction: row; align-items: center; }
+  .banda-marco { aspect-ratio: 21/8; }
+  .banda-txt { padding-block: 40px; }
+  .servs { grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .serv:first-child { grid-column: span 3; display: grid; grid-template-columns: auto 1fr; gap: 24px; align-items: center; padding: 28px; }
+  .serv:first-child .ico { margin-bottom: 0; width: 54px; height: 54px; }
+  .nums { margin-top: -38px; }
+  .num-c { padding: 26px 14px; }
+  .num-c b { font-size: 46px; }
+  .zona-caja { grid-template-columns: 1fr 1fr; gap: 14px; }
+  .tec-in { grid-template-columns: 1fr 1.08fr; gap: 54px; }
+  .precio { padding: 18px 24px; font-size: 16px; }
+
+  .pasos { grid-template-columns: repeat(3, 1fr); gap: 26px; }
+  .paso { flex-direction: column; padding-bottom: 0; }
+  .paso::before { left: 40px; right: -26px; top: 17px; bottom: auto; width: auto; height: 1px; background: linear-gradient(to right, rgb(var(--accent) / .45), rgb(var(--accent) / .04)); }
+  .ops { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-inline: 0; padding: 0; overflow: visible; }
+  .op { flex: none; }
+
+  .pie { grid-template-columns: repeat(3, 1fr); }
+}
+</style>
+</head>
+<body>
+
+<header class="top" id="top">
+  <div class="wrap top-in">
+    <b>Clima Sur Service</b>
+    <span class="estado" id="est-top">Agenda abierta hoy</span>
+    <a class="btn btn-sm tel-min" href="tel:+541155550713">11 5555-0713</a>
+  </div>
+</header>
+
+<section class="hero claro">
+  <div class="hero-esc" aria-hidden="true">
+    <div class="hero-capa hero-c1" data-par="34"><div class="hero-foto ph ph-a"></div></div>
+    <div class="hero-capa hero-c2" data-par="88"><div class="hero-foto ph ph-a"></div></div>
+  </div>
+  <div class="hero-velo" aria-hidden="true"></div>
+  <div class="hero-luz" aria-hidden="true"></div>
+  <div class="hero-grano" aria-hidden="true"></div>
+  <div class="wrap hero-in">
+    <div>
+      <span class="rotulo">Service y urgencias · Lanús y zona sur</span>
+      <h1 style="margin-top:10px">¿Se quedó sin frío? Lo vemos hoy</h1>
+      <p class="lead">Diagnóstico con instrumental, presupuesto cerrado antes de tocar el equipo.</p>
+      <div class="hero-cta">
+        <a class="btn" href="tel:+541155550713">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.1 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></svg>
+          <span class="tel-num">11 5555-0713</span>
+        </a>
+        <a class="btn btn-2" href="#">Escribir por WhatsApp</a>
+      </div>
+      <div class="vivo">
+        <span class="est" id="est-vivo">Agenda abierta hoy</span>
+        <div class="vivo-h">
+          <div class="vivo-c"><small>Son las</small><b id="v-ahora">--:--</b></div>
+          <div class="ruta" aria-hidden="true">
+            <i></i><u></u>
+            <s><svg width="38" height="22" viewBox="0 0 60 34" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 24V9.5C3 8.1 4.1 7 5.5 7h26C32.9 7 34 8.1 34 9.5V24"/><path d="M34 12.5h7.8c.7 0 1.4.3 1.9.8l6.6 6.4c.5.5.7 1.1.7 1.8V24H34z"/><path d="M3 24h48.8"/><circle cx="13" cy="25.5" r="4.6"/><circle cx="43" cy="25.5" r="4.6"/></svg></s>
+          </div>
+          <div class="vivo-c"><small>Llegamos</small><b id="v-lleg">--:--</b></div>
+        </div>
+      </div>
+    </div>
+    <div class="hero-img" role="img" aria-label="Manómetro de carga de refrigerante"><div class="hero-img-foto ph ph-a"></div></div>
+  </div>
+</section>
+
+<div class="nums">
+  <div class="wrap nums-g">
+    <div class="num-c"><b data-n="90">0</b><small>min promedio</small></div>
+    <div class="num-c"><b data-n="3200">0</b><small>equipos</small></div>
+    <div class="num-c"><b data-n="12">0</b><small>meses de garantía</small></div></div>
+</div>
+
+<div class="cinta" aria-hidden="true">
+  <div class="cinta-run"><span>No enfría</span><span>Carga de gas</span><span>Instalación de splits</span><span>Limpieza profunda</span><span>Mantenimiento</span><span>Detección de fugas</span><span>Comercios</span><span>No enfría</span><span>Carga de gas</span><span>Instalación de splits</span><span>Limpieza profunda</span><span>Mantenimiento</span><span>Detección de fugas</span><span>Comercios</span></div>
+</div>
+
+<section class="wrap">
+  <div class="sh"><div class="sh-top"><i>01</i><span class="rotulo">Qué resolvemos</span><span class="lin"></span></div><h2>Qué hacemos</h2></div>
+  <div class="servs">
+      <article class="serv rev">
+        <div class="ico"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v18M4.2 7.5l15.6 9M4.2 16.5l15.6-9"/></svg></div>
+        <div>
+          <h3>No enfría</h3>
+          <p>La falla más común, y casi nunca es lo que parece. Medimos presiones y consumo antes de cargar gas: si pierde, volver a cargarlo es tirar plata.</p>
+          <span class="mas">Diagnóstico con instrumental <span>&#8594;</span></span>
+        </div>
+      </article>
+      <article class="serv rev">
+        <div class="ico"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="8" rx="2"/><path d="M6 16.5h12M8 20h8"/></svg></div>
+        <div>
+          <h3>Instalación de splits</h3>
+          <p>Vacío de línea, torque en las uniones y prueba de estanqueidad. Una instalación mal hecha se paga en consumo todos los meses.</p>
+          <span class="mas">Con garantía escrita <span>&#8594;</span></span>
+        </div>
+      </article>
+      <article class="serv rev">
+        <div class="ico"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M4 12h9M4 17h13"/><circle cx="18.5" cy="13.5" r="3"/></svg></div>
+        <div>
+          <h3>Mantenimiento</h3>
+          <p>Limpieza profunda de filtros, turbina y bandeja. Un equipo sucio consume hasta 30% más y termina forzando el compresor.</p>
+          <span class="mas">Antes del verano <span>&#8594;</span></span>
+        </div>
+      </article></div>
+  <div class="conf"><span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Técnicos matriculados</span><span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>12 meses de garantía</span><span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Presupuesto antes de empezar</span></div>
+</section>
+
+<section class="wrap">
+  <div class="sh"><div class="sh-top"><i>02</i><span class="rotulo">Cobertura</span><span class="lin"></span></div><h2>¿Llegamos a tu zona?</h2></div>
+  <div class="zona-caja">
+    <div class="zona-in">
+      <label class="rotulo" for="z-sel" style="display:block;margin-bottom:9px">Elegí tu localidad</label>
+      <select id="z-sel"><option value="">Seleccioná…</option><option value="75">Lanús</option><option value="80">Avellaneda</option><option value="90">Banfield</option><option value="95">Lomas de Zamora</option><option value="80">Remedios de Escalada</option><option value="75">Gerli</option><option value="110">Adrogué</option></select>
+      <p>¿No está tu barrio? Llamanos igual: si estamos cerca, vamos.</p>
+    </div>
+    <div class="zona-out">
+      <span class="rotulo">Tiempo estimado</span>
+      <b id="z-eta">—</b>
+      <span id="z-txt">Elegí tu localidad para ver el tiempo de llegada.</span>
+    </div>
+  </div>
+</section>
+
+
+
+<section class="banda" aria-hidden="true">
+  <div class="banda-marco"><div class="banda-img ph ph-a" data-par="66"></div></div>
+  <div class="wrap banda-txt">
+    <b>3.200 equipos</b>
+    <span>atendidos con instrumental, no a ojo</span>
+  </div>
+</section>
+
+<section class="tec">
+  <div class="wrap tec-in">
+    <div>
+      <div class="sh"><div class="sh-top"><i>03</i><span class="rotulo">El oficio, por dentro</span><span class="lin"></span></div><h2>Medimos el ciclo, no adivinamos</h2></div>
+      <p class="lead">Un split no pierde frío: tiene un circuito cerrado donde el gas cambia de estado cuatro veces. Cuando algo falla, el número aparece en alguna de esas etapas.</p>
+      <ul class="tec-pts">
+        <li><span class="n">1</span><span><b>Presión de baja anormal:</b> falta carga o hay una restricción. Son dos fallas con costos muy distintos.</span></li>
+        <li><span class="n">2</span><span><b>Alta presión elevada:</b> condensador sucio o ventilador flojo. Se resuelve con limpieza, no con gas.</span></li>
+        <li><span class="n">3</span><span><b>Consumo fuera de rango:</b> el compresor está sufriendo. Detectarlo a tiempo evita cambiar el equipo.</span></li></ul>
+    </div>
+    <figure class="tec-fig">
+      <svg viewBox="0 0 560 360" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Esquema técnico"><defs>
+            <marker id="fl" viewBox="0 0 8 8" refX="4" refY="4" markerWidth="7" markerHeight="7" orient="auto">
+              <path d="M0 0 L8 4 L0 8 z" fill="rgb(var(--brand))"/>
+            </marker>
+          </defs>
+
+          <rect x="70" y="60" width="150" height="70" rx="6" stroke="rgb(var(--paper) / 0.85)" stroke-width="2.5"/>
+          <path d="M86 74h118M86 88h118M86 102h118M86 116h118" stroke="rgb(var(--paper) / 0.4)" stroke-width="1.6"/>
+          <text x="80" y="50" font-family="inherit" font-size="14" letter-spacing="1.5" fill="rgb(var(--paper) / 0.6)">CONDENSADOR · UNIDAD EXT.</text>
+
+          <rect x="340" y="230" width="150" height="70" rx="6" stroke="rgb(var(--paper) / 0.85)" stroke-width="2.5"/>
+          <path d="M356 244h118M356 258h118M356 272h118M356 286h118" stroke="rgb(var(--paper) / 0.4)" stroke-width="1.6"/>
+          <text x="340" y="322" font-family="inherit" font-size="14" letter-spacing="1.5" fill="rgb(var(--paper) / 0.6)">EVAPORADOR · UNIDAD INT.</text>
+
+          <circle cx="410" cy="95" r="30" stroke="rgb(var(--paper) / 0.85)" stroke-width="2.5"/>
+          <path d="M398 95a12 12 0 0 1 24 0" stroke="rgb(var(--paper) / 0.6)" stroke-width="2"/>
+          <path d="M410 83v24" stroke="rgb(var(--paper) / 0.6)" stroke-width="2"/>
+          <text x="452" y="99" font-family="inherit" font-size="14" letter-spacing="1.5" fill="rgb(var(--paper) / 0.6)">COMPRESOR</text>
+
+          <path d="M130 265l18-14v28z" stroke="rgb(var(--paper) / 0.85)" stroke-width="2.2" fill="none"/>
+          <path d="M148 265l18-14v28z" stroke="rgb(var(--paper) / 0.85)" stroke-width="2.2" fill="none"/>
+          <text x="76" y="302" font-family="inherit" font-size="14" letter-spacing="1.5" fill="rgb(var(--paper) / 0.6)">VÁLVULA DE EXPANSIÓN</text>
+
+          <path d="M380 95h-160" stroke="rgb(var(--brand))" stroke-width="2.5" marker-end="url(#fl)"/>
+          <path d="M70 95H40v170h84" stroke="rgb(var(--brand))" stroke-width="2.5" marker-end="url(#fl)" fill="none"/>
+          <path d="M166 265h168" stroke="rgb(var(--brand))" stroke-width="2.5" marker-end="url(#fl)"/>
+          <path d="M490 265h30V125" stroke="rgb(var(--brand))" stroke-width="2.5" marker-end="url(#fl)" fill="none"/>
+
+          <line x1="40" y1="180" x2="124" y2="180" stroke="rgb(var(--brand))" stroke-width="1.6" stroke-dasharray="9 6"/>
+          <text x="46" y="172" font-family="inherit" font-size="13" letter-spacing="1" fill="rgb(var(--brand))">A · LÍQUIDO ALTA</text>
+          <text x="352" y="200" font-family="inherit" font-size="13" letter-spacing="1" fill="rgb(var(--brand))">B · GAS BAJA</text>
+
+          <text x="228" y="88" font-family="inherit" font-size="13" letter-spacing="1" fill="rgb(var(--paper) / 0.4)">GAS CALIENTE</text>
+          <text x="196" y="258" font-family="inherit" font-size="13" letter-spacing="1" fill="rgb(var(--paper) / 0.4)">EXPANSIÓN · CAÍDA DE PRESIÓN</text></svg>
+      <figcaption class="tec-cap"><span>Fig. 01 — Ciclo de refrigeración</span><span>A · B: puntos de medición</span></figcaption>
+    </figure>
+  </div>
+</section>
+
+<section class="wrap">
+  <div class="sh"><div class="sh-top"><i>04</i><span class="rotulo">Sin sorpresas</span><span class="lin"></span></div><h2>Precios orientativos</h2></div>
+  <div class="precios">
+      <div class="precio"><span>Visita y diagnóstico</span><b>desde $28.000</b></div>
+      <div class="precio"><span>Carga de gas R410 / R32</span><b>desde $65.000</b></div>
+      <div class="precio"><span>Limpieza profunda de split</span><b>desde $42.000</b></div>
+      <div class="precio"><span>Instalación de equipo nuevo</span><b>consultar</b></div><p class="precios-nota">Valores de referencia. El precio final se confirma antes de empezar el trabajo, siempre.</p></div>
+</section>
+
+<section class="wrap">
+  <div class="sh"><div class="sh-top"><i>05</i><span class="rotulo">Cómo funciona</span><span class="lin"></span></div><h2>Un service, tres pasos</h2></div>
+  <div class="pasos">
+      <div class="paso rev">
+        <span class="pn">1</span>
+        <div>
+          <span class="rotulo">Al llamar</span>
+          <h3>Nos contás</h3>
+          <p>Qué marca es, qué hace y hace cuánto. Con eso ya sabemos qué llevar y qué puede costar.</p>
+        </div>
+      </div>
+      <div class="paso rev">
+        <span class="pn">2</span>
+        <div>
+          <span class="rotulo">En el turno</span>
+          <h3>Medimos</h3>
+          <p>Presiones, temperaturas y consumo con instrumental. Te decimos qué falla y por qué, con el número en la mano.</p>
+        </div>
+      </div>
+      <div class="paso rev">
+        <span class="pn">3</span>
+        <div>
+          <span class="rotulo">Y enfría</span>
+          <h3>Resuelto</h3>
+          <p>Presupuesto cerrado antes de empezar. Dejamos todo limpio, con factura y 12 meses de garantía escrita.</p>
+        </div>
+      </div></div>
+</section>
+
+<section class="wrap">
+  <div class="sh"><div class="sh-top"><i>06</i><span class="rotulo">Clientes</span><span class="lin"></span></div><h2>Lo que dicen los vecinos</h2></div>
+  <div class="ops">
+    <figure class="op rev">
+      <div class="estrellas" aria-label="5 estrellas">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+      <blockquote>“Otro técnico me quiso cobrar una carga de gas. Estos midieron, encontraron la pérdida y la repararon.”</blockquote>
+      <figcaption><span class="av">SR</span><span>Sandra R. · Hace 3 semanas</span></figcaption>
+    </figure>
+    <figure class="op rev">
+      <div class="estrellas" aria-label="5 estrellas">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+      <blockquote>“Me instalaron el split con vacío de línea, cosa que el anterior nunca hizo. Se nota en la factura de luz.”</blockquote>
+      <figcaption><span class="av">HV</span><span>Hernán V. · Hace 1 mes</span></figcaption>
+    </figure>
+    <figure class="op rev">
+      <div class="estrellas" aria-label="5 estrellas">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+      <blockquote>“Vinieron el mismo día en pleno enero. Presupuesto por escrito antes de empezar y lo respetaron.”</blockquote>
+      <figcaption><span class="av">PM</span><span>Paula M. · Hace 2 meses</span></figcaption>
+    </figure></div>
+</section>
+
+<section class="wrap">
+  <div class="sh"><div class="sh-top"><i>07</i><span class="rotulo">Antes de llamar</span><span class="lin"></span></div><h2>Preguntas frecuentes</h2></div>
+  <div class="faq">
+      <details>
+        <summary>¿No alcanza con cargarle gas?</summary>
+        <p>Un equipo sellado no consume gas: si le falta, es porque pierde. Cargarlo sin reparar la fuga es tirar plata — en unos meses estás igual.</p>
+      </details>
+      <details>
+        <summary>¿Vienen en plena ola de calor?</summary>
+        <p>Sí, aunque en diciembre y enero la demanda se multiplica. Priorizamos casos con personas mayores, bebés o comercios, y te damos un turno real.</p>
+      </details>
+      <details>
+        <summary>¿Cada cuánto hay que limpiarlo?</summary>
+        <p>Una vez al año en casas, dos en comercios o zonas con mucho polvo. Un equipo sucio consume hasta 30% más y termina forzando el compresor.</p>
+      </details>
+      <details>
+        <summary>¿Atienden comercios y consorcios?</summary>
+        <p>Sí, con factura A y planes de mantenimiento preventivo por cantidad de equipos, con visitas programadas antes de cada temporada.</p>
+      </details></div>
+</section>
+
+<section class="cierre">
+  <div class="wrap">
+    <span class="rotulo">Pedí tu turno — la consulta no se cobra</span>
+    <a class="num" href="tel:+541155550713">11 5555-0713</a>
+    <p>Pedí tu turno: coordinamos en el día que te sirva.</p>
+  </div>
+</section>
+
+<footer class="wrap pie">
+  <span>Clima Sur Service</span>
+  <span>Técnicos matriculados · 12 meses de garantía</span>
+  <span><a href="#">WhatsApp</a> · 11 5555-0713</span>
+</footer>
+
+<nav class="barra" aria-label="Contacto">
+  <a class="btn" href="tel:+541155550713">Llamar ahora</a>
+  <a class="btn btn-2" href="#">WhatsApp</a>
+</nav>
+
+<script>
+var red = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+var top_ = document.getElementById('top');
+addEventListener('scroll', function () { top_.classList.toggle('stuck', scrollY > 12); }, { passive: true });
+
+var obs = new IntersectionObserver(function (es) {
+  es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); obs.unobserve(e.target); } });
+}, { threshold: 0.14 });
+document.querySelectorAll('.rev').forEach(function (el) { obs.observe(el); });
+
+/* ------------------------------------------------------------
+   Parallax
+   Un solo rAF para todas las capas. Cada una declara su amplitud
+   en px con data-par; el desplazamiento sale de dónde está el
+   elemento respecto de la ventana, así sirve igual para la
+   portada (arriba de todo) y para la banda del medio.
+   ------------------------------------------------------------ */
+(function () {
+  if (red) return;
+  var capas = [].slice.call(document.querySelectorAll('[data-par]'));
+  if (!capas.length) return;
+  var pedido = false;
+
+  function pinta() {
+    pedido = false;
+    var vh = innerHeight;
+    for (var i = 0; i < capas.length; i++) {
+      var el = capas[i], r = el.parentElement.getBoundingClientRect();
+      if (r.bottom < -200 || r.top > vh + 200) continue;
+      var avance = (vh - r.top) / (vh + r.height);   /* 0 al entrar, 1 al salir */
+      el.style.setProperty('--py', ((avance - 0.5) * +el.dataset.par).toFixed(1) + 'px');
+    }
+  }
+  function pedir() { if (!pedido) { pedido = true; requestAnimationFrame(pinta); } }
+
+  addEventListener('scroll', pedir, { passive: true });
+  addEventListener('resize', pedir, { passive: true });
+  pinta();
+})();
+
+/* Contadores */
+function sube(el) {
+  var t = parseInt(el.dataset.n, 10), s0 = null, d = 1100;
+  if (red) { el.textContent = t.toLocaleString('es-AR'); return; }
+  function paso(ts) {
+    if (!s0) s0 = ts;
+    var p = Math.min((ts - s0) / d, 1), e = 1 - Math.pow(1 - p, 3);
+    el.textContent = Math.round(t * e).toLocaleString('es-AR');
+    if (p < 1) requestAnimationFrame(paso);
+  }
+  requestAnimationFrame(paso);
+}
+var oN = new IntersectionObserver(function (es) {
+  es.forEach(function (e) { if (e.isIntersecting) { sube(e.target); oN.unobserve(e.target); } });
+}, { threshold: .6 });
+document.querySelectorAll('[data-n]').forEach(function (el) { oN.observe(el); });
+
+/* Reloj vivo con la hora de Buenos Aires */
+var ETA = 90;
+function dd(n) { return String(n).padStart(2, '0'); }
+function estado(h) { if (h < 6) return 'Despiertos ahora'; if (h >= 22) return 'Atendiendo ahora'; return 'En la calle ahora'; }
+function tic() {
+  var a = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Argentina/Buenos_Aires' }));
+  var l = new Date(a.getTime() + ETA * 60000);
+  var ea = document.getElementById('v-ahora'), el = document.getElementById('v-lleg');
+  if (ea) ea.textContent = dd(a.getHours()) + ':' + dd(a.getMinutes());
+  if (el) el.textContent = dd(l.getHours()) + ':' + dd(l.getMinutes());
+  var t = estado(a.getHours());
+  ['est-top', 'est-vivo'].forEach(function (id) { var e = document.getElementById(id); if (e) e.textContent = t; });
+}
+tic(); setInterval(tic, 30000);
+
+/* Consulta de zona */
+(function () {
+  var s = document.getElementById('z-sel'); if (!s) return;
+  function upd() {
+    var m = +s.value;
+    if (!m) { document.getElementById('z-eta').textContent = '—'; document.getElementById('z-txt').textContent = 'Elegí tu localidad para ver el tiempo de llegada.'; return; }
+    document.getElementById('z-eta').textContent = m + ' minutos';
+    document.getElementById('z-txt').textContent = 'Sí, cubrimos ' + s.options[s.selectedIndex].text + '. Ese es el promedio de llegada, cualquier día y a cualquier hora.';
+  }
+  s.addEventListener('change', upd);
+})();
+</script>
+
+</body>
+</html>

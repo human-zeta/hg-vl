@@ -1,0 +1,1397 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="rgb(26,24,21)">
+<title>Cerrajería Riquelme · Cerrajería de urgencias</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,400..800&family=Space+Grotesk:wght@400;500;700&family=Azeret+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   KIT URGENCIA v4 — "SIRENA"
+   La segunda piel del mismo arquetipo. El v3 "instrumento" es un
+   parte médico de día: papel, hairline, radio cuadrado, calma.
+   Este es la otra mitad del oficio — las tres de la mañana, la
+   baliza girando, la pantalla del celular como única luz.
+
+   Tres reglas lo ordenan:
+
+   1. UNA SOLA FUENTE DE LUZ. La página es noche (--noche, que es
+      el --ink del rubro). Todo lo que se ve está iluminado por el
+      acento: los bordes son luz rasante, no líneas; las superficies
+      se levantan mezclando blanco, no cambiando de color.
+   2. NADA ESTÁ QUIETO, NADA GRITA. Cada elemento tiene un motor
+      lento propio (baliza, sonar, deriva, marcha). Ninguno pasa de
+      opacity/transform, todos mueren con prefers-reduced-motion.
+   3. EL PUNTERO ES UNA LINTERNA. Las superficies saben dónde está
+      el dedo o el mouse (--mx/--my) y se encienden ahí.
+
+   Tipografía — deliberadamente distinta del v3:
+     · Bricolage Grotesque (eje opsz+wdth) para DECIR.
+     · Space Grotesk para el cuerpo.
+     · Azeret Mono para el DATO: horas, ETA, precios, matrículas.
+   ============================================================ */
+
+:root {
+  --ink: 26 24 21;
+  --paper: 247 245 241;
+  --paper-2: 239 236 231;
+  --muted: 124 118 108;
+  --hair: 26 24 21;
+  --accent: 138 98 30;
+  --on-accent: 255 250 240;
+  --accent-hi: 171 122 38;
+
+  /* superficies de la noche */
+  --noche: rgb(var(--ink));
+  --piso: color-mix(in oklab, rgb(var(--ink)) 93%, white);
+  --piso-2: color-mix(in oklab, rgb(var(--ink)) 88%, white);
+  --borde: rgb(var(--paper) / .13);
+  --txt: rgb(var(--paper));
+  --txt-2: rgb(var(--paper) / .66);
+  --luz: color-mix(in oklab, rgb(var(--accent-hi)) 76%, white);
+
+  --rad: 12px;
+  --rad-lg: 18px;
+  --display: 'Bricolage Grotesque', system-ui, sans-serif;
+  --texto: 'Space Grotesk', system-ui, sans-serif;
+  --mono: 'Azeret Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+/* Custom properties animables: sin @property el navegador no sabe
+   interpolar un ángulo o un porcentaje y el borde giratorio salta. */
+@property --giro { syntax: "<angle>"; initial-value: 0deg; inherits: false; }
+@property --barrido { syntax: "<percentage>"; initial-value: 0%; inherits: true; }
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--texto);
+  background: var(--noche); color: var(--txt);
+  font-size: 16px; line-height: 1.6;
+  -webkit-font-smoothing: antialiased; overflow-x: hidden;
+  padding-bottom: 78px;
+}
+::selection { background: rgb(var(--accent-hi)); color: rgb(var(--ink)); }
+:focus-visible { outline: 2px solid var(--luz); outline-offset: 3px; border-radius: 3px; }
+a { color: inherit; text-decoration: none; }
+img { max-width: 100%; display: block; }
+button, select { font: inherit; cursor: pointer; }
+
+.wrap { width: 100%; max-width: 1140px; margin-inline: auto; padding-inline: 22px; }
+section { padding-block: 76px; position: relative; }
+
+/* ---------- El aire de la noche ----------
+   Dos manchas de acento muy difusas que orbitan detrás de todo.
+   Es lo que impide que el fondo se lea como negro plano. */
+body::before {
+  content: ""; position: fixed; inset: -30vh -20vw; z-index: -2; pointer-events: none;
+  background:
+    radial-gradient(38vw 38vw at 18% 12%, rgb(var(--accent-hi) / .13), transparent 62%),
+    radial-gradient(46vw 46vw at 86% 68%, rgb(var(--accent) / .16), transparent 66%);
+  animation: orbita 34s ease-in-out infinite alternate;
+}
+@keyframes orbita {
+  from { transform: translate3d(-3%, -2%, 0) scale(1); }
+  to   { transform: translate3d(4%, 3%, 0) scale(1.12); }
+}
+/* Grano global: le saca el plástico a los degradados grandes. */
+body::after {
+  content: ""; position: fixed; inset: 0; z-index: 9999; pointer-events: none; opacity: .045;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ---------- Tipografía ---------- */
+h1 {
+  font-family: var(--display); font-weight: 800;
+  font-variation-settings: "wdth" 92, "opsz" 96;
+  font-size: clamp(42px, 9.6vw, 92px); line-height: .92; letter-spacing: -0.045em;
+  text-wrap: balance;
+}
+h2 {
+  font-family: var(--display); font-weight: 700;
+  font-variation-settings: "wdth" 96, "opsz" 48;
+  font-size: clamp(30px, 6vw, 50px); line-height: 1.02; letter-spacing: -0.038em;
+  text-wrap: balance; margin-top: 14px;
+}
+h3 { font-family: var(--display); font-weight: 700; font-variation-settings: "wdth" 100, "opsz" 20; font-size: 20px; letter-spacing: -0.02em; }
+.lead { font-size: clamp(16.5px, 2.2vw, 19.5px); line-height: 1.6; color: var(--txt-2); text-wrap: pretty; }
+
+/* El rótulo es una etiqueta de tablero: mono, chiquita, encendida. */
+.rotulo {
+  font-family: var(--mono); font-size: 10.5px; font-weight: 500;
+  letter-spacing: .2em; text-transform: uppercase; color: var(--luz);
+}
+/* Todo lo que es cifra tiene voz propia y ancho fijo. */
+.tel-num, .num-c b, .vivo-c b, .precio b, .zona-out b, .cierre a.num,
+.conf span, .precios-nota, .tec-cap, .pie, .cinta span {
+  font-family: var(--mono); font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1;
+}
+
+/* ---------- Superficie base ----------
+   Un panel de noche levantado: fondo mezclado con blanco, borde de
+   luz arriba (como si la luz viniera de arriba) y sombra abajo. */
+.panel {
+  background: var(--piso); border: 1px solid var(--borde);
+  border-radius: var(--rad-lg); position: relative; overflow: hidden;
+  box-shadow: inset 0 1px 0 rgb(var(--paper) / .07), 0 18px 40px rgb(0 0 0 / .32);
+}
+/* La linterna: cada panel se enciende donde está el puntero.
+   --mx/--my los escribe el JS; sin JS el gradiente queda centrado
+   y con opacidad 0, así que no se ve nada raro. */
+.panel::before {
+  content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 0;
+  background: radial-gradient(360px circle at var(--mx, 50%) var(--my, 50%), rgb(var(--accent-hi) / .17), transparent 62%);
+  opacity: 0; transition: opacity .35s;
+}
+.panel:hover::before { opacity: 1; }
+.panel > * { position: relative; z-index: 1; }
+
+/* ---------- Encabezado de sección ---------- */
+.sh { display: grid; gap: 10px; }
+.sh-top { display: flex; align-items: center; gap: 14px; }
+.sh-top i {
+  font-style: normal; font-family: var(--mono); font-weight: 700; font-size: 11px;
+  color: rgb(var(--ink)); background: var(--luz); border-radius: 999px;
+  padding: 5px 11px; line-height: 1; flex-shrink: 0;
+  box-shadow: 0 0 22px rgb(var(--accent-hi) / .5);
+}
+/* El filete se dibuja cuando la sección entra en cuadro. */
+.sh-top .lin {
+  flex: 1; height: 1px; transform: scaleX(0); transform-origin: left;
+  background: linear-gradient(to right, var(--luz), rgb(var(--paper) / .05));
+  transition: transform 1.1s cubic-bezier(.2,.7,.3,1) .1s;
+}
+.sh.in .lin, .in .sh-top .lin { transform: scaleX(1); }
+
+/* ---------- La foto del rubro ----------
+   Una sola imagen por rubro, en base64: el archivo tiene que
+   poder mandarse por WhatsApp y abrir sin nada más. */
+.ph { background-repeat: no-repeat; background-size: cover; background-color: rgb(var(--paper) / .05); }
+.ph-a { background-image: url("data:image/webp;base64,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"); }
+
+/* ============================================================
+   HEADER
+   ============================================================ */
+.top {
+  position: sticky; top: 0; z-index: 60;
+  background: rgb(var(--ink) / .72); backdrop-filter: blur(18px) saturate(1.5);
+  border-bottom: 1px solid transparent; transition: border-color .3s, background .3s;
+}
+.top.stuck { border-bottom-color: var(--borde); background: rgb(var(--ink) / .88); }
+/* Barra de avance de lectura: --scroll la escribe el JS. */
+.top::after {
+  content: ""; position: absolute; left: 0; bottom: -1px; height: 2px; width: 100%;
+  transform: scaleX(var(--scroll, 0)); transform-origin: left;
+  background: linear-gradient(to right, rgb(var(--accent)), var(--luz));
+  box-shadow: 0 0 14px rgb(var(--accent-hi) / .7);
+}
+.top-in { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding-block: 15px; }
+.top b { font-family: var(--display); font-size: 18px; font-weight: 800; font-variation-settings: "wdth" 96, "opsz" 20; letter-spacing: -0.03em; white-space: nowrap; }
+.top .estado {
+  display: inline-flex; align-items: center; gap: 9px;
+  font-family: var(--mono); font-size: 10px; font-weight: 500;
+  letter-spacing: .14em; text-transform: uppercase; color: var(--txt-2);
+  border: 1px solid var(--borde); padding: 7px 13px; border-radius: 999px;
+  background: rgb(var(--paper) / .04);
+}
+.top .tel-min { display: none; }
+
+/* El punto vivo: núcleo + dos anillos de sonar que se expanden. */
+.pulso, .top .estado::before, .vivo .est::before {
+  content: ""; width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
+  background: var(--luz); box-shadow: 0 0 10px var(--luz);
+  animation: nucleo 2.6s ease-in-out infinite; position: relative;
+}
+.top .estado::after, .vivo .est::after {
+  content: ""; position: absolute; width: 7px; height: 7px; border-radius: 50%;
+  border: 1px solid var(--luz); animation: sonar 2.6s cubic-bezier(.2,.6,.4,1) infinite;
+  pointer-events: none;
+}
+.top .estado, .vivo .est { position: relative; }
+.top .estado::after { left: 13px; }
+.vivo .est::after { left: 0; }
+@keyframes nucleo { 0%, 100% { opacity: 1; } 55% { opacity: .45; } }
+@keyframes sonar {
+  0%   { transform: scale(1); opacity: .85; }
+  80%  { transform: scale(4.2); opacity: 0; }
+  100% { transform: scale(4.2); opacity: 0; }
+}
+
+/* ============================================================
+   BOTONES
+   El primario tiene un borde que gira: un anillo cónico de acento
+   dando vueltas por el perímetro. Es la baliza, en miniatura.
+   ============================================================ */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 11px;
+  font-family: var(--display); font-weight: 700; font-variation-settings: "wdth" 100, "opsz" 16;
+  font-size: 16.5px; letter-spacing: -.015em; padding: 16px 26px; border-radius: 999px;
+  background: rgb(var(--accent-hi)); color: rgb(var(--ink)); border: 0;
+  position: relative; isolation: isolate;
+  box-shadow: 0 8px 26px rgb(var(--accent-hi) / .3);
+  transition: transform .2s cubic-bezier(.2,.7,.3,1), box-shadow .25s, filter .2s;
+  /* --imx/--imy: el imán, lo escribe el JS */
+  translate: var(--imx, 0px) var(--imy, 0px);
+}
+.btn::after {
+  content: ""; position: absolute; inset: -2px; border-radius: inherit; z-index: -1;
+  background: conic-gradient(from var(--giro), transparent 62%, var(--luz), transparent 98%);
+  opacity: 0; transition: opacity .3s; animation: gira 2.4s linear infinite;
+}
+@keyframes gira { to { --giro: 360deg; } }
+.btn:hover { transform: translateY(-2px); box-shadow: 0 14px 36px rgb(var(--accent-hi) / .42); filter: brightness(1.06); }
+.btn:hover::after { opacity: 1; }
+.btn:active { transform: translateY(0) scale(.985); }
+.btn-2 {
+  background: rgb(var(--paper) / .07); color: var(--txt);
+  box-shadow: inset 0 0 0 1px var(--borde); font-weight: 600;
+  backdrop-filter: blur(10px);
+}
+.btn-2:hover { background: rgb(var(--paper) / .13); box-shadow: inset 0 0 0 1px rgb(var(--paper) / .28); filter: none; }
+.btn-sm { padding: 10px 17px; font-size: 14px; }
+.tel-num { font-size: clamp(21px, 5.2vw, 29px); font-weight: 700; letter-spacing: -.04em; white-space: nowrap; }
+.btn-sm .tel-num, .tel-min { font-size: 14px; letter-spacing: -.02em; }
+
+/* ============================================================
+   PORTADA
+   La foto entra por persiana (ocho láminas que suben en cascada),
+   va virada al acento —duotono— para que los nueve rubros parezcan
+   la misma marca, y respira sola con parallax + deriva.
+   Encima gira la baliza: un cono de luz que barre la escena.
+   ============================================================ */
+.hero { position: relative; overflow: hidden; min-height: 78vh; padding: 0; display: flex; align-items: flex-end; }
+.hero-esc { position: absolute; inset: 0; z-index: 0; overflow: hidden; }
+.hero-capa { position: absolute; inset: -14% -8%; transform: translate3d(0, var(--py, 0px), 0); will-change: transform; }
+.hero-foto { position: absolute; inset: 0; background-position: 100% 50%; transform-origin: 100% 50%; }
+
+/* Capa de atrás: borrosa, oscura, gigante. Es la profundidad. */
+.hero-c1 .hero-foto {
+  filter: blur(26px) saturate(.7) brightness(.5);
+  animation: deriva-a 48s ease-in-out infinite alternate;
+}
+/* Capa de adelante: nítida, enmascarada en radial y virada al acento.
+   El duotono es una capa de mezcla, no un filtro: mantiene el detalle. */
+.hero-c2 {
+  -webkit-mask-image: radial-gradient(150% 130% at 100% 45%, #000 42%, rgb(0 0 0 / .5) 74%, transparent 96%);
+  mask-image: radial-gradient(150% 130% at 100% 45%, #000 42%, rgb(0 0 0 / .5) 74%, transparent 96%);
+}
+.hero-c2 .hero-foto { animation: deriva-b 34s ease-in-out infinite alternate; }
+.hero-c2::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: rgb(var(--accent) / .55); mix-blend-mode: color;
+}
+@keyframes deriva-a { from { transform: scale(1.22); } to { transform: scale(1.34) translate3d(-2%, -1.4%, 0); } }
+@keyframes deriva-b { from { transform: scale(1.04); } to { transform: scale(1.15) translate3d(2%, -1.6%, 0); } }
+
+/* La baliza: cono de luz girando desde el foco de la foto. */
+.hero-baliza {
+  position: absolute; inset: -60% -30%; z-index: 2; pointer-events: none;
+  background: conic-gradient(from 0deg at 100% 50%,
+    transparent 0deg, rgb(var(--accent-hi) / .16) 12deg, rgb(255 255 255 / .07) 20deg,
+    rgb(var(--accent-hi) / .1) 28deg, transparent 44deg, transparent 360deg);
+  mix-blend-mode: screen; opacity: .8;
+  animation: baliza 9s linear infinite;
+}
+@keyframes baliza { to { transform: rotate(360deg); } }
+
+.hero-velo {
+  position: absolute; inset: 0; z-index: 3; pointer-events: none;
+  background:
+    linear-gradient(to bottom, rgb(var(--ink) / .72) 0%, rgb(var(--ink) / .2) 34%, rgb(var(--ink) / .82) 78%, var(--noche) 100%);
+}
+/* Rejilla técnica finísima sobre la foto: la vuelve pantalla. */
+.hero-grano {
+  position: absolute; inset: 0; z-index: 4; pointer-events: none; opacity: .5;
+  background-image:
+    linear-gradient(rgb(var(--paper) / .028) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(var(--paper) / .028) 1px, transparent 1px);
+  background-size: 46px 46px;
+  -webkit-mask-image: radial-gradient(120% 90% at 50% 40%, #000 30%, transparent 78%);
+  mask-image: radial-gradient(120% 90% at 50% 40%, #000 30%, transparent 78%);
+}
+/* La linterna del puntero, sobre la portada entera. */
+.hero-luz {
+  position: absolute; inset: 0; z-index: 5; pointer-events: none;
+  background: radial-gradient(520px circle at var(--mx, 50%) var(--my, 40%), rgb(var(--accent-hi) / .2), transparent 60%);
+  mix-blend-mode: screen; opacity: 0; transition: opacity .5s;
+}
+.hero:hover .hero-luz { opacity: 1; }
+
+/* La persiana: ocho láminas que se van al techo en cascada. */
+.hero-slats { position: absolute; inset: 0; z-index: 6; pointer-events: none; display: flex; }
+.hero-slats i {
+  flex: 1; background: var(--noche); transform-origin: top;
+  animation: lamina 1.15s cubic-bezier(.66,0,.2,1) forwards;
+}
+.hero-slats i:nth-child(1) { animation-delay: .05s } .hero-slats i:nth-child(2) { animation-delay: .12s }
+.hero-slats i:nth-child(3) { animation-delay: .19s } .hero-slats i:nth-child(4) { animation-delay: .26s }
+.hero-slats i:nth-child(5) { animation-delay: .33s } .hero-slats i:nth-child(6) { animation-delay: .40s }
+.hero-slats i:nth-child(7) { animation-delay: .47s } .hero-slats i:nth-child(8) { animation-delay: .54s }
+@keyframes lamina { from { transform: scaleY(1); } to { transform: scaleY(0); } }
+
+.hero-in { position: relative; z-index: 7; padding-block: 40px 92px; width: 100%; }
+.hero p.lead { margin-top: 17px; max-width: 40ch; }
+.hero-cta { margin-top: 30px; display: flex; flex-direction: column; gap: 11px; }
+.hero-cta .btn { padding-block: 18px; flex-shrink: 0; white-space: nowrap; }
+
+/* Entrada del texto: cada palabra sube desde abajo de su propia
+   línea de recorte. Los <span data-p> los envuelve el JS. */
+.hero h1 { margin-top: 12px; }
+.pal { display: inline-block; overflow: hidden; vertical-align: bottom; }
+.pal > span { display: inline-block; transform: translateY(115%); animation: sube-pal .95s cubic-bezier(.16,1,.3,1) forwards; animation-delay: calc(.5s + var(--i) * .055s); }
+@keyframes sube-pal { to { transform: translateY(0); } }
+/* Sin JS el h1 se ve igual, solo que sin la animación. */
+
+.hero .rotulo, .hero .hero-cta, .hero .vivo { animation: entra .9s cubic-bezier(.16,1,.3,1) both; }
+.hero .rotulo { animation-delay: .45s; }
+.hero .hero-cta { animation-delay: .95s; }
+.hero .vivo { animation-delay: 1.1s; }
+@keyframes entra { from { opacity: 0; transform: translateY(16px); filter: blur(6px); } to { opacity: 1; transform: none; filter: none; } }
+
+/* ---------- El panel vivo: reloj, ruta y llegada ---------- */
+.vivo {
+  margin-top: 30px; max-width: 27rem;
+  border-radius: var(--rad-lg); padding: 17px 19px 18px;
+  background: rgb(var(--ink) / .58); backdrop-filter: blur(16px) saturate(1.4);
+  box-shadow: inset 0 0 0 1px rgb(var(--paper) / .12), 0 20px 44px rgb(0 0 0 / .4);
+  position: relative; overflow: hidden;
+}
+/* Barrido de radar dentro del panel. */
+.vivo::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(100deg, transparent 42%, rgb(var(--accent-hi) / .14) 50%, transparent 58%);
+  animation: radar 6.5s ease-in-out infinite;
+}
+@keyframes radar { 0%, 100% { transform: translateX(-60%); } 50% { transform: translateX(60%); } }
+.vivo .est {
+  display: inline-flex; align-items: center; gap: 10px;
+  font-family: var(--mono); font-size: 10px; font-weight: 500;
+  letter-spacing: .16em; text-transform: uppercase; color: var(--luz);
+}
+.vivo-h { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; margin-top: 15px; padding-top: 15px; border-top: 1px solid rgb(var(--paper) / .12); }
+.vivo-c small {
+  display: block; font-family: var(--mono); font-size: 9px; letter-spacing: .17em;
+  text-transform: uppercase; margin-bottom: 6px; font-weight: 500; color: rgb(var(--paper) / .45);
+}
+.vivo-c b { font-size: 29px; font-weight: 700; letter-spacing: -.05em; line-height: 1; display: block; color: var(--txt); }
+.vivo-c:last-child { text-align: right; }
+.vivo-c:last-child b { color: var(--luz); text-shadow: 0 0 24px rgb(var(--accent-hi) / .55); }
+
+/* ---------- La ruta: el móvil en viaje ---------- */
+.ruta { position: relative; flex: 1; height: 26px; min-width: 68px; align-self: center; }
+.ruta i {
+  position: absolute; left: 0; right: 0; top: 50%; height: 1px;
+  background: repeating-linear-gradient(to right, rgb(var(--paper) / .3) 0 4px, transparent 4px 9px);
+  animation: marcha 1.1s linear infinite;
+}
+@keyframes marcha { to { background-position-x: 9px; } }
+.ruta u {
+  position: absolute; left: 0; top: 50%; margin-top: -1.5px; height: 3px; width: 0;
+  background: linear-gradient(to right, rgb(var(--accent-hi) / 0), var(--luz));
+  border-radius: 3px; box-shadow: 0 0 14px rgb(var(--accent-hi) / .8);
+  animation: avance 5.4s cubic-bezier(.45,0,.5,1) infinite;
+}
+.ruta s {
+  position: absolute; top: 50%; left: 0; transform: translate(-50%, -50%);
+  color: var(--luz); line-height: 0; filter: drop-shadow(0 0 8px rgb(var(--accent-hi) / .7));
+  animation: viaja 5.4s cubic-bezier(.45,0,.5,1) infinite;
+}
+.ruta s svg { display: block; }
+@keyframes avance { 0% { width: 0; opacity: 0; } 10% { opacity: 1; } 88% { opacity: 1; } 100% { width: 100%; opacity: 0; } }
+@keyframes viaja  { 0% { left: 0; opacity: 0; } 10% { opacity: 1; } 88% { opacity: 1; } 100% { left: 100%; opacity: 0; } }
+
+/* ---------- Ficha lateral (solo escritorio) ---------- */
+.hero-img { display: none; }
+
+/* ============================================================
+   REGLETA DE NÚMEROS — odómetro
+   Los dígitos no cuentan: ruedan. Cada uno es una columna 0-9 que
+   se detiene en su cifra. La columna la arma el JS.
+   ============================================================ */
+.nums { margin-top: -54px; position: relative; z-index: 8; }
+.nums-g {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  background: var(--piso-2); border-radius: var(--rad-lg); overflow: hidden;
+  box-shadow: inset 0 0 0 1px var(--borde), 0 24px 56px rgb(0 0 0 / .45);
+}
+.num-c { text-align: center; padding: 24px 8px; position: relative; }
+.num-c + .num-c::before { content: ""; position: absolute; left: 0; top: 22%; bottom: 22%; width: 1px; background: linear-gradient(to bottom, transparent, var(--borde), transparent); }
+.num-c b {
+  font-size: clamp(30px, 8vw, 44px); font-weight: 700; display: block;
+  line-height: 1; letter-spacing: -.05em; color: var(--luz);
+  text-shadow: 0 0 30px rgb(var(--accent-hi) / .4);
+}
+.num-c small {
+  display: block; margin-top: 10px; font-family: var(--mono); font-size: 9px;
+  letter-spacing: .16em; text-transform: uppercase; color: rgb(var(--paper) / .42); font-weight: 500;
+}
+/* Odómetro: la ventana recorta una tira vertical de dígitos. */
+.od { display: inline-flex; overflow: hidden; height: 1em; vertical-align: bottom; }
+.od-d { display: block; overflow: hidden; height: 1em; }
+.od-d u { display: block; text-decoration: none; transform: translateY(calc(var(--d, 0) * -10%)); transition: transform 1.5s cubic-bezier(.2,.75,.25,1); transition-delay: calc(var(--k) * .07s); }
+.od-d u span { display: block; height: 1em; line-height: 1; }
+
+/* ============================================================
+   SERVICIOS — tarjetas con inclinación
+   La tarjeta se inclina hacia el puntero (--rx/--ry) y se enciende
+   donde está (--mx/--my). Muy poco ángulo: 5 grados alcanzan.
+   ============================================================ */
+.servs { margin-top: 34px; display: grid; grid-template-columns: 1fr; gap: 14px; perspective: 1200px; }
+.serv {
+  background: var(--piso); border-radius: var(--rad-lg); padding: 26px;
+  box-shadow: inset 0 0 0 1px var(--borde), 0 14px 34px rgb(0 0 0 / .28);
+  position: relative; overflow: hidden;
+  transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+  transition: transform .35s cubic-bezier(.2,.7,.3,1), box-shadow .35s;
+}
+.serv:hover { box-shadow: inset 0 0 0 1px rgb(var(--accent-hi) / .35), 0 22px 50px rgb(0 0 0 / .4); }
+.serv::before {
+  content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 0;
+  background: radial-gradient(340px circle at var(--mx, 50%) var(--my, 50%), rgb(var(--accent-hi) / .16), transparent 60%);
+  opacity: 0; transition: opacity .35s;
+}
+.serv:hover::before { opacity: 1; }
+.serv > * { position: relative; z-index: 1; }
+.serv .ico {
+  width: 46px; height: 46px; border-radius: 13px; display: grid; place-items: center;
+  margin-bottom: 17px; background: rgb(var(--accent-hi) / .13); color: var(--luz);
+  box-shadow: inset 0 0 0 1px rgb(var(--accent-hi) / .28);
+  transition: transform .35s cubic-bezier(.2,.7,.3,1), box-shadow .35s;
+}
+.serv:hover .ico { transform: translateY(-3px) rotate(-6deg); box-shadow: inset 0 0 0 1px rgb(var(--accent-hi) / .5), 0 10px 26px rgb(var(--accent-hi) / .3); }
+.serv .rotulo { display: block; margin-bottom: 6px; }
+.serv p { margin-top: 8px; font-size: 14.5px; color: var(--txt-2); max-width: 46ch; }
+.mas {
+  display: inline-flex; align-items: center; gap: 8px; margin-top: 16px;
+  font-family: var(--mono); font-size: 10px; font-weight: 500;
+  letter-spacing: .15em; text-transform: uppercase; color: var(--luz);
+}
+.mas span { transition: transform .25s cubic-bezier(.2,.7,.3,1); }
+.serv:hover .mas span { transform: translateX(6px); }
+/* La primera es la destacada: acento pleno. */
+.serv:first-child { background: linear-gradient(140deg, rgb(var(--accent) / .3), var(--piso-2) 62%); }
+.serv:first-child::after {
+  content: ""; position: absolute; right: -80px; top: -90px; width: 240px; height: 240px;
+  border-radius: 50%; background: radial-gradient(circle, rgb(var(--accent-hi) / .22), transparent 68%);
+  animation: late 7s ease-in-out infinite;
+}
+@keyframes late { 0%, 100% { transform: scale(1); opacity: .8; } 50% { transform: scale(1.18); opacity: 1; } }
+.serv:first-child .ico { background: var(--luz); color: rgb(var(--ink)); box-shadow: 0 8px 26px rgb(var(--accent-hi) / .4); }
+
+/* ---------- Chips de confianza ---------- */
+.conf { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 30px; }
+.conf span {
+  display: inline-flex; align-items: center; gap: 9px;
+  font-size: 10.5px; font-weight: 500; letter-spacing: .13em; text-transform: uppercase;
+  background: rgb(var(--paper) / .04); box-shadow: inset 0 0 0 1px var(--borde);
+  padding: 10px 15px; border-radius: 999px; color: var(--txt-2);
+  transition: box-shadow .25s, color .25s, transform .25s;
+}
+.conf span:hover { color: var(--txt); transform: translateY(-2px); box-shadow: inset 0 0 0 1px rgb(var(--accent-hi) / .45); }
+.conf svg { color: var(--luz); flex-shrink: 0; }
+
+/* ============================================================
+   PRECIOS
+   El renglón se llena de luz de izquierda a derecha al pasar por
+   encima: --barrido va de 0% a 100% y es lo que corre el degradado.
+   ============================================================ */
+.precios { margin-top: 32px; background: var(--piso); border-radius: var(--rad-lg); overflow: hidden; box-shadow: inset 0 0 0 1px var(--borde); }
+.precio {
+  display: flex; align-items: baseline; padding: 18px 22px; font-size: 15.5px;
+  position: relative; transition: --barrido .5s;
+}
+.precio + .precio { box-shadow: inset 0 1px 0 rgb(var(--paper) / .06); }
+.precio::before {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(to right, rgb(var(--accent-hi) / .12), transparent);
+  clip-path: inset(0 calc(100% - var(--barrido)) 0 0);
+}
+.precio:hover { --barrido: 100%; }
+.precio > span { display: flex; align-items: baseline; flex: 1; min-width: 0; position: relative; }
+.precio > span::after {
+  content: ""; flex: 1 1 auto; min-width: 22px; height: 0; margin: 0 12px 5px 14px;
+  border-bottom: 1px dotted rgb(var(--paper) / .22);
+}
+.precio b { font-size: 16.5px; font-weight: 700; white-space: nowrap; color: var(--luz); letter-spacing: -.03em; flex-shrink: 0; position: relative; }
+@media (max-width: 619px) {
+  .precio > span::after { min-width: 0; margin: 0 0 0 14px; border-bottom: 0; }
+}
+.precios-nota {
+  margin: 0; padding: 15px 22px; background: rgb(0 0 0 / .22);
+  box-shadow: inset 0 1px 0 rgb(var(--paper) / .06);
+  font-size: 10.5px; letter-spacing: .07em; line-height: 1.6; color: rgb(var(--paper) / .45);
+}
+
+/* ============================================================
+   SECCIÓN TÉCNICA — el plano
+   La rejilla se desplaza sola y el dibujo se traza solo: el JS
+   mide cada trazo y lo pinta como si lo estuviera dibujando.
+   ============================================================ */
+.tec { background: linear-gradient(180deg, var(--noche), var(--piso-2) 50%, var(--noche)); position: relative; overflow: hidden; }
+.tec::before {
+  content: ""; position: absolute; inset: -40px; pointer-events: none; opacity: .6;
+  background-image: linear-gradient(rgb(var(--paper) / .05) 1px, transparent 1px), linear-gradient(90deg, rgb(var(--paper) / .05) 1px, transparent 1px);
+  background-size: 38px 38px;
+  animation: rejilla 22s linear infinite;
+  -webkit-mask-image: radial-gradient(90% 80% at 50% 50%, #000, transparent 82%);
+  mask-image: radial-gradient(90% 80% at 50% 50%, #000, transparent 82%);
+}
+@keyframes rejilla { to { transform: translate3d(38px, 38px, 0); } }
+.tec-in { position: relative; display: grid; grid-template-columns: 1fr; gap: 32px; align-items: center; }
+.tec .lead { margin-top: 15px; max-width: 44ch; }
+.tec-pts { margin-top: 28px; display: grid; gap: 16px; list-style: none; }
+.tec-pts li { display: flex; gap: 14px; font-size: 14.5px; line-height: 1.55; color: var(--txt-2); }
+.tec-pts li b { color: var(--txt); }
+.tec-pts .n {
+  flex-shrink: 0; width: 25px; height: 25px; border-radius: 50%;
+  background: rgb(var(--accent-hi) / .14); box-shadow: inset 0 0 0 1px rgb(var(--accent-hi) / .38);
+  color: var(--luz); font-family: var(--mono); font-size: 11px; font-weight: 700;
+  display: grid; place-items: center; margin-top: 2px;
+}
+.tec-fig {
+  background: rgb(0 0 0 / .3); box-shadow: inset 0 0 0 1px var(--borde);
+  border-radius: var(--rad-lg); padding: 20px; position: relative; overflow: hidden;
+}
+.tec-fig svg { width: 100%; height: auto; display: block; }
+.tec-cap { margin-top: 13px; display: flex; justify-content: space-between; gap: 12px; font-size: 9px; letter-spacing: .17em; text-transform: uppercase; color: rgb(var(--paper) / .4); }
+.tec text { fill: currentColor; }
+/* Trazo que se dibuja: el JS pone --largo con la longitud real. */
+.traza { stroke-dasharray: var(--largo); stroke-dashoffset: var(--largo); }
+.tec-fig.in .traza { animation: dibuja 1.6s cubic-bezier(.4,0,.2,1) forwards; animation-delay: calc(var(--i) * .045s); }
+@keyframes dibuja { to { stroke-dashoffset: 0; } }
+
+/* ---------- Cinta ----------
+   La velocidad y el sentido los modula el scroll: --vel lo escribe
+   el JS a partir de cuánto y hacia dónde se movió la página. */
+.cinta { overflow: hidden; padding-block: 15px; background: var(--piso-2); box-shadow: inset 0 1px 0 var(--borde), inset 0 -1px 0 var(--borde); margin-top: 54px; }
+.cinta-run { display: flex; gap: 34px; width: max-content; animation: corre 40s linear infinite; animation-play-state: running; }
+.cinta:hover .cinta-run { animation-play-state: paused; }
+.cinta span {
+  font-size: 10.5px; font-weight: 500; letter-spacing: .2em; text-transform: uppercase;
+  color: rgb(var(--paper) / .55); white-space: nowrap; display: flex; align-items: center; gap: 34px;
+}
+.cinta span::after { content: ""; width: 4px; height: 4px; border-radius: 50%; background: var(--luz); box-shadow: 0 0 8px var(--luz); flex-shrink: 0; }
+@keyframes corre { to { transform: translateX(-50%); } }
+
+/* ---------- Consulta de zona ---------- */
+.zona-caja { margin-top: 32px; display: grid; gap: 14px; }
+.zona-in { background: var(--piso); box-shadow: inset 0 0 0 1px var(--borde); border-radius: var(--rad-lg); padding: 24px; }
+.zona-in p { margin-top: 15px; font-size: 13px; color: var(--txt-2); }
+.zona-in select {
+  font-family: var(--mono); font-size: 15px; padding: 15px 18px; border-radius: 12px;
+  border: 0; box-shadow: inset 0 0 0 1px rgb(var(--paper) / .18);
+  background: rgb(0 0 0 / .3); color: var(--txt); width: 100%; appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, var(--luz) 50%), linear-gradient(135deg, var(--luz) 50%, transparent 50%);
+  background-position: calc(100% - 22px) calc(1em + 5px), calc(100% - 17px) calc(1em + 5px);
+  background-size: 6px 6px, 6px 6px; background-repeat: no-repeat;
+  transition: box-shadow .25s;
+}
+.zona-in select:hover { box-shadow: inset 0 0 0 1px rgb(var(--accent-hi) / .5); }
+.zona-in select option { background: rgb(var(--ink)); color: rgb(var(--paper)); }
+.zona-out {
+  border-radius: var(--rad-lg); padding: 26px; position: relative; overflow: hidden;
+  background: linear-gradient(150deg, rgb(var(--accent) / .38), var(--piso-2) 70%);
+  box-shadow: inset 0 0 0 1px rgb(var(--accent-hi) / .22);
+}
+/* Anillos de sonar detrás del resultado. */
+.zona-out::before {
+  content: ""; position: absolute; right: -60px; bottom: -60px; width: 220px; height: 220px; border-radius: 50%;
+  box-shadow: 0 0 0 1px rgb(var(--accent-hi) / .3), 0 0 0 30px rgb(var(--accent-hi) / .12), 0 0 0 62px rgb(var(--accent-hi) / .06);
+  animation: late 6s ease-in-out infinite;
+}
+.zona-out > * { position: relative; }
+.zona-out .rotulo { display: block; }
+.zona-out b { display: block; font-size: clamp(27px, 6.4vw, 38px); font-weight: 700; letter-spacing: -.05em; margin-top: 12px; line-height: 1.05; color: var(--luz); text-shadow: 0 0 30px rgb(var(--accent-hi) / .45); }
+.zona-out span { display: block; margin-top: 12px; font-size: 14px; color: var(--txt-2); }
+
+/* ---------- Banda a sangre ---------- */
+.banda { padding: 0; position: relative; overflow: hidden; }
+.banda-marco { position: relative; aspect-ratio: 3/2; overflow: hidden; }
+.banda-img { position: absolute; inset: -14% 0; background-position: 55% 45%; transform: translate3d(0, var(--py, 0px), 0); will-change: transform; }
+.banda-marco::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: rgb(var(--accent) / .4); mix-blend-mode: color;
+}
+.banda-txt {
+  position: absolute; inset-inline: 0; bottom: 0; z-index: 2; padding-block: 30px; color: #fff;
+  background: linear-gradient(to top, var(--noche), rgb(var(--ink) / .55) 52%, transparent);
+}
+.banda-txt b { font-family: var(--display); display: block; font-size: clamp(30px, 9vw, 54px); font-weight: 800; font-variation-settings: "wdth" 92, "opsz" 72; letter-spacing: -0.042em; line-height: .96; }
+.banda-txt span { font-family: var(--mono); font-size: 10.5px; letter-spacing: .17em; text-transform: uppercase; color: var(--luz); display: block; margin-top: 11px; }
+
+/* ---------- Mientras llegamos ---------- */
+.pasos { margin-top: 38px; display: grid; grid-template-columns: 1fr; }
+.paso { display: flex; gap: 18px; padding-bottom: 30px; position: relative; }
+.paso:last-child { padding-bottom: 0; }
+/* El hilo entre pasos se dibuja al entrar en cuadro. */
+.paso::before {
+  content: ""; position: absolute; left: 19px; top: 44px; bottom: 4px; width: 1px;
+  background: linear-gradient(to bottom, var(--luz), rgb(var(--accent-hi) / .05));
+  transform: scaleY(0); transform-origin: top; transition: transform .9s cubic-bezier(.2,.7,.3,1) .25s;
+}
+.paso.in::before { transform: scaleY(1); }
+.paso:last-child::before { display: none; }
+.pn {
+  flex-shrink: 0; width: 39px; height: 39px; border-radius: 50%;
+  background: rgb(var(--accent-hi) / .12); box-shadow: inset 0 0 0 1px rgb(var(--accent-hi) / .45);
+  color: var(--luz); font-family: var(--mono); font-size: 14px; font-weight: 700;
+  display: grid; place-items: center; position: relative; z-index: 1;
+}
+.paso .rotulo { display: block; margin-bottom: 6px; }
+.paso p { margin-top: 7px; font-size: 14.5px; color: var(--txt-2); max-width: 46ch; }
+
+/* ---------- Reseñas ---------- */
+.ops { margin-top: 34px; display: flex; gap: 14px; overflow-x: auto; margin-inline: -22px; padding: 4px 22px 10px; scroll-snap-type: x mandatory; scrollbar-width: none; }
+.ops::-webkit-scrollbar { display: none; }
+.op {
+  flex: 0 0 84%; scroll-snap-align: start; background: var(--piso); border-radius: var(--rad-lg);
+  padding: 26px; box-shadow: inset 0 0 0 1px var(--borde); position: relative; overflow: hidden;
+  transition: box-shadow .3s, transform .3s cubic-bezier(.2,.7,.3,1);
+}
+.op:hover { transform: translateY(-4px); box-shadow: inset 0 0 0 1px rgb(var(--accent-hi) / .3), 0 20px 44px rgb(0 0 0 / .35); }
+.op::after {
+  content: "\201C"; position: absolute; right: 14px; top: -14px;
+  font-family: var(--display); font-size: 110px; line-height: 1; color: rgb(var(--accent-hi) / .1);
+}
+.op .estrellas { color: var(--luz); font-size: 15px; letter-spacing: 3px; line-height: 1; }
+.op blockquote { margin-top: 14px; font-size: 16.5px; line-height: 1.55; text-wrap: pretty; position: relative; }
+.op figcaption { margin-top: 18px; padding-top: 15px; box-shadow: inset 0 1px 0 var(--borde); display: flex; align-items: center; gap: 12px; font-family: var(--mono); font-size: 10px; letter-spacing: .11em; text-transform: uppercase; color: rgb(var(--paper) / .45); }
+.op .av { width: 34px; height: 34px; border-radius: 50%; background: rgb(var(--accent-hi) / .14); box-shadow: inset 0 0 0 1px rgb(var(--accent-hi) / .3); color: var(--luz); display: grid; place-items: center; font-family: var(--mono); font-size: 11px; font-weight: 700; flex-shrink: 0; letter-spacing: 0; }
+
+/* ============================================================
+   PREGUNTAS
+   El detalle abre con altura animada de verdad (0fr → 1fr), no con
+   un salto. La cruz gira 135° y se vuelve una equis.
+   ============================================================ */
+.faq { margin-top: 30px; max-width: 47rem; display: grid; gap: 10px; }
+.faq details {
+  background: var(--piso); border-radius: 14px; overflow: hidden;
+  box-shadow: inset 0 0 0 1px var(--borde); transition: box-shadow .3s;
+}
+.faq details:hover { box-shadow: inset 0 0 0 1px rgb(var(--paper) / .2); }
+.faq details[open] { box-shadow: inset 0 0 0 1px rgb(var(--accent-hi) / .4); }
+.faq summary {
+  cursor: pointer; list-style: none; padding: 18px 21px;
+  font-family: var(--display); font-weight: 700; font-variation-settings: "wdth" 100, "opsz" 18;
+  font-size: 16.5px; letter-spacing: -.02em; display: flex; justify-content: space-between; align-items: center; gap: 16px;
+}
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary::after {
+  content: "+"; flex-shrink: 0; width: 27px; height: 27px; border-radius: 50%;
+  box-shadow: inset 0 0 0 1px rgb(var(--accent-hi) / .38); background: rgb(var(--accent-hi) / .1); color: var(--luz);
+  font-family: var(--mono); display: grid; place-items: center; font-size: 16px;
+  transition: transform .35s cubic-bezier(.2,.7,.3,1), background .3s;
+}
+.faq details[open] summary::after { transform: rotate(135deg); background: var(--luz); color: rgb(var(--ink)); }
+/* El envoltorio .faq-cont lo pone el generador para poder animar. */
+.faq-cont { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .4s cubic-bezier(.2,.7,.3,1); }
+.faq details[open] .faq-cont { grid-template-rows: 1fr; }
+.faq-cont > div { overflow: hidden; }
+.faq details p { padding: 0 21px 20px; font-size: 14.5px; line-height: 1.65; color: var(--txt-2); text-wrap: pretty; }
+
+/* ============================================================
+   CIERRE — el número
+   Es lo último que tiene que quedar. Va grande, encendido, y al
+   aparecer se descifra: los dígitos giran al azar y se acomodan.
+   ============================================================ */
+.cierre { text-align: center; position: relative; overflow: hidden; padding-block: 96px; }
+.cierre::before {
+  content: ""; position: absolute; left: 50%; bottom: -46%; width: 720px; height: 720px;
+  transform: translateX(-50%); border-radius: 50%; pointer-events: none;
+  background: radial-gradient(circle, rgb(var(--accent-hi) / .28), transparent 62%);
+  animation: late 8s ease-in-out infinite;
+}
+.cierre .wrap { position: relative; }
+.cierre .rotulo { color: rgb(var(--paper) / .5); }
+.cierre a.num {
+  display: block; margin-top: 18px; font-size: clamp(36px, 11.5vw, 88px); font-weight: 700;
+  letter-spacing: -.06em; line-height: 1; color: var(--luz);
+  text-shadow: 0 0 60px rgb(var(--accent-hi) / .5);
+  transition: text-shadow .4s, transform .3s;
+}
+.cierre a.num:hover { text-shadow: 0 0 90px rgb(var(--accent-hi) / .8); transform: scale(1.02); }
+.cierre p { margin-top: 18px; font-size: 14px; color: rgb(var(--paper) / .5); }
+
+/* ---------- Pie y barra ---------- */
+.pie { padding-block: 30px 40px; display: grid; gap: 9px; font-size: 10px; letter-spacing: .13em; text-transform: uppercase; color: rgb(var(--paper) / .38); box-shadow: inset 0 1px 0 var(--borde); }
+.pie a { color: var(--luz); }
+.barra {
+  position: fixed; inset-inline: 0; bottom: 0; z-index: 50; display: flex; gap: 10px;
+  padding: 12px 18px; padding-bottom: calc(12px + env(safe-area-inset-bottom));
+  background: rgb(var(--ink) / .82); backdrop-filter: blur(18px) saturate(1.5);
+  box-shadow: inset 0 1px 0 var(--borde), 0 -14px 34px rgb(0 0 0 / .4);
+}
+.barra .btn { flex: 1; }
+
+/* ---------- Entradas en cuadro ---------- */
+.rev {
+  opacity: 0; translate: 0 22px; filter: blur(8px);
+  transition: opacity .8s cubic-bezier(.16,1,.3,1), translate .8s cubic-bezier(.16,1,.3,1), filter .8s;
+  transition-delay: calc(var(--i, 0) * .08s);
+}
+.rev.in { opacity: 1; translate: none; filter: none; }
+
+/* ============================================================
+   MOVIMIENTO REDUCIDO
+   Se apaga todo lo que se mueve solo. Lo que estaba a mitad de una
+   animación (la persiana, la ruta, el odómetro) se deja en su
+   estado final, no en el inicial: si no, la foto queda tapada.
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .rev { opacity: 1; translate: none; filter: none; transition: none; }
+  *, *::before, *::after { animation: none !important; }
+  .hero-slats { display: none; }
+  .pal > span { transform: none; }
+  .hero .rotulo, .hero .hero-cta, .hero .vivo { opacity: 1; transform: none; filter: none; }
+  .hero-capa, .banda-img, .hero-img-foto { transform: none; }
+  .hero-c1 .hero-foto { transform: scale(1.26); }
+  .ruta s { left: 50%; opacity: 1; } .ruta u { width: 50%; opacity: 1; }
+  .sh-top .lin, .paso::before { transform: none; }
+  .traza { stroke-dashoffset: 0; }
+  .od-d u { transition: none; }
+}
+
+/* ============================================================
+   ESCRITORIO
+   ============================================================ */
+@media (min-width: 780px) {
+  body { padding-bottom: 0; }
+  .barra { display: none; }
+  .top .tel-min { display: inline-flex; }
+  section { padding-block: 92px; }
+  .hero { min-height: 88vh; }
+  .hero-in { padding-block: 80px 108px; }
+  .hero-cta { flex-direction: row; align-items: center; }
+
+  /* La portada es una sola: la escena de fondo a sangre y la ficha
+     lateral encima. Los dos originales (claro y oscuro) convergen
+     acá — es lo que hace que los nueve rubros sean un solo producto. */
+  .hero-in { display: grid; grid-template-columns: 1.08fr .92fr; gap: 56px; align-items: center; }
+  .hero.oscuro .hero-in { grid-template-columns: 1fr; max-width: 46rem; }
+  .hero.oscuro .hero-img { display: none; }
+  .hero-velo {
+    background:
+      linear-gradient(to right, rgb(var(--ink) / .94) 0%, rgb(var(--ink) / .66) 46%, rgb(var(--ink) / .3) 100%),
+      linear-gradient(to bottom, rgb(var(--ink) / .5) 0%, transparent 34%, var(--noche) 100%);
+  }
+
+  .hero.claro .hero-img {
+    display: block; position: relative; aspect-ratio: 4/5; overflow: hidden;
+    border-radius: 20px; box-shadow: inset 0 0 0 1px rgb(var(--paper) / .16), 0 34px 70px rgb(0 0 0 / .55);
+    transform: translateY(var(--py, 0px));
+  }
+  .hero-img-foto {
+    position: absolute; inset: -8%; background-position: 92% 50%;
+    transform-origin: 92% 50%;
+    animation: deriva-b 30s ease-in-out infinite alternate;
+  }
+  /* Un viraje suave, la mitad que el del fondo: la ficha tiene que
+     pertenecer a la escena sin perder el detalle —es la foto que
+     prueba que el oficio existe—. */
+  .hero.claro .hero-img::before {
+    content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none;
+    background: rgb(var(--accent) / .26); mix-blend-mode: color;
+  }
+  .hero-img::after {
+    content: "Apertura sin daño"; position: absolute; left: 15px; bottom: 14px; z-index: 2;
+    font-family: var(--mono); font-size: 9px; font-weight: 500; letter-spacing: .17em; text-transform: uppercase;
+    color: #fff; background: rgb(0 0 0 / .5); backdrop-filter: blur(8px);
+    padding: 8px 12px; border-radius: 999px;
+  }
+
+  .banda-marco { aspect-ratio: 21/8; }
+  .banda-txt { padding-block: 46px; }
+  .servs { grid-template-columns: repeat(2, 1fr); gap: 16px; }
+  .serv:first-child { grid-column: span 2; display: grid; grid-template-columns: auto 1fr; gap: 28px; align-items: center; padding: 32px; }
+  .serv:first-child .ico { margin-bottom: 0; width: 60px; height: 60px; }
+  .nums { margin-top: -46px; }
+  .num-c { padding: 32px 16px; }
+  .num-c b { font-size: 50px; }
+  .zona-caja { grid-template-columns: 1fr 1fr; gap: 16px; }
+  .tec-in { grid-template-columns: 1fr 1.08fr; gap: 58px; }
+  .precio { padding: 20px 26px; font-size: 16px; }
+  .pasos { grid-template-columns: repeat(3, 1fr); gap: 28px; }
+  .paso { flex-direction: column; padding-bottom: 0; }
+  .paso::before { left: 44px; right: -28px; top: 19px; bottom: auto; width: auto; height: 1px; transform: scaleX(0); transform-origin: left; background: linear-gradient(to right, var(--luz), rgb(var(--accent-hi) / .05)); }
+  .paso.in::before { transform: scaleX(1); }
+  .ops { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-inline: 0; padding: 0; overflow: visible; }
+  .op { flex: none; }
+  .pie { grid-template-columns: repeat(3, 1fr); }
+}
+</style>
+</head>
+<body>
+
+<header class="top" id="top">
+  <div class="wrap top-in">
+    <b>Cerrajería Riquelme</b>
+    <span class="estado" id="est-top">En la calle ahora</span>
+    <a class="btn btn-sm tel-min" href="tel:+541155550134">11 5555-0134</a>
+  </div>
+</header>
+
+<section class="hero oscuro">
+  <div class="hero-esc" aria-hidden="true">
+    <div class="hero-capa hero-c1" data-par="46"><div class="hero-foto ph ph-a"></div></div>
+    <div class="hero-capa hero-c2" data-par="120"><div class="hero-foto ph ph-a"></div></div>
+  </div>
+  <div class="hero-baliza" aria-hidden="true"></div>
+  <div class="hero-velo" aria-hidden="true"></div>
+  <div class="hero-grano" aria-hidden="true"></div>
+  <div class="hero-luz" aria-hidden="true"></div>
+  <div class="hero-slats" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+  <div class="wrap hero-in">
+    <div>
+      <span class="rotulo">Urgencias 24 hs · Lanús y zona sur</span>
+      <h1 style="margin-top:10px">¿Quedaste afuera? Llegamos en 40 minutos</h1>
+      <p class="lead">Apertura sin daño, con el precio confirmado antes de tocar tu puerta.</p>
+      <div class="hero-cta">
+        <a class="btn" href="tel:+541155550134">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.1 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></svg>
+          <span class="tel-num">11 5555-0134</span>
+        </a>
+        <a class="btn btn-2" href="#">Escribir por WhatsApp</a>
+      </div>
+      <div class="vivo">
+        <span class="est" id="est-vivo">En la calle ahora</span>
+        <div class="vivo-h">
+          <div class="vivo-c"><small>Son las</small><b id="v-ahora">--:--</b></div>
+          <div class="ruta" aria-hidden="true">
+            <i></i><u></u>
+            <s><svg width="38" height="22" viewBox="0 0 60 34" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 24V9.5C3 8.1 4.1 7 5.5 7h26C32.9 7 34 8.1 34 9.5V24"/><path d="M34 12.5h7.8c.7 0 1.4.3 1.9.8l6.6 6.4c.5.5.7 1.1.7 1.8V24H34z"/><path d="M3 24h48.8"/><circle cx="13" cy="25.5" r="4.6"/><circle cx="43" cy="25.5" r="4.6"/></svg></s>
+          </div>
+          <div class="vivo-c"><small>Llegamos</small><b id="v-lleg">--:--</b></div>
+        </div>
+      </div>
+    </div>
+    <div class="hero-img" data-par="34" role="img" aria-label="Cerradura de latón con la llave puesta"><div class="hero-img-foto ph ph-a"></div></div>
+  </div>
+</section>
+
+<div class="nums">
+  <div class="wrap nums-g">
+    <div class="num-c"><b data-n="40">0</b><small>min promedio</small></div>
+    <div class="num-c"><b data-n="1500">0</b><small>aperturas</small></div>
+    <div class="num-c"><b data-n="24">0</b><small>hs, todos los días</small></div></div>
+</div>
+
+<div class="cinta" aria-hidden="true">
+  <div class="cinta-run"><span>Apertura sin daño</span><span>Cambio de cerraduras</span><span>Cerraduras de seguridad</span><span>Automotor</span><span>Llaves codificadas</span><span>Consorcios</span><span>Urgencias 24 hs</span><span>Apertura sin daño</span><span>Cambio de cerraduras</span><span>Cerraduras de seguridad</span><span>Automotor</span><span>Llaves codificadas</span><span>Consorcios</span><span>Urgencias 24 hs</span></div>
+</div>
+
+<section class="wrap">
+  <div class="sh"><div class="sh-top"><i>01</i><span class="rotulo">Qué resolvemos</span><span class="lin"></span></div><h2>Servicios de urgencia</h2></div>
+  <div class="servs">
+      <article class="serv rev">
+        <div class="ico"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg></div>
+        <div>
+          <h3>Apertura sin daño</h3>
+          <p>Casas, departamentos y oficinas. Técnica de ganzuado profesional: tu cerradura queda como estaba, no hace falta cambiarla.</p>
+          <span class="mas">La urgencia más común <span>&#8594;</span></span>
+        </div>
+      </article>
+      <article class="serv rev">
+        <div class="ico"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></div>
+        <div>
+          <h3>Cambio de cerraduras</h3>
+          <p>Comunes y de alta seguridad, todas las marcas. Te asesoramos según tu puerta, tu barrio y tu presupuesto.</p>
+          <span class="mas">Con garantía escrita <span>&#8594;</span></span>
+        </div>
+      </article>
+      <article class="serv rev">
+        <div class="ico"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 17h14M6 17l1.5-4.5a2 2 0 0 1 1.9-1.5h5.2a2 2 0 0 1 1.9 1.5L18 17"/></svg></div>
+        <div>
+          <h3>Automotor</h3>
+          <p>Apertura de autos, llaves codificadas y carcasas. Vamos hasta donde esté el vehículo: sin grúa, sin remolque.</p>
+          <span class="mas">En el lugar <span>&#8594;</span></span>
+        </div>
+      </article></div>
+  <div class="conf"><span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Matrícula CPC 1148</span><span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Factura y garantía por escrito</span><span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Presupuesto antes de empezar</span></div>
+</section>
+
+<section class="wrap">
+  <div class="sh"><div class="sh-top"><i>02</i><span class="rotulo">Cobertura</span><span class="lin"></span></div><h2>¿Llegamos a tu zona?</h2></div>
+  <div class="zona-caja">
+    <div class="zona-in">
+      <label class="rotulo" for="z-sel" style="display:block;margin-bottom:9px">Elegí tu localidad</label>
+      <select id="z-sel"><option value="">Seleccioná…</option><option value="30">Lanús</option><option value="35">Avellaneda</option><option value="40">Banfield</option><option value="45">Lomas de Zamora</option><option value="35">Remedios de Escalada</option><option value="30">Gerli</option><option value="40">Valentín Alsina</option></select>
+      <p>¿No está tu barrio? Llamanos igual: si estamos cerca, vamos.</p>
+    </div>
+    <div class="zona-out">
+      <span class="rotulo">Tiempo estimado</span>
+      <b id="z-eta">—</b>
+      <span id="z-txt">Elegí tu localidad para ver el tiempo de llegada.</span>
+    </div>
+  </div>
+</section>
+
+
+
+<section class="banda" aria-hidden="true">
+  <div class="banda-marco"><div class="banda-img ph ph-a" data-par="88"></div></div>
+  <div class="wrap banda-txt">
+    <b>1.500 aperturas</b>
+    <span>resueltas sin romper una sola cerradura</span>
+  </div>
+</section>
+
+<section class="tec">
+  <div class="wrap tec-in">
+    <div>
+      <div class="sh"><div class="sh-top"><i>03</i><span class="rotulo">El oficio, por dentro</span><span class="lin"></span></div><h2>Buscamos la falla, no rompemos la cerradura</h2></div>
+      <p class="lead">Un cilindro tiene pernos calibrados a décimas de milímetro. La apertura sin daño es alinearlos como lo haría tu llave, no forzarlos.</p>
+      <ul class="tec-pts">
+        <li><span class="n">1</span><span><b>Pernos superiores e inferiores:</b> el corte exacto de tu llave los alinea en la línea de apertura.</span></li>
+        <li><span class="n">2</span><span><b>Ganzuado profesional:</b> reproducimos ese alineado sin la llave. Tu cerradura queda intacta.</span></li>
+        <li><span class="n">3</span><span><b>Si el cilindro está vencido,</b> te lo mostramos y lo cambiás con garantía, nunca a ciegas.</span></li></ul>
+    </div>
+    <figure class="tec-fig">
+      <svg viewBox="0 0 560 360" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Esquema técnico"><defs>
+            <marker id="arr" viewBox="0 0 8 8" refX="4" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0 0 L8 4 L0 8 z" fill="rgb(var(--paper) / 0.4)"/>
+            </marker>
+          </defs>
+
+          <!--  carcasa exterior -->
+          <rect x="60" y="80" width="440" height="180" rx="14" stroke="rgb(var(--paper) / 0.85)" stroke-width="2.5"/>
+          <!--  perfil europeo: cuerpo inferior -->
+          <path d="M240 260 L240 316 Q240 330 254 330 L306 330 Q320 330 320 316 L320 260" stroke="rgb(var(--paper) / 0.85)" stroke-width="2.5"/>
+          <!--  tornillo de fijación -->
+          <circle cx="280" cy="300" r="9" stroke="rgb(var(--paper) / 0.6)" stroke-width="2"/>
+          <path d="M274 300 h12" stroke="rgb(var(--paper) / 0.6)" stroke-width="2"/>
+
+          <!--  rotor (plug) -->
+          <rect x="84" y="176" width="392" height="60" rx="8" stroke="rgb(var(--paper) / 0.7)" stroke-width="2"/>
+          <!--  línea de cizalla (shear line): LA línea del oficio, en brand -->
+          <line x1="70" y1="176" x2="490" y2="176" stroke="rgb(var(--brand))" stroke-width="2" stroke-dasharray="10 6"/>
+          <text x="496" y="181" font-family="inherit" font-size="15" letter-spacing="1" fill="rgb(var(--brand))">A</text>
+
+          <!--  llave insertada: perfil con dientes -->
+          <path d="M84 206 L120 206 L128 220 L146 196 L164 218 L182 198 L200 216 L218 200 L236 214 L254 200 L272 212 L290 202 L308 212 L326 204 L344 210 L360 206 L376 206"
+                stroke="rgb(var(--brand))" stroke-width="3" stroke-linejoin="round" fill="none"/>
+          <path d="M84 206 L84 226 L376 226 L376 206" stroke="rgb(var(--brand))" stroke-width="2" fill="none"/>
+
+          <!--  5 recámaras con pernos y resortes -->
+          <g stroke="rgb(var(--paper) / 0.6)" stroke-width="2">
+            <!--  recámaras -->
+            <path d="M136 80 v96 M168 80 v96" opacity="0.35"/>
+            <path d="M208 80 v96 M240 80 v96" opacity="0.35"/>
+            <path d="M280 80 v96 M312 80 v96" opacity="0.35"/>
+            <path d="M352 80 v96 M384 80 v96" opacity="0.35"/>
+            <path d="M424 80 v96 M456 80 v96" opacity="0.35"/>
+          </g>
+          <!--  resortes -->
+          <g stroke="rgb(var(--paper) / 0.6)" stroke-width="1.8" fill="none">
+            <path d="M152 88 l10 5 l-20 6 l20 6 l-20 6 l14 5"/>
+            <path d="M224 88 l10 5 l-20 6 l20 6 l-20 6 l14 5"/>
+            <path d="M296 88 l10 5 l-20 6 l20 6 l-20 6 l14 5"/>
+            <path d="M368 88 l10 5 l-20 6 l20 6 l-20 6 l14 5"/>
+            <path d="M440 88 l10 5 l-20 6 l20 6 l-20 6 l14 5"/>
+          </g>
+          <!--  pernos superiores (drivers) -->
+          <g fill="rgb(var(--paper) / 0.4)" stroke="rgb(var(--paper) / 0.8)" stroke-width="2">
+            <rect x="141" y="120" width="22" height="42" rx="4"/>
+            <rect x="213" y="126" width="22" height="36" rx="4"/>
+            <rect x="285" y="118" width="22" height="44" rx="4"/>
+            <rect x="357" y="128" width="22" height="34" rx="4"/>
+            <rect x="429" y="122" width="22" height="40" rx="4"/>
+          </g>
+          <!--  pernos inferiores (key pins) apoyados en la llave: alineados en la cizalla -->
+          <g fill="rgb(var(--brand) / 0.25)" stroke="rgb(var(--brand))" stroke-width="2">
+            <path d="M141 176 h22 v22 l-11 8 l-11 -8 z"/>
+            <path d="M213 176 h22 v18 l-11 8 l-11 -8 z"/>
+            <path d="M285 176 h22 v24 l-11 8 l-11 -8 z"/>
+            <path d="M357 176 h22 v16 l-11 8 l-11 -8 z"/>
+            <path d="M429 176 h22 v20 l-11 8 l-11 -8 z"/>
+          </g>
+
+          <!--  cotas -->
+          <g stroke="rgb(var(--paper) / 0.4)" stroke-width="1.5">
+            <line x1="60" y1="52" x2="500" y2="52" marker-start="url(#arr)" marker-end="url(#arr)"/>
+            <line x1="60" y1="60" x2="60" y2="76" opacity="0.6"/>
+            <line x1="500" y1="60" x2="500" y2="76" opacity="0.6"/>
+            <line x1="528" y1="80" x2="528" y2="260" marker-start="url(#arr)" marker-end="url(#arr)"/>
+            <line x1="506" y1="80" x2="524" y2="80" opacity="0.6"/>
+            <line x1="506" y1="260" x2="524" y2="260" opacity="0.6"/>
+          </g>
+          <text x="264" y="44" font-family="inherit" font-size="14" letter-spacing="2" fill="rgb(var(--paper) / 0.6)">62 MM</text>
+          <text x="536" y="174" font-family="inherit" font-size="14" letter-spacing="1" fill="rgb(var(--paper) / 0.6)" transform="rotate(90 536 174)">33 MM</text>
+
+          <!--  etiquetas técnicas -->
+          <g font-family="inherit" font-size="14" letter-spacing="1.5" fill="rgb(var(--paper) / 0.6)">
+            <text x="96" y="106">RESORTE</text>
+            <text x="96" y="150" fill="rgb(var(--paper) / 0.7)">PERNO SUP.</text>
+            <text x="330" y="250" fill="rgb(var(--brand))">LLAVE / PERNOS ALINEADOS</text>
+          </g></svg>
+      <figcaption class="tec-cap"><span>Fig. 01 — Cilindro perfil europeo</span><span>A: línea de apertura</span></figcaption>
+    </figure>
+  </div>
+</section>
+
+<section class="wrap">
+  <div class="sh"><div class="sh-top"><i>04</i><span class="rotulo">Sin sorpresas</span><span class="lin"></span></div><h2>Precios orientativos</h2></div>
+  <div class="precios">
+      <div class="precio"><span>Apertura de puerta sin daño</span><b>desde $25.000</b></div>
+      <div class="precio"><span>Cambio de cerradura común</span><b>desde $40.000</b></div>
+      <div class="precio"><span>Cerradura de seguridad</span><b>desde $85.000</b></div>
+      <div class="precio"><span>Copia de llave codificada</span><b>consultar</b></div><p class="precios-nota">Valores de referencia. El precio final se confirma antes de empezar el trabajo, siempre.</p></div>
+</section>
+
+<section class="wrap">
+  <div class="sh"><div class="sh-top"><i>05</i><span class="rotulo">Cómo funciona</span><span class="lin"></span></div><h2>Una urgencia, tres pasos</h2></div>
+  <div class="pasos">
+      <div class="paso rev">
+        <span class="pn">1</span>
+        <div>
+          <span class="rotulo">Minuto 0</span>
+          <h3>Llamás</h3>
+          <p>Nos contás qué pasó y dónde estás. Te confirmamos el precio orientativo en esa misma llamada.</p>
+        </div>
+      </div>
+      <div class="paso rev">
+        <span class="pn">2</span>
+        <div>
+          <span class="rotulo">Salimos ya</span>
+          <h3>Vamos hasta ahí</h3>
+          <p>Un cerrajero matriculado e identificado sale para tu dirección. Promedio en zona: 40 minutos.</p>
+        </div>
+      </div>
+      <div class="paso rev">
+        <span class="pn">3</span>
+        <div>
+          <span class="rotulo">Y listo</span>
+          <h3>Estás adentro</h3>
+          <p>Confirmamos el precio final antes de empezar. Trabajo prolijo, factura y garantía por escrito.</p>
+        </div>
+      </div></div>
+</section>
+
+<section class="wrap">
+  <div class="sh"><div class="sh-top"><i>06</i><span class="rotulo">Clientes</span><span class="lin"></span></div><h2>Lo que dicen los vecinos</h2></div>
+  <div class="ops">
+    <figure class="op rev">
+      <div class="estrellas" aria-label="5 estrellas">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+      <blockquote>“Me quedé afuera un domingo a la noche y en media hora estaba adentro. Sin romper nada.”</blockquote>
+      <figcaption><span class="av">MG</span><span>Marcela G. · Hace 2 semanas</span></figcaption>
+    </figure>
+    <figure class="op rev">
+      <div class="estrellas" aria-label="5 estrellas">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+      <blockquote>“Precio claro por teléfono y el mismo cuando terminó. Eso vale oro.”</blockquote>
+      <figcaption><span class="av">DP</span><span>Diego P. · Hace 1 mes</span></figcaption>
+    </figure>
+    <figure class="op rev">
+      <div class="estrellas" aria-label="5 estrellas">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+      <blockquote>“Muy prolijo el cambio de cerradura, vino con identificación y factura.”</blockquote>
+      <figcaption><span class="av">RM</span><span>Rosa M. · Hace 1 mes</span></figcaption>
+    </figure></div>
+</section>
+
+<section class="wrap">
+  <div class="sh"><div class="sh-top"><i>07</i><span class="rotulo">Antes de llamar</span><span class="lin"></span></div><h2>Preguntas frecuentes</h2></div>
+  <div class="faq">
+      <details>
+        <summary>¿Me van a romper la cerradura para abrir?</summary><div class="faq-cont"><div><p>En la enorme mayoría de los casos, no. Trabajamos con apertura sin daño: la puerta se abre y tu cerradura queda funcionando como estaba. Si tu caso puntual requiere otra cosa, te lo decimos antes, con el costo claro.</p></div></div>
+      </details>
+      <details>
+        <summary>¿Cuánto tardan en llegar de madrugada?</summary><div class="faq-cont"><div><p>El promedio en nuestras zonas es de 40 minutos a cualquier hora. De madrugada suele ser menos porque no hay tránsito.</p></div></div>
+      </details>
+      <details>
+        <summary>¿Cómo sé que el precio no cambia cuando terminan?</summary><div class="faq-cont"><div><p>Porque te lo confirmamos antes de empezar y lo sostenemos. Además entregamos factura por cada trabajo.</p></div></div>
+      </details>
+      <details>
+        <summary>¿Atienden consorcios y comercios?</summary><div class="faq-cont"><div><p>Sí. Hacemos aperturas y cambios en edificios, locales y oficinas, con factura A si la necesitás.</p></div></div>
+      </details></div>
+</section>
+
+<section class="cierre">
+  <div class="wrap">
+    <span class="rotulo">Guardá este número — ojalá nunca lo necesites</span>
+    <a class="num" href="tel:+541155550134">11 5555-0134</a>
+    <p>Atendemos las 24 horas, todos los días del año.</p>
+  </div>
+</section>
+
+<footer class="wrap pie">
+  <span>Cerrajería Riquelme</span>
+  <span>Matrícula CPC 1148 · Factura y garantía por escrito</span>
+  <span><a href="#">WhatsApp</a> · 11 5555-0134</span>
+</footer>
+
+<nav class="barra" aria-label="Contacto">
+  <a class="btn" href="tel:+541155550134">Llamar ahora</a>
+  <a class="btn btn-2" href="#">WhatsApp</a>
+</nav>
+
+<script>
+/* ============================================================
+   KIT URGENCIA v4 — "SIRENA" · guion
+   Cinco motores, un solo requestAnimationFrame para los tres que
+   dependen del scroll o del puntero. Nada toca layout: todo sale
+   por custom properties que el CSS consume en transform/opacity.
+   Con prefers-reduced-motion cada motor se apaga solo.
+   ============================================================ */
+var red = matchMedia('(prefers-reduced-motion: reduce)').matches;
+var raiz = document.documentElement;
+
+/* ---------- 1. Cabecera: pegada y con avance de lectura ---------- */
+var cab = document.getElementById('top');
+function avance() {
+  cab.classList.toggle('stuck', scrollY > 12);
+  var h = document.body.scrollHeight - innerHeight;
+  cab.style.setProperty('--scroll', h > 0 ? (scrollY / h).toFixed(4) : 0);
+}
+addEventListener('scroll', avance, { passive: true });
+avance();
+
+/* ---------- 2. Entradas en cuadro, escalonadas ----------
+   El retardo no es por orden global sino por posición entre
+   hermanos: si no, la última tarjeta de la página esperaría
+   dos segundos. */
+document.querySelectorAll('.rev').forEach(function (el) {
+  var i = [].indexOf.call(el.parentElement.children, el);
+  el.style.setProperty('--i', i);
+});
+var obs = new IntersectionObserver(function (es) {
+  es.forEach(function (e) {
+    if (e.isIntersecting) { e.target.classList.add('in'); obs.unobserve(e.target); }
+  });
+}, { threshold: 0.14, rootMargin: '0px 0px -6% 0px' });
+document.querySelectorAll('.rev, .sh, .tec-fig').forEach(function (el) { obs.observe(el); });
+
+/* ---------- 3. El titular entra palabra por palabra ----------
+   Cada palabra va en una ventana con overflow oculto; el span de
+   adentro sube desde abajo. Si el h1 tuviera marcado adentro se
+   deja como está: no vale la pena romper el texto por una
+   animación. */
+(function () {
+  var h = document.querySelector('.hero h1');
+  if (!h || red || h.children.length) return;
+  var partes = h.textContent.trim().split(/\s+/);
+  h.innerHTML = partes.map(function (p, i) {
+    return '<span class="pal"><span style="--i:' + i + '">' + p + '</span></span>';
+  }).join(' ');
+})();
+
+/* ============================================================
+   4. Motor de scroll: parallax de capas + inercia de la cinta
+   ============================================================ */
+(function () {
+  if (red) return;
+  var capas = [].slice.call(document.querySelectorAll('[data-par]'));
+  var cinta = document.querySelector('.cinta-run');
+  var animCinta = cinta && cinta.getAnimations ? cinta.getAnimations()[0] : null;
+  var yAnt = scrollY, vel = 0, pedido = false;
+
+  function pinta() {
+    pedido = false;
+    var vh = innerHeight;
+
+    for (var i = 0; i < capas.length; i++) {
+      var el = capas[i], r = el.parentElement.getBoundingClientRect();
+      if (r.bottom < -200 || r.top > vh + 200) continue;
+      /* 0 al entrar por abajo, 1 al salir por arriba */
+      var t = (vh - r.top) / (vh + r.height);
+      el.style.setProperty('--py', ((t - 0.5) * +el.dataset.par).toFixed(1) + 'px');
+    }
+
+    /* La cinta corre más rápido —y al revés— según cómo se mueva
+       la página. Se hace con playbackRate: la animación es la
+       misma, cambia el reloj que la mueve. */
+    if (animCinta) {
+      var v = scrollY - yAnt; yAnt = scrollY;
+      vel += (v - vel) * 0.18;
+      var r2 = 1 + vel * 0.07;
+      animCinta.playbackRate = Math.max(-5, Math.min(6, r2));
+    }
+  }
+  function pedir() { if (!pedido) { pedido = true; requestAnimationFrame(pinta); } }
+
+  addEventListener('scroll', pedir, { passive: true });
+  addEventListener('resize', pedir, { passive: true });
+  pinta();
+
+  /* La cinta vuelve sola a velocidad de crucero cuando nadie
+     scrollea, si no se queda clavada al último empujón. */
+  if (animCinta) setInterval(function () {
+    vel *= 0.6;
+    if (Math.abs(vel) < 0.05) { vel = 0; animCinta.playbackRate = 1; }
+  }, 160);
+})();
+
+/* ============================================================
+   5. El puntero es una linterna
+   Las superficies saben dónde está el dedo (--mx/--my), las
+   tarjetas se inclinan hacia él (--rx/--ry) y los botones se
+   dejan atraer un poco (--imx/--imy).
+   ============================================================ */
+(function () {
+  if (red || !matchMedia('(hover: hover)').matches) return;
+
+  document.querySelectorAll('.serv, .op, .panel, .hero').forEach(function (el) {
+    var tilt = el.classList.contains('serv'), pend = false, ev = null;
+    el.addEventListener('pointermove', function (e) {
+      ev = e;
+      if (pend) return;
+      pend = true;
+      requestAnimationFrame(function () {
+        pend = false;
+        var r = el.getBoundingClientRect();
+        var x = (ev.clientX - r.left) / r.width, y = (ev.clientY - r.top) / r.height;
+        el.style.setProperty('--mx', (x * 100).toFixed(1) + '%');
+        el.style.setProperty('--my', (y * 100).toFixed(1) + '%');
+        if (tilt) {
+          el.style.setProperty('--ry', ((x - .5) * 7).toFixed(2) + 'deg');
+          el.style.setProperty('--rx', ((.5 - y) * 5).toFixed(2) + 'deg');
+        }
+      });
+    }, { passive: true });
+    if (tilt) el.addEventListener('pointerleave', function () {
+      el.style.setProperty('--rx', '0deg'); el.style.setProperty('--ry', '0deg');
+    });
+  });
+
+  /* Imán: el botón se corre hacia el puntero mientras está encima,
+     como mucho un cuarto de su tamaño. */
+  document.querySelectorAll('.btn').forEach(function (b) {
+    b.addEventListener('pointermove', function (e) {
+      var r = b.getBoundingClientRect();
+      b.style.setProperty('--imx', ((e.clientX - r.left - r.width / 2) * .16).toFixed(1) + 'px');
+      b.style.setProperty('--imy', ((e.clientY - r.top - r.height / 2) * .22).toFixed(1) + 'px');
+    }, { passive: true });
+    b.addEventListener('pointerleave', function () {
+      b.style.setProperty('--imx', '0px'); b.style.setProperty('--imy', '0px');
+    });
+  });
+})();
+
+/* ============================================================
+   6. Odómetro
+   Cada dígito es una columna 0-9 que rueda hasta su cifra. Los
+   separadores de miles quedan fijos. Con movimiento reducido se
+   escribe el número y listo.
+   ============================================================ */
+function odometro(el) {
+  var txt = parseInt(el.dataset.n, 10).toLocaleString('es-AR');
+  if (red) { el.textContent = txt; return; }
+  var col = '<u>';
+  for (var d = 0; d < 10; d++) col += '<span>' + d + '</span>';
+  col += '</u>';
+
+  var html = '<span class="od">', k = 0;
+  for (var i = 0; i < txt.length; i++) {
+    var c = txt[i];
+    if (c >= '0' && c <= '9') {
+      html += '<span class="od-d" data-d="' + c + '" style="--k:' + (k++) + '">' + col + '</span>';
+    } else {
+      html += '<span>' + c + '</span>';
+    }
+  }
+  el.innerHTML = html + '</span>';
+
+  /* Un cuadro de aire: si se pone --d en el mismo tick, el
+     navegador no tiene desde dónde interpolar y no hay rodada. */
+  requestAnimationFrame(function () {
+    requestAnimationFrame(function () {
+      el.querySelectorAll('.od-d').forEach(function (s) {
+        s.style.setProperty('--d', s.dataset.d);
+      });
+    });
+  });
+}
+var oN = new IntersectionObserver(function (es) {
+  es.forEach(function (e) { if (e.isIntersecting) { odometro(e.target); oN.unobserve(e.target); } });
+}, { threshold: .6 });
+document.querySelectorAll('[data-n]').forEach(function (el) { oN.observe(el); });
+
+/* ============================================================
+   7. El plano se dibuja solo
+   Se mide cada trazo del SVG y se lo pinta como si lo estuviera
+   trazando una mano. Solo los que tienen contorno: los rellenos
+   y el texto quedan como están.
+   ============================================================ */
+(function () {
+  if (red) return;
+  var fig = document.querySelector('.tec-fig svg'); if (!fig) return;
+  var n = 0;
+  fig.querySelectorAll('path, line, circle, rect, polyline, ellipse').forEach(function (t) {
+    if (!t.getTotalLength) return;
+    var largo;
+    try { largo = t.getTotalLength(); } catch (e) { return; }
+    if (!largo || largo > 4000) return;
+    t.classList.add('traza');
+    t.style.setProperty('--largo', Math.ceil(largo));
+    t.style.setProperty('--i', n++);
+  });
+})();
+
+/* ============================================================
+   8. Reloj vivo con la hora de Buenos Aires
+   ============================================================ */
+var ETA = 40;
+function dd(n) { return String(n).padStart(2, '0'); }
+function estado(h) { if (h < 6) return 'Despiertos ahora'; if (h >= 22) return 'Atendiendo ahora'; return 'En la calle ahora'; }
+function tic() {
+  var a = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Argentina/Buenos_Aires' }));
+  var l = new Date(a.getTime() + ETA * 60000);
+  var ea = document.getElementById('v-ahora'), el = document.getElementById('v-lleg');
+  if (ea) ea.textContent = dd(a.getHours()) + ':' + dd(a.getMinutes());
+  if (el) el.textContent = dd(l.getHours()) + ':' + dd(l.getMinutes());
+  var t = estado(a.getHours());
+  ['est-top', 'est-vivo'].forEach(function (id) { var e = document.getElementById(id); if (e) e.textContent = t; });
+}
+tic(); setInterval(tic, 30000);
+
+/* ---------- 9. Consulta de zona ---------- */
+(function () {
+  var s = document.getElementById('z-sel'); if (!s) return;
+  s.addEventListener('change', function () {
+    var m = +s.value;
+    var eta = document.getElementById('z-eta'), txt = document.getElementById('z-txt');
+    if (!m) {
+      eta.textContent = '—';
+      txt.textContent = 'Elegí tu localidad para ver el tiempo de llegada.';
+      return;
+    }
+    eta.textContent = m + ' minutos';
+    txt.textContent = 'Sí, cubrimos ' + s.options[s.selectedIndex].text +
+      '. Ese es el promedio de llegada, cualquier día y a cualquier hora.';
+  });
+})();
+
+/* ============================================================
+   10. El número del cierre se descifra
+   Los dígitos giran al azar y se van fijando de izquierda a
+   derecha. Es lo último que la persona tiene que retener, así que
+   se gana un segundo de atención.
+   ============================================================ */
+(function () {
+  var n = document.querySelector('.cierre a.num'); if (!n || red) return;
+  var fin = n.textContent.trim(), pasos = 0, total = 26;
+  var t = setTimeout(function () {}, 0);
+
+  function cifra() { return String(Math.floor(Math.random() * 10)); }
+  function paso() {
+    pasos++;
+    var fijos = Math.floor(fin.length * pasos / total);
+    var s = '';
+    for (var i = 0; i < fin.length; i++) {
+      var c = fin[i];
+      s += (c >= '0' && c <= '9' && i >= fijos) ? cifra() : c;
+    }
+    n.textContent = s;
+    if (pasos < total) t = setTimeout(paso, 42); else n.textContent = fin;
+  }
+  new IntersectionObserver(function (es, o) {
+    if (es[0].isIntersecting) { o.disconnect(); clearTimeout(t); paso(); }
+  }, { threshold: .5 }).observe(n);
+})();
+</script>
+
+</body>
+</html>

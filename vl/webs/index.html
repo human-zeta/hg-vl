@@ -1,0 +1,669 @@
+<!doctype html><html lang="es"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>WEBS PARA COMERCIOS — Visual Lab · Human Glitche</title>
+<meta name="description" content="Le hacemos la web a comercios que ya trabajan bien pero no aparecen. No te mostramos un presupuesto: te mostramos tu web andando. Probá acá mismo nueve rubros reales, de día y de noche.">
+<meta name="theme-color" content="#050505">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Human Glitche · Visual Lab">
+<meta property="og:title" content="Tu comercio existe. Tu web, no.">
+<meta property="og:description" content="Webs para comercios que ya trabajan bien pero no aparecen. Probá una viva acá mismo, antes de hablar con nadie.">
+<meta property="og:url" content="https://www.hg-vl.com/vl/webs/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --black:#050505; --ink:#f0ede6; --cyan:#3ad0ff; --acid:#b8ff00; --glitch:#ff2d55;
+    --line:rgba(240,237,230,.12); --line2:rgba(240,237,230,.06);
+    --mut:rgba(240,237,230,.58); --mut2:rgba(240,237,230,.4);
+    --mono:'Space Mono',monospace; --display:'Bebas Neue',sans-serif; --body:'DM Sans',sans-serif;
+    --shell:1120px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  html,body{min-height:100%;background:var(--black);color:var(--ink);font-family:var(--body);overflow-x:hidden;}
+  a{color:inherit;text-decoration:none;}
+  img{max-width:100%;display:block;}
+  ::selection{background:var(--cyan);color:var(--black);}
+
+  /* ══ FONDO VIVO ══ */
+  #campo{position:fixed;inset:0;z-index:0;display:block;width:100%;height:100%;
+    background:radial-gradient(120% 90% at 50% 0%,#0a1420 0%,#050505 62%);}
+  /* velo entre el fondo vivo y el contenido: baja el brillo de la trama lo
+     justo para que el cuerpo de texto tenga contraste, sin apagar los puntos */
+  body::after{content:'';position:fixed;inset:0;z-index:1;pointer-events:none;
+    background:radial-gradient(135% 105% at 50% 42%,rgba(5,5,5,.30),rgba(5,5,5,.68) 100%);}
+  .grano{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.4;
+    background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");}
+  .shell{position:relative;z-index:2;max-width:var(--shell);margin:0 auto;padding:0 22px;}
+
+  /* ══ NAV ══ */
+  nav.vlnav{position:sticky;top:0;z-index:20;display:flex;justify-content:space-between;align-items:center;
+    padding:16px 0;border-bottom:1px solid var(--line);background:rgba(5,5,5,.72);backdrop-filter:blur(14px);}
+  .vlnav .logo{font-family:var(--display);font-size:23px;letter-spacing:.04em;}
+  .vlnav .logo b{color:var(--cyan);font-weight:400;}
+  .vlnav .links{display:flex;align-items:center;gap:20px;font-family:var(--mono);font-size:10px;letter-spacing:.18em;}
+  .vlnav .links a{color:var(--mut2);}
+  .vlnav .links a:hover{color:var(--cyan);}
+  .vlnav .links a.cta{color:var(--black);background:var(--cyan);padding:9px 14px;border-radius:3px;font-weight:700;}
+  .vlnav .links a.cta:hover{background:#6bdcff;}
+  @media(max-width:700px){.vlnav .links a.deep{display:none;}}
+
+  /* ══ HERO ══ */
+  .hero{min-height:clamp(560px,88vh,900px);display:flex;flex-direction:column;justify-content:center;padding:8vh 0 6vh;}
+  .kick{font-family:var(--mono);font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:var(--cyan);
+    display:flex;align-items:center;gap:10px;}
+  .kick::before{content:'';width:26px;height:1px;background:var(--cyan);}
+  .hero h1{font-family:var(--display);font-size:clamp(56px,12.5vw,168px);line-height:.8;letter-spacing:.01em;margin:22px 0 0;}
+  .hero h1 em{font-style:normal;color:var(--cyan);}
+  .hero h1 .off{color:rgba(240,237,230,.22);position:relative;}
+  .hero h1 .off::after{content:'';position:absolute;left:0;right:0;top:52%;height:clamp(3px,.9vw,10px);background:var(--glitch);opacity:.85;}
+  .hero .lede{font-size:clamp(14px,1.5vw,16.5px);line-height:1.85;color:var(--mut);max-width:54ch;margin-top:30px;font-weight:300;}
+  .hero .lede b{color:var(--ink);font-weight:500;}
+  .hero .acts{display:flex;flex-wrap:wrap;gap:12px;margin-top:34px;}
+  .btn{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;padding:15px 24px;border-radius:4px;
+    border:1px solid var(--cyan);color:var(--cyan);transition:.18s;display:inline-flex;align-items:center;gap:9px;}
+  .btn:hover{background:rgba(58,208,255,.12);}
+  .btn.solid{background:var(--cyan);color:var(--black);font-weight:700;}
+  .btn.solid:hover{background:#6bdcff;}
+  .btn.ghost{border-color:var(--line);color:var(--mut);}
+  .btn.ghost:hover{border-color:var(--ink);color:var(--ink);background:transparent;}
+  .btn:active{transform:scale(.98);}
+  .hero .pie{font-family:var(--mono);font-size:10px;letter-spacing:.14em;color:var(--mut2);margin-top:26px;line-height:2;}
+  .hero .pie a{color:var(--mut);border-bottom:1px solid var(--line);}
+  .hero .pie a:hover{color:var(--acid);}
+
+  /* ══ SECCIONES ══ */
+  section{padding:9vh 0;}
+  .cap{font-family:var(--mono);font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:var(--cyan);
+    display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+  .cap i{font-style:normal;font-size:10px;color:var(--black);background:var(--cyan);border-radius:3px;padding:2px 7px;font-weight:700;}
+  h2.tit{font-family:var(--display);font-size:clamp(36px,6.4vw,80px);line-height:.9;letter-spacing:.02em;}
+  h2.tit em{font-style:normal;color:var(--cyan);}
+  .sub{font-size:14.5px;line-height:1.9;color:var(--mut);max-width:62ch;margin-top:16px;font-weight:300;}
+  .sub b{color:var(--ink);font-weight:500;}
+
+  /* ── diagnóstico ── */
+  .diag{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin-top:38px;}
+  .dcard{border:1px solid var(--line);border-radius:12px;padding:28px 24px;background:rgba(240,237,230,.015);transition:.2s;}
+  .dcard:hover{border-color:rgba(58,208,255,.4);background:rgba(58,208,255,.04);}
+  .dcard .n{font-family:var(--display);font-size:64px;line-height:.8;color:var(--cyan);letter-spacing:.01em;}
+  .dcard .n small{font-size:24px;color:var(--mut2);}
+  .dcard h3{font-family:var(--mono);font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink);margin:16px 0 10px;}
+  .dcard p{font-size:13px;line-height:1.85;color:var(--mut);font-weight:300;}
+  .fuente{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;color:var(--mut2);margin-top:20px;line-height:1.9;}
+
+  /* ── mesa de pruebas ── */
+  .mesa{border:1px solid var(--line);border-radius:16px;background:rgba(5,5,5,.55);backdrop-filter:blur(8px);
+    padding:20px;margin-top:34px;}
+  .ctrl{display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:space-between;margin-bottom:18px;}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;}
+  .chip{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;padding:8px 12px;border-radius:99px;
+    border:1px solid var(--line);color:var(--mut);background:transparent;cursor:pointer;transition:.16s;font-weight:400;}
+  .chip:hover{border-color:var(--cyan);color:var(--ink);}
+  .chip[aria-pressed="true"]{background:var(--cyan);border-color:var(--cyan);color:var(--black);font-weight:700;}
+  .switch{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;}
+  .par{display:inline-flex;align-items:center;gap:8px;}
+  .switch .lbl{font-family:var(--mono);font-size:9px;letter-spacing:.18em;color:var(--mut2);text-transform:uppercase;}
+  .seg{display:inline-flex;border:1px solid var(--line);border-radius:99px;overflow:hidden;}
+  .seg button{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;padding:8px 13px;border:0;
+    background:transparent;color:var(--mut);cursor:pointer;transition:.16s;}
+  .seg button:hover{color:var(--ink);}
+  .seg button[aria-pressed="true"]{background:var(--ink);color:var(--black);font-weight:700;}
+
+  .escena{position:relative;border-radius:12px;overflow:hidden;background:#0b0b0b;border:1px solid var(--line2);
+    display:flex;align-items:center;justify-content:center;padding:22px 0;min-height:420px;}
+  .escena::before{content:'';position:absolute;inset:0;pointer-events:none;
+    background:radial-gradient(90% 70% at 50% 0%,rgba(58,208,255,.09),transparent 65%);}
+  .marco{position:relative;transition:width .3s cubic-bezier(.2,.7,.2,1),height .3s cubic-bezier(.2,.7,.2,1);}
+  .marco .bisel{position:absolute;inset:0;border-radius:inherit;pointer-events:none;box-shadow:0 0 0 1px rgba(240,237,230,.16),0 30px 70px rgba(0,0,0,.6);z-index:3;border-radius:inherit;}
+  .marco.movil{border-radius:26px;padding:9px;background:#131313;box-shadow:0 0 0 1px rgba(240,237,230,.14),0 30px 70px rgba(0,0,0,.6);}
+  .marco .notch,.marco .barra{display:none;}
+  .marco.movil .notch{display:block;position:absolute;top:14px;left:50%;transform:translateX(-50%);width:74px;height:5px;border-radius:99px;background:#000;z-index:4;}
+  .marco.escritorio{border-radius:10px;padding:26px 6px 6px;background:#131313;box-shadow:0 0 0 1px rgba(240,237,230,.14),0 30px 70px rgba(0,0,0,.6);}
+  .marco.escritorio .barra{display:flex;position:absolute;top:0;left:0;right:0;height:26px;align-items:center;gap:5px;padding:0 10px;z-index:4;}
+  .marco.escritorio .barra i{width:7px;height:7px;border-radius:99px;background:rgba(240,237,230,.18);display:block;}
+  .marco.escritorio .barra .url{margin-left:10px;font-family:var(--mono);font-size:8.5px;letter-spacing:.06em;color:var(--mut2);
+    overflow:hidden;white-space:nowrap;text-overflow:ellipsis;}
+  .lienzo{position:relative;overflow:hidden;background:#fff;border-radius:inherit;}
+  .marco.movil .lienzo{border-radius:18px;}
+  .marco.escritorio .lienzo{border-radius:4px;}
+  .lienzo iframe{position:absolute;top:0;left:0;border:0;transform-origin:0 0;background:#fff;}
+  .velo{position:absolute;inset:0;z-index:5;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;
+    background:rgba(5,5,5,.86);backdrop-filter:blur(3px);text-align:center;padding:24px;transition:opacity .35s;}
+  /* apagado: además de invisible, que deje de filtrar el fondo — si no, sigue
+     desenfocando la web del iframe y costando GPU para nada */
+  .velo.fuera{opacity:0;pointer-events:none;backdrop-filter:none;}
+  .velo .t{font-family:var(--display);font-size:30px;letter-spacing:.03em;line-height:.95;}
+  .velo .d{font-family:var(--mono);font-size:10px;letter-spacing:.14em;color:var(--mut2);max-width:34ch;line-height:1.9;}
+  .cargando{position:absolute;left:0;right:0;top:0;height:2px;z-index:6;background:linear-gradient(90deg,transparent,var(--cyan),transparent);
+    background-size:40% 100%;background-repeat:no-repeat;animation:barra 1.1s linear infinite;opacity:0;transition:opacity .2s;}
+  .cargando.on{opacity:1;}
+  @keyframes barra{0%{background-position:-40% 0;}100%{background-position:140% 0;}}
+  .pie-mesa{display:flex;flex-wrap:wrap;gap:14px;justify-content:space-between;align-items:center;margin-top:16px;
+    font-family:var(--mono);font-size:10px;letter-spacing:.12em;color:var(--mut2);}
+  .pie-mesa a{color:var(--cyan);}
+  .pie-mesa a:hover{color:var(--ink);}
+  .pie-mesa .nota{max-width:48ch;line-height:1.9;text-transform:none;letter-spacing:.04em;}
+
+  /* ── piezas ── */
+  .piezas{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1px;margin-top:38px;
+    background:var(--line2);border:1px solid var(--line2);border-radius:12px;overflow:hidden;}
+  .pza{background:#070707;padding:30px 26px;transition:.2s;}
+  .pza:hover{background:rgba(58,208,255,.05);}
+  .pza .ix{font-family:var(--mono);font-size:9.5px;letter-spacing:.2em;color:var(--cyan);}
+  .pza h3{font-family:var(--display);font-size:29px;letter-spacing:.03em;line-height:.95;margin:12px 0 10px;}
+  .pza p{font-size:13px;line-height:1.85;color:var(--mut);font-weight:300;}
+  .pza p b{color:var(--ink);font-weight:500;}
+
+  /* ── pasos ── */
+  .pasos{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:16px;margin-top:38px;}
+  .paso{position:relative;border:1px solid var(--line);border-radius:12px;padding:30px 26px;background:rgba(240,237,230,.015);}
+  .paso .num{font-family:var(--display);font-size:15px;letter-spacing:.14em;color:var(--black);background:var(--cyan);
+    width:30px;height:30px;border-radius:99px;display:flex;align-items:center;justify-content:center;}
+  .paso h3{font-family:var(--display);font-size:32px;letter-spacing:.03em;line-height:.95;margin:18px 0 10px;}
+  .paso p{font-size:13px;line-height:1.85;color:var(--mut);font-weight:300;}
+  .paso .marca{font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;color:var(--acid);margin-top:16px;display:block;}
+
+  /* ── rubros ── */
+  .rubros{display:flex;flex-wrap:wrap;gap:8px;margin-top:30px;}
+  .rubro{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--mut);
+    border:1px solid var(--line);border-radius:99px;padding:9px 14px;}
+  .rubro.on{color:var(--cyan);border-color:rgba(58,208,255,.45);}
+
+  /* ── cierre ── */
+  .cierre{border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:10vh 0;text-align:center;}
+  .cierre h2{font-family:var(--display);font-size:clamp(40px,8vw,110px);line-height:.86;letter-spacing:.02em;}
+  .cierre h2 em{font-style:normal;color:var(--cyan);}
+  .cierre p{font-size:14.5px;line-height:1.9;color:var(--mut);max-width:50ch;margin:22px auto 0;font-weight:300;}
+  .cierre .acts{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-top:34px;}
+
+  footer{padding:6vh 0 9vh;font-family:var(--mono);font-size:10px;letter-spacing:.12em;color:var(--mut2);line-height:2.1;}
+  footer .row{display:flex;flex-wrap:wrap;gap:18px;justify-content:space-between;}
+  footer a{color:var(--mut);} footer a:hover{color:var(--cyan);}
+  footer a.hg:hover{color:var(--acid);}
+  footer .fine{margin-top:22px;color:rgba(240,237,230,.26);}
+
+  /* ── entrada por scroll ── */
+  .rv{opacity:0;transform:translateY(18px);transition:opacity .7s cubic-bezier(.2,.7,.2,1),transform .7s cubic-bezier(.2,.7,.2,1);}
+  .rv.dentro{opacity:1;transform:none;}
+
+  :focus-visible{outline:2px solid var(--acid);outline-offset:3px;}
+  @media(prefers-reduced-motion:reduce){
+    *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important;scroll-behavior:auto !important;}
+    .rv{opacity:1;transform:none;}
+  }
+  @media(max-width:640px){
+    section{padding:7vh 0;}
+    .mesa{padding:14px;}
+    .escena{min-height:340px;padding:14px 0;}
+    .ctrl{gap:10px;}
+  }
+</style></head><body>
+
+<canvas id="campo" aria-hidden="true"></canvas>
+<div class="grano" aria-hidden="true"></div>
+
+<div class="shell">
+
+  <nav class="vlnav">
+    <a class="logo" href="/vl/"><span>HG·</span><b>VL</b></a>
+    <div class="links">
+      <a class="deep" href="#prueba">PROBAR UNA</a>
+      <a class="deep" href="#proceso">CÓMO ES</a>
+      <a href="/vl/">← VISUAL LAB</a>
+      <a class="cta" id="nav-wa" href="#hablemos">HABLEMOS →</a>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <div class="kick">Visual Lab · webs para comercios</div>
+    <h1>TU COMERCIO<br><em>EXISTE.</em><br>TU WEB, <span class="off">NO</span>.</h1>
+    <p class="lede">Atendés bien, cobrás bien, el que te conoce vuelve. Pero el que <b>todavía no te conoce</b> te busca en el teléfono y encuentra un Instagram desactualizado, un número que ya no usás, o nada. Eso se arregla, y se arregla en días.</p>
+    <div class="acts">
+      <a class="btn solid" href="#prueba">PROBÁ UNA ACÁ ↓</a>
+      <a class="btn ghost" href="#proceso">CÓMO TRABAJAMOS</a>
+    </div>
+    <p class="pie">Somos <a href="/vl/">Visual Lab</a>, el estudio de <a href="/home.html">Human Glitche</a> — La Plata, Buenos Aires.</p>
+  </header>
+
+</div>
+
+<div class="shell">
+
+  <!-- ══ 01 · EL DIAGNÓSTICO ══ -->
+  <section id="diagnostico">
+    <div class="rv">
+      <div class="cap"><i>01</i> el diagnóstico</div>
+      <h2 class="tit">SALIMOS A MIRAR<br><em>QUÉ HAY AHÍ AFUERA.</em></h2>
+      <p class="sub">Antes de vender nada nos pusimos a relevar comercios de La Plata y Gonnet, uno por uno, con una herramienta propia: qué web tienen, si carga, si las redes están vivas, si el teléfono es el que atienden. Esto es lo que encontramos.</p>
+    </div>
+    <div class="diag rv">
+      <article class="dcard">
+        <div class="n">3<small> / 4</small></div>
+        <h3>tenían la web muerta</h3>
+        <p>El dominio existe pero no carga, tira error o quedó una plantilla vacía de hace años. Para el que busca, es lo mismo que no existir — y peor: parece que cerraste.</p>
+      </article>
+      <article class="dcard">
+        <div class="n">1<small> / 4</small></div>
+        <h3>tenía las redes al día</h3>
+        <p>El resto: última publicación hace meses, o el link de la bio apuntando a algo que ya no está. El cliente entra, no encuentra precio ni horario, y se va al que sí se los da.</p>
+      </article>
+      <article class="dcard">
+        <div class="n">24<small> HS</small></div>
+        <h3>decía el cartel. la web, «9 a 18»</h3>
+        <p>Caso real de una cerrajería de acá: en la persiana, atención las 24 horas. En su web, horario de oficina. Las urgencias de la madrugada — las que mejor pagan — se las llevaba otro.</p>
+      </article>
+    </div>
+    <p class="fuente rv">Fuente: relevamiento propio con nuestra herramienta de escaneo, lote de Gonnet (muestra chica, 4 comercios). No es un estudio de mercado: es lo que vimos con nuestros ojos, en la cuadra.</p>
+  </section>
+
+  <!-- ══ 02 · LA MESA DE PRUEBAS ══ -->
+  <section id="prueba">
+    <div class="rv">
+      <div class="cap"><i>02</i> la mesa de pruebas</div>
+      <h2 class="tit">NO ES UNA MAQUETA.<br><em>ES LA WEB, ANDANDO.</em></h2>
+      <p class="sub">Acá abajo hay nueve webs de verdad, una por rubro. <b>Tocalas.</b> Bajá, abrí el menú, apretá los botones, cambiá de rubro, mirala en celular y en pantalla grande. Y probá los dos vestidos: el mismo sitio de <b>día</b> (claro, sobrio, para leer rápido) y de <b>noche</b> (oscuro, encendido, para una urgencia a las tres de la mañana).</p>
+    </div>
+
+    <div class="mesa rv">
+      <div class="ctrl">
+        <div class="chips" id="rubros" role="group" aria-label="Elegí el rubro"></div>
+        <div class="switch">
+          <span class="par">
+            <span class="lbl">Vestido</span>
+            <span class="seg" id="piel" role="group" aria-label="Elegí el vestido">
+              <button type="button" data-piel="dia" aria-pressed="true">Día</button>
+              <button type="button" data-piel="noche" aria-pressed="false">Noche</button>
+            </span>
+          </span>
+          <span class="par">
+            <span class="lbl">Pantalla</span>
+            <span class="seg" id="disp" role="group" aria-label="Elegí la pantalla">
+              <button type="button" data-disp="movil" aria-pressed="true">Celular</button>
+              <button type="button" data-disp="escritorio" aria-pressed="false">Escritorio</button>
+            </span>
+          </span>
+        </div>
+      </div>
+
+      <div class="escena">
+        <div class="cargando" id="cargando" aria-hidden="true"></div>
+        <div class="marco movil" id="marco">
+          <div class="notch" aria-hidden="true"></div>
+          <div class="barra" aria-hidden="true"><i></i><i></i><i></i><span class="url" id="url">—</span></div>
+          <div class="lienzo" id="lienzo">
+            <iframe id="vista" title="Web de demostración, en vivo" loading="lazy"></iframe>
+          </div>
+        </div>
+        <div class="velo" id="velo">
+          <div class="t">TOCALA</div>
+          <p class="d">Son sitios reales, funcionando. Se cargan cuando vos querés — no antes.</p>
+          <button class="btn solid" type="button" id="encender">ENCENDER LA MESA</button>
+        </div>
+      </div>
+
+      <div class="pie-mesa">
+        <span class="nota">Nombres y fotos de ejemplo: son nuestras plantillas, no clientes reales. Tu web sale con tus datos, tus fotos y tu zona.</span>
+        <a id="abrir" href="#" target="_blank" rel="noopener">ABRIR A PANTALLA COMPLETA ↗</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ 03 · QUÉ TIENE ADENTRO ══ -->
+  <section id="adentro">
+    <div class="rv">
+      <div class="cap"><i>03</i> qué tiene adentro</div>
+      <h2 class="tit">CADA PARTE ESTÁ<br><em>PARA QUE TE LLAMEN.</em></h2>
+      <p class="sub">Nada de relleno. Si un bloque no ayuda a que el que entró termine escribiéndote, no va.</p>
+    </div>
+    <div class="piezas rv">
+      <article class="pza">
+        <div class="ix">01</div><h3>EL BOTÓN QUE YA ESCRIBE</h3>
+        <p>El WhatsApp no abre un chat en blanco: abre el mensaje <b>ya redactado</b> con el servicio y la zona que el cliente eligió. El que está apurado no tiene que explicar nada — solo apretar enviar.</p>
+      </article>
+      <article class="pza">
+        <div class="ix">02</div><h3>LA ZONA Y EL TIEMPO</h3>
+        <p>«¿Llegás a mi barrio?» y «¿en cuánto?» son las dos preguntas de siempre. Están contestadas arriba de todo, con el selector de zona y el tiempo estimado a la vista.</p>
+      </article>
+      <article class="pza">
+        <div class="ix">03</div><h3>PRECIOS ORIENTATIVOS</h3>
+        <p>No el precio final — el rango, para que el cliente sepa en qué se está metiendo. El que pregunta precio y no obtiene respuesta, sigue buscando.</p>
+      </article>
+      <article class="pza">
+        <div class="ix">04</div><h3>ENTRA POR EL CELULAR</h3>
+        <p>Está pensada primero para el teléfono, que es donde te van a buscar, y después se acomoda a la pantalla grande. Probalo vos mismo con el botón de acá arriba.</p>
+      </article>
+      <article class="pza">
+        <div class="ix">05</div><h3>UN SOLO ARCHIVO, CARGA YA</h3>
+        <p>Sin plantillas pesadas ni veinte plugins: la web es un archivo que se abre de una, incluso con mala señal. Si tarda, el cliente ya está llamando a otro.</p>
+      </article>
+      <article class="pza">
+        <div class="ix">06</div><h3>LO QUE DICEN LOS VECINOS</h3>
+        <p>Reseñas, preguntas frecuentes y el paso a paso del trabajo. Es lo que baja la desconfianza de dejar entrar a un desconocido a tu casa.</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- ══ 04 · CÓMO TRABAJAMOS ══ -->
+  <section id="proceso">
+    <div class="rv">
+      <div class="cap"><i>04</i> cómo trabajamos</div>
+      <h2 class="tit">PRIMERO LA VES.<br><em>DESPUÉS HABLAMOS.</em></h2>
+      <p class="sub">La forma normal de contratar una web es al revés: pagás, esperás, y recién ahí ves algo. Nosotros lo damos vuelta — ya tenemos <b>26 webs armadas para comercios que todavía no nos compraron nada</b>. Así trabajamos.</p>
+    </div>
+    <div class="pasos rv">
+      <article class="paso">
+        <div class="num">1</div>
+        <h3>MIRAMOS TU NEGOCIO</h3>
+        <p>Vemos qué tenés hoy: web, redes, ficha de Google, el teléfono que atendés. Media hora nuestra, cero tuya. Salimos con una lista de qué te está faltando.</p>
+        <span class="marca">sin costo</span>
+      </article>
+      <article class="paso">
+        <div class="num">2</div>
+        <h3>TE ARMAMOS LA TUYA</h3>
+        <p>Con tus datos, tus fotos y tus servicios. Te damos un usuario y una clave para entrar a verla, probarla y mostrársela a quien quieras, desde tu celular.</p>
+        <span class="marca">tu web, no una maqueta</span>
+      </article>
+      <article class="paso">
+        <div class="num">3</div>
+        <h3>RECIÉN AHÍ DECIDÍS</h3>
+        <p>Si te gusta, la ajustamos con lo que nos digas, la ponemos en tu dominio y arrancás. Si no te gusta, no pasó nada: no pagaste ni un peso por mirarla.</p>
+        <span class="marca">el precio lo hablamos cara a cara</span>
+      </article>
+    </div>
+  </section>
+
+  <!-- ══ 05 · NO SOLO URGENCIAS ══ -->
+  <section id="rubros">
+    <div class="rv">
+      <div class="cap"><i>05</i> no solo urgencias</div>
+      <h2 class="tit">LAS DE ARRIBA SON<br><em>DE OFICIOS. HAY MÁS.</em></h2>
+      <p class="sub">Las nueve que probaste son del mundo de la urgencia, porque es donde la web se nota al toque. Pero el estudio ya armó sitios para gastronomía, tiendas, clubes y servicios profesionales — con carta y pedido por WhatsApp, catálogo, turnos o venta online, según lo que haga falta. Ésas son de comercios con nombre y apellido, así que las mostramos en privado.</p>
+      <div class="rubros">
+        <span class="rubro on">Cerrajería</span><span class="rubro on">Plomería</span><span class="rubro on">Gasista</span>
+        <span class="rubro on">Electricista</span><span class="rubro on">Destapaciones</span><span class="rubro on">Vidriería</span>
+        <span class="rubro on">Aire acondicionado</span><span class="rubro on">Control de plagas</span><span class="rubro on">Auxilio mecánico</span>
+        <span class="rubro">Restaurante y delivery</span><span class="rubro">Kiosco y almacén</span><span class="rubro">Cervecería y bar</span>
+        <span class="rubro">Club y boliche</span><span class="rubro">Tienda de ropa</span><span class="rubro">Peluquería y estética</span>
+        <span class="rubro">Fotografía</span><span class="rubro">Deco e iluminación</span><span class="rubro">Vivero y semillas</span>
+      </div>
+      <p class="sub" style="margin-top:26px">Y si tu comercio necesita algo más que la web —que los pedidos entren solos, turnos, facturación, reseñas— eso vive en <a href="/servicios-comercios/" style="color:var(--cyan);border-bottom:1px solid var(--line)">el catálogo de automatización</a>, con un medidor para ver cuán a mano estás trabajando hoy.</p>
+    </div>
+  </section>
+
+  <!-- ══ CIERRE ══ -->
+  <section class="cierre" id="hablemos">
+    <div class="rv">
+      <h2>¿ARRANCAMOS<br>POR <em>LA TUYA?</em></h2>
+      <p>Escribinos y te decimos qué haríamos con tu comercio. Si te cierra, la armamos y la ves antes de poner un peso.</p>
+      <div class="acts">
+        <a class="btn solid" id="wa-main" href="#">ESCRIBINOS POR WHATSAPP →</a>
+        <a class="btn" href="mailto:hola@hg-vl.com?subject=Quiero%20la%20web%20de%20mi%20comercio">hola@hg-vl.com</a>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="row">
+      <div>
+        <div><b style="color:var(--cyan)">VISUAL LAB</b> — webs para comercios</div>
+        <div style="margin-top:8px;">
+          <a href="/vl/">Estudio</a> · <a href="/servicios-comercios/">Automatización</a> · <a href="/contacto.html">Contacto</a>
+        </div>
+      </div>
+      <div style="text-align:right;">
+        <div><a class="hg" href="/home.html">← Human Glitche</a> · <a class="hg" href="/labs/">Labs</a></div>
+        <div style="margin-top:8px;"><a href="https://www.youtube.com/@Human.Glitche">YouTube</a> · <a href="https://x.com/HGlitche">X</a></div>
+      </div>
+    </div>
+    <div class="fine">HUMAN GLITCHE · VISUAL LAB — La Plata, Buenos Aires &nbsp;·&nbsp; <a href="/privacidad.html">Privacidad</a> &nbsp;·&nbsp; <a href="/terminos.html">Términos</a></div>
+  </footer>
+
+</div>
+
+<script>
+/* ════════════════════════════════════════════════════════════════
+   CAMPO — el fondo vivo.
+   Un mapa oscuro sembrado de comercios (puntos con jitter por celda)
+   y una onda de escaneo que se expande desde un epicentro a la deriva:
+   cuando la onda pasa por encima de un comercio, ese comercio se
+   enciende. Es, literalmente, lo que hace la herramienta con la que
+   relevamos la cuadra — y lo que la página viene a vender.
+   WebGL2 puro, dos capas de densidad, un solo pase. Si no hay WebGL2
+   o el visitante pidió menos movimiento, queda el degradado del CSS.
+   ════════════════════════════════════════════════════════════════ */
+(function(){
+  var cv=document.getElementById('campo');
+  var quieto=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(quieto) return;
+  var gl=cv.getContext('webgl2',{antialias:false,alpha:false,powerPreference:'low-power'});
+  if(!gl) return;
+
+  var VS='#version 300 es\nvoid main(){vec2 p=vec2((gl_VertexID<<1)&2,gl_VertexID&2);gl_Position=vec4(p*2.0-1.0,0.,1.);}';
+  var FS=['#version 300 es','precision highp float;','out vec4 o;',
+  'uniform vec2 uRes; uniform float uT; uniform vec2 uPtr;',
+  'float h21(vec2 p){p=fract(p*vec2(127.31,311.7));p+=dot(p,p+34.53);return fract(p.x*p.y);}',
+  'vec3 capa(vec2 p,float dens,float sd,vec2 epi,float t,float peso){',
+  '  vec2 g=p*dens; vec2 id=floor(g); vec2 f=fract(g)-0.5;',
+  '  float r1=h21(id+sd), r2=h21(id+sd+7.1);',
+  '  vec2 jit=(vec2(r1,r2)-0.5)*0.72;',
+  '  float hay=step(0.40,h21(id+sd+19.3));',
+  '  float d=length(f-jit);',
+  '  float pt=smoothstep(0.075,0.014,d)*hay;',
+  '  vec2 wp=(id+0.5+jit)/dens;',
+  '  float dc=length(wp-epi);',
+  '  float ph=fract(dc*0.50-t*0.12);',
+  '  float on=smoothstep(0.0,0.10,ph)*smoothstep(0.32,0.10,ph)*exp(-dc*0.28);',
+  '  float acid=step(0.90,h21(id+sd+53.7));',
+  '  vec3 lit=mix(vec3(0.23,0.82,1.00),vec3(0.72,1.00,0.00),acid);',
+  '  float halo=smoothstep(0.42,0.05,d)*hay*on;',
+  '  return (pt*(vec3(0.34,0.44,0.52)*0.18+lit*on*1.7)+lit*halo*0.20)*peso;}',
+  'void main(){',
+  '  vec2 uv=(gl_FragCoord.xy-0.5*uRes)/uRes.y;',
+  // el patrón se mide en píxeles, no en alturas de viewport: así la trama
+  // tiene la misma densidad en un celular, en un monitor y en una ventana
+  // desproporcionadamente alta (si se normaliza por uRes.y, los puntos se
+  // convierten en manchones cuando la pantalla es muy alta).
+  '  vec2 p=(gl_FragCoord.xy-0.5*uRes)/260.0;',
+  '  p.y+=uT*0.013; p.x+=uT*0.004;',
+  '  p+=uPtr*0.14;',
+  '  vec2 epi=vec2(sin(uT*0.070)*0.95,cos(uT*0.053)*0.55);',
+  '  vec3 col=vec3(0.011,0.015,0.020);',
+  '  vec2 gv=abs(fract(p*1.15)-0.5);',
+  '  float b=0.5-max(gv.x,gv.y);',
+  '  float linea=smoothstep(0.013,0.0,b);',
+  '  float dcp=length(p-epi);',
+  '  float php=fract(dcp*0.50-uT*0.12);',
+  '  float onda=smoothstep(0.0,0.10,php)*smoothstep(0.32,0.10,php)*exp(-dcp*0.30);',
+  '  col+=vec3(0.05,0.10,0.13)*linea*0.55;',
+  '  col+=vec3(0.06,0.24,0.33)*linea*onda*1.6;',
+  '  col+=capa(p,3.4,0.0,epi,uT,1.0);',
+  '  col+=capa(p,6.9,91.3,epi,uT,0.42);',
+  '  float vig=smoothstep(1.35,0.15,length(uv*vec2(0.78,1.0)));',
+  '  col*=0.22+0.78*vig;',
+  '  col+=vec3(0.02,0.05,0.07)*smoothstep(0.9,-0.1,uv.y+0.35);',
+  '  col+=(h21(gl_FragCoord.xy)-0.5)/255.0;',
+  '  o=vec4(col,1.0);}'].join('\n');
+
+  function sh(t,s){var x=gl.createShader(t);gl.shaderSource(x,s);gl.compileShader(x);
+    if(!gl.getShaderParameter(x,gl.COMPILE_STATUS)){console.warn('campo:',gl.getShaderInfoLog(x));return null;}return x;}
+  var vs=sh(gl.VERTEX_SHADER,VS), fs=sh(gl.FRAGMENT_SHADER,FS);
+  if(!vs||!fs) return;
+  var pr=gl.createProgram();gl.attachShader(pr,vs);gl.attachShader(pr,fs);gl.linkProgram(pr);
+  if(!gl.getProgramParameter(pr,gl.LINK_STATUS)){console.warn('campo:',gl.getProgramInfoLog(pr));return;}
+  gl.useProgram(pr);
+  var uRes=gl.getUniformLocation(pr,'uRes'),uT=gl.getUniformLocation(pr,'uT'),uPtr=gl.getUniformLocation(pr,'uPtr');
+  var va=gl.createVertexArray();gl.bindVertexArray(va);
+
+  var ptr=[0,0], obj=[0,0];
+  addEventListener('pointermove',function(e){
+    obj[0]=(e.clientX/innerWidth)*2-1; obj[1]=1-(e.clientY/innerHeight)*2;
+  },{passive:true});
+
+  function medir(){
+    var dpr=Math.min(devicePixelRatio||1,1.5);
+    var w=Math.floor(innerWidth*dpr), h=Math.floor(innerHeight*dpr);
+    if(cv.width!==w||cv.height!==h){cv.width=w;cv.height=h;gl.viewport(0,0,w,h);}
+  }
+  addEventListener('resize',medir,{passive:true});
+  medir();
+
+  var t0=performance.now(), tAcum=0, vivo=true, rid=0;
+
+  /* El fondo cede el paso, pero NO se apaga: con la mesa de pruebas encendida
+     la web del iframe ya tiene su propio bucle de animación y no tiene sentido
+     que dos motores se peleen la GPU. En vez de cortar el rAF le bajamos los
+     cuadros a ~8 por segundo: cortarlo del todo dejaría el canvas en negro
+     (sin preserveDrawingBuffer el búfer se descarta después de componer) y el
+     fondo del sitio desaparecería de golpe. Mismo criterio que la MAREA del
+     home cuando el deck de shaders toma el fondo, resuelto sin el apagón. */
+  var minMs=0, ultimo=0;
+  function frenar(){ minMs=125; }
+  function soltar(){ minMs=0; }
+  window.__campo={pausar:frenar,seguir:soltar};
+  document.addEventListener('visibilitychange',function(){
+    if(document.hidden){ if(vivo){vivo=false;cancelAnimationFrame(rid);} }
+    else if(!vivo){ vivo=true; t0=performance.now()-tAcum*1000; rid=requestAnimationFrame(cuadro); }
+  });
+
+  function cuadro(now){
+    rid=requestAnimationFrame(cuadro);
+    if(minMs && now-ultimo < minMs) return;
+    ultimo=now;
+    tAcum=(now-t0)/1000;
+    ptr[0]+=(obj[0]-ptr[0])*0.045; ptr[1]+=(obj[1]-ptr[1])*0.045;
+    gl.uniform2f(uRes,cv.width,cv.height);
+    gl.uniform1f(uT,tAcum);
+    gl.uniform2f(uPtr,ptr[0],ptr[1]);
+    gl.drawArrays(gl.TRIANGLES,0,3);
+  }
+  rid=requestAnimationFrame(cuadro);
+})();
+
+/* ════════════════════════════════════════════════════════════════
+   MESA DE PRUEBAS — las webs del kit, en vivo, dentro de la página.
+   Un solo iframe: se le cambia el src. Nada se carga hasta que el
+   visitante enciende la mesa.
+   Publicación: si el kit no viaja junto a esta página, cambiar KIT
+   por su URL pública (p. ej. 'https://www.hg-vl.com/kit/').
+   ════════════════════════════════════════════════════════════════ */
+(function(){
+  var KIT='../../arquetipo-urgencia/';
+  var RUBROS=[
+    {id:'cerrajeria',   n:'Cerrajería'},
+    {id:'plomeria',     n:'Plomería'},
+    {id:'gasista',      n:'Gasista'},
+    {id:'electricista', n:'Electricista'},
+    {id:'destapaciones',n:'Destapaciones'},
+    {id:'vidrieria',    n:'Vidriería'},
+    {id:'aire',         n:'Aire acond.'},
+    {id:'plagas',       n:'Plagas'},
+    {id:'auxilio',      n:'Auxilio mecánico'}
+  ];
+  var DISP={movil:{w:390,h:820},escritorio:{w:1440,h:900}};
+
+  var cont=document.getElementById('rubros'), marco=document.getElementById('marco'),
+      lienzo=document.getElementById('lienzo'), vista=document.getElementById('vista'),
+      velo=document.getElementById('velo'), carg=document.getElementById('cargando'),
+      abrir=document.getElementById('abrir'), url=document.getElementById('url'),
+      escena=document.querySelector('.escena');
+
+  var rubro='cerrajeria', piel='dia', disp='movil', encendida=false;
+
+  RUBROS.forEach(function(r,i){
+    var b=document.createElement('button');
+    b.type='button'; b.className='chip'; b.textContent=r.n;
+    b.setAttribute('aria-pressed',i===0?'true':'false');
+    b.addEventListener('click',function(){
+      rubro=r.id;
+      Array.prototype.forEach.call(cont.children,function(c){c.setAttribute('aria-pressed',String(c===b));});
+      pintar(true);
+    });
+    cont.appendChild(b);
+  });
+
+  function seg(idEl,attr,set){
+    var box=document.getElementById(idEl);
+    Array.prototype.forEach.call(box.children,function(b){
+      b.addEventListener('click',function(){
+        Array.prototype.forEach.call(box.children,function(c){c.setAttribute('aria-pressed',String(c===b));});
+        set(b.getAttribute(attr));
+      });
+    });
+  }
+  seg('piel','data-piel',function(v){piel=v;pintar(true);});
+  seg('disp','data-disp',function(v){disp=v;marco.className='marco '+v;medida();pintar(false);});
+
+  function ruta(){ return KIT+(piel==='noche'?'sirena/':'')+'urg-'+rubro+'.html'; }
+
+  function medida(){
+    var d=DISP[disp];
+    var dispo=Math.max(240,escena.clientWidth-44);
+    var alto=Math.max(300,Math.min(660,innerHeight*0.74));
+    var k=Math.min(dispo/d.w,alto/d.h);
+    lienzo.style.width=Math.round(d.w*k)+'px';
+    lienzo.style.height=Math.round(d.h*k)+'px';
+    vista.style.width=d.w+'px';
+    vista.style.height=d.h+'px';
+    vista.style.transform='scale('+k+')';
+  }
+
+  function pintar(recargar){
+    var r=ruta();
+    abrir.href=r;
+    url.textContent=r.replace(KIT,'…/arquetipo-urgencia/');
+    if(!encendida) return;
+    if(recargar!==false){ carg.classList.add('on'); vista.src=r; }
+  }
+
+  vista.addEventListener('load',function(){ carg.classList.remove('on'); });
+
+  document.getElementById('encender').addEventListener('click',function(){
+    encendida=true;
+    velo.classList.add('fuera');
+    mando(aLaVista);
+    medida();
+    carg.classList.add('on');
+    vista.src=ruta();
+  });
+
+  /* mientras la mesa está encendida y a la vista, el fondo descansa */
+  window.__mesaViva=false;
+  function mando(aLaVista){
+    window.__mesaViva=!!(aLaVista&&encendida);
+    if(!window.__campo) return;
+    window.__mesaViva?window.__campo.pausar():window.__campo.seguir();
+  }
+  var aLaVista=false;
+  if('IntersectionObserver' in window){
+    new IntersectionObserver(function(en){
+      en.forEach(function(e){ aLaVista=e.isIntersecting; mando(aLaVista); });
+    },{threshold:.2}).observe(escena);
+  }
+
+  addEventListener('resize',function(){ medida(); },{passive:true});
+  medida(); pintar(false);
+})();
+
+/* ── entrada por scroll ── */
+(function(){
+  var els=document.querySelectorAll('.rv');
+  if(!('IntersectionObserver' in window)){
+    Array.prototype.forEach.call(els,function(e){e.classList.add('dentro');}); return;
+  }
+  var io=new IntersectionObserver(function(ent){
+    ent.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('dentro'); io.unobserve(e.target); } });
+  },{rootMargin:'0px 0px -12% 0px',threshold:.05});
+  Array.prototype.forEach.call(els,function(e){io.observe(e);});
+})();
+
+/* ── WhatsApp con el mensaje ya escrito ── */
+(function(){
+  var wa='https://wa.me/5492215632444?text='+encodeURIComponent(
+    'Hola Visual Lab, tengo un comercio y quiero ver qué web me armarían.');
+  var a=document.getElementById('wa-main');
+  if(a){ a.href=wa; a.target='_blank'; a.rel='noopener'; }
+})();
+</script>
+</body></html>
