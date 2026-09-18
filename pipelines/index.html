@@ -178,79 +178,79 @@ const PIPELINES = [
     desc:'Que el negocio exista en internet: un sitio simple que carga rápido y aparece en Google. La base de todo lo demás.',
     gap:['web'], tipos:[],
     nodes:['Dominio','Plantilla HG','Contenido + fotos','Deploy (Pages)','SEO básico','Ficha Google'],
-    setup:{costo:40, precio:200}, mensual:{costo:6, precio:30} },
+    setup:{costo:0, precio:200}, mensual:{costo:0, precio:30} },
 
   { id:'wa', ico:'💬', name:'WHATSAPP BIZ AUTOPILOT', tag:'whatsapp · bot',
     desc:'WhatsApp Business con catálogo, respuestas automáticas a las preguntas de siempre, etiquetas y recordatorios. El canal donde realmente compran.',
     gap:['wa'], tipos:[],
     nodes:['WhatsApp Business','Catálogo','Bot de FAQ','Etiquetas / CRM','Recordatorios','Aviso al dueño'],
-    setup:{costo:25, precio:150}, mensual:{costo:14, precio:70} },
+    setup:{costo:0, precio:150}, mensual:{costo:0, precio:70} },
 
   { id:'social', ico:'📲', name:'REDES EN PILOTO', tag:'instagram · tiktok',
     desc:'Contenido programado, respuestas automáticas a DM y un reporte mensual claro. Presencia constante sin vivir pegado al teléfono.',
     gap:['ig','tt'], tipos:[],
     nodes:['Calendario','Contenido (motor-media)','Programación','Auto-DM','Hashtags','Reporte'],
-    setup:{costo:30, precio:160}, mensual:{costo:45, precio:200} },
+    setup:{costo:0, precio:160}, mensual:{costo:0, precio:200} },
 
   { id:'menu', ico:'🍽️', name:'MENÚ + PEDIDOS WHATSAPP', tag:'gastro · retail',
     desc:'Carta digital con QR en la mesa/vidriera: el cliente arma el pedido y cae directo a tu WhatsApp con seña opcional. Menos idas y vueltas, más tickets.',
     gap:[], tipos:['Restaurante','Cafetería','Bar','Panadería','Carnicería','Supermercado','Rotisería','Heladería','Pizzería','Tienda','Florería'],
     nodes:['Menú/QR','Carrito','Pedido a WhatsApp','Confirmación','Seña / cobro','Aviso a cocina'],
-    setup:{costo:35, precio:180}, mensual:{costo:16, precio:80} },
+    setup:{costo:0, precio:180}, mensual:{costo:0, precio:80} },
 
   { id:'leads', ico:'🧲', name:'CAPTURA DE LEADS', tag:'formulario · crm',
     desc:'Un formulario que captura interesados y dispara seguimiento automático por mail/WhatsApp. Convierte visitas en contactos reales.',
     gap:[], reqWeb:true, tipos:['Inmobiliaria','Agencia de viajes','Hotel','Contabilidad','Gimnasio'],
     nodes:['Formulario','Sheet / CRM','Email/WA automático','Seguimiento','Aviso al dueño'],
-    setup:{costo:22, precio:120}, mensual:{costo:9, precio:50} },
+    setup:{costo:0, precio:120}, mensual:{costo:0, precio:50} },
 
   { id:'resenas', ico:'⭐', name:'REPUTACIÓN', tag:'reseñas · google',
     desc:'Pide reseñas a los clientes contentos y te avisa de las negativas antes de que escalen. Sube la nota y la confianza.',
     gap:[], tipos:['Restaurante','Hotel','Mecánica','Cafetería','Odontología','Veterinaria'],
     nodes:['Post-venta','Mensaje WA/Email','Link a reseña','Filtro NPS','Alerta negativas'],
-    setup:{costo:16, precio:90}, mensual:{costo:7, precio:45} },
+    setup:{costo:0, precio:90}, mensual:{costo:0, precio:45} },
 
   { id:'turnos', ico:'📆', name:'AGENDA / TURNOS', tag:'reservas · recordatorios',
     desc:'Link de reserva con confirmación y recordatorio automático 24h antes. Menos turnos perdidos, agenda ordenada.',
     gap:[], tipos:['Peluquería','Barbería','Estética','Spa','Consultorio','Estudio','Taller','Profesional','Veterinaria','Odontología','Kinesiología','Gimnasio','Óptica','Mecánica'],
     nodes:['Link de reserva','Calendario','Confirmación WA','Recordatorio 24h','Reprogramación'],
-    setup:{costo:22, precio:130}, mensual:{costo:10, precio:55} },
+    setup:{costo:0, precio:130}, mensual:{costo:0, precio:55} },
 
   { id:'factura', ico:'🧾', name:'FACTURACIÓN AUTO', tag:'fiscal · arca',
     desc:'De la venta al comprobante sin fricción: arma la factura AR (A/B/C), la envía por mail/WhatsApp y la registra. Cierra el círculo administrativo.',
     gap:[], tipos:['Mecánica','Contabilidad','Inmobiliaria','Profesional','Electrónica','Ropa'],
     nodes:['Venta','Datos cliente','Factura AR','Envío email/WA','Registro'],
-    setup:{costo:26, precio:140}, mensual:{costo:11, precio:60} },
+    setup:{costo:0, precio:140}, mensual:{costo:0, precio:60} },
 
   { id:'tienda', ico:'🛒', name:'TIENDA + PAGOS', tag:'catálogo · mercado pago',
     desc:'Catálogo online con carrito y cobro por Mercado Pago: el cliente elige, paga y el pedido llega cobrado. Canal propio, sin comisión de marketplace.',
     gap:[], tipos:['Tienda','Ropa','Electrónica','Ferretería','Librería','Juguetería','Deportes','Bazar','Regalería','Vivero','Florería','Panadería'],
     nodes:['Catálogo','Carrito','Mercado Pago','Confirmación','Envío / retiro','Registro ventas'],
-    setup:{costo:45, precio:240}, mensual:{costo:12, precio:60} },
+    setup:{costo:0, precio:240}, mensual:{costo:0, precio:60} },
 
   { id:'ads', ico:'📣', name:'PUBLICIDAD LOCAL', tag:'meta ads · google',
     desc:'Campañas en Instagram/Google segmentadas al barrio, con piezas propias y reporte claro: cuánto pusiste, cuánta gente vino. La pauta la paga el cliente aparte.',
     gap:[], tipos:['Gimnasio','Inmobiliaria','Restaurante','Estética','Hotel','Academia','Agencia de viajes','Pizzería'],
     nodes:['Objetivo','Pieza (motor-media)','Segmentación local','Campaña Meta/Google','Optimización','Reporte'],
-    setup:{costo:25, precio:140}, mensual:{costo:40, precio:180} },
+    setup:{costo:0, precio:140}, mensual:{costo:0, precio:180} },
 
   { id:'email', ico:'💌', name:'EMAIL + FIDELIZACIÓN', tag:'newsletter · cupones',
     desc:'Base de clientes con newsletter, cupones y saludo de cumpleaños automático. Hacer volver al que ya compró cuesta 5 veces menos que conseguir uno nuevo.',
     gap:[], tipos:['Restaurante','Cafetería','Peluquería','Tienda','Gimnasio','Librería','Heladería','Barbería','Estética'],
     nodes:['Alta QR / form','Base de clientes','Newsletter','Cupones','Cumpleaños auto','Métricas'],
-    setup:{costo:18, precio:100}, mensual:{costo:10, precio:50} },
+    setup:{costo:0, precio:100}, mensual:{costo:0, precio:50} },
 
   { id:'brand', ico:'🎨', name:'IDENTIDAD VISUAL', tag:'logo · paleta · plantillas',
     desc:'Logo, paleta, tipografías y plantillas para redes: que todo lo del negocio se vea de la misma casa. Pago único — el pack queda para siempre.',
     gap:[], tipos:[],
     nodes:['Brief','Logo (LETRAS)','Paleta (PALETA)','Tipografías (TIPOS)','Plantillas redes','Manual mini'],
-    setup:{costo:35, precio:220}, mensual:{costo:0, precio:0} },
+    setup:{costo:0, precio:220}, mensual:{costo:0, precio:0} },
 
   { id:'video', ico:'🎬', name:'PACK VIDEO / REELS', tag:'reels · contenido',
     desc:'Pack mensual de videos cortos filmados y editados con estética propia. Las redes hoy son video: el que no publica reels no existe para el algoritmo.',
     gap:[], tipos:['Restaurante','Ropa','Gimnasio','Estética','Bar','Heladería','Tienda','Cafetería','Barbería'],
     nodes:['Guion','Rodaje / captura','Edición (motor-media)','Formatos 9:16','Publicación','Reporte'],
-    setup:{costo:20, precio:120}, mensual:{costo:55, precio:250} },
+    setup:{costo:0, precio:120}, mensual:{costo:0, precio:250} },
 ];
 
 const CHANNELS = [
@@ -422,9 +422,9 @@ function renderCards(){
           <span class="pv">Mes precio <input class="priceedit" data-f="mensual.precio" type="number" value="${pr.mensual.precio}"></span>
          </div>`
       : `<div class="priceline">
-          <span class="pc">Setup: <b>${money(pr.setup.precio)}</b> <small>(costo ${money(pr.setup.costo)})</small></span>
-          <span class="pv">Mensual: <b>${money(pr.mensual.precio)}</b> <small>(costo ${money(pr.mensual.costo)})</small></span>
-          <span class="mg">margen ~${mg}%</span>
+          <span class="pc">Setup: <b>${money(pr.setup.precio)}</b>${pr.setup.costo?` <small>(costo ${money(pr.setup.costo)})</small>`:''}</span>
+          <span class="pv">Mensual: <b>${money(pr.mensual.precio)}</b>${pr.mensual.costo?` <small>(costo ${money(pr.mensual.costo)})</small>`:''}</span>
+          ${(pr.setup.costo||pr.mensual.costo)?`<span class="mg">margen ~${mg}%</span>`:''}
          </div>`;
     return `<div class="card ${rec?'rec':''} ${inq?'added':''}" data-card="${p.id}">
       <div class="head" data-toggle="${p.id}">
