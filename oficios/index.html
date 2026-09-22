@@ -672,10 +672,11 @@ function mostrarResultado(r, d) {
     <div class="codigo">${r.codigo}</div>
     <p style="font-size:14px;font-weight:700;margin-top:14px">Tu llave para actualizar la web — guardala, se muestra una sola vez:</p>
     <div class="llave"><span style="flex:1">${r.llave}</span><button type="button" id="copiar">Copiar</button><button type="button" id="bajar">Guardar</button></div>
-    ${pago.url ? `<div class="aviso">${pago.modo === 'link_fijo' ? `<b>Importante:</b> en Mercado Pago poné el monto <b>${fmt(r.precio)}</b> y tu código <b>${r.codigo}</b> en el mensaje, así te identificamos. Te confirmamos el pago por WhatsApp.` : 'Te lleva a Mercado Pago. Al terminar volvés acá y te confirmamos el pago.'}</div>` :
+    ${pago.url ? `<div class="aviso">${pago.modo === 'link_fijo' ? `<b>Dos pasos:</b> 1) pagá los ${fmt(r.precio)} con el botón de Mercado Pago. 2) Mandanos el comprobante por WhatsApp con tu código <b>${r.codigo}</b>: con eso reservamos tu cupo y te confirmamos.` : 'Te lleva a Mercado Pago. Al terminar volvés acá y te confirmamos el pago.'}</div>` :
       `<div class="aviso">Te escribimos por WhatsApp en el día para el pago.</div>`}
     <div class="acts">
-      ${pago.url ? `<a class="btn btn-mp" href="${pago.url}" rel="noopener">Pagar ${fmt(r.precio)} con Mercado Pago</a>` : ''}
+      ${pago.url ? `<a class="btn btn-mp" href="${pago.url}" target="${pago.modo === 'link_fijo' ? '_blank' : '_self'}" rel="noopener">Pagar ${fmt(r.precio)} con Mercado Pago</a>` : ''}
+      ${pago.modo === 'link_fijo' ? `<a class="btn btn-wa" target="_blank" rel="noopener" href="https://wa.me/${WA_HG}?text=${encodeURIComponent(`Hola! Pagué la web del programa Oficios. Mi código es ${r.codigo} (${d.nombre_publico}). Te mando el comprobante:`)}">Mandar el comprobante</a>` : ''}
       <a class="btn btn-sec" href="${r.vista}" target="_blank" rel="noopener">Ver cómo va quedando mi web</a>
       <a class="btn btn-wa" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent(`Me anoté en el programa de HG: web propia por $30.000 para barberos y tatuadores. Si te sirve, poné mi código ${r.codigo} → https://www.hg-vl.com/oficios/?ref=${r.codigo}`)}">Pasárselo a un colega</a>
     </div>`;
