@@ -11,14 +11,14 @@
   www.hg-vl.com/o/<slug> → Caddy reescribe a /oficios/sitio/index.html, y esta página
   lee la ficha de api.hg-vl.com/v1/_oficios/sitio/<slug>. Cuatro estilos por data-p: papel y neon
   (barbero independiente; neon = el llamativo), tinta y acido (tatuador; acido = el llamativo). ?llave=… = vista previa del dueño antes de publicarse.
-  ?demo=tinta|papel|neon|acido = datos inventados, para la página de la campaña.
+  ?demo=tinta|papel|neon|acido|sastre|galeria = datos inventados, para la página de la campaña.
   El turno NO bloquea agenda (eso es la versión «modernizar»): arma el pedido, manda
   a pagar la seña a SU link de MP y abre WhatsApp. Si tiene agenda de citas de
   Google, el turno va por ahí.
 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Pirata+One&family=Tilt+Neon&family=Outfit:wght@400;600;800&family=Unbounded:wght@600;900&family=Space+Mono:wght@400;700&family=Space+Grotesk:wght@400;600;700&family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,700;12..96,800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Pirata+One&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500;1,600&family=Jost:wght@400;500&family=Instrument+Serif:ital@0;1&family=Inter+Tight:wght@400;500;600&family=Tilt+Neon&family=Outfit:wght@400;600;800&family=Unbounded:wght@600;900&family=Space+Mono:wght@400;700&family=Space+Grotesk:wght@400;600;700&family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,700;12..96,800&display=swap" rel="stylesheet">
 <style>
 :root{--r:18px;--ease:cubic-bezier(.2,.8,.2,1)}
 [data-p=tinta]{--bg:#0b0a0a;--bg2:#121010;--card:#171414;--line:#2a2424;--ink:#ece4d6;--mute:#a2978a;--acc:#d9312b;--acc2:#ff5a4e;--on:#fff;
@@ -169,6 +169,60 @@ body[data-p=acido]::before{content:"";position:fixed;inset:0;z-index:40;pointer-
 .cinta{margin:18px -24px 6px;background:var(--acc);color:#0a0a0a;transform:rotate(-3deg);overflow:hidden;padding:10px 0;border-block:2px solid #0a0a0a}
 .cinta div{display:flex;gap:26px;width:max-content;animation:cinta 16s linear infinite;font-family:'Unbounded',sans-serif;font-weight:900;font-size:20px;text-transform:uppercase;white-space:nowrap}
 @keyframes cinta{to{transform:translateX(-50%)}}
+/* ════ SASTRE — el barbero elegante: barbería de autor, carta de menú, marcos de galería ════ */
+[data-p=sastre]{--bg:#f4efe6;--bg2:#ece5d8;--card:#fbf8f2;--line:#d9cfbd;--ink:#1d2a23;--mute:#6d6a5f;--acc:#1f3d2f;--acc2:#a8864a;--on:#f4efe6;
+  --d:'Cormorant Garamond',Georgia,serif;--b:'Jost',system-ui,sans-serif;--dw:500;--rad:2px}
+[data-p=sastre] .hero{text-align:center;padding-top:56px}
+[data-p=sastre] .hero p{margin-inline:auto}
+[data-p=sastre] .hero .ctas{justify-content:center}
+[data-p=sastre] .hero h1{font-style:italic;font-weight:500;font-size:clamp(64px,18vw,120px);letter-spacing:-.02em}
+[data-p=sastre] .rub{color:var(--acc2);letter-spacing:.32em;font-weight:500}
+[data-p=sastre] h2{font-style:italic;font-weight:500;text-align:center}
+[data-p=sastre] h2::after{content:"";display:block;width:44px;height:1px;background:var(--acc2);margin:14px auto 0}
+[data-p=sastre] .top{border-bottom:1px solid var(--line)}
+[data-p=sastre] .top .nom{font-style:italic;font-size:24px}
+[data-p=sastre] .btn{letter-spacing:.14em;text-transform:uppercase;font-size:12.5px;font-weight:500}
+[data-p=sastre] .btn-acc{background:var(--acc);color:#f4efe6;box-shadow:inset 0 0 0 1px var(--acc),inset 0 0 0 3px #f4efe6,inset 0 0 0 4px var(--acc2)}
+[data-p=sastre] .btn-line{border-color:var(--ink)}
+[data-p=sastre] .svcs{border:0}
+[data-p=sastre] .svc{border:0;align-items:baseline;padding:12px 0}
+[data-p=sastre] .svc>div{flex:1;display:flex;align-items:baseline;gap:10px}
+[data-p=sastre] .svc>div::after{content:"";flex:1;border-bottom:1px dotted var(--mute);transform:translateY(-4px);order:2}
+[data-p=sastre] .svc small{order:3;display:inline;font-style:italic}
+[data-p=sastre] .svc b{font-weight:500;font-size:17px}
+[data-p=sastre] .svc .p{font-style:italic;font-size:28px;color:var(--acc)}
+[data-p=sastre] .fotos{gap:12px}
+[data-p=sastre] .fotos button{border-radius:0;border:7px solid #fbf8f2;outline:1px solid var(--acc2);outline-offset:-1px;box-shadow:0 10px 22px -10px rgba(0,0,0,.4)}
+[data-p=sastre] .turno{border:1px solid var(--acc2);box-shadow:inset 0 0 0 5px var(--card),inset 0 0 0 6px var(--line)}
+[data-p=sastre] .hoy{border-color:var(--acc2)}
+.orla{text-align:center;color:var(--acc2);letter-spacing:.5em;font-size:13px;margin:4px 0 26px}
+.orla::before,.orla::after{content:"";display:inline-block;width:60px;height:1px;background:var(--acc2);vertical-align:middle;margin:0 14px}
+
+/* ════ GALERÍA — el tatuador elegante: muestra de museo, obras numeradas, mucho aire ════ */
+[data-p=galeria]{--bg:#fafaf8;--bg2:#f1f1ee;--card:#fff;--line:#e3e3de;--ink:#111;--mute:#7a7a72;--acc:#111;--acc2:#111;--on:#fff;
+  --d:'Instrument Serif',Georgia,serif;--b:'Inter Tight',system-ui,sans-serif;--dw:400;--rad:0px}
+[data-p=galeria] .wrap{width:min(760px,100% - 40px)}
+[data-p=galeria] .hero{padding:72px 0 40px}
+[data-p=galeria] .hero h1{font-size:clamp(72px,20vw,140px);letter-spacing:-.035em;line-height:.88}
+[data-p=galeria] .rub{color:var(--mute);letter-spacing:.2em;font-weight:500;font-size:11px}
+[data-p=galeria] .hero p{font-size:19px;color:#3a3a36;max-width:440px}
+[data-p=galeria] h2{font-size:clamp(40px,9vw,64px);letter-spacing:-.03em}
+[data-p=galeria] .top .nom{font-size:22px}
+[data-p=galeria] .btn{font-weight:500;font-size:14px}
+[data-p=galeria] .btn-acc{background:#111;color:#fff}
+[data-p=galeria] .btn-line{border-color:#111}
+[data-p=galeria] .ig,[data-p=galeria] .hoy{border-radius:0}
+[data-p=galeria] .fotos{grid-template-columns:1fr 1fr;gap:34px 18px;counter-reset:obra}
+[data-p=galeria] .fotos button{grid-column:auto!important;grid-row:auto!important;aspect-ratio:4/5;border-radius:0;position:relative;overflow:visible;counter-increment:obra}
+[data-p=galeria] .fotos button:first-child{grid-column:1/-1!important;aspect-ratio:4/3}
+[data-p=galeria] .fotos button::after{content:"Obra " counter(obra,decimal-leading-zero);position:absolute;left:0;top:calc(100% + 8px);font:500 11px/1 'Inter Tight',sans-serif;letter-spacing:.14em;text-transform:uppercase;color:var(--mute)}
+[data-p=galeria] .fotos+p{margin-top:44px!important}
+[data-p=galeria] .svc{padding:20px 0}
+[data-p=galeria] .svc b{font-weight:500}
+[data-p=galeria] .svc .p{font-size:30px;color:#111}
+[data-p=galeria] .turno{border:1px solid #111}
+.expo{display:flex;justify-content:space-between;gap:10px;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--mute);border-top:1px solid #111;padding-top:10px;margin:0 0 22px}
+
 @media(prefers-reduced-motion:reduce){.poste,.cinta div,body[data-p=neon]::before,[data-p=neon] .hero h1{animation:none!important}}
 [hidden]{display:none!important}
 </style>
@@ -217,6 +271,20 @@ const DEMOS = {
     horarios: { 3: [['13:00', '20:00']], 4: [['13:00', '20:00']], 5: [['13:00', '20:00']], 6: [['12:00', '19:00']] },
     sena: { link: 'https://www.mercadopago.com.ar/', monto: 2000000 }, agenda: null,
     fotos: ['☠', '✦', '🐍', '👁', '☾', '✧'].map((g, i) => tile(['#141414', '#c6ff00', '#1e1e1e'][i % 3], i % 3 === 1 ? '#0a0a0a' : '#f2f2f2', g)), publicado: true },
+  sastre: { slug: 'demo', rubro: 'barberia', plantilla: 'sastre', nombre: 'Ernesto', whatsapp: '5492212003824', instagram: 'ejemplo',
+    bio: 'Barbería de autor. Tijera, navaja y toalla caliente, sin apuro y con reserva.', modalidad: 'local', local: 'Sillón 1 · Casa Obrador',
+    direccion: null, barrio: 'Barrio Norte', ciudad: 'La Plata',
+    servicios: [{ nombre: 'Corte a tijera', precio: 1500000, min: 45 }, { nombre: 'Afeitado clásico', precio: 1200000, min: 40 }, { nombre: 'Corte y barba', precio: 2200000, min: 75 }, { nombre: 'Arreglo de barba', precio: 900000, min: 30 }],
+    horarios: { 2: [['10:00', '19:00']], 3: [['10:00', '19:00']], 4: [['10:00', '19:00']], 5: [['10:00', '20:00']], 6: [['09:00', '14:00']] },
+    sena: { link: 'https://www.mercadopago.com.ar/', monto: 400000 }, agenda: null,
+    fotos: ['✂', '☙', '✦', '❧', '✂', '☙'].map((g, i) => tile(['#1f3d2f', '#efe7d8', '#2b2622'][i % 3], ['#a8864a', '#1f3d2f', '#d8c39a'][i % 3], g)), publicado: true },
+  galeria: { slug: 'demo', rubro: 'tatuaje', plantilla: 'galeria', nombre: 'Sol Ferrán', whatsapp: '5492212003824', instagram: 'ejemplo',
+    bio: 'Tatuadora. Línea fina y botánica en piezas únicas. Cada diseño se dibuja para una sola piel.', modalidad: 'estudio', local: 'Estudio privado',
+    direccion: null, barrio: 'City Bell', ciudad: 'La Plata',
+    servicios: [{ nombre: 'Pieza pequeña', precio: 6000000, min: 120 }, { nombre: 'Pieza mediana', precio: 12000000, min: 240 }, { nombre: 'Diseño a medida (consulta)', precio: 1500000, min: 30 }],
+    horarios: { 3: [['12:00', '19:00']], 4: [['12:00', '19:00']], 5: [['12:00', '19:00']], 6: [['11:00', '16:00']] },
+    sena: { link: 'https://www.mercadopago.com.ar/', monto: 2000000 }, agenda: null,
+    fotos: ['❀', '☾', '✧', '↟', '◯'].map((g, i) => tile(['#ecebe6', '#dcdad2', '#f4f3ef'][i % 3], '#2a2a26', g)), publicado: true },
   papel: { slug: 'demo', rubro: 'barberia', plantilla: 'papel', nombre: 'Lucho', whatsapp: '5492212003824', instagram: 'ejemplo',
     bio: 'Barbero hace 7 años. Corto en mi estudio o voy a tu casa. Fades limpios y buena música.', modalidad: 'casa', local: null, direccion: null, barrio: 'Tolosa', ciudad: 'La Plata',
     servicios: [{ nombre: 'Corte', precio: 1100000, min: 40 }, { nombre: 'Fade', precio: 1250000, min: 45 }, { nombre: 'Corte + barba', precio: 1600000, min: 60 }, { nombre: 'Solo barba', precio: 650000, min: 25 }],
@@ -277,6 +345,8 @@ function pintar(f) {
       <div class="ctas"><a class="btn btn-acc" href="#turno">Sacar turno</a><a class="btn btn-line" href="${wa('Hola ' + f.nombre + '! Te hago una consulta:')}" target="_blank" rel="noopener">WhatsApp</a></div>
     </header>
     ${f.plantilla === 'neon' ? '<div class="poste" aria-hidden="true"></div>' : ''}
+    ${f.plantilla === 'sastre' ? '<div class="orla" aria-hidden="true">✦</div>' : ''}
+    ${f.plantilla === 'galeria' ? `<div class="expo"><span>Selección de obra</span><span>${f.fotos.length ? String(f.fotos.length).padStart(2, '0') + ' piezas' : ''}</span></div>` : ''}
     ${f.plantilla === 'acido' ? `<div class="cinta" aria-hidden="true"><div>${Array(8).fill(`<span>${esc(f.nombre)}</span><span>✦</span><span>${rubro}</span><span>✦</span>`).join('')}</div></div>` : ''}
     ${f.fotos.length ? `<section style="padding-top:10px"><div class="fotos ${f.fotos.length === 1 ? 'una' : f.fotos.length < 4 ? 'pocas' : ''}">${f.fotos.slice(0, 8).map((u, i) => `<button style="background-image:url('${u}')" data-u="${u}" aria-label="Ver trabajo ${i + 1}"></button>`).join('')}</div>
       ${f.instagram ? `<p style="text-align:center;margin-top:14px"><a class="ig" href="https://instagram.com/${esc(f.instagram)}" target="_blank" rel="noopener">${IG_SVG}Ver más en Instagram</a></p>` : ''}</section>` : ''}
