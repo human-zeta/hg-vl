@@ -346,7 +346,7 @@ function pintar(f) {
     </header>
     ${f.plantilla === 'neon' ? '<div class="poste" aria-hidden="true"></div>' : ''}
     ${f.plantilla === 'sastre' ? '<div class="orla" aria-hidden="true">✦</div>' : ''}
-    ${f.plantilla === 'galeria' ? `<div class="expo"><span>Selección de obra</span><span>${f.fotos.length ? String(f.fotos.length).padStart(2, '0') + ' piezas' : ''}</span></div>` : ''}
+    ${f.plantilla === 'galeria' && f.fotos.length ? `<div class="expo"><span>Selección de obra</span><span>${f.fotos.length ? String(f.fotos.length).padStart(2, '0') + ' piezas' : ''}</span></div>` : ''}
     ${f.plantilla === 'acido' ? `<div class="cinta" aria-hidden="true"><div>${Array(8).fill(`<span>${esc(f.nombre)}</span><span>✦</span><span>${rubro}</span><span>✦</span>`).join('')}</div></div>` : ''}
     ${f.fotos.length ? `<section style="padding-top:10px"><div class="fotos ${f.fotos.length === 1 ? 'una' : f.fotos.length < 4 ? 'pocas' : ''}">${f.fotos.slice(0, 8).map((u, i) => `<button style="background-image:url('${u}')" data-u="${u}" aria-label="Ver trabajo ${i + 1}"></button>`).join('')}</div>
       ${f.instagram ? `<p style="text-align:center;margin-top:14px"><a class="ig" href="https://instagram.com/${esc(f.instagram)}" target="_blank" rel="noopener">${IG_SVG}Ver más en Instagram</a></p>` : ''}</section>` : ''}
