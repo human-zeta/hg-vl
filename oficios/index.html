@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Oficios — Tu web por $30.000 · Human Glitche</title>
+<meta name="description" content="Programa de Human Glitche para barberos y tatuadores que están arrancando: tu web con tus trabajos, tu Instagram y turnos con seña a tu Mercado Pago, por $30.000. 100 cupos por rubro.">
+<meta property="og:title" content="Tu web por $30.000 — Oficios · Human Glitche">
+<meta property="og:description" content="Para barberos y tatuadores que arrancan. Tus trabajos, tu Instagram y turnos con seña a tu Mercado Pago. 100 cupos por rubro.">
+<meta name="theme-color" content="#07070b">
+<!--
+  OFICIOS — campaña de HG (2026-09-22). Formulario + pago de $30.000 + directorio.
+  Backend: api.hg-vl.com/v1/_oficios (hg-infra/api/src/oficios.js, migración 043).
+  Las webs de cada uno viven en /o/<slug> y son UNA plantilla: /oficios/sitio/.
+  En local (localhost) habla con el arnés de pruebas en :3131.
+  Construido bajo la excepción de costo de web/. Publicar = gate.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,700;1,9..40,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#07070b; --bg2:#0d0d14; --card:#12121b; --line:#23233a; --line2:#34345a;
+  --ink:#eeeaf6; --mute:#9d98b3; --dim:#625d7a;
+  --vio:#8b5cf6; --cel:#5ee7ff; --agua:#2dd4bf; --ok:#34d399; --bad:#f87171;
+  --grad:linear-gradient(100deg,var(--vio),var(--cel) 60%,var(--agua));
+  --d:'Bebas Neue',Impact,sans-serif; --b:'DM Sans',system-ui,sans-serif; --m:'Space Mono',ui-monospace,monospace;
+  --ease:cubic-bezier(.2,.8,.2,1);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font-family:var(--b);font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{color:inherit}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+input,textarea,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--cel);outline-offset:3px;border-radius:6px}
+.wrap{width:min(1120px,100% - 32px);margin-inline:auto}
+.mono{font-family:var(--m);font-size:12px;letter-spacing:.08em;text-transform:uppercase}
+.grad{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+h1,h2,h3{font-family:var(--d);font-weight:400;letter-spacing:.01em;line-height:.92}
+h2{font-size:clamp(46px,7vw,84px)}
+section{padding:96px 0}
+.head{display:flex;justify-content:space-between;align-items:end;gap:24px;flex-wrap:wrap;margin-bottom:40px}
+.head p{color:var(--mute);max-width:440px}
+
+#fondo{position:fixed;inset:0;z-index:-1;width:100%;height:100%;opacity:.55}
+.velo{position:fixed;inset:0;z-index:-1;background:
+  radial-gradient(ellipse 70% 50% at 20% 0%,rgba(139,92,246,.22),transparent 60%),
+  radial-gradient(ellipse 60% 50% at 90% 20%,rgba(94,231,255,.12),transparent 60%),
+  linear-gradient(transparent 60%,var(--bg))}
+
+nav{position:sticky;top:0;z-index:30;background:rgba(7,7,11,.72);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+nav .wrap{display:flex;justify-content:space-between;align-items:center;height:62px}
+.marca{font-family:var(--d);font-size:26px;letter-spacing:.04em;text-decoration:none}
+.marca span{color:var(--mute);font-size:18px;margin-left:8px}
+nav .links{display:flex;gap:22px;align-items:center;font-size:14px;color:var(--mute)}
+nav .links a{text-decoration:none}
+nav .links a:hover{color:var(--ink)}
+@media(max-width:700px){nav .links a:not(.btn){display:none}}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;padding:15px 24px;border-radius:14px;font-weight:700;font-size:15px;text-decoration:none;transition:transform .2s var(--ease),box-shadow .2s,background .2s;min-height:48px}
+.btn:active{transform:scale(.97)}
+.btn-pri{background:var(--grad);color:#07070b;box-shadow:0 10px 30px -10px rgba(94,231,255,.5)}
+.btn-pri:hover{box-shadow:0 14px 40px -10px rgba(139,92,246,.7)}
+.btn-sec{border:1px solid var(--line2);background:rgba(255,255,255,.02)}
+.btn-sec:hover{border-color:var(--cel)}
+.btn-mp{background:#009ee3;color:#fff}
+.btn-wa{background:#1f9d55;color:#fff}
+.btn:disabled{opacity:.4;pointer-events:none}
+nav .btn{padding:9px 16px;min-height:0;font-size:14px}
+
+/* hero */
+.hero{padding:80px 0 60px}
+.hero .chip{display:inline-flex;gap:8px;align-items:center;padding:7px 12px;border:1px solid var(--line2);border-radius:999px;color:var(--mute)}
+.hero .chip i{width:7px;height:7px;border-radius:50%;background:var(--ok);box-shadow:0 0 10px var(--ok)}
+.hero h1{font-size:clamp(76px,14vw,180px);margin:22px 0 18px}
+.hero .lead{font-size:clamp(18px,2vw,22px);color:var(--mute);max-width:640px}
+.hero .lead b{color:var(--ink);font-weight:500}
+.hero .ctas{display:flex;gap:12px;flex-wrap:wrap;margin:32px 0 40px}
+.lanza{color:var(--cel);margin:-14px 0 14px;text-transform:none;letter-spacing:.04em}
+.cupos{display:grid;grid-template-columns:repeat(2,minmax(0,300px));gap:14px}
+.cupo{border:1px solid var(--line);background:rgba(18,18,27,.7);border-radius:18px;padding:18px 20px}
+.cupo .top{display:flex;justify-content:space-between;align-items:baseline}
+.cupo b{font-family:var(--d);font-size:44px;font-weight:400;line-height:1}
+.cupo small{color:var(--mute)}
+.barra{height:6px;border-radius:3px;background:var(--line);margin-top:12px;overflow:hidden}
+.barra i{display:block;height:100%;background:var(--grad);width:0;transition:width 1.2s var(--ease)}
+@media(max-width:560px){.cupos{grid-template-columns:1fr 1fr}.cupo b{font-size:36px}}
+
+/* incluye */
+.incl{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.it{border:1px solid var(--line);background:var(--card);border-radius:20px;padding:24px}
+.it .n{font-family:var(--m);font-size:12px;color:var(--cel)}
+.it h3{font-size:34px;margin:10px 0 8px}
+.it p{color:var(--mute);font-size:15px}
+.it.big{grid-column:span 2;background:linear-gradient(135deg,rgba(139,92,246,.14),rgba(94,231,255,.06));border-color:var(--line2)}
+@media(max-width:860px){.incl{grid-template-columns:1fr}.it.big{grid-column:auto}}
+
+/* estilos */
+.estilos{display:grid;grid-template-columns:repeat(2,minmax(0,320px));justify-content:center;gap:40px}
+.est{text-align:center}
+.phone{width:100%;max-width:280px;aspect-ratio:9/18.5;margin:0 auto 14px;border-radius:34px;border:8px solid #1c1c28;background:#000;overflow:hidden;box-shadow:0 30px 60px -20px rgba(0,0,0,.8),0 0 0 1px var(--line2);position:relative}
+.phone iframe{width:390px;height:804px;border:0;transform-origin:0 0;position:absolute;top:0;left:0}
+.est h3{font-size:30px}
+.est p{color:var(--mute);font-size:14px}
+@media(max-width:860px){.estilos{grid-template-columns:1fr}}
+
+/* pasos */
+.pasos{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;counter-reset:p}
+.paso{border-top:2px solid var(--line2);padding-top:18px}
+.paso::before{counter-increment:p;content:"0" counter(p);font-family:var(--d);font-size:64px;line-height:1;display:block}
+.paso:nth-child(1)::before{color:var(--vio)}.paso:nth-child(2)::before{color:var(--cel)}.paso:nth-child(3)::before{color:var(--agua)}
+.paso h3{font-size:28px;margin:6px 0}
+.paso p{color:var(--mute);font-size:15px}
+@media(max-width:760px){.pasos{grid-template-columns:1fr}}
+
+/* formulario */
+#anotarme{background:var(--bg2);border-block:1px solid var(--line)}
+.form{display:grid;grid-template-columns:1fr 320px;gap:24px;align-items:start}
+@media(max-width:960px){.form{grid-template-columns:1fr}}
+fieldset{border:1px solid var(--line);background:var(--card);border-radius:22px;padding:24px;margin-bottom:14px}
+legend{font-family:var(--d);font-size:30px;padding:0 8px;margin-left:-8px}
+legend small{font-family:var(--m);font-size:11px;color:var(--mute);letter-spacing:.08em;margin-left:8px;vertical-align:middle}
+.fdesc{color:var(--mute);font-size:14px;margin:-4px 0 16px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:600px){.row{grid-template-columns:1fr}}
+label.f{display:block;margin-bottom:14px}
+label.f>span{display:block;font-size:13px;font-weight:700;margin-bottom:6px}
+label.f>span em{font-style:normal;font-weight:400;color:var(--mute)}
+.inp{width:100%;padding:13px 15px;background:var(--bg);border:1px solid var(--line2);border-radius:12px;outline:none;transition:border-color .2s;min-height:48px}
+.inp:focus{border-color:var(--cel)}
+textarea.inp{min-height:88px;resize:vertical}
+.inp.bad{border-color:var(--bad)}
+.ayuda{font-size:12.5px;color:var(--mute);margin-top:6px}
+.ayuda a{color:var(--cel)}
+.pref{display:flex;align-items:center;border:1px solid var(--line2);border-radius:12px;background:var(--bg);overflow:hidden}
+.pref span{padding:0 0 0 14px;color:var(--dim);font-family:var(--m);font-size:13px;white-space:nowrap}
+.pref input{border:0;background:none;flex:1;min-width:0;padding:13px 14px 13px 2px;outline:none;min-height:48px}
+.pref:focus-within{border-color:var(--cel)}
+.slugok{font-size:12.5px;margin-top:6px;font-family:var(--m)}
+.slugok.si{color:var(--ok)}.slugok.no{color:var(--bad)}
+.seg{display:flex;gap:8px;flex-wrap:wrap}
+.seg label{position:relative}
+.seg input{position:absolute;opacity:0;pointer-events:none}
+.seg span{display:block;padding:12px 16px;border:1px solid var(--line2);border-radius:12px;font-weight:600;font-size:14px;cursor:pointer;transition:.15s;min-height:46px}
+.seg span small{display:block;font-weight:400;color:var(--mute);font-size:12px}
+.seg input:checked+span{border-color:var(--cel);background:rgba(94,231,255,.08);box-shadow:inset 0 0 0 1px var(--cel)}
+.seg input:focus-visible+span{outline:2px solid var(--cel);outline-offset:2px}
+.seg.big label{flex:1;min-width:150px}
+.seg.big span{padding:18px;text-align:center}
+.seg.big span b{display:block;font-family:var(--d);font-size:30px;font-weight:400}
+.svc-row{display:grid;grid-template-columns:1fr 120px 90px 40px;gap:8px;margin-bottom:8px}
+.svc-row .x{border:1px solid var(--line2);border-radius:12px;color:var(--mute)}
+.svc-head{display:grid;grid-template-columns:1fr 120px 90px 40px;gap:8px;font-size:12px;color:var(--mute);margin-bottom:6px}
+@media(max-width:520px){.svc-row,.svc-head{grid-template-columns:1fr 92px 66px 36px}}
+.dia{display:grid;grid-template-columns:110px 1fr;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
+.dia:last-child{border:0}
+.dia .sw{display:flex;align-items:center;gap:10px;font-weight:600;cursor:pointer}
+.dia .sw input{width:20px;height:20px;accent-color:var(--cel)}
+.franjas{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.franja{display:flex;gap:4px;align-items:center;font-size:13px;color:var(--mute)}
+.franja input{padding:8px;border:1px solid var(--line2);border-radius:10px;background:var(--bg);min-height:40px;width:104px}
+.dia.off .franjas{opacity:.3;pointer-events:none}
+.mas{font-size:13px;color:var(--cel);padding:6px 8px}
+@media(max-width:560px){.dia{grid-template-columns:1fr}}
+.fotos{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.fotos .th{aspect-ratio:1;border-radius:12px;overflow:hidden;position:relative;background:var(--bg)}
+.fotos .th img{width:100%;height:100%;object-fit:cover}
+.fotos .th button{position:absolute;top:4px;right:4px;width:28px;height:28px;border-radius:50%;background:rgba(0,0,0,.7);font-size:14px}
+.fotos .add{aspect-ratio:1;border:1.5px dashed var(--line2);border-radius:12px;display:grid;place-items:center;color:var(--mute);font-size:13px;text-align:center;cursor:pointer;padding:6px}
+.fotos .add:hover{border-color:var(--cel);color:var(--ink)}
+@media(max-width:520px){.fotos{grid-template-columns:repeat(3,1fr)}}
+.check{display:flex;gap:12px;align-items:flex-start;font-size:14px;color:var(--mute);cursor:pointer}
+.check input{width:20px;height:20px;margin-top:2px;accent-color:var(--cel);flex:none}
+.check b{color:var(--ink)}
+.oculto{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+.err{background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.4);color:#fecaca;border-radius:12px;padding:12px 14px;font-size:14px;margin-top:12px}
+
+.resumen{position:sticky;top:80px;border:1px solid var(--line2);border-radius:22px;padding:22px;background:linear-gradient(160deg,rgba(139,92,246,.12),rgba(18,18,27,.9) 40%)}
+.resumen h3{font-size:34px;margin-bottom:6px}
+.resumen ul{list-style:none;font-size:14px;color:var(--mute);margin:14px 0}
+.resumen li{padding:6px 0;border-bottom:1px dashed var(--line2);display:flex;gap:8px}
+.resumen li::before{content:"✓";color:var(--agua)}
+.resumen .precio{font-family:var(--d);font-size:64px;line-height:1}
+.resumen .precio small{font-family:var(--b);font-size:14px;color:var(--mute)}
+.resumen .btn{width:100%;margin-top:16px}
+.resumen .fine{font-size:12px;color:var(--dim);margin-top:10px;text-align:center}
+@media(max-width:960px){.resumen{position:relative;top:0}}
+
+/* resultado */
+.resultado{border:1px solid var(--line2);border-radius:24px;padding:30px;background:var(--card);max-width:680px;margin:0 auto}
+.resultado h3{font-size:52px}
+.resultado .sub{color:var(--mute);margin:6px 0 20px}
+.codigo{font-family:var(--m);font-size:24px;letter-spacing:.14em;padding:14px;border:1.5px dashed var(--cel);border-radius:14px;text-align:center;margin:10px 0}
+.llave{display:flex;gap:8px;align-items:center;background:var(--bg);border:1px solid var(--line2);border-radius:12px;padding:10px 12px;font-family:var(--m);font-size:13px;word-break:break-all}
+.llave button{flex:none;padding:8px 12px;border:1px solid var(--line2);border-radius:10px;font-family:var(--b);font-size:13px}
+.aviso{background:rgba(94,231,255,.07);border:1px solid rgba(94,231,255,.25);border-radius:14px;padding:14px;font-size:14px;margin:16px 0}
+.acts{display:grid;gap:10px;margin-top:16px}
+.progreso{font-family:var(--m);font-size:13px;color:var(--mute);margin-top:10px}
+
+/* directorio */
+.filtros{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+.filtros button{padding:9px 16px;border:1px solid var(--line2);border-radius:999px;font-size:14px;min-height:40px}
+.filtros button.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.filtros input{flex:1;min-width:180px;padding:9px 14px;border:1px solid var(--line2);border-radius:999px;background:var(--bg);min-height:40px}
+.dir{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+.pers{border:1px solid var(--line);background:var(--card);border-radius:18px;overflow:hidden;text-decoration:none;transition:border-color .2s,transform .3s var(--ease)}
+.pers:hover{border-color:var(--cel);transform:translateY(-3px)}
+.pers .ph{aspect-ratio:4/3;background:var(--bg) center/cover}
+.pers .bd{padding:14px}
+.pers b{font-family:var(--d);font-size:28px;font-weight:400;display:block;line-height:1}
+.pers small{color:var(--mute);font-size:13px}
+.vacio{border:1.5px dashed var(--line2);border-radius:18px;padding:40px;text-align:center;color:var(--mute)}
+
+/* pasalo / faq */
+.pasalo{border-radius:28px;padding:44px;background:var(--grad);color:#07070b;display:grid;grid-template-columns:1.2fr .8fr;gap:24px;align-items:center}
+.pasalo h2{font-size:clamp(44px,6vw,72px)}
+.pasalo p{font-size:17px;margin-top:10px}
+.pasalo .btn{background:#07070b;color:var(--ink)}
+@media(max-width:760px){.pasalo{grid-template-columns:1fr;padding:30px}}
+details{border-bottom:1px solid var(--line);padding:18px 0}
+summary{cursor:pointer;font-weight:700;font-size:17px;list-style:none;display:flex;justify-content:space-between;gap:16px}
+summary::after{content:"+";font-family:var(--m);color:var(--cel)}
+details[open] summary::after{content:"–"}
+details p{color:var(--mute);margin-top:10px;max-width:760px}
+footer{border-top:1px solid var(--line);padding:40px 0 60px;color:var(--dim);font-size:13px}
+footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.toast{position:fixed;left:50%;bottom:20px;transform:translate(-50%,100px);background:var(--ink);color:var(--bg);padding:12px 18px;border-radius:12px;font-weight:700;font-size:14px;z-index:90;transition:transform .35s var(--ease)}
+.toast.on{transform:translate(-50%,0)}
+[hidden]{display:none!important}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<canvas id="fondo" aria-hidden="true"></canvas><div class="velo" aria-hidden="true"></div>
+
+<nav><div class="wrap">
+  <a class="marca" href="/">HUMAN GLITCHE<span>· OFICIOS</span></a>
+  <div class="links">
+    <a href="#estilos">Cómo queda</a><a href="#directorio">Directorio</a><a href="#preguntas">Preguntas</a>
+    <a class="btn btn-pri" href="#anotarme">Quiero la mía</a>
+  </div>
+</div></nav>
+
+<header class="hero"><div class="wrap">
+  <span class="chip mono"><i></i>Programa para barberos y tatuadores independientes</span>
+  <h1>Tu web<br><span class="grad">por $30.000.</span></h1>
+  <p class="lead">Para los que <b>están arrancando</b> y viven en el Instagram y los DMs. Una página tuya con <b>tus trabajos</b>, <b>tus precios</b> y <b>turnos con seña que van directo a tu Mercado Pago</b>. Un solo pago, sin mensualidad. <b>Salen todas juntas el 10 de octubre.</b></p>
+  <div class="ctas">
+    <a class="btn btn-pri" href="#anotarme">Anotarme ahora →</a>
+    <a class="btn btn-sec" href="#estilos">Ver cómo queda</a>
+  </div>
+  <p class="lanza mono" id="lanza">Lanzamiento: 10 de octubre · o antes, si se llena el cupo</p>
+  <div class="cupos" aria-live="polite">
+    <div class="cupo"><div class="top"><b id="cB">100</b><small>de <span id="tB">100</span> cupos</small></div><small>Barberos</small><div class="barra"><i id="bB"></i></div></div>
+    <div class="cupo"><div class="top"><b id="cT">100</b><small>de <span id="tT">100</span> cupos</small></div><small>Tatuadores</small><div class="barra"><i id="bT"></i></div></div>
+  </div>
+</div></header>
+
+<section id="incluye" style="padding-top:40px"><div class="wrap">
+  <div class="head"><div><div class="mono grad">Qué te llevás</div><h2>Todo lo que un<br>cliente busca</h2></div>
+    <p>La mayoría te encuentra en Instagram y te pregunta lo mismo: precio, dónde, cuándo. La web responde sola y te trae el turno con la seña paga.</p></div>
+  <div class="incl">
+    <div class="it big"><span class="n">01</span><h3>Turnos con seña a tu Mercado Pago</h3><p>El cliente elige servicio, día y horario, paga la seña en <b>tu</b> link de Mercado Pago y te llega el turno por WhatsApp. Si usás la agenda de citas de Google Calendar, la conectamos y los horarios se bloquean solos. La plata nunca pasa por nosotros.</p></div>
+    <div class="it"><span class="n">02</span><h3>Tu dirección propia</h3><p><span class="mono" style="text-transform:none">hg-vl.com/o/tu-nombre</span> para poner en la bio, en la tarjeta y en el espejo.</p></div>
+    <div class="it"><span class="n">03</span><h3>Tus trabajos</h3><p>Hasta 8 fotos de tus cortes o tatuajes y el botón directo a tu Instagram.</p></div>
+    <div class="it"><span class="n">04</span><h3>Precios y horarios</h3><p>Tus servicios con precio y duración, y cuándo atendés. Los cambiás vos cuando quieras.</p></div>
+    <div class="it"><span class="n">05</span><h3>El directorio</h3><p>Aparecés junto a los otros del programa, filtrable por barrio. Más gente te encuentra.</p></div>
+  </div>
+</div></section>
+
+<section id="estilos"><div class="wrap">
+  <div class="head"><div><div class="mono grad">Dos estilos</div><h2>Elegí cómo<br>se ve la tuya</h2></div>
+    <p>Mismo contenido, dos caras. Estos son ejemplos con datos inventados: la tuya lleva tus fotos, tus precios y tu nombre.</p></div>
+  <div class="estilos">
+    <div class="est"><div class="phone"><iframe title="Ejemplo estilo Papel" loading="lazy" data-src="sitio/?demo=papel"></iframe></div><h3>Papel</h3><p>Claro y con onda. Para el barbero que trabaja solo.</p></div>
+    <div class="est"><div class="phone"><iframe title="Ejemplo estilo Tinta" loading="lazy" data-src="sitio/?demo=tinta"></iframe></div><h3>Tinta</h3><p>Negro, hueso y rojo. Para el tatuador.</p></div>
+  </div>
+</div></section>
+
+<section style="padding-top:0"><div class="wrap">
+  <div class="head"><div><div class="mono grad">Cómo funciona</div><h2>En tres pasos</h2></div></div>
+  <div class="pasos">
+    <div class="paso"><h3>Completás el formulario</h3><p>Tus datos, servicios, horarios, tu link de seña y tus fotos. Te lleva diez minutos.</p></div>
+    <div class="paso"><h3>Pagás $30.000</h3><p>Un solo pago con Mercado Pago. Tarjeta, débito o dinero en cuenta.</p></div>
+    <div class="paso"><h3>Salen todas juntas</h3><p>El <b>10 de octubre</b>, o antes si se llena el cupo de tu oficio, publicamos todas las webs a la vez y abrimos el directorio. Hasta ese día ves la tuya con tu llave.</p></div>
+  </div>
+</div></section>
+
+<section id="anotarme"><div class="wrap">
+  <div class="head"><div><div class="mono grad" id="formEyebrow">Formulario</div><h2 id="formTitulo">Anotate</h2></div>
+    <p id="formDesc">Lo que pongas acá es lo que va a mostrar tu web. Todo se puede cambiar después con tu llave.</p></div>
+
+  <form class="form" id="form" novalidate>
+    <div>
+      <fieldset id="fsRubro">
+        <legend>¿Qué hacés?</legend>
+        <div class="seg big">
+          <label><input type="radio" name="rubro" value="barberia" checked><span><b>Barbero</b><small id="qB">quedan 100</small></span></label>
+          <label><input type="radio" name="rubro" value="tatuaje"><span><b>Tatuador</b><small id="qT">quedan 100</small></span></label>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Vos <small>contacto</small></legend>
+        <div class="row">
+          <label class="f" id="wNombre"><span>Nombre y apellido <em>(no se publica)</em></span><input class="inp" name="nombre" autocomplete="name" required></label>
+          <label class="f"><span>Cómo querés aparecer</span><input class="inp" name="nombre_publico" placeholder="Lucho · Vera Tinta" required></label>
+        </div>
+        <div class="row">
+          <label class="f"><span>WhatsApp <em>(con código de área)</em></span><input class="inp" name="whatsapp" type="tel" inputmode="tel" autocomplete="tel" placeholder="221 555-1234" required></label>
+          <label class="f"><span>Email <em>(opcional)</em></span><input class="inp" name="email" type="email" autocomplete="email" spellcheck="false"></label>
+        </div>
+        <label class="f"><span>Tu Instagram</span><input class="inp" name="instagram" placeholder="@tuusuario o el link a tu perfil" autocapitalize="none" spellcheck="false"></label>
+        <label class="f"><span>Contá en una línea qué hacés <em>(opcional)</em></span><textarea class="inp" name="bio" maxlength="400" placeholder="Fades limpios y barba prolija. Corto en mi estudio o voy a tu casa."></textarea></label>
+      </fieldset>
+
+      <fieldset id="fsWeb">
+        <legend>Tu web</legend>
+        <label class="f"><span>La dirección</span>
+          <div class="pref"><span>hg-vl.com/o/</span><input name="slug" id="slug" autocapitalize="none" spellcheck="false" placeholder="tu-nombre" maxlength="40"></div>
+          <div class="slugok" id="slugOk" aria-live="polite"></div>
+        </label>
+        <span style="display:block;font-size:13px;font-weight:700;margin-bottom:8px">El estilo</span>
+        <div class="seg">
+          <label><input type="radio" name="plantilla" value="papel" checked><span>Papel<small>claro y con onda</small></span></label>
+          <label><input type="radio" name="plantilla" value="tinta"><span>Tinta<small>negro y rojo</small></span></label>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Dónde atendés</legend>
+        <div class="seg" style="margin-bottom:16px">
+          <label><input type="radio" name="modalidad" value="local" checked><span>Alquilo sillón en un local</span></label>
+          <label><input type="radio" name="modalidad" value="estudio"><span>En un estudio / box</span></label>
+          <label><input type="radio" name="modalidad" value="casa"><span>En mi casa</span></label>
+          <label><input type="radio" name="modalidad" value="domicilio"><span>Voy a domicilio</span></label>
+        </div>
+        <div id="wLocal">
+          <div class="row">
+            <label class="f"><span>Nombre del local <em>(si tiene)</em></span><input class="inp" name="local_nombre"></label>
+            <label class="f"><span>Dirección</span><input class="inp" name="direccion" autocomplete="street-address" placeholder="Calle 50 N° 742"></label>
+          </div>
+        </div>
+        <p class="ayuda" id="avisoCasa" hidden>🔒 Tu dirección <b>no se publica</b>: en la web figura solo el barrio y se la pasás al cliente por WhatsApp cuando confirma.</p>
+        <div class="row" style="margin-top:8px">
+          <label class="f"><span>Barrio</span><input class="inp" name="barrio" placeholder="Tolosa, Centro, City Bell…" required></label>
+          <label class="f"><span>Ciudad</span><input class="inp" name="ciudad" value="La Plata"></label>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Servicios</legend>
+        <p class="fdesc">Lo que ofrecés, con precio final y cuánto tarda. La duración arma los horarios de los turnos.</p>
+        <div class="svc-head"><span>Servicio</span><span>Precio $</span><span>Minutos</span><span></span></div>
+        <div id="svcs"></div>
+        <button type="button" class="mas" id="addSvc">+ Agregar servicio</button>
+      </fieldset>
+
+      <fieldset>
+        <legend>Horarios</legend>
+        <p class="fdesc">Los días y horas en que tomás turnos. Si cortás en dos tandas, agregá una segunda franja.</p>
+        <div id="dias"></div>
+      </fieldset>
+
+      <fieldset>
+        <legend>La seña <small>va a tu cuenta</small></legend>
+        <p class="fdesc">Creá un link de pago en tu Mercado Pago por el monto de la seña y pegalo acá. El cliente lo paga antes de mandarte el turno.</p>
+        <div class="row">
+          <label class="f"><span>Tu link de Mercado Pago</span><input class="inp" name="sena_link" placeholder="https://mpago.la/…" autocapitalize="none" spellcheck="false"></label>
+          <label class="f"><span>Monto de la seña $</span><input class="inp" name="sena_monto" inputmode="numeric" placeholder="3000"></label>
+        </div>
+        <p class="ayuda">¿No tenés link? En la app de Mercado Pago: <b>Cobrar → Link de pago</b>, poné el monto y copiá el link. <a href="https://www.mercadopago.com.ar/ayuda/crear-link-de-pago_2780" target="_blank" rel="noopener">Ver cómo</a>. Si todavía no lo tenés, dejalo vacío y lo sumás después.</p>
+        <details style="border:0;padding:14px 0 0">
+          <summary style="font-size:14px">¿Usás Google Calendar? Conectá tu agenda <em style="font-weight:400;color:var(--mute)">(opcional)</em></summary>
+          <p style="font-size:14px">Si creás una <b>agenda de citas</b> en Google Calendar, la web la usa para los turnos: el cliente elige un horario libre de verdad, Google lo bloquea y te avisa. Pegá el link público de la agenda (empieza con <span class="mono" style="text-transform:none">calendar.app.google</span>). <a href="https://support.google.com/calendar/answer/10729749?hl=es-419" target="_blank" rel="noopener" style="color:var(--cel)">Cómo crearla</a>.</p>
+          <label class="f" style="margin-top:10px"><span>Link de tu agenda de citas</span><input class="inp" name="agenda_link" placeholder="https://calendar.app.google/…" autocapitalize="none" spellcheck="false"></label>
+        </details>
+      </fieldset>
+
+      <fieldset id="fsFotos">
+        <legend>Tus trabajos <small>hasta 8 fotos</small></legend>
+        <p class="fdesc">Las mejores de tu Instagram. Las achicamos acá mismo antes de subirlas.</p>
+        <div class="fotos" id="fotos"></div>
+        <input type="file" id="fotoIn" accept="image/*" multiple hidden>
+      </fieldset>
+
+      <fieldset id="fsAcepto">
+        <legend>Últimos detalles</legend>
+        <label class="f"><span>¿Te pasó el dato alguien del programa? <em>(su código, opcional)</em></span><input class="inp" name="referido" placeholder="OF-B-XXXXX" autocapitalize="characters" spellcheck="false"></label>
+        <div class="oculto" aria-hidden="true"><label>No completar <input name="web" tabindex="-1" autocomplete="off"></label></div>
+        <label class="check"><input type="checkbox" name="acepto" id="acepto"><span>Acepto que Human Glitche guarde estos datos para armar y mostrar mi web, y los <a href="#terminos" style="color:var(--cel)">términos del programa</a>: <b>un pago de $30.000, sin cambios de diseño por ahora</b>, y con mi llave actualizo precios, horarios y fotos cuando quiera.</span></label>
+      </fieldset>
+    </div>
+
+    <aside class="resumen">
+      <div class="mono" style="color:var(--mute)" id="resRubro">Barbero</div>
+      <h3 id="resNombre">Tu web</h3>
+      <div class="mono" style="color:var(--cel);text-transform:none" id="resUrl">hg-vl.com/o/…</div>
+      <ul><li>Página propia con tu dirección</li><li>Turnos con seña a tu Mercado Pago</li><li>Hasta 8 fotos y tu Instagram</li><li>Aparecés en el directorio</li><li>QR para imprimir</li></ul>
+      <div class="precio">$30.000 <small>pago único</small></div>
+      <button class="btn btn-pri" type="submit" id="enviar">Enviar y pagar →</button>
+      <div class="err" id="err" hidden role="alert"></div>
+      <p class="fine">Primero guardamos tus datos, después pagás con Mercado Pago. Tu web sale el 10/10, o antes si se llena el cupo.</p>
+    </aside>
+  </form>
+
+  <div class="resultado" id="resultado" hidden tabindex="-1"></div>
+</div></section>
+
+<section id="directorio"><div class="wrap">
+  <div class="head"><div><div class="mono grad">Directorio</div><h2>Los del programa</h2></div>
+    <p>Barberos y tatuadores que ya tienen su web. Buscá por barrio.</p></div>
+  <div class="filtros">
+    <button class="on" data-r="">Todos</button><button data-r="barberia">Barberos</button><button data-r="tatuaje">Tatuadores</button>
+    <input id="buscar" type="search" placeholder="Buscar por barrio o nombre" aria-label="Buscar por barrio o nombre">
+  </div>
+  <div class="dir" id="dir"></div>
+</div></section>
+
+<section style="padding-top:0"><div class="wrap">
+  <div class="pasalo">
+    <div><h2>¿Conocés a otro<br>que arranca?</h2><p>Pasale esto. Son 100 cupos por rubro y no se reponen.</p></div>
+    <a class="btn" id="pasaloBtn" target="_blank" rel="noopener">Mandárselo por WhatsApp</a>
+  </div>
+</div></section>
+
+<section id="preguntas" style="padding-top:0"><div class="wrap">
+  <div class="head"><div><div class="mono grad">Preguntas</div><h2>Lo que todos<br>preguntan</h2></div></div>
+  <details><summary>¿Hay que pagar algo por mes?</summary><p>No. Son $30.000 una sola vez. Tu web queda online mientras dure el programa, como mínimo 12 meses desde que se publica.</p></details>
+  <details><summary>¿Cuándo sale mi web?</summary><p>Todas las webs del programa salen juntas, con el directorio: el <b>10 de octubre</b>, o antes si se llenan los 100 cupos de tu oficio (si se llenan los de barberos, salen los barberos aunque todavía haya lugar para tatuadores). Mientras tanto la ves y la ajustás con tu llave.</p></details>
+  <details><summary>¿La seña de mis clientes a quién le llega?</summary><p>A vos, directo a tu cuenta de Mercado Pago, con tu propio link. Nosotros nunca tocamos esa plata.</p></details>
+  <details><summary>¿Se actualiza sola con mi Instagram?</summary><p>No: Instagram no deja hacerlo sin un permiso especial para cada cuenta. Subís tus mejores fotos en el formulario, la web tiene el botón directo a tu Instagram, y las fotos las cambiás vos cuando quieras con tu llave.</p></details>
+  <details><summary>¿Cómo funcionan los turnos?</summary><p>El cliente elige servicio, día y horario entre los que marcaste, paga la seña en tu link y te manda el turno por WhatsApp con el comprobante. Vos confirmás. Si conectás tu agenda de citas de Google Calendar, los horarios salen de ahí y se bloquean solos.</p></details>
+  <details><summary>¿Puedo cambiar precios u horarios?</summary><p>Sí, cuando quieras. Al terminar el formulario te damos una llave: con tu código y esa llave entrás acá y actualizás servicios, precios, horarios, fotos, la seña y tu Instagram.</p></details>
+  <details><summary>¿Y el diseño?</summary><p>Por ahora el diseño es el del estilo que elijas y no se hacen cambios a medida. Más adelante los del programa van a tener la opción de modernizar su página: agenda con bloqueo automático, tarjeta de sellos, dominio propio.</p></details>
+  <details><summary>¿Y si no me gusta o no sale?</summary><p>Si tu web no sale en el lanzamiento, te devolvemos los $30.000. Si revisando algo no se puede publicar (por ejemplo, fotos que no son tuyas), te avisamos antes para que lo cambies, y si no se puede, te devolvemos la plata.</p></details>
+  <details id="terminos"><summary>Términos del programa</summary><p>Pago único de $30.000 por una web simple en hg-vl.com/o/&lt;tu-dirección&gt;, en uno de los dos estilos. Incluye: tu nombre, tus fotos, tus servicios y precios, tus horarios, tu Instagram, tu WhatsApp, el pedido de turno con seña a tu propio link de Mercado Pago (o tu agenda de Google) y tu lugar en el directorio. Las webs se publican todas juntas al completarse el cupo de su oficio o el 10 de octubre de 2026, lo que ocurra primero. No incluye cambios de diseño ni dominio propio. Los datos personales (nombre real, email) no se publican y se usan solo para contactarte por tu web; podés pedir que los borremos escribiéndonos. Human Glitche puede dar de baja una web con contenido que no sea tuyo o que no corresponda al oficio.</p></details>
+  <details><summary>Ya me anoté: quiero actualizar mis datos</summary><p><a class="btn btn-sec" href="?editar=1#anotarme" style="margin-top:6px">Actualizar mis datos</a></p></details>
+</div></section>
+
+<footer><div class="wrap"><span>Human Glitche · Oficios — un programa para visibilizar a los que arrancan.</span><span>¿Dudas? <a id="waHG" target="_blank" rel="noopener">Escribinos</a></span></div></footer>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+/* ═══════════ OFICIOS — la campaña ═══════════ */
+const LOCAL = /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
+const API = (LOCAL ? 'http://127.0.0.1:3131' : 'https://api.hg-vl.com') + '/v1/_oficios';
+const WA_HG = '5492215632444';
+const SITIO_PUBLICO = 'https://www.hg-vl.com/o/';
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const fmt = (c) => '$' + Math.round(c / 100).toLocaleString('es-AR');
+const params = new URLSearchParams(location.search);
+const DIAS = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+const toast = (t) => { const e = $('#toast'); e.textContent = t; e.classList.add('on'); setTimeout(() => e.classList.remove('on'), 2600); };
+const pedir = async (ruta, op = {}) => {
+  const r = await fetch(API + ruta, { ...op, headers: { 'content-type': 'application/json', ...(op.headers || {}) } });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) throw Object.assign(new Error(j.error || 'No pudimos conectar. Probá de nuevo.'), { campo: j.campo, status: r.status });
+  return j;
+};
+const ls = { get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } },
+             set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} } };
+
+// El flyer dice de qué barbería salió (?o=), y el que comparte deja su código (?ref=).
+const ORIGEN = params.get('o') || ls.get('of-origen') || null;
+if (params.get('o')) ls.set('of-origen', params.get('o'));
+if (params.get('ref')) $('[name=referido]').value = params.get('ref').toUpperCase();
+$('#waHG').href = 'https://wa.me/' + WA_HG + '?text=' + encodeURIComponent('Hola! Tengo una duda sobre el programa Oficios de HG.');
+
+/* ── fondo: MAREA si el sitio la tiene (en hg-vl.com sí), si no queda el velo ── */
+(function () {
+  const s = document.createElement('script'); s.src = '/assets/cara/marea.js';
+  s.onload = () => { try { window.HGMarea && HGMarea.mount($('#fondo'), { ambiente: .7 }); } catch {} };
+  document.head.appendChild(s);
+})();
+
+/* ── cupos en vivo y cuenta regresiva al lanzamiento ── */
+function lanza(c) {
+  const f = new Date(c && c.lanzamiento || '2026-10-10T00:00:00-03:00');
+  const dias = Math.ceil((f - Date.now()) / 864e5);
+  const ya = c && ['barberia', 'tatuaje'].filter((r) => c[r].lanzado).map((r) => r === 'tatuaje' ? 'los tatuadores' : 'los barberos');
+  $('#lanza').textContent = ya && ya.length === 2 ? '¡Ya salieron! Mirá el directorio ↓'
+    : ya && ya.length ? `¡Ya salieron ${ya[0]}! El resto sale el 10 de octubre.`
+    : `Lanzamiento: 10 de octubre${dias > 0 ? ` · faltan ${dias} ${dias === 1 ? 'día' : 'días'}` : ''} · o antes, si se llena el cupo`;
+}
+async function cupos() {
+  lanza(null);
+  try {
+    const c = await pedir('/cupos'); lanza(c);
+    for (const [k, id] of [['barberia', 'B'], ['tatuaje', 'T']]) {
+      $('#c' + id).textContent = c[k].quedan; $('#t' + id).textContent = c[k].total;
+      $('#b' + id).style.width = (c[k].tomados / c[k].total * 100) + '%';
+      $('#q' + id).textContent = c[k].quedan ? `quedan ${c[k].quedan}` : 'sin cupos';
+    }
+  } catch { /* sin API: quedan los 100 de base */ }
+}
+
+/* ── estilos: los iframes se cargan al verse y se escalan al teléfono ── */
+const io = new IntersectionObserver((es) => es.forEach((e) => {
+  if (!e.isIntersecting) return; const f = e.target; f.src = f.dataset.src; io.unobserve(f);
+}), { rootMargin: '200px' });
+$$('.phone iframe').forEach((f) => io.observe(f));
+function escalar() { $$('.phone').forEach((p) => { const f = $('iframe', p); f.style.transform = `scale(${p.clientWidth / 390})`; }); }
+addEventListener('resize', escalar); escalar();
+
+/* ── servicios ── */
+const SUGERIDOS = {
+  barberia: [['Corte', 11000, 40], ['Corte + barba', 16000, 60], ['Barba', 6500, 25]],
+  tatuaje: [['Tatuaje chico (hasta 8 cm)', 45000, 90], ['Tatuaje mediano', 90000, 180], ['Sesión (por hora)', 40000, 60]],
+};
+function filaSvc(n = '', p = '', m = '') {
+  const d = document.createElement('div'); d.className = 'svc-row';
+  d.innerHTML = `<input class="inp" data-k="nombre" placeholder="Servicio" maxlength="60" aria-label="Servicio">
+    <input class="inp" data-k="precio" inputmode="numeric" placeholder="11000" aria-label="Precio en pesos">
+    <input class="inp" data-k="min" inputmode="numeric" placeholder="40" aria-label="Duración en minutos">
+    <button type="button" class="x" aria-label="Quitar servicio">✕</button>`;
+  $('[data-k=nombre]', d).value = n; $('[data-k=precio]', d).value = p; $('[data-k=min]', d).value = m;
+  $('.x', d).onclick = () => { d.remove(); if (!$$('.svc-row').length) filaSvc(); };
+  $('#svcs').appendChild(d); return d;
+}
+function sugerir(rubro) {
+  const vacias = $$('.svc-row').every((r) => !$$('input', r).some((i) => i.value.trim()));
+  if (!vacias) return;
+  $('#svcs').innerHTML = ''; SUGERIDOS[rubro].forEach((s) => filaSvc(...s));
+}
+$('#addSvc').onclick = () => $('input', filaSvc()).focus();
+const leerSvcs = () => $$('.svc-row').map((r) => ({ nombre: $('[data-k=nombre]', r).value.trim(),
+  precio: $('[data-k=precio]', r).value.replace(/[^\d]/g, ''), min: $('[data-k=min]', r).value.replace(/[^\d]/g, '') }))
+  .filter((s) => s.nombre);
+
+/* ── horarios ── */
+function armarDias(h = { 2: [['10:00', '20:00']], 3: [['10:00', '20:00']], 4: [['10:00', '20:00']], 5: [['10:00', '20:00']], 6: [['10:00', '18:00']] }) {
+  $('#dias').innerHTML = '';
+  [1, 2, 3, 4, 5, 6, 0].forEach((d) => {
+    const fr = h[d] || [];
+    const el = document.createElement('div'); el.className = 'dia' + (fr.length ? '' : ' off'); el.dataset.d = d;
+    el.innerHTML = `<label class="sw"><input type="checkbox" ${fr.length ? 'checked' : ''}> ${DIAS[d]}</label><div class="franjas"></div>`;
+    const cont = $('.franjas', el);
+    const franja = (a = '10:00', b = '20:00') => { const f = document.createElement('span'); f.className = 'franja';
+      f.innerHTML = `<input type="time" value="${a}" aria-label="Desde"> a <input type="time" value="${b}" aria-label="Hasta">`; cont.insertBefore(f, $('.mas', cont)); };
+    const mas = document.createElement('button'); mas.type = 'button'; mas.className = 'mas'; mas.textContent = '+ franja';
+    mas.onclick = () => { if ($$('.franja', cont).length < 3) franja('15:00', '20:00'); };
+    cont.appendChild(mas);
+    (fr.length ? fr : [['10:00', '20:00']]).forEach((f) => franja(f[0], f[1]));
+    $('input[type=checkbox]', el).onchange = (e) => el.classList.toggle('off', !e.target.checked);
+    $('#dias').appendChild(el);
+  });
+}
+const leerHorarios = () => { const h = {};
+  $$('.dia').forEach((el) => { if (!$('input[type=checkbox]', el).checked) return;
+    const fr = $$('.franja', el).map((f) => $$('input', f).map((i) => i.value)).filter((f) => f[0] && f[1] && f[0] < f[1]);
+    if (fr.length) h[el.dataset.d] = fr; });
+  return h; };
+
+/* ── fotos: se achican en el navegador (1400 px, JPEG) antes de subir ── */
+let FOTOS = [];   // {url, data}
+function pintarFotos() {
+  $('#fotos').innerHTML = FOTOS.map((f, i) => `<div class="th"><img src="${f.url}" alt="Foto ${i + 1}"><button type="button" data-i="${i}" aria-label="Quitar foto">✕</button></div>`).join('')
+    + (FOTOS.length < 8 ? `<button type="button" class="add" id="addFoto">＋<br>Agregar fotos</button>` : '');
+  const a = $('#addFoto'); if (a) a.onclick = () => $('#fotoIn').click();
+}
+$('#fotos').addEventListener('click', (e) => { const b = e.target.closest('[data-i]'); if (!b) return; FOTOS.splice(+b.dataset.i, 1); pintarFotos(); });
+function achicar(file) {
+  return new Promise((ok, mal) => {
+    const img = new Image(); const u = URL.createObjectURL(file);
+    img.onload = () => { const k = Math.min(1, 1400 / Math.max(img.width, img.height));
+      const c = document.createElement('canvas'); c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(u);
+      ok({ url: c.toDataURL('image/jpeg', .6), data: c.toDataURL('image/jpeg', .82) }); };
+    img.onerror = () => mal(new Error('No pudimos leer esa imagen')); img.src = u;
+  });
+}
+$('#fotoIn').onchange = async (e) => {
+  for (const f of [...e.target.files].slice(0, 8 - FOTOS.length)) { try { FOTOS.push(await achicar(f)); } catch (x) { toast(x.message); } }
+  e.target.value = ''; pintarFotos();
+};
+
+/* ── la dirección: se sugiere del nombre y se chequea en vivo ── */
+const slugDe = (v) => String(v || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40);
+let slugTocado = false, tSlug;
+$('[name=nombre_publico]').addEventListener('input', (e) => { if (!slugTocado) { $('#slug').value = slugDe(e.target.value); chequearSlug(); } resumen(); });
+$('#slug').addEventListener('input', () => { slugTocado = true; $('#slug').value = slugDe($('#slug').value).slice(0, 40); chequearSlug(); resumen(); });
+function chequearSlug() {
+  clearTimeout(tSlug); const s = $('#slug').value, el = $('#slugOk');
+  if (s.length < 3) { el.textContent = ''; return; }
+  tSlug = setTimeout(async () => {
+    try { const r = await pedir('/slug?s=' + encodeURIComponent(s));
+      el.className = 'slugok ' + (r.libre ? 'si' : 'no'); el.textContent = r.libre ? '✓ libre' : '✕ ya está tomada o no se puede usar'; }
+    catch { el.textContent = ''; }
+  }, 350);
+}
+
+/* ── modalidad y resumen ── */
+function modalidad() { const m = $('[name=modalidad]:checked').value, casa = m === 'casa' || m === 'domicilio';
+  $('#wLocal').hidden = casa; $('#avisoCasa').hidden = !casa; }
+$$('[name=modalidad]').forEach((r) => r.onchange = modalidad);
+$$('[name=rubro]').forEach((r) => r.onchange = () => { const v = r.value;
+  $(`[name=plantilla][value=${v === 'tatuaje' ? 'tinta' : 'papel'}]`).checked = true;
+  sugerir(v); resumen(); });
+function resumen() {
+  $('#resRubro').textContent = $('[name=rubro]:checked').value === 'tatuaje' ? 'Tatuador' : 'Barbero';
+  $('#resNombre').textContent = $('[name=nombre_publico]').value.trim() || 'Tu web';
+  $('#resUrl').textContent = 'hg-vl.com/o/' + ($('#slug').value || '…');
+}
+
+/* ── enviar ── */
+const val = (n) => { const e = $(`[name=${n}]`); return e ? e.value.trim() : ''; };
+function mostrarError(msg, campo) {
+  const e = $('#err'); e.textContent = msg; e.hidden = false;
+  $$('.inp.bad').forEach((i) => i.classList.remove('bad'));
+  const mapa = { servicios: '#svcs input', horarios: '#dias input', acepto: '#acepto', slug: '#slug', rubro: '[name=rubro]' };
+  const el = $(mapa[campo] || `[name=${campo}]`);
+  if (el) { el.classList && el.classList.add('bad'); el.scrollIntoView({ behavior: 'smooth', block: 'center' }); setTimeout(() => el.focus({ preventScroll: true }), 400); }
+}
+function datosForm() {
+  return {
+    rubro: $('[name=rubro]:checked').value, plantilla: $('[name=plantilla]:checked').value,
+    nombre: val('nombre'), nombre_publico: val('nombre_publico'), whatsapp: val('whatsapp'), email: val('email'),
+    instagram: val('instagram'), bio: $('[name=bio]').value.trim(), slug: $('#slug').value,
+    modalidad: $('[name=modalidad]:checked').value, local_nombre: val('local_nombre'), direccion: val('direccion'),
+    barrio: val('barrio'), ciudad: val('ciudad'), servicios: leerSvcs(), horarios: leerHorarios(),
+    sena_link: val('sena_link'), sena_monto: val('sena_monto').replace(/[^\d]/g, ''), agenda_link: val('agenda_link'),
+  };
+}
+async function subirFotos(codigo, llave) {
+  let n = 0;
+  for (const f of FOTOS) {
+    if (!f.data) continue;
+    $('#enviar').textContent = `Subiendo fotos ${++n}/${FOTOS.filter((x) => x.data).length}…`;
+    try { await pedir(`/solicitudes/${codigo}/fotos`, { method: 'POST', body: JSON.stringify({ llave, imagen: f.data }) }); f.data = null; }
+    catch (e) { toast('Una foto no subió: ' + e.message); }
+  }
+}
+$('#form').addEventListener('submit', async (e) => {
+  e.preventDefault(); $('#err').hidden = true;
+  if (EDITAR) return guardarCambios();
+  const d = { ...datosForm(), referido: val('referido'), web: val('web'), origen: ORIGEN, acepto: $('#acepto').checked };
+  if (!d.servicios.length) return mostrarError('Cargá al menos un servicio con precio y duración.', 'servicios');
+  if (!d.acepto) return mostrarError('Tenés que aceptar los términos para seguir.', 'acepto');
+  const b = $('#enviar'); b.disabled = true; b.textContent = 'Guardando…';
+  try {
+    const r = await pedir('/solicitudes', { method: 'POST', body: JSON.stringify(d) });
+    ls.set('of-mia', { codigo: r.codigo, llave: r.llave, slug: r.slug });
+    await subirFotos(r.codigo, r.llave);
+    mostrarResultado(r, d);
+  } catch (x) { mostrarError(x.message, x.campo); }
+  finally { b.disabled = false; b.textContent = 'Enviar y pagar →'; }
+});
+
+function mostrarResultado(r, d) {
+  $('#form').hidden = true;
+  const primer = (d.nombre_publico || '').split(' ')[0];
+  const pago = r.pago || {};
+  const txtLlave = `Programa Oficios · Human Glitche\nCódigo: ${r.codigo}\nLlave: ${r.llave}\nTu web: ${SITIO_PUBLICO}${r.slug}\nPara actualizar tus datos: https://www.hg-vl.com/oficios/?editar=1`;
+  const el = $('#resultado'); el.hidden = false;
+  el.innerHTML = `<div class="mono grad">Paso 1 de 2 listo</div><h3>¡Anotado, ${primer}!</h3>
+    <p class="sub">Tus datos quedaron guardados. Falta el pago para reservar tu cupo.</p>
+    <div class="codigo">${r.codigo}</div>
+    <p style="font-size:14px;font-weight:700;margin-top:14px">Tu llave para actualizar la web — guardala, se muestra una sola vez:</p>
+    <div class="llave"><span style="flex:1">${r.llave}</span><button type="button" id="copiar">Copiar</button><button type="button" id="bajar">Guardar</button></div>
+    ${pago.url ? `<div class="aviso">${pago.modo === 'link_fijo' ? `<b>Importante:</b> en Mercado Pago poné el monto <b>${fmt(r.precio)}</b> y tu código <b>${r.codigo}</b> en el mensaje, así te identificamos. Te confirmamos el pago por WhatsApp.` : 'Te lleva a Mercado Pago. Al terminar volvés acá y te confirmamos el pago.'}</div>` :
+      `<div class="aviso">Te escribimos por WhatsApp en el día para el pago.</div>`}
+    <div class="acts">
+      ${pago.url ? `<a class="btn btn-mp" href="${pago.url}" rel="noopener">Pagar ${fmt(r.precio)} con Mercado Pago</a>` : ''}
+      <a class="btn btn-sec" href="${r.vista}" target="_blank" rel="noopener">Ver cómo va quedando mi web</a>
+      <a class="btn btn-wa" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent(`Me anoté en el programa de HG: web propia por $30.000 para barberos y tatuadores. Si te sirve, poné mi código ${r.codigo} → https://www.hg-vl.com/oficios/?ref=${r.codigo}`)}">Pasárselo a un colega</a>
+    </div>`;
+  $('#copiar').onclick = () => navigator.clipboard.writeText(r.llave).then(() => toast('Llave copiada'));
+  $('#bajar').onclick = () => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([txtLlave], { type: 'text/plain' })); a.download = `oficios-${r.codigo}.txt`; a.click(); };
+  el.scrollIntoView({ behavior: 'smooth', block: 'start' }); el.focus({ preventScroll: true });
+}
+
+/* ── vuelta de Mercado Pago: ?codigo=…&r=ok ── */
+async function vuelta() {
+  const codigo = params.get('codigo'); if (!codigo) return;
+  const el = $('#resultado'); $('#form').hidden = true; el.hidden = false;
+  // Link del recordatorio de pago (?pagar=1): directo a Mercado Pago, sin esperar.
+  if (params.get('pagar')) {
+    el.innerHTML = `<div class="mono grad">Pago</div><h3>Te llevamos a Mercado Pago…</h3><div class="codigo">${esc(codigo)}</div>`;
+    location.hash = '#anotarme';
+    try { const r = await pedir(`/solicitudes/${encodeURIComponent(codigo)}/pago`, { method: 'POST', body: '{}' });
+      if (r.pago && r.pago.url) { location.href = r.pago.url; return; }
+      if (r.ya) { el.innerHTML = `<h3>¡Ya está pago!</h3><p class="sub">Tu cupo está reservado. Tu web sale el 10 de octubre, o antes si se llena el cupo.</p><div class="codigo">${esc(codigo)}</div>`; return; }
+    } catch (x) { toast(x.message); }
+  }
+  el.innerHTML = `<div class="mono grad">Pago</div><h3>Confirmando…</h3><p class="sub">Mercado Pago nos avisa en unos segundos.</p><div class="codigo">${codigo}</div>`;
+  location.hash = '#anotarme';
+  for (let i = 0; i < 10; i++) {
+    try { const s = await pedir('/solicitudes/' + encodeURIComponent(codigo));
+      if (s.estado === 'pagada' || s.estado === 'publicada') {
+        el.innerHTML = `<div class="mono grad">Paso 2 de 2 listo</div><h3>¡Pago recibido!</h3>
+          <p class="sub">Tu cupo está reservado. Tu web sale el <b>10 de octubre</b> (o antes, si se llena el cupo) y ese día te mandamos por WhatsApp el link y el QR. Mientras, la ves con tu llave.</p><div class="codigo">${codigo}</div>
+          <div class="acts"><a class="btn btn-wa" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent(`Me sumé al programa de HG: web propia por $30.000 para barberos y tatuadores. Poné mi código ${codigo} → https://www.hg-vl.com/oficios/?ref=${codigo}`)}">Pasárselo a un colega</a></div>`;
+        return;
+      }
+    } catch {}
+    await new Promise((r) => setTimeout(r, 3000));
+  }
+  const mia = ls.get('of-mia');
+  el.innerHTML = `<h3>Todavía no nos llegó</h3><p class="sub">${params.get('r') === 'no' ? 'El pago no se completó.' : 'A veces Mercado Pago tarda unos minutos.'} Si ya pagaste, escribinos con tu código y lo resolvemos.</p>
+    <div class="codigo">${codigo}</div><div class="acts">
+    <button class="btn btn-mp" id="reintentar">Volver a intentar el pago</button>
+    <a class="btn btn-wa" target="_blank" rel="noopener" href="https://wa.me/${WA_HG}?text=${encodeURIComponent('Hola! Pagué la web del programa Oficios, mi código es ' + codigo)}">Escribirle a HG</a></div>`;
+  $('#reintentar').onclick = async () => { try { const r = await pedir(`/solicitudes/${codigo}/pago`, { method: 'POST', body: '{}' });
+    if (r.pago && r.pago.url) location.href = r.pago.url; else toast('Ya figura como pagado'); } catch (x) { toast(x.message); } };
+}
+
+/* ── actualizar mis datos: ?editar=1 ── */
+let EDITAR = null;
+async function modoEditar() {
+  if (!params.get('editar')) return;
+  const mia = ls.get('of-mia') || {};
+  const codigo = (prompt('Tu código (OF-…):', mia.codigo || '') || '').trim().toUpperCase();
+  const llave = (prompt('Tu llave:', mia.llave || '') || '').trim();
+  if (!codigo || !llave) return;
+  try {
+    const s = await pedir('/solicitudes/' + encodeURIComponent(codigo));
+    const f = await pedir(`/sitio/${s.slug}?llave=${encodeURIComponent(llave)}`);
+    EDITAR = { codigo, llave, slug: s.slug };
+    $('#formEyebrow').textContent = codigo; $('#formTitulo').textContent = 'Actualizá tus datos';
+    $('#formDesc').textContent = 'Cambiá lo que necesites y guardá. Tu web se actualiza al instante.';
+    ['#fsRubro', '#fsAcepto', '#wNombre'].forEach((s) => $(s).hidden = true);
+    $('#slug').disabled = true; $('#slug').value = s.slug;
+    $('[name=nombre_publico]').value = f.nombre; $('[name=whatsapp]').value = f.whatsapp.replace(/^549/, '');
+    $('[name=instagram]').value = f.instagram || ''; $('[name=bio]').value = f.bio || '';
+    $(`[name=plantilla][value=${f.plantilla}]`).checked = true; $(`[name=modalidad][value=${f.modalidad}]`).checked = true;
+    $('[name=local_nombre]').value = f.local || ''; $('[name=direccion]').value = f.direccion || '';
+    $('[name=barrio]').value = f.barrio; $('[name=ciudad]').value = f.ciudad;
+    $('[name=sena_link]').value = f.sena ? f.sena.link : ''; $('[name=sena_monto]').value = f.sena && f.sena.monto ? f.sena.monto / 100 : '';
+    $('[name=agenda_link]').value = f.agenda || '';
+    $('#svcs').innerHTML = ''; f.servicios.forEach((x) => filaSvc(x.nombre, x.precio / 100, x.min));
+    armarDias(f.horarios); modalidad();
+    EDITAR.fotosPrevias = f.fotos; FOTOS = f.fotos.map((u) => ({ url: u, data: null, previa: u })); pintarFotos();
+    $('#enviar').textContent = 'Guardar cambios'; $('.resumen .precio').hidden = true; $('.resumen .fine').textContent = 'Los cambios se ven en tu web al instante.';
+    resumen(); location.hash = '#anotarme';
+  } catch (x) { alert('No pudimos entrar: ' + x.message); }
+}
+async function guardarCambios() {
+  const b = $('#enviar'); b.disabled = true; b.textContent = 'Guardando…';
+  try {
+    const d = datosForm(); delete d.rubro; delete d.nombre; delete d.slug;
+    const quedan = new Set(FOTOS.filter((f) => f.previa).map((f) => f.previa));
+    d.quitar_fotos = EDITAR.fotosPrevias.filter((u) => !quedan.has(u));
+    await pedir(`/solicitudes/${EDITAR.codigo}/datos`, { method: 'POST', body: JSON.stringify({ llave: EDITAR.llave, ...d }) });
+    await subirFotos(EDITAR.codigo, EDITAR.llave);
+    toast('¡Guardado!'); EDITAR.fotosPrevias = [...quedan];
+  } catch (x) { mostrarError(x.message, x.campo); }
+  finally { b.disabled = false; b.textContent = 'Guardar cambios'; }
+}
+
+/* ── directorio ── */
+let DIR = [], filtroR = '';
+async function directorio() {
+  try { DIR = (await pedir('/directorio')).lista; } catch { DIR = []; }
+  pintarDir();
+}
+function pintarDir() {
+  const q = $('#buscar').value.toLowerCase().trim();
+  const l = DIR.filter((p) => (!filtroR || p.rubro === filtroR) && (!q || (p.nombre + ' ' + p.barrio + ' ' + p.ciudad).toLowerCase().includes(q)));
+  $('#dir').innerHTML = l.length ? l.map((p) => `<a class="pers" href="/o/${p.slug}"><div class="ph" style="background-image:url('${p.foto || ''}')"></div>
+      <div class="bd"><b>${esc(p.nombre)}</b><small>${p.rubro === 'tatuaje' ? 'Tatuador' : 'Barbero'} · ${esc(p.barrio)} · desde ${fmt(p.desde)}</small></div></a>`).join('')
+    : `<div class="vacio" style="grid-column:1/-1">${DIR.length ? 'Nadie con ese filtro todavía.' : 'Los primeros del programa aparecen acá. ¿Querés ser uno?'}<br><br><a class="btn btn-sec" href="#anotarme">Anotarme</a></div>`;
+}
+const esc = (s) => String(s || '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+$$('.filtros button').forEach((b) => b.onclick = () => { filtroR = b.dataset.r; $$('.filtros button').forEach((x) => x.classList.toggle('on', x === b)); pintarDir(); });
+$('#buscar').oninput = pintarDir;
+
+/* ── pasalo ── */
+$('#pasaloBtn').href = 'https://wa.me/?text=' + encodeURIComponent('Mirá esto: Human Glitche arma webs para barberos y tatuadores que arrancan, por $30.000 y con turnos con seña a tu Mercado Pago. Son 100 cupos → https://www.hg-vl.com/oficios/' + (ORIGEN ? '?o=' + encodeURIComponent(ORIGEN) : ''));
+
+/* ── arranque ── */
+sugerir('barberia'); armarDias(); pintarFotos(); modalidad(); resumen();
+cupos(); directorio(); vuelta(); modoEditar();
+</script>
+</body>
+</html>

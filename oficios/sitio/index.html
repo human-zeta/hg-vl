@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Oficios · Human Glitche</title>
+<meta name="description" content="Web del programa Oficios de Human Glitche.">
+<meta name="theme-color" content="#0d0b09">
+<!--
+  OFICIOS — LA plantilla. Una sola página pinta las webs de todos los del programa:
+  www.hg-vl.com/o/<slug> → Caddy reescribe a /oficios/sitio/index.html, y esta página
+  lee la ficha de api.hg-vl.com/v1/_oficios/sitio/<slug>. Dos estilos (papel = barbero
+  independiente, tinta = tatuador) por data-p. ?llave=… = vista previa del dueño antes de publicarse.
+  ?demo=tinta|papel = datos inventados, para la página de la campaña.
+  El turno NO bloquea agenda (eso es la versión «modernizar»): arma el pedido, manda
+  a pagar la seña a SU link de MP y abre WhatsApp. Si tiene agenda de citas de
+  Google, el turno va por ahí.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Pirata+One&family=Space+Grotesk:wght@400;600;700&family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,700;12..96,800&display=swap" rel="stylesheet">
+<style>
+:root{--r:18px;--ease:cubic-bezier(.2,.8,.2,1)}
+[data-p=tinta]{--bg:#0b0a0a;--bg2:#121010;--card:#171414;--line:#2a2424;--ink:#ece4d6;--mute:#a2978a;--acc:#d9312b;--acc2:#ff5a4e;--on:#fff;
+  --d:'Pirata One',serif;--b:'Space Grotesk',system-ui,sans-serif;--dw:400;--dstyle:normal;--rad:4px}
+[data-p=papel]{--bg:#f1ebe0;--bg2:#e8e0d2;--card:#fbf8f2;--line:#ddd4c4;--ink:#121110;--mute:#6e675c;--acc:#ff4d1c;--acc2:#c93a10;--on:#121110;
+  --d:'Bricolage Grotesque',system-ui,sans-serif;--b:'Bricolage Grotesque',system-ui,sans-serif;--dw:800;--dstyle:normal;--rad:22px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--b);font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{color:inherit;text-decoration:none}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+input{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--acc);outline-offset:3px}
+.wrap{width:min(720px,100% - 32px);margin-inline:auto}
+h1,h2,h3{font-family:var(--d);font-weight:var(--dw);line-height:.95;letter-spacing:-.01em}
+[data-p=papel] h1,[data-p=papel] h2{letter-spacing:-.04em}
+h2{font-size:clamp(38px,8vw,56px);margin-bottom:18px}
+section{padding:44px 0}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:15px 22px;border-radius:var(--rad);font-weight:700;font-size:15px;min-height:50px;transition:transform .2s var(--ease),filter .2s;text-align:center}
+.btn:active{transform:scale(.97)}
+.btn-acc{background:var(--acc);color:var(--on)}
+.btn-acc:hover{filter:brightness(1.08)}
+.btn-line{border:1px solid var(--line);}
+.btn-line:hover{border-color:var(--acc)}
+.btn-wa{background:#1f9d55;color:#fff}
+.btn:disabled{opacity:.35;pointer-events:none}
+[data-p=papel] .btn-acc{border:1.5px solid var(--ink);box-shadow:0 4px 0 var(--ink)}
+[data-p=tinta] .btn-acc{box-shadow:4px 4px 0 var(--ink)}
+
+.previa{background:var(--acc);color:var(--on);text-align:center;font-size:13px;font-weight:700;padding:8px 12px}
+.top{display:flex;justify-content:space-between;align-items:center;padding:16px 0}
+.top .nom{font-family:var(--d);font-size:26px;font-weight:var(--dw)}
+.ig{display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:700;padding:9px 14px;border:1px solid var(--line);border-radius:999px}
+.ig svg{width:16px;height:16px}
+
+.hero{padding:40px 0 30px}
+.hero .rub{font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--acc);font-weight:700}
+.hero h1{font-size:clamp(64px,17vw,118px);margin:10px 0 16px;word-break:break-word}
+.hero p{color:var(--mute);font-size:18px;max-width:520px;white-space:pre-line}
+.hoy{display:inline-flex;align-items:center;gap:8px;margin:20px 0 22px;font-size:14px;font-weight:600;padding:8px 14px;border:1px solid var(--line);border-radius:999px}
+.hoy i{width:8px;height:8px;border-radius:50%;background:var(--mute)}
+.hoy.on i{background:#3ddc84;box-shadow:0 0 10px #3ddc84}
+.hero .ctas{display:flex;gap:10px;flex-wrap:wrap}
+
+.fotos{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.fotos button{aspect-ratio:1;border-radius:calc(var(--rad)/2);overflow:hidden;background:var(--card) center/cover}
+.fotos button:first-child{grid-column:span 2;grid-row:span 2}
+.fotos.pocas{grid-template-columns:repeat(2,1fr)}
+.fotos.pocas button:first-child{grid-column:auto;grid-row:auto}
+.fotos.una{grid-template-columns:1fr}.fotos.una button{aspect-ratio:4/3}
+.lb{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.92);display:none;place-items:center;padding:16px}
+.lb.on{display:grid}
+.lb img{max-width:100%;max-height:88vh;border-radius:8px}
+.lb .x{position:absolute;top:14px;right:18px;font-size:28px;color:#fff}
+
+.svcs{border-top:1px solid var(--line)}
+.svc{display:flex;justify-content:space-between;gap:14px;align-items:baseline;padding:16px 0;border-bottom:1px solid var(--line)}
+.svc b{font-size:18px;font-weight:700}
+.svc small{display:block;color:var(--mute);font-size:13px}
+.svc .p{font-family:var(--d);font-weight:var(--dw);font-size:30px;color:var(--acc2);white-space:nowrap}
+[data-p=papel] .svc .p{color:var(--ink);font-size:24px}
+
+.turno{background:var(--card);border:1px solid var(--line);border-radius:calc(var(--rad) + 6px);padding:22px}
+[data-p=papel] .turno{border:1.5px solid var(--ink);box-shadow:0 5px 0 var(--ink)}
+.lbl{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);font-weight:700;margin:18px 0 8px}
+.lbl:first-child{margin-top:0}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{padding:11px 14px;border:1px solid var(--line);border-radius:var(--rad);font-size:14px;font-weight:600;min-height:44px;transition:.15s}
+.chip.sel{background:var(--acc);border-color:var(--acc);color:var(--on)}
+.days{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;scrollbar-width:thin}
+.day{flex:none;width:62px;padding:9px 0;border:1px solid var(--line);border-radius:var(--rad);text-align:center}
+.day small{display:block;font-size:11px;color:var(--mute);text-transform:uppercase}
+.day b{display:block;font-family:var(--d);font-weight:var(--dw);font-size:26px;line-height:1.1}
+.day.sel{background:var(--acc);border-color:var(--acc);color:var(--on)}
+.day.sel small{color:var(--on);opacity:.75}
+.slots{display:grid;grid-template-columns:repeat(auto-fill,minmax(76px,1fr));gap:6px}
+.slot{padding:11px 0;border:1px solid var(--line);border-radius:calc(var(--rad)/1.5);font-size:14px;font-variant-numeric:tabular-nums;min-height:44px}
+.slot.sel{background:var(--acc);border-color:var(--acc);color:var(--on);font-weight:700}
+.inp{width:100%;padding:13px 15px;background:var(--bg);border:1px solid var(--line);border-radius:calc(var(--rad)/1.5);outline:none;min-height:48px}
+.inp:focus{border-color:var(--acc)}
+.pasos{display:grid;gap:10px;margin-top:18px}
+.paso{display:grid;grid-template-columns:34px 1fr;gap:12px;align-items:center}
+.paso .n{width:34px;height:34px;border-radius:50%;border:1px solid var(--acc);color:var(--acc);display:grid;place-items:center;font-weight:800}
+.paso .btn{width:100%}
+.nota{font-size:13px;color:var(--mute);margin-top:12px}
+.resumen{margin-top:16px;padding:14px;border-radius:calc(var(--rad)/1.5);background:var(--bg);font-size:14px}
+.resumen div{display:flex;justify-content:space-between;gap:10px;padding:3px 0}
+.resumen span:first-child{color:var(--mute)}
+
+.dias{font-size:15px}
+.dias div{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line)}
+.dias div.hoy-d{color:var(--acc2);font-weight:700}
+.dias span:last-child{color:var(--mute)}
+.dias div.hoy-d span:last-child{color:inherit}
+.donde p{color:var(--mute);margin-bottom:14px}
+.donde b{color:var(--ink)}
+footer{padding:40px 0 60px;text-align:center;font-size:12px;color:var(--mute);border-top:1px solid var(--line);margin-top:30px}
+footer a{text-decoration:underline}
+.vacio{padding:120px 20px;text-align:center}
+.vacio h1{font-size:56px;margin-bottom:12px}
+.vacio p{color:var(--mute)}
+[hidden]{display:none!important}
+</style>
+</head>
+<body data-p="papel">
+<div class="previa" id="previa" hidden>Vista previa · tu web todavía no está publicada</div>
+<main id="app"><div class="vacio"><p>Cargando…</p></div></main>
+<div class="lb" id="lb"><button class="x" aria-label="Cerrar">✕</button><img alt=""></div>
+
+<script>
+const LOCAL = /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
+const API = (LOCAL ? 'http://127.0.0.1:3131' : 'https://api.hg-vl.com') + '/v1/_oficios';
+const params = new URLSearchParams(location.search);
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const fmt = (c) => '$' + Math.round(c / 100).toLocaleString('es-AR');
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const pad = (n) => String(n).padStart(2, '0');
+const aMin = (h) => { const [a, b] = h.split(':').map(Number); return a * 60 + b; };
+const hhmm = (m) => pad(Math.floor(m / 60)) + ':' + pad(m % 60);
+const DIAS = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'], DIAS_L = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
+const MESES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+const IG_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg>';
+
+/* Datos inventados para mostrar los dos estilos en la página de la campaña. */
+const tile = (bg, fg, glifo) => 'data:image/svg+xml,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300"><rect width="300" height="300" fill="${bg}"/><g opacity=".14" stroke="${fg}">${[...Array(10)].map((_, i) => `<line x1="${i * 40 - 100}" y1="0" x2="${i * 40 + 100}" y2="300"/>`).join('')}</g><text x="150" y="185" font-size="120" text-anchor="middle" fill="${fg}">${glifo}</text></svg>`);
+const DEMOS = {
+  tinta: { slug: 'demo', rubro: 'tatuaje', plantilla: 'tinta', nombre: 'Vera Tinta', whatsapp: '5492215632444', instagram: 'ejemplo',
+    bio: 'Tatuadora. Línea fina, botánica y blackwork. Flash nuevo todas las semanas.', modalidad: 'estudio', local: 'Box en Estudio Diagonal',
+    direccion: 'Diagonal 74 N° 1313', barrio: 'Centro', ciudad: 'La Plata',
+    servicios: [{ nombre: 'Flash del día', precio: 4500000, min: 90 }, { nombre: 'Tatuaje chico (hasta 8 cm)', precio: 5500000, min: 120 }, { nombre: 'Sesión (por hora)', precio: 4000000, min: 60 }],
+    horarios: { 2: [['12:00', '20:00']], 3: [['12:00', '20:00']], 4: [['12:00', '20:00']], 5: [['12:00', '21:00']], 6: [['11:00', '19:00']] },
+    sena: { link: 'https://www.mercadopago.com.ar/', monto: 1500000 }, agenda: null,
+    fotos: ['🗡', '🌹', '🐍', '👁', '🌙', '💀'].map((g, i) => tile(['#ece4d6', '#e2d6c2', '#f3ecdf'][i % 3], '#1a1414', g)), publicado: true },
+  papel: { slug: 'demo', rubro: 'barberia', plantilla: 'papel', nombre: 'Lucho', whatsapp: '5492215632444', instagram: 'ejemplo',
+    bio: 'Barbero hace 7 años. Corto en mi estudio o voy a tu casa. Fades limpios y buena música.', modalidad: 'casa', local: null, direccion: null, barrio: 'Tolosa', ciudad: 'La Plata',
+    servicios: [{ nombre: 'Corte', precio: 1100000, min: 40 }, { nombre: 'Fade', precio: 1250000, min: 45 }, { nombre: 'Corte + barba', precio: 1600000, min: 60 }, { nombre: 'Solo barba', precio: 650000, min: 25 }],
+    horarios: { 1: [['14:00', '21:00']], 2: [['10:00', '13:00'], ['15:00', '21:00']], 3: [['10:00', '13:00'], ['15:00', '21:00']], 4: [['14:00', '21:00']], 5: [['10:00', '13:00'], ['15:00', '21:00']], 6: [['09:00', '15:00']] },
+    sena: { link: 'https://www.mercadopago.com.ar/', monto: 300000 }, agenda: null,
+    fotos: ['✂', '⚡', '★', '✂', '⚡', '★'].map((g, i) => tile(['#ff4d1c', '#121110', '#e8e0d2'][i % 3], i % 3 === 2 ? '#121110' : '#fbf8f2', g)), publicado: true },
+};
+
+async function cargar() {
+  if (params.get('demo')) return DEMOS[params.get('demo')] || DEMOS.papel;
+  const m = /^\/o\/([a-z0-9-]+)\/?$/.exec(location.pathname);
+  const slug = m ? m[1] : params.get('s');
+  if (!slug) throw new Error('Esta web no existe.');
+  const q = params.get('llave') ? '?llave=' + encodeURIComponent(params.get('llave')) : '';
+  const r = await fetch(`${API}/sitio/${encodeURIComponent(slug)}${q}`);
+  if (!r.ok) throw new Error(r.status === 404 ? 'Esta web no existe o todavía no está publicada.' : 'No pudimos cargar la web. Probá en un rato.');
+  return r.json();
+}
+
+/* ── cálculo de horarios ── */
+function franjasDe(f, d) { return (f.horarios[d.getDay()] || f.horarios[String(d.getDay())] || []).map(([a, b]) => [aMin(a), aMin(b)]); }
+function slotsDe(f, d, min) {
+  const ahora = new Date(), hoy = d.toDateString() === ahora.toDateString();
+  const desde = hoy ? ahora.getHours() * 60 + ahora.getMinutes() + 60 : 0, out = [];
+  for (const [a, b] of franjasDe(f, d)) for (let m = a; m + min <= b; m += 30) if (m >= desde) out.push(m);
+  return out;
+}
+function estadoHoy(f) {
+  const n = new Date(), m = n.getHours() * 60 + n.getMinutes(), fr = franjasDe(f, n);
+  const ahora = fr.find(([a, b]) => m >= a && m < b);
+  if (ahora) return { on: true, txt: `Atendiendo ahora · hasta las ${hhmm(ahora[1])}` };
+  const luego = fr.find(([a]) => a > m);
+  if (luego) return { on: false, txt: `Hoy desde las ${hhmm(luego[0])}` };
+  for (let i = 1; i < 8; i++) { const d = new Date(n.getFullYear(), n.getMonth(), n.getDate() + i), x = franjasDe(f, d);
+    if (x.length) return { on: false, txt: `Próximo día: ${i === 1 ? 'mañana' : DIAS_L[d.getDay()]} desde las ${hhmm(x[0][0])}` }; }
+  return { on: false, txt: 'Consultá por WhatsApp' };
+}
+
+function pintar(f) {
+  document.body.dataset.p = f.plantilla;
+  document.title = `${f.nombre} — ${f.rubro === 'tatuaje' ? 'Tatuador' : 'Barbero'} en ${f.barrio}`;
+  $('meta[name=description]').content = (f.bio || `${f.nombre}, ${f.rubro === 'tatuaje' ? 'tatuador' : 'barbero'} en ${f.barrio}, ${f.ciudad}. Sacá turno online.`).slice(0, 160);
+  $('meta[name=theme-color]').content = getComputedStyle(document.body).getPropertyValue('--bg').trim();
+  $('#previa').hidden = f.publicado !== false;
+  const rubro = f.rubro === 'tatuaje' ? 'Tatuador' : 'Barbero';
+  const hoy = estadoHoy(f), wa = (t) => `https://wa.me/${f.whatsapp}?text=${encodeURIComponent(t)}`;
+  const lugar = f.modalidad === 'domicilio' ? 'Voy a domicilio' : f.modalidad === 'casa' ? 'Atiendo en mi espacio' : (f.local || (f.modalidad === 'estudio' ? 'Estudio' : 'Local'));
+  const dHoy = new Date().getDay();
+
+  $('#app').innerHTML = `
+  <div class="wrap">
+    <div class="top"><span class="nom">${esc(f.nombre)}</span>${f.instagram ? `<a class="ig" href="https://instagram.com/${esc(f.instagram)}" target="_blank" rel="noopener">${IG_SVG}@${esc(f.instagram)}</a>` : ''}</div>
+    <header class="hero">
+      <div class="rub">${rubro} · ${esc(f.barrio)}</div>
+      <h1>${esc(f.nombre)}</h1>
+      ${f.bio ? `<p>${esc(f.bio)}</p>` : ''}
+      <div class="hoy ${hoy.on ? 'on' : ''}"><i></i>${esc(hoy.txt)}</div>
+      <div class="ctas"><a class="btn btn-acc" href="#turno">Sacar turno</a><a class="btn btn-line" href="${wa('Hola ' + f.nombre + '! Te hago una consulta:')}" target="_blank" rel="noopener">WhatsApp</a></div>
+    </header>
+    ${f.fotos.length ? `<section style="padding-top:10px"><div class="fotos ${f.fotos.length === 1 ? 'una' : f.fotos.length < 4 ? 'pocas' : ''}">${f.fotos.slice(0, 8).map((u, i) => `<button style="background-image:url('${u}')" data-u="${u}" aria-label="Ver trabajo ${i + 1}"></button>`).join('')}</div>
+      ${f.instagram ? `<p style="text-align:center;margin-top:14px"><a class="ig" href="https://instagram.com/${esc(f.instagram)}" target="_blank" rel="noopener">${IG_SVG}Ver más en Instagram</a></p>` : ''}</section>` : ''}
+    <section><h2>Servicios</h2><div class="svcs">${f.servicios.map((s) => `<div class="svc"><div><b>${esc(s.nombre)}</b><small>${s.min} min</small></div><span class="p">${fmt(s.precio)}</span></div>`).join('')}</div>
+      ${f.sena ? `<p class="nota">Los turnos se confirman con una seña${f.sena.monto ? ' de ' + fmt(f.sena.monto) : ''} que se descuenta del total.</p>` : ''}</section>
+    <section id="turno"><h2>Sacá tu turno</h2><div class="turno" id="turnoBox"></div></section>
+    <section class="donde"><h2>Dónde y cuándo</h2>
+      <p><b>${esc(lugar)}</b><br>${f.direccion ? esc(f.direccion) + ' · ' : ''}${esc(f.barrio)}, ${esc(f.ciudad)}${f.modalidad === 'casa' ? '<br>La dirección te la paso por WhatsApp al confirmar.' : ''}</p>
+      ${f.direccion ? `<p><a class="btn btn-line" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(f.direccion + ', ' + f.ciudad)}">Cómo llegar</a></p>` : ''}
+      <div class="dias">${[1, 2, 3, 4, 5, 6, 0].map((d) => { const fr = f.horarios[d] || f.horarios[String(d)] || [];
+        return `<div class="${d === dHoy ? 'hoy-d' : ''}"><span>${DIAS_L[d][0].toUpperCase() + DIAS_L[d].slice(1)}</span><span>${fr.length ? fr.map((x) => x.join(' – ')).join(' y ') : 'Cerrado'}</span></div>`; }).join('')}</div>
+    </section>
+  </div>
+  <footer><div class="wrap">Web del programa <a href="/oficios/">Oficios</a> de Human Glitche${params.get('demo') ? ' · <b>ejemplo con datos inventados</b>' : ''}</div></footer>`;
+
+  $$('.fotos button').forEach((b) => b.onclick = () => { $('#lb img').src = b.dataset.u; $('#lb').classList.add('on'); });
+  turno(f, wa);
+}
+$('#lb').onclick = () => $('#lb').classList.remove('on');
+
+/* ── el turno ── */
+function turno(f, wa) {
+  const box = $('#turnoBox');
+  if (f.agenda) {
+    box.innerHTML = `<p>Elegí un horario libre en mi agenda: se reserva al toque y te llega la confirmación.</p>
+      <div class="pasos">
+        <div class="paso"><span class="n">1</span><a class="btn btn-acc" href="${esc(f.agenda)}" target="_blank" rel="noopener">Elegir horario en mi agenda</a></div>
+        ${f.sena ? `<div class="paso"><span class="n">2</span><a class="btn btn-line" href="${esc(f.sena.link)}" target="_blank" rel="noopener">Pagar la seña${f.sena.monto ? ' de ' + fmt(f.sena.monto) : ''}</a></div>
+        <div class="paso"><span class="n">3</span><a class="btn btn-wa" href="${wa('Hola ' + f.nombre + '! Reservé un turno en tu agenda y te mando el comprobante de la seña.')}" target="_blank" rel="noopener">Mandar el comprobante</a></div>` : ''}
+      </div>`;
+    return;
+  }
+  const S = { svc: 0, dia: null, ini: null };
+  const dias = [];
+  const h = new Date();
+  for (let i = 0; i < 14 && dias.length < 10; i++) { const d = new Date(h.getFullYear(), h.getMonth(), h.getDate() + i); if (franjasDe(f, d).length) dias.push(d); }
+  function render() {
+    const s = f.servicios[S.svc];
+    const conLugar = dias.filter((d) => slotsDe(f, d, s.min).length);
+    if (!S.dia || !conLugar.some((d) => d.toDateString() === S.dia.toDateString())) S.dia = conLugar[0] || null;
+    const slots = S.dia ? slotsDe(f, S.dia, s.min) : [];
+    if (!slots.includes(S.ini)) S.ini = null;
+    const nombre = ($('#tNombre') || {}).value || '';
+    box.innerHTML = `<div class="lbl">Servicio</div><div class="chips">${f.servicios.map((x, i) => `<button class="chip ${i === S.svc ? 'sel' : ''}" data-s="${i}">${esc(x.nombre)}</button>`).join('')}</div>
+      <div class="lbl">Día</div><div class="days">${conLugar.map((d) => `<button class="day ${S.dia && d.toDateString() === S.dia.toDateString() ? 'sel' : ''}" data-d="${d.toISOString()}"><small>${d.toDateString() === h.toDateString() ? 'Hoy' : DIAS[d.getDay()]}</small><b>${d.getDate()}</b></button>`).join('') || '<span class="nota">No hay días con horario en las próximas dos semanas. Escribime por WhatsApp.</span>'}</div>
+      ${S.dia ? `<div class="lbl">Horario</div><div class="slots">${slots.map((m) => `<button class="slot ${m === S.ini ? 'sel' : ''}" data-m="${m}">${hhmm(m)}</button>`).join('')}</div>` : ''}
+      <div class="lbl">Tu nombre</div><input class="inp" id="tNombre" autocomplete="name" placeholder="Para saber quién viene" value="${esc(nombre)}">
+      <div id="tFin"></div>
+      <p class="nota">El turno queda confirmado cuando ${esc(f.nombre)} te responde por WhatsApp.</p>`;
+    $$('.chip', box).forEach((b) => b.onclick = () => { S.svc = +b.dataset.s; render(); });
+    $$('.day', box).forEach((b) => b.onclick = () => { S.dia = new Date(b.dataset.d); S.ini = null; render(); });
+    $$('.slot', box).forEach((b) => b.onclick = () => { S.ini = +b.dataset.m; render(); });
+    $('#tNombre').oninput = fin; fin();
+  }
+  function fin() {
+    const s = f.servicios[S.svc], n = $('#tNombre').value.trim(), el = $('#tFin');
+    if (S.ini == null || !S.dia) { el.innerHTML = ''; return; }
+    const cuando = `${DIAS_L[S.dia.getDay()]} ${S.dia.getDate()} de ${MESES[S.dia.getMonth()]} a las ${hhmm(S.ini)}`;
+    const msg = `Hola ${f.nombre}! Quiero sacar turno:\n\n• ${s.nombre} (${fmt(s.precio)})\n• ${cuando}${n ? `\n• A nombre de ${n}` : ''}` + (f.sena ? `\n\nYa pagué la seña${f.sena.monto ? ' de ' + fmt(f.sena.monto) : ''}, te mando el comprobante.` : '\n\n¿Me lo confirmás?');
+    el.innerHTML = `<div class="resumen"><div><span>${esc(s.nombre)}</span><b>${fmt(s.precio)}</b></div><div><span>Cuándo</span><b>${cuando}</b></div>
+      ${f.sena && f.sena.monto ? `<div><span>Seña ahora</span><b>${fmt(f.sena.monto)}</b></div><div><span>En el turno</span><b>${fmt(Math.max(0, s.precio - f.sena.monto))}</b></div>` : ''}</div>
+      <div class="pasos">${f.sena
+        ? `<div class="paso"><span class="n">1</span><a class="btn btn-acc" href="${esc(f.sena.link)}" target="_blank" rel="noopener">Pagar la seña${f.sena.monto ? ' de ' + fmt(f.sena.monto) : ''}</a></div>
+           <div class="paso"><span class="n">2</span><a class="btn btn-wa" href="${wa(msg)}" target="_blank" rel="noopener">Mandar el turno por WhatsApp</a></div>`
+        : `<div class="paso"><span class="n">1</span><a class="btn btn-wa" href="${wa(msg)}" target="_blank" rel="noopener">Pedir el turno por WhatsApp</a></div>`}</div>`;
+  }
+  render();
+}
+
+cargar().then(pintar).catch((e) => {
+  $('#app').innerHTML = `<div class="vacio"><h1>Uy.</h1><p>${esc(e.message)}</p><p style="margin-top:20px"><a class="btn btn-line" href="/oficios/">Ver el programa Oficios</a></p></div>`;
+});
+</script>
+</body>
+</html>

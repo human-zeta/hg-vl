@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flyer Oficios · Human Glitche</title>
+<meta name="robots" content="noindex">
+<!--
+  OFICIOS — flyer y tarjetitas para dejar en barberías y estudios.
+  Cada tanda lleva un QR con ?o=<lugar>: el formulario guarda ese origen y en el
+  panel se ve de qué barbería salió cada anotado. Blanco y negro a propósito:
+  se imprime en cualquier lado y no gasta tinta de color.
+  Uso: poné el nombre del lugar arriba → Imprimir (A4, sin márgenes).
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:opsz,wght@9..40,400;9..40,700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+:root{--k:#0a0a0a;--p:#fff;--gris:#6b6b6b}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#d9d6d0;font-family:'DM Sans',system-ui,sans-serif;color:var(--k);-webkit-font-smoothing:antialiased}
+.ctl{position:sticky;top:0;z-index:5;background:#0a0a0a;color:#fff;padding:14px 16px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;font-size:14px}
+.ctl input,.ctl select{padding:10px 12px;border-radius:10px;border:1px solid #444;background:#1a1a1a;color:#fff;font:inherit;min-width:220px}
+.ctl button{padding:10px 18px;border-radius:10px;background:#fff;color:#000;font-weight:700;border:0;cursor:pointer;font:inherit;font-weight:700}
+.ctl .url{font-family:'Space Mono',monospace;font-size:12px;color:#9a9a9a;word-break:break-all}
+.hoja{width:210mm;height:297mm;margin:20px auto;background:var(--p);box-shadow:0 10px 40px rgba(0,0,0,.25);overflow:hidden;position:relative}
+@media(max-width:840px){.hoja{transform:scale(calc((100vw - 20px) / 794px));transform-origin:top left;margin:10px}}
+
+/* afiche */
+.af{padding:16mm 15mm;height:100%;display:flex;flex-direction:column}
+.af .top{display:flex;justify-content:space-between;font-family:'Space Mono',monospace;font-size:10pt;letter-spacing:.08em;text-transform:uppercase}
+.af .preg{font-size:20pt;margin-top:14mm;line-height:1.2}
+.af h1{font-family:'Bebas Neue',Impact,sans-serif;font-weight:400;font-size:112pt;line-height:.84;letter-spacing:-.005em;margin-top:6mm}
+.af h1 span{display:inline-block;background:var(--k);color:var(--p);padding:0 3mm;margin-top:2mm}
+.af ul{list-style:none;margin-top:10mm;font-size:15pt;line-height:1.35}
+.af li{padding:2.2mm 0;border-bottom:.4mm solid var(--k);display:flex;gap:4mm}
+.af li b{font-family:'Space Mono',monospace;font-size:11pt;min-width:9mm}
+.af .pie{margin-top:auto;display:grid;grid-template-columns:1fr 58mm;gap:8mm;align-items:end}
+.af .cupos{font-family:'Bebas Neue',sans-serif;font-size:40pt;line-height:.9}
+.af .cupos small{display:block;font-family:'DM Sans',sans-serif;font-size:11pt;margin-top:2mm;color:var(--gris)}
+.af .url{font-family:'Space Mono',monospace;font-size:13pt;font-weight:700;margin-top:5mm}
+.qrbox{border:.6mm solid var(--k);padding:3mm;text-align:center}
+.qrbox .qr img,.qrbox .qr canvas{width:100%!important;height:auto!important;display:block}
+.qrbox small{display:block;font-family:'Space Mono',monospace;font-size:8.5pt;margin-top:2mm;letter-spacing:.06em;text-transform:uppercase}
+.tijera{position:absolute;right:15mm;top:44mm;font-size:64pt;transform:rotate(-20deg)}
+
+/* tarjetitas: 8 por A4 (105 × 74,25 mm), con líneas de corte */
+.cards{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:repeat(4,1fr);height:100%}
+.card{border:.2mm dashed #bbb;padding:6mm 6mm;display:grid;grid-template-columns:1fr 30mm;gap:4mm;align-items:center}
+.card .t{font-family:'Space Mono',monospace;font-size:6.5pt;letter-spacing:.08em;text-transform:uppercase}
+.card h2{font-family:'Bebas Neue',sans-serif;font-weight:400;font-size:30pt;line-height:.86;margin:2mm 0}
+.card h2 span{display:inline-block;margin-top:1.2mm;background:var(--k);color:var(--p);padding:0 1.5mm}
+.card p{font-size:7.5pt;line-height:1.3}
+.card .u{font-family:'Space Mono',monospace;font-size:7pt;font-weight:700;margin-top:2mm}
+.card .qr img,.card .qr canvas{width:30mm!important;height:30mm!important}
+
+@media print{
+  @page{size:A4;margin:0}
+  body{background:none}
+  .ctl{display:none}
+  .hoja{margin:0;box-shadow:none;transform:none!important;page-break-after:always}
+}
+</style>
+</head>
+<body>
+<div class="ctl">
+  <label>¿Dónde lo dejás? <input id="lugar" placeholder="ej: barberia-el-tano" value=""></label>
+  <select id="que"><option value="ambos">Afiche + tarjetitas</option><option value="afiche">Solo afiche</option><option value="cards">Solo tarjetitas</option></select>
+  <button onclick="print()">Imprimir</button>
+  <span class="url" id="urlTxt"></span>
+</div>
+
+<div class="hoja" id="hAfiche"><div class="af">
+  <div class="top"><span>Human Glitche · Oficios</span><span>Programa 2026</span></div>
+  <div class="tijera" aria-hidden="true">✂</div>
+  <p class="preg">¿Cortás o tatuás por tu cuenta<br>y estás <b>arrancando</b>?</p>
+  <h1>Tu web<br><span>$30.000</span></h1>
+  <ul>
+    <li><b>01</b>Tus trabajos, tus precios y tu Instagram en una página tuya</li>
+    <li><b>02</b>Turnos con seña que van directo a tu Mercado Pago</li>
+    <li><b>03</b>Un solo pago. Sin mensualidad. Salen todas el 10 de octubre</li>
+  </ul>
+  <div class="pie">
+    <div><div class="cupos">100 cupos para barberos<br>100 para tatuadores<small>Salen todas juntas el 10/10, o antes si se llena el cupo.</small></div><div class="url">hg-vl.com/oficios</div></div>
+    <div class="qrbox"><div class="qr" id="qr1"></div><small>Escaneá y anotate</small></div>
+  </div>
+</div></div>
+
+<div class="hoja" id="hCards"><div class="cards" id="cards"></div></div>
+
+<script>
+const BASE = 'https://www.hg-vl.com/oficios/';
+const slug = (v) => String(v || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60);
+const params = new URLSearchParams(location.search);
+const $ = (s) => document.querySelector(s);
+if (params.get('o')) $('#lugar').value = params.get('o');
+
+function qr(el, url, px) {
+  el.innerHTML = '';
+  new QRCode(el, { text: url, width: px, height: px, colorDark: '#0a0a0a', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M });
+}
+function armar() {
+  const o = slug($('#lugar').value);
+  const url = BASE + (o ? '?o=' + o : '');
+  $('#urlTxt').textContent = url;
+  qr($('#qr1'), url, 440);
+  const card = `<div class="card"><div><div class="t">Human Glitche · Oficios</div><h2>Tu web<br><span>$30.000</span></h2>
+    <p>Para barberos y tatuadores independientes que arrancan. Tus trabajos, tus precios y turnos con seña a tu Mercado Pago.</p><div class="u">hg-vl.com/oficios · sale el 10/10</div></div><div class="qr"></div></div>`;
+  $('#cards').innerHTML = card.repeat(8);
+  document.querySelectorAll('#cards .qr').forEach((el) => qr(el, url, 240));
+  const q = $('#que').value;
+  $('#hAfiche').hidden = q === 'cards'; $('#hCards').hidden = q === 'afiche';
+}
+let t; $('#lugar').oninput = () => { clearTimeout(t); t = setTimeout(armar, 300); };
+$('#que').onchange = armar;
+armar();
+</script>
+</body>
+</html>
