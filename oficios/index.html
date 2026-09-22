@@ -102,6 +102,9 @@ nav .btn{padding:9px 16px;min-height:0;font-size:14px}
 .phone{width:100%;max-width:280px;aspect-ratio:9/18.5;margin:0 auto 14px;border-radius:34px;border:8px solid #1c1c28;background:#000;overflow:hidden;box-shadow:0 30px 60px -20px rgba(0,0,0,.8),0 0 0 1px var(--line2);position:relative}
 .phone iframe{width:390px;height:804px;border:0;transform-origin:0 0;position:absolute;top:0;left:0}
 .est h3{font-size:30px}
+.nuevo{font-family:var(--m);font-size:11px;vertical-align:middle;padding:3px 7px;border-radius:6px;background:var(--grad);color:#07070b;letter-spacing:.06em;text-transform:uppercase}
+.custom{margin:44px auto 0;max-width:720px;text-align:center;color:var(--mute);border:1px dashed var(--line2);border-radius:16px;padding:18px 22px}
+.custom b{color:var(--ink);font-weight:500}
 .est p{color:var(--mute);font-size:14px}
 @media(max-width:860px){.estilos{grid-template-columns:1fr}}
 
@@ -270,12 +273,19 @@ footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
 </div></section>
 
 <section id="estilos"><div class="wrap">
-  <div class="head"><div><div class="mono grad">Dos estilos</div><h2>Elegí cómo<br>se ve la tuya</h2></div>
-    <p>Mismo contenido, dos caras. Estos son ejemplos con datos inventados: la tuya lleva tus fotos, tus precios y tu nombre.</p></div>
+  <div class="head"><div><div class="mono grad">Cuatro estilos</div><h2>Elegí cómo<br>se ve la tuya</h2></div>
+    <p>Mismo contenido, cuatro caras: dos clásicas y dos más llamativas. Estos son ejemplos con datos inventados: la tuya lleva tus fotos, tus precios y tu nombre.</p></div>
   <div class="estilos">
     <div class="est"><div class="phone"><iframe title="Ejemplo estilo Papel" loading="lazy" data-src="sitio/?demo=papel"></iframe></div><h3>Papel</h3><p>Claro y con onda. Para el barbero que trabaja solo.</p></div>
     <div class="est"><div class="phone"><iframe title="Ejemplo estilo Tinta" loading="lazy" data-src="sitio/?demo=tinta"></iframe></div><h3>Tinta</h3><p>Negro, hueso y rojo. Para el tatuador.</p></div>
   </div>
+  <div class="mono grad" style="margin:54px 0 6px">Opcionales · más llamativos</div>
+  <p style="color:var(--mute);max-width:560px;margin-bottom:26px">Para los que quieren que su web se note desde lejos. Mismo precio, mismo contenido: solo cambia la cara.</p>
+  <div class="estilos">
+    <div class="est"><div class="phone"><iframe title="Ejemplo estilo Neón" loading="lazy" data-src="sitio/?demo=neon"></iframe></div><h3>Neón <span class="nuevo">nuevo</span></h3><p>Tubos que titilan y el poste de barbería girando. Para el barbero de noche.</p></div>
+    <div class="est"><div class="phone"><iframe title="Ejemplo estilo Ácido" loading="lazy" data-src="sitio/?demo=acido"></iframe></div><h3>Ácido <span class="nuevo">nuevo</span></h3><p>Cromo, verde ácido y una cinta que corre. Para el tatuador de blackwork.</p></div>
+  </div>
+  <p class="custom">✦ ¿Querés algo más a tu medida? <b>Cuando terminemos las entregas de esta tanda vamos a abrir una campaña de customización</b> para los del programa: colores propios, secciones nuevas, dominio y más.</p>
 </div></section>
 
 <section style="padding-top:0"><div class="wrap">
@@ -325,6 +335,8 @@ footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
         <div class="seg">
           <label><input type="radio" name="plantilla" value="papel" checked><span>Papel<small>claro y con onda</small></span></label>
           <label><input type="radio" name="plantilla" value="tinta"><span>Tinta<small>negro y rojo</small></span></label>
+          <label><input type="radio" name="plantilla" value="neon"><span>Neón ✦<small>llamativo · barbero</small></span></label>
+          <label><input type="radio" name="plantilla" value="acido"><span>Ácido ✦<small>llamativo · tatuador</small></span></label>
         </div>
       </fieldset>
 
@@ -389,7 +401,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
         <legend>Últimos detalles</legend>
         <label class="f"><span>¿Te pasó el dato alguien del programa? <em>(su código, opcional)</em></span><input class="inp" name="referido" placeholder="OF-B-XXXXX" autocapitalize="characters" spellcheck="false"></label>
         <div class="oculto" aria-hidden="true"><label>No completar <input name="web" tabindex="-1" autocomplete="off"></label></div>
-        <label class="check"><input type="checkbox" name="acepto" id="acepto"><span>Acepto que Human Glitche guarde estos datos para armar y mostrar mi web, y los <a href="#terminos" style="color:var(--cel)">términos del programa</a>: <b>un pago de $30.000, sin cambios de diseño por ahora</b>, y con mi llave actualizo precios, horarios y fotos cuando quiera.</span></label>
+        <label class="check"><input type="checkbox" name="acepto" id="acepto"><span>Acepto que Human Glitche guarde estos datos para armar y mostrar mi web, y los <a href="#terminos" style="color:var(--cel)">términos del programa</a>: <b>un pago de $30.000, sin cambios de diseño en esta tanda</b> (la customización viene después, aparte), y con mi llave actualizo precios, horarios y fotos cuando quiera.</span></label>
       </fieldset>
     </div>
 
@@ -433,9 +445,9 @@ footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
   <details><summary>¿Se actualiza sola con mi Instagram?</summary><p>No: Instagram no deja hacerlo sin un permiso especial para cada cuenta. Subís tus mejores fotos en el formulario, la web tiene el botón directo a tu Instagram, y las fotos las cambiás vos cuando quieras con tu llave.</p></details>
   <details><summary>¿Cómo funcionan los turnos?</summary><p>El cliente elige servicio, día y horario entre los que marcaste, paga la seña en tu link y te manda el turno por WhatsApp con el comprobante. Vos confirmás. Si conectás tu agenda de citas de Google Calendar, los horarios salen de ahí y se bloquean solos.</p></details>
   <details><summary>¿Puedo cambiar precios u horarios?</summary><p>Sí, cuando quieras. Al terminar el formulario te damos una llave: con tu código y esa llave entrás acá y actualizás servicios, precios, horarios, fotos, la seña y tu Instagram.</p></details>
-  <details><summary>¿Y el diseño?</summary><p>Por ahora el diseño es el del estilo que elijas y no se hacen cambios a medida. Más adelante los del programa van a tener la opción de modernizar su página: agenda con bloqueo automático, tarjeta de sellos, dominio propio.</p></details>
+  <details><summary>¿Y el diseño? ¿Puedo personalizarla?</summary><p>En esta tanda elegís uno de los cuatro estilos (dos clásicos y dos más llamativos) y no se hacen cambios a medida: así podemos entregar 200 webs a este precio. <b>Cuando terminemos las entregas vamos a abrir una campaña de customización</b> para los del programa: colores y tipografías propias, secciones nuevas, dominio propio y agenda con bloqueo automático. Va a ser opcional y con precio aparte; los del programa se enteran primero.</p></details>
   <details><summary>¿Y si no me gusta o no sale?</summary><p>Si tu web no sale en el lanzamiento, te devolvemos los $30.000. Si revisando algo no se puede publicar (por ejemplo, fotos que no son tuyas), te avisamos antes para que lo cambies, y si no se puede, te devolvemos la plata.</p></details>
-  <details id="terminos"><summary>Términos del programa</summary><p>Pago único de $30.000 por una web simple en hg-vl.com/o/&lt;tu-dirección&gt;, en uno de los dos estilos. Incluye: tu nombre, tus fotos, tus servicios y precios, tus horarios, tu Instagram, tu WhatsApp, el pedido de turno con seña a tu propio link de Mercado Pago (o tu agenda de Google) y tu lugar en el directorio. Las webs se publican todas juntas al completarse el cupo de su oficio o el 10 de octubre de 2026, lo que ocurra primero. No incluye cambios de diseño ni dominio propio. Los datos personales (nombre real, email) no se publican y se usan solo para contactarte por tu web; podés pedir que los borremos escribiéndonos. Human Glitche puede dar de baja una web con contenido que no sea tuyo o que no corresponda al oficio.</p></details>
+  <details id="terminos"><summary>Términos del programa</summary><p>Pago único de $30.000 por una web simple en hg-vl.com/o/&lt;tu-dirección&gt;, en uno de los dos estilos. Incluye: tu nombre, tus fotos, tus servicios y precios, tus horarios, tu Instagram, tu WhatsApp, el pedido de turno con seña a tu propio link de Mercado Pago (o tu agenda de Google) y tu lugar en el directorio. Las webs se publican todas juntas al completarse el cupo de su oficio o el 10 de octubre de 2026, lo que ocurra primero. No incluye cambios de diseño ni dominio propio; terminadas las entregas se abrirá una campaña de customización opcional, con precio aparte. Los datos personales (nombre real, email) no se publican y se usan solo para contactarte por tu web; podés pedir que los borremos escribiéndonos. Human Glitche puede dar de baja una web con contenido que no sea tuyo o que no corresponda al oficio.</p></details>
   <details><summary>Ya me anoté: quiero actualizar mis datos</summary><p><a class="btn btn-sec" href="?editar=1#anotarme" style="margin-top:6px">Actualizar mis datos</a></p></details>
 </div></section>
 

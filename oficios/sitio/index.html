@@ -9,16 +9,16 @@
 <!--
   OFICIOS — LA plantilla. Una sola página pinta las webs de todos los del programa:
   www.hg-vl.com/o/<slug> → Caddy reescribe a /oficios/sitio/index.html, y esta página
-  lee la ficha de api.hg-vl.com/v1/_oficios/sitio/<slug>. Dos estilos (papel = barbero
-  independiente, tinta = tatuador) por data-p. ?llave=… = vista previa del dueño antes de publicarse.
-  ?demo=tinta|papel = datos inventados, para la página de la campaña.
+  lee la ficha de api.hg-vl.com/v1/_oficios/sitio/<slug>. Cuatro estilos por data-p: papel y neon
+  (barbero independiente; neon = el llamativo), tinta y acido (tatuador; acido = el llamativo). ?llave=… = vista previa del dueño antes de publicarse.
+  ?demo=tinta|papel|neon|acido = datos inventados, para la página de la campaña.
   El turno NO bloquea agenda (eso es la versión «modernizar»): arma el pedido, manda
   a pagar la seña a SU link de MP y abre WhatsApp. Si tiene agenda de citas de
   Google, el turno va por ahí.
 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Pirata+One&family=Space+Grotesk:wght@400;600;700&family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,700;12..96,800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Pirata+One&family=Tilt+Neon&family=Outfit:wght@400;600;800&family=Unbounded:wght@600;900&family=Space+Mono:wght@400;700&family=Space+Grotesk:wght@400;600;700&family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,700;12..96,800&display=swap" rel="stylesheet">
 <style>
 :root{--r:18px;--ease:cubic-bezier(.2,.8,.2,1)}
 [data-p=tinta]{--bg:#0b0a0a;--bg2:#121010;--card:#171414;--line:#2a2424;--ink:#ece4d6;--mute:#a2978a;--acc:#d9312b;--acc2:#ff5a4e;--on:#fff;
@@ -119,6 +119,57 @@ footer a{text-decoration:underline}
 .vacio{padding:120px 20px;text-align:center}
 .vacio h1{font-size:56px;margin-bottom:12px}
 .vacio p{color:var(--mute)}
+
+/* ════ NEÓN — el barbero llamativo: tubos que titilan, poste que gira, piso synthwave ════ */
+[data-p=neon]{--bg:#07040f;--bg2:#0d0719;--card:#120b1f;--line:#2e1d4a;--ink:#fdf4ff;--mute:#b9a6d6;--acc:#ff2bd6;--acc2:#22e1ff;--on:#12031a;
+  --d:'Tilt Neon',system-ui,sans-serif;--b:'Outfit',system-ui,sans-serif;--dw:400;--rad:14px}
+body[data-p=neon] #app,body[data-p=neon] footer{position:relative;z-index:1}
+body[data-p=neon]{background:radial-gradient(ellipse 90% 50% at 50% 0%,#2a0b45 0%,transparent 60%),var(--bg)}
+body[data-p=neon]::before{content:"";position:fixed;left:-50%;right:-50%;bottom:-10vh;height:55vh;z-index:0;opacity:.7;pointer-events:none;
+  background-image:linear-gradient(rgba(255,43,214,.35) 1px,transparent 1px),linear-gradient(90deg,rgba(34,225,255,.3) 1px,transparent 1px);
+  background-size:60px 60px;transform:perspective(420px) rotateX(62deg);transform-origin:bottom;animation:piso 2.4s linear infinite;
+  -webkit-mask-image:linear-gradient(transparent,#000 60%);mask-image:linear-gradient(transparent,#000 60%)}
+@keyframes piso{to{background-position:0 60px}}
+[data-p=neon] .hero h1{color:#fff;text-shadow:0 0 6px #fff,0 0 18px var(--acc),0 0 42px var(--acc),0 0 80px var(--acc);animation:titila 6s infinite}
+[data-p=neon] .top .nom{color:var(--acc2);text-shadow:0 0 12px var(--acc2)}
+@keyframes titila{0%,19%,21%,23%,55%,57%,100%{opacity:1}20%,22%,56%{opacity:.55;text-shadow:none}}
+[data-p=neon] .rub{color:var(--acc2);text-shadow:0 0 10px var(--acc2)}
+[data-p=neon] h2{color:#fff;text-shadow:0 0 14px var(--acc2),0 0 30px var(--acc2)}
+[data-p=neon] .btn-acc{background:var(--acc);color:#fff;box-shadow:0 0 18px var(--acc),0 0 46px rgba(255,43,214,.5)}
+[data-p=neon] .btn-line{border-color:var(--acc2);color:var(--acc2);box-shadow:inset 0 0 12px rgba(34,225,255,.25),0 0 12px rgba(34,225,255,.25)}
+[data-p=neon] .svc .p{color:var(--acc2);text-shadow:0 0 12px var(--acc2)}
+[data-p=neon] .fotos button{border:1px solid var(--acc);box-shadow:0 0 14px rgba(255,43,214,.45)}
+[data-p=neon] .turno{border-color:var(--acc2);box-shadow:0 0 24px rgba(34,225,255,.2),inset 0 0 30px rgba(255,43,214,.06)}
+[data-p=neon] .chip.sel,[data-p=neon] .day.sel,[data-p=neon] .slot.sel{box-shadow:0 0 16px var(--acc)}
+.poste{height:26px;border-radius:13px;margin:6px 0 10px;border:1px solid rgba(255,255,255,.35);
+  background:repeating-linear-gradient(-55deg,#ff2b4f 0 16px,#fff 16px 30px,#2b6bff 30px 46px,#fff 46px 60px);background-size:120px 100%;
+  animation:poste 1.6s linear infinite;box-shadow:0 0 22px rgba(255,43,214,.55),inset 0 3px 6px rgba(255,255,255,.6),inset 0 -6px 10px rgba(0,0,0,.35)}
+@keyframes poste{to{background-position:120px 0}}
+
+/* ════ ÁCIDO — el tatuador llamativo: cromo, verde ácido, cinta que corre ════ */
+[data-p=acido]{--bg:#0a0a0a;--bg2:#111;--card:#141414;--line:#2c2c2c;--ink:#f2f2f2;--mute:#9a9a9a;--acc:#c6ff00;--acc2:#c6ff00;--on:#0a0a0a;
+  --d:'Unbounded',system-ui,sans-serif;--b:'Space Mono',ui-monospace,monospace;--dw:900;--rad:0px}
+body[data-p=acido]::before{content:"";position:fixed;inset:0;z-index:40;pointer-events:none;opacity:.09;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+[data-p=acido] .hero h1{text-transform:uppercase;letter-spacing:-.05em;font-size:clamp(56px,15vw,112px);
+  background:linear-gradient(180deg,#fff 0%,#cfd3d8 38%,#6d737a 50%,#e9ecef 62%,#8a9096 100%);-webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(5px 5px 0 var(--acc))}
+[data-p=acido] h2{text-transform:uppercase;letter-spacing:-.04em;font-size:clamp(30px,7vw,44px)}
+[data-p=acido] .rub{display:inline-block;background:var(--acc);color:#0a0a0a;padding:4px 8px;transform:rotate(-2deg)}
+[data-p=acido] .top .nom{text-transform:uppercase;font-size:18px}
+[data-p=acido] .btn{text-transform:uppercase;letter-spacing:.04em;font-size:13px}
+[data-p=acido] .btn-acc{box-shadow:5px 5px 0 #fff}
+[data-p=acido] .btn-acc:hover{transform:translate(-2px,-2px);box-shadow:7px 7px 0 #fff}
+[data-p=acido] .btn-line{border:2px solid #fff}
+[data-p=acido] .svc .p{font-size:22px;color:var(--acc)}
+[data-p=acido] .fotos button{filter:grayscale(1) contrast(1.15);transition:filter .3s,outline-color .3s;outline:2px solid transparent;outline-offset:-2px}
+[data-p=acido] .fotos button:hover{filter:none;outline-color:var(--acc)}
+[data-p=acido] .turno{border:2px solid var(--acc)}
+[data-p=acido] .ig,[data-p=acido] .hoy{border-radius:0}
+.cinta{margin:18px -24px 6px;background:var(--acc);color:#0a0a0a;transform:rotate(-3deg);overflow:hidden;padding:10px 0;border-block:2px solid #0a0a0a}
+.cinta div{display:flex;gap:26px;width:max-content;animation:cinta 16s linear infinite;font-family:'Unbounded',sans-serif;font-weight:900;font-size:20px;text-transform:uppercase;white-space:nowrap}
+@keyframes cinta{to{transform:translateX(-50%)}}
+@media(prefers-reduced-motion:reduce){.poste,.cinta div,body[data-p=neon]::before,[data-p=neon] .hero h1{animation:none!important}}
 [hidden]{display:none!important}
 </style>
 </head>
@@ -152,6 +203,20 @@ const DEMOS = {
     horarios: { 2: [['12:00', '20:00']], 3: [['12:00', '20:00']], 4: [['12:00', '20:00']], 5: [['12:00', '21:00']], 6: [['11:00', '19:00']] },
     sena: { link: 'https://www.mercadopago.com.ar/', monto: 1500000 }, agenda: null,
     fotos: ['🗡', '🌹', '🐍', '👁', '🌙', '💀'].map((g, i) => tile(['#ece4d6', '#e2d6c2', '#f3ecdf'][i % 3], '#1a1414', g)), publicado: true },
+  neon: { slug: 'demo', rubro: 'barberia', plantilla: 'neon', nombre: 'Dante Fade', whatsapp: '5492215632444', instagram: 'ejemplo',
+    bio: 'Fades de noche y diseños a navaja. Música fuerte, café y turnos hasta las 23.', modalidad: 'local', local: 'Sillón 3 · Barbería Norte',
+    direccion: null, barrio: 'Villa Elvira', ciudad: 'La Plata',
+    servicios: [{ nombre: 'Fade', precio: 1300000, min: 45 }, { nombre: 'Fade + diseño', precio: 1600000, min: 60 }, { nombre: 'Corte + barba', precio: 1700000, min: 60 }, { nombre: 'Color fantasía', precio: 3500000, min: 120 }],
+    horarios: { 2: [['16:00', '23:00']], 3: [['16:00', '23:00']], 4: [['16:00', '23:00']], 5: [['16:00', '23:30']], 6: [['14:00', '23:30']] },
+    sena: { link: 'https://www.mercadopago.com.ar/', monto: 300000 }, agenda: null,
+    fotos: ['✂', '⚡', '💈', '✂', '⚡', '💈'].map((g, i) => tile(['#1a0833', '#07040f', '#26093a'][i % 3], ['#ff2bd6', '#22e1ff', '#ff2bd6'][i % 3], g)), publicado: true },
+  acido: { slug: 'demo', rubro: 'tatuaje', plantilla: 'acido', nombre: 'Mora Ink', whatsapp: '5492215632444', instagram: 'ejemplo',
+    bio: 'Blackwork, ornamental y dotwork. Diseños únicos: cada flash se tatúa una sola vez.', modalidad: 'estudio', local: 'Box en Estudio Diagonal',
+    direccion: null, barrio: 'Centro', ciudad: 'La Plata',
+    servicios: [{ nombre: 'Flash (diseño único)', precio: 5000000, min: 90 }, { nombre: 'Blackwork mediano', precio: 11000000, min: 180 }, { nombre: 'Sesión (por hora)', precio: 4500000, min: 60 }],
+    horarios: { 3: [['13:00', '20:00']], 4: [['13:00', '20:00']], 5: [['13:00', '20:00']], 6: [['12:00', '19:00']] },
+    sena: { link: 'https://www.mercadopago.com.ar/', monto: 2000000 }, agenda: null,
+    fotos: ['☠', '✦', '🐍', '👁', '☾', '✧'].map((g, i) => tile(['#141414', '#c6ff00', '#1e1e1e'][i % 3], i % 3 === 1 ? '#0a0a0a' : '#f2f2f2', g)), publicado: true },
   papel: { slug: 'demo', rubro: 'barberia', plantilla: 'papel', nombre: 'Lucho', whatsapp: '5492215632444', instagram: 'ejemplo',
     bio: 'Barbero hace 7 años. Corto en mi estudio o voy a tu casa. Fades limpios y buena música.', modalidad: 'casa', local: null, direccion: null, barrio: 'Tolosa', ciudad: 'La Plata',
     servicios: [{ nombre: 'Corte', precio: 1100000, min: 40 }, { nombre: 'Fade', precio: 1250000, min: 45 }, { nombre: 'Corte + barba', precio: 1600000, min: 60 }, { nombre: 'Solo barba', precio: 650000, min: 25 }],
@@ -211,6 +276,8 @@ function pintar(f) {
       <div class="hoy ${hoy.on ? 'on' : ''}"><i></i>${esc(hoy.txt)}</div>
       <div class="ctas"><a class="btn btn-acc" href="#turno">Sacar turno</a><a class="btn btn-line" href="${wa('Hola ' + f.nombre + '! Te hago una consulta:')}" target="_blank" rel="noopener">WhatsApp</a></div>
     </header>
+    ${f.plantilla === 'neon' ? '<div class="poste" aria-hidden="true"></div>' : ''}
+    ${f.plantilla === 'acido' ? `<div class="cinta" aria-hidden="true"><div>${Array(8).fill(`<span>${esc(f.nombre)}</span><span>✦</span><span>${rubro}</span><span>✦</span>`).join('')}</div></div>` : ''}
     ${f.fotos.length ? `<section style="padding-top:10px"><div class="fotos ${f.fotos.length === 1 ? 'una' : f.fotos.length < 4 ? 'pocas' : ''}">${f.fotos.slice(0, 8).map((u, i) => `<button style="background-image:url('${u}')" data-u="${u}" aria-label="Ver trabajo ${i + 1}"></button>`).join('')}</div>
       ${f.instagram ? `<p style="text-align:center;margin-top:14px"><a class="ig" href="https://instagram.com/${esc(f.instagram)}" target="_blank" rel="noopener">${IG_SVG}Ver más en Instagram</a></p>` : ''}</section>` : ''}
     <section><h2>Servicios</h2><div class="svcs">${f.servicios.map((s) => `<div class="svc"><div><b>${esc(s.nombre)}</b><small>${s.min} min</small></div><span class="p">${fmt(s.precio)}</span></div>`).join('')}</div>
