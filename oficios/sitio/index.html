@@ -10,7 +10,7 @@
   OFICIOS — LA plantilla. Una sola página pinta las webs de todos los del programa:
   www.hg-vl.com/o/<slug> → Caddy reescribe a /oficios/sitio/index.html, y esta página
   lee la ficha de api.hg-vl.com/v1/_oficios/sitio/<slug>. Seis estilos por data-p (papel, tinta, neon, acido,
-  sastre, galeria); cualquiera sirve para barbero o tatuador. ?llave=… = vista previa del dueño antes de publicarse.
+  sastre, galeria, y desde 047: pizarra, retro, comic, marmol); cualquiera sirve para barbero o tatuador. ?llave=… = vista previa del dueño antes de publicarse.
   ?demo=tinta|papel|neon|acido|sastre|galeria[&rubro=barberia|tatuaje] = datos inventados para la
   página de la campaña; con &rubro= del otro oficio muestra la versión cruzada (CRUCE).
   FONDO INMERSIVO (046): con MÁS de 5 referidos al día la ficha trae `fondo: true` y la web pinta un
@@ -21,7 +21,7 @@
 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Pirata+One&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500;1,600&family=Jost:wght@400;500&family=Instrument+Serif:ital@0;1&family=Inter+Tight:wght@400;500;600&family=Tilt+Neon&family=Outfit:wght@400;600;800&family=Unbounded:wght@600;900&family=Space+Mono:wght@400;700&family=Space+Grotesk:wght@400;600;700&family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,700;12..96,800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Pirata+One&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500;1,600&family=Jost:wght@400;500&family=Instrument+Serif:ital@0;1&family=Inter+Tight:wght@400;500;600&family=Tilt+Neon&family=Outfit:wght@400;600;800&family=Unbounded:wght@600;900&family=Space+Mono:wght@400;700&family=Space+Grotesk:wght@400;600;700&family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,700;12..96,800&family=Caveat+Brush&family=Kalam:wght@400;700&family=Shrikhand&family=Bangers&family=Playfair+Display:ital,wght@0,500;0,700;1,500&display=swap" rel="stylesheet">
 <style>
 :root{--r:18px;--ease:cubic-bezier(.2,.8,.2,1)}
 [data-p=tinta]{--bg:#0b0a0a;--bg2:#121010;--card:#171414;--line:#2a2424;--ink:#ece4d6;--mute:#a2978a;--acc:#d9312b;--acc2:#ff5a4e;--on:#fff;
@@ -229,6 +229,95 @@ body[data-p=acido]::before{content:"";position:fixed;inset:0;z-index:40;pointer-
 [data-p=galeria] .turno{border:1px solid #111}
 .expo{display:flex;justify-content:space-between;gap:10px;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--mute);border-top:1px solid #111;padding-top:10px;margin:0 0 22px}
 
+/* ════ PIZARRA — la barbería de barrio: pizarrón, tiza y fotos pegadas con cinta ════ */
+[data-p=pizarra]{--bg:#1d2622;--bg2:#222c28;--card:#243029;--line:#3d4a44;--ink:#f1efe6;--mute:#b9bdb2;--acc:#f4d35e;--acc2:#f1efe6;--on:#1d2622;
+  --d:'Caveat Brush',cursive;--b:'Kalam',system-ui,sans-serif;--dw:400;--rad:6px}
+body[data-p=pizarra]{background:radial-gradient(ellipse at 20% 10%,rgba(255,255,255,.06),transparent 50%),radial-gradient(ellipse at 80% 70%,rgba(255,255,255,.04),transparent 55%),var(--bg)}
+[data-p=pizarra] #app{border-inline:14px solid #5a3d28;min-height:100vh;box-shadow:inset 0 0 60px rgba(0,0,0,.45)}
+[data-p=pizarra] .hero h1{font-size:clamp(70px,19vw,124px);transform:rotate(-2deg);text-shadow:0 0 1px rgba(255,255,255,.6)}
+[data-p=pizarra] .rub{color:var(--acc)}
+[data-p=pizarra] h2{font-size:clamp(46px,10vw,64px)}
+[data-p=pizarra] h2::after{content:"";display:block;width:120px;height:6px;margin-top:4px;border-radius:6px;background:var(--acc);opacity:.85;transform:rotate(-1.5deg)}
+[data-p=pizarra] .btn{font-family:var(--b);font-weight:700;font-size:17px}
+[data-p=pizarra] .btn-acc{background:var(--acc);color:#1d2622;transform:rotate(-1deg)}
+[data-p=pizarra] .btn-line{border:2px dashed var(--ink)}
+[data-p=pizarra] .svcs,[data-p=pizarra] .svc{border-color:rgba(241,239,230,.25);border-style:dashed}
+[data-p=pizarra] .svc b{font-size:20px}
+[data-p=pizarra] .svc .p{color:var(--acc);font-size:38px}
+[data-p=pizarra] .fotos{gap:14px;padding:6px}
+[data-p=pizarra] .fotos button{border-radius:2px;border:6px solid #f1efe6;border-bottom-width:18px;position:relative;overflow:visible;box-shadow:0 8px 16px rgba(0,0,0,.4)}
+[data-p=pizarra] .fotos button:nth-child(odd){transform:rotate(-2deg)}
+[data-p=pizarra] .fotos button:nth-child(even){transform:rotate(1.8deg)}
+[data-p=pizarra] .fotos button::before{content:"";position:absolute;top:-12px;left:50%;width:54px;height:18px;margin-left:-27px;background:rgba(244,211,94,.75);transform:rotate(-4deg)}
+[data-p=pizarra] .turno{border:2px dashed rgba(241,239,230,.45);background:rgba(0,0,0,.12)}
+[data-p=pizarra] .ig,[data-p=pizarra] .hoy{border-style:dashed}
+
+/* ════ RETRO — años 70: crema, mostaza y naranja, franjas y letra gorda ════ */
+[data-p=retro]{--bg:#f6e9cf;--bg2:#efdcb6;--card:#fbf2df;--line:#e0c89a;--ink:#3b2314;--mute:#7a5a41;--acc:#e0621b;--acc2:#b8421a;--on:#fff7e8;
+  --d:'Shrikhand',serif;--b:'Outfit',system-ui,sans-serif;--dw:400;--rad:999px}
+[data-p=retro] .hero{text-align:center}
+[data-p=retro] .hero p{margin-inline:auto}
+[data-p=retro] .hero .ctas{justify-content:center}
+[data-p=retro] .hero h1{font-size:clamp(58px,16vw,112px);color:var(--acc);text-shadow:3px 3px 0 #f2b33d,6px 6px 0 var(--acc2),9px 9px 0 var(--ink);line-height:1}
+[data-p=retro] .rub{color:var(--ink);background:#f2b33d;padding:6px 14px;border-radius:999px;display:inline-block}
+[data-p=retro] h2{color:var(--acc2)}
+[data-p=retro] .btn-acc{background:var(--acc);color:#fff7e8;box-shadow:0 5px 0 var(--acc2)}
+[data-p=retro] .btn-line{border:2px solid var(--ink)}
+[data-p=retro] .fotos{gap:10px}
+[data-p=retro] .fotos button{border-radius:26px;border:4px solid var(--card);box-shadow:0 0 0 3px #f2b33d}
+[data-p=retro] .svc .p{color:var(--acc)}
+[data-p=retro] .turno{border:3px solid var(--ink);border-radius:28px;box-shadow:6px 6px 0 #f2b33d}
+[data-p=retro] .chip,[data-p=retro] .day,[data-p=retro] .slot,[data-p=retro] .inp{border-radius:14px}
+.franjas{height:54px;margin:6px -16px 20px;background:linear-gradient(#f2b33d 0 25%,#e0621b 25% 50%,#b8421a 50% 75%,#3b2314 75%);border-radius:0 0 50% 50%/0 0 100% 100%}
+
+/* ════ CÓMIC — historieta: puntos, bordes negros y ¡POW! ════ */
+[data-p=comic]{--bg:#fff4c7;--bg2:#ffe98a;--card:#fff;--line:#111;--ink:#111;--mute:#3a3a3a;--acc:#e8322b;--acc2:#1f5fd6;--on:#fff;
+  --d:'Bangers',system-ui,sans-serif;--b:'Bricolage Grotesque',system-ui,sans-serif;--dw:400;--rad:10px}
+body[data-p=comic]{background:radial-gradient(circle,rgba(232,50,43,.22) 1.4px,transparent 1.6px) 0 0/12px 12px,var(--bg)}
+[data-p=comic] .hero h1{font-size:clamp(72px,20vw,130px);letter-spacing:.02em;color:#ffd21f;-webkit-text-stroke:3px #111;text-shadow:6px 6px 0 #111;transform:skew(-4deg)}
+[data-p=comic] .rub{color:#fff;background:var(--acc2);padding:5px 10px;border:2px solid #111;display:inline-block;transform:rotate(-2deg)}
+[data-p=comic] h2{letter-spacing:.03em;color:var(--acc)}
+[data-p=comic] .hero p{color:#111;background:#fff;border:2.5px solid #111;border-radius:18px;padding:12px 16px;position:relative;box-shadow:4px 4px 0 #111}
+[data-p=comic] .btn{border:2.5px solid #111;box-shadow:4px 4px 0 #111;font-weight:800;text-transform:uppercase}
+[data-p=comic] .btn-acc{background:var(--acc);color:#fff}
+[data-p=comic] .btn-line{background:#fff}
+[data-p=comic] .fotos{gap:10px}
+[data-p=comic] .fotos button{border:3px solid #111;border-radius:4px;box-shadow:4px 4px 0 #111}
+[data-p=comic] .svcs{border:0;display:grid;gap:10px}
+[data-p=comic] .svc{background:#fff;border:2.5px solid #111;border-radius:12px;padding:14px 16px;box-shadow:4px 4px 0 #111}
+[data-p=comic] .svc .p{color:var(--acc2);font-size:34px}
+[data-p=comic] .turno{border:3px solid #111;box-shadow:6px 6px 0 #111}
+[data-p=comic] .chip,[data-p=comic] .day,[data-p=comic] .slot{border:2px solid #111}
+[data-p=comic] .ig,[data-p=comic] .hoy{border:2px solid #111;background:#fff}
+.pow{position:relative;width:128px;height:128px;margin:-8px 0 10px auto;display:grid;place-items:center;font:28px/1 'Bangers',sans-serif;color:#111;transform:rotate(10deg);
+  background:#ffd21f;clip-path:polygon(50% 0,61% 22%,85% 10%,77% 35%,100% 42%,80% 57%,93% 80%,67% 74%,57% 100%,45% 78%,20% 92%,24% 67%,0 58%,20% 43%,8% 18%,34% 24%)}
+
+/* ════ MÁRMOL — el lujo: negro veteado, dorado y mayúsculas finas ════ */
+[data-p=marmol]{--bg:#0f0e0d;--bg2:#171513;--card:#16140f;--line:#3a3223;--ink:#f3ede1;--mute:#a79d8a;--acc:#c9a45c;--acc2:#e6cf9a;--on:#0f0e0d;
+  --d:'Playfair Display',Georgia,serif;--b:'Jost',system-ui,sans-serif;--dw:500;--rad:0px}
+body[data-p=marmol]{background:linear-gradient(115deg,transparent 40%,rgba(201,164,92,.07) 41%,transparent 43%),linear-gradient(35deg,transparent 60%,rgba(255,255,255,.04) 61%,transparent 63%),linear-gradient(160deg,transparent 20%,rgba(255,255,255,.03) 21%,transparent 24%),var(--bg)}
+[data-p=marmol] .hero{text-align:center;padding-top:60px}
+[data-p=marmol] .hero p{margin-inline:auto}
+[data-p=marmol] .hero .ctas{justify-content:center}
+[data-p=marmol] .hero h1{text-transform:uppercase;letter-spacing:.12em;font-size:clamp(44px,12vw,86px);font-weight:500;background:linear-gradient(180deg,#f7e7bd,#c9a45c 55%,#8f6d2c);-webkit-background-clip:text;background-clip:text;color:transparent}
+[data-p=marmol] .rub{color:var(--acc);letter-spacing:.4em;font-weight:500}
+[data-p=marmol] h2{text-transform:uppercase;letter-spacing:.14em;font-size:clamp(28px,6vw,40px);text-align:center;color:var(--acc2)}
+[data-p=marmol] h2::before,[data-p=marmol] h2::after{content:"◆";display:block;font-size:10px;color:var(--acc);margin:10px 0}
+[data-p=marmol] h2::before{display:none}
+[data-p=marmol] .top{border-bottom:1px solid var(--line)}
+[data-p=marmol] .top .nom{text-transform:uppercase;letter-spacing:.18em;font-size:16px;color:var(--acc)}
+[data-p=marmol] .btn{text-transform:uppercase;letter-spacing:.18em;font-size:12px;font-weight:500}
+[data-p=marmol] .btn-acc{background:linear-gradient(180deg,#e6cf9a,#c9a45c);color:#0f0e0d}
+[data-p=marmol] .btn-line{border-color:var(--acc);color:var(--acc)}
+[data-p=marmol] .fotos{gap:10px}
+[data-p=marmol] .fotos button{border:1px solid var(--acc);outline:1px solid rgba(201,164,92,.35);outline-offset:4px}
+[data-p=marmol] .svcs{border-color:var(--line)}
+[data-p=marmol] .svc b{font-weight:500;letter-spacing:.06em;text-transform:uppercase;font-size:15px}
+[data-p=marmol] .svc .p{color:var(--acc);font-size:28px}
+[data-p=marmol] .turno{border:1px solid var(--acc);box-shadow:inset 0 0 0 5px var(--card),inset 0 0 0 6px var(--line)}
+[data-p=marmol] .ig,[data-p=marmol] .hoy{border-radius:0;border-color:var(--line)}
+.monograma{width:74px;height:74px;margin:0 auto 6px;border:1px solid var(--acc);border-radius:50%;display:grid;place-items:center;font:500 34px/1 'Playfair Display',serif;color:var(--acc);font-style:italic;box-shadow:0 0 0 5px var(--bg),0 0 0 6px rgba(201,164,92,.4)}
+
 /* ── fondo inmersivo (premio por referidos) ── */
 #fondoInm{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:0;transition:opacity 1.2s var(--ease)}
 #fondoInm.on{opacity:1}
@@ -306,6 +395,34 @@ const DEMOS = {
     horarios: { 1: [['14:00', '21:00']], 2: [['10:00', '13:00'], ['15:00', '21:00']], 3: [['10:00', '13:00'], ['15:00', '21:00']], 4: [['14:00', '21:00']], 5: [['10:00', '13:00'], ['15:00', '21:00']], 6: [['09:00', '15:00']] },
     sena: { link: 'https://www.mercadopago.com.ar/', monto: 300000 }, agenda: null,
     fotos: ['✂', '⚡', '★', '✂', '⚡', '★'].map((g, i) => tile(['#ff4d1c', '#121110', '#e8e0d2'][i % 3], i % 3 === 2 ? '#121110' : '#fbf8f2', g)), publicado: true },
+  pizarra: { slug: 'demo', rubro: 'barberia', plantilla: 'pizarra', nombre: 'Don Tito', whatsapp: '5492212003824', instagram: 'ejemplo',
+    bio: 'Barbería de barrio desde siempre. Corte, barba y charla. Sin turno también, si hay lugar.', modalidad: 'local', local: 'Sillón del fondo · Peluquería Tito',
+    direccion: null, barrio: 'Berisso', ciudad: 'La Plata',
+    servicios: [{ nombre: 'Corte', precio: 900000, min: 30 }, { nombre: 'Corte + barba', precio: 1400000, min: 50 }, { nombre: 'Barba con navaja', precio: 700000, min: 25 }, { nombre: 'Corte niño', precio: 750000, min: 25 }],
+    horarios: { 2: [['09:00', '13:00'], ['16:00', '20:00']], 3: [['09:00', '13:00'], ['16:00', '20:00']], 4: [['09:00', '13:00'], ['16:00', '20:00']], 5: [['09:00', '13:00'], ['16:00', '20:30']], 6: [['09:00', '14:00']] },
+    sena: null, agenda: null,
+    fotos: ['✂', '💈', '🪒', '✂', '💈', '🪒'].map((g, i) => tile(['#e9e4d6', '#d8d2c0', '#f1ecde'][i % 3], '#1d2622', g)), publicado: true },
+  retro: { slug: 'demo', rubro: 'tatuaje', plantilla: 'retro', nombre: 'Flor Setentas', whatsapp: '5492212003824', instagram: 'ejemplo',
+    bio: 'Tatuadora. Old school, flores y soles que sonríen. Color que dura y buena onda.', modalidad: 'estudio', local: 'Estudio Girasol',
+    direccion: null, barrio: 'Meridiano V', ciudad: 'La Plata',
+    servicios: [{ nombre: 'Flash old school', precio: 4000000, min: 90 }, { nombre: 'Tatuaje a color', precio: 7500000, min: 150 }, { nombre: 'Sesión (por hora)', precio: 4200000, min: 60 }],
+    horarios: { 3: [['13:00', '20:00']], 4: [['13:00', '20:00']], 5: [['13:00', '20:00']], 6: [['12:00', '18:00']] },
+    sena: { link: 'https://www.mercadopago.com.ar/', monto: 1500000 }, agenda: null,
+    fotos: ['🌼', '☀', '🍒', '🌈', '🌼', '☀'].map((g, i) => tile(['#f2b33d', '#e0621b', '#fbf2df'][i % 3], i % 3 === 2 ? '#3b2314' : '#fff7e8', g)), publicado: true },
+  comic: { slug: 'demo', rubro: 'barberia', plantilla: 'comic', nombre: 'Kapow Cuts', whatsapp: '5492212003824', instagram: 'ejemplo',
+    bio: '¡Fades con superpoderes! Diseños, colores y cortes que se ven desde la otra cuadra.', modalidad: 'casa', local: null,
+    direccion: null, barrio: 'San Carlos', ciudad: 'La Plata',
+    servicios: [{ nombre: 'Fade', precio: 1200000, min: 45 }, { nombre: 'Fade + diseño', precio: 1500000, min: 60 }, { nombre: 'Color fantasía', precio: 3200000, min: 120 }],
+    horarios: { 2: [['11:00', '20:00']], 3: [['11:00', '20:00']], 4: [['11:00', '20:00']], 5: [['11:00', '21:00']], 6: [['10:00', '18:00']] },
+    sena: { link: 'https://www.mercadopago.com.ar/', monto: 300000 }, agenda: null,
+    fotos: ['✂', '⚡', '💥', '✂', '⚡', '💥'].map((g, i) => tile(['#ffd21f', '#1f5fd6', '#e8322b'][i % 3], i % 3 === 0 ? '#111' : '#fff', g)), publicado: true },
+  marmol: { slug: 'demo', rubro: 'tatuaje', plantilla: 'marmol', nombre: 'Aurelio', whatsapp: '5492212003824', instagram: 'ejemplo',
+    bio: 'Realismo en negro y gris. Piezas grandes, con consulta previa y agenda cerrada por mes.', modalidad: 'estudio', local: 'Estudio privado',
+    direccion: null, barrio: 'Centro', ciudad: 'La Plata',
+    servicios: [{ nombre: 'Consulta y diseño', precio: 2000000, min: 45 }, { nombre: 'Pieza mediana', precio: 15000000, min: 240 }, { nombre: 'Jornada completa', precio: 30000000, min: 420 }],
+    horarios: { 3: [['11:00', '19:00']], 4: [['11:00', '19:00']], 5: [['11:00', '19:00']] },
+    sena: { link: 'https://www.mercadopago.com.ar/', monto: 3000000 }, agenda: null,
+    fotos: ['☽', '✦', '♛', '☽', '✦'].map((g, i) => tile(['#1a1714', '#241f18', '#15120f'][i % 3], '#c9a45c', g)), publicado: true },
 };
 
 /* El mismo estilo con el OTRO oficio: los seis sirven para barbero y para tatuador. */
@@ -334,6 +451,18 @@ const CRUCE = {
   sastre: cruce(DEMOS.sastre, { rubro: 'tatuaje', nombre: 'Casa Olivo', bio: 'Estudio de tatuaje con cita previa. Línea fina y botánica en un espacio tranquilo.',
     modalidad: 'estudio', local: 'Estudio con cita', barrio: 'Barrio Norte', servicios: S_TAT, horarios: H_TAT,
     fotos: ['❧', '☙', '✦', '❀', '❧', '☙'].map((g, i) => tile(['#1f3d2f', '#efe7d8', '#2b2622'][i % 3], ['#a8864a', '#1f3d2f', '#d8c39a'][i % 3], g)) }),
+  pizarra: cruce(DEMOS.pizarra, { rubro: 'tatuaje', nombre: 'Tinta del Barrio', bio: 'Tatuajes simples y a buen precio. Flash en la pizarra, se elige y se hace en el día.',
+    modalidad: 'estudio', local: 'Local de la esquina', barrio: 'Berisso', servicios: S_TAT, horarios: H_TAT, sena: null,
+    fotos: ['⚓', '❤', '🗡', '⚓', '❤', '🗡'].map((g, i) => tile(['#e9e4d6', '#d8d2c0', '#f1ecde'][i % 3], '#1d2622', g)) }),
+  retro: cruce(DEMOS.retro, { rubro: 'barberia', nombre: 'El Setenta', bio: 'Barbería con discos, bigotes y patillas. Cortes con onda de otra época.',
+    modalidad: 'local', local: 'Sillón 1 · Discos & Tijeras', barrio: 'Meridiano V', servicios: S_BAR, horarios: H_BAR,
+    fotos: ['✂', '☀', '💈', '✂', '☀', '💈'].map((g, i) => tile(['#f2b33d', '#e0621b', '#fbf2df'][i % 3], i % 3 === 2 ? '#3b2314' : '#fff7e8', g)) }),
+  comic: cruce(DEMOS.comic, { rubro: 'tatuaje', nombre: 'Zap Tattoo', bio: 'Tatuajes pop y de dibujo animado. Color plano, línea gruesa y cero aburrimiento.',
+    modalidad: 'estudio', local: 'Box en Estudio Diagonal', barrio: 'Centro', servicios: S_TAT, horarios: H_TAT,
+    fotos: ['💥', '⚡', '★', '💥', '⚡', '★'].map((g, i) => tile(['#ffd21f', '#1f5fd6', '#e8322b'][i % 3], i % 3 === 0 ? '#111' : '#fff', g)) }),
+  marmol: cruce(DEMOS.marmol, { rubro: 'barberia', nombre: 'Maison Vidal', bio: 'Barbería de caballeros. Toalla caliente, navaja y whisky, con reserva.',
+    modalidad: 'local', local: 'Sillón privado · Salón Vidal', barrio: 'Centro', servicios: [{ nombre: 'Corte', precio: 2000000, min: 45 }, { nombre: 'Afeitado de lujo', precio: 1800000, min: 45 }, { nombre: 'Ritual completo', precio: 3500000, min: 90 }], horarios: H_BAR,
+    fotos: ['✂', '♛', '✦', '✂', '♛'].map((g, i) => tile(['#1a1714', '#241f18', '#15120f'][i % 3], '#c9a45c', g)) }),
 };
 
 async function cargar() {
@@ -386,6 +515,8 @@ function pintar(f) {
   <div class="wrap">
     <div class="top"><span class="nom">${esc(f.nombre)}</span>${f.instagram ? `<a class="ig" href="https://instagram.com/${esc(f.instagram)}" target="_blank" rel="noopener">${IG_SVG}@${esc(f.instagram)}</a>` : ''}</div>
     <header class="hero">
+      ${f.plantilla === 'comic' ? `<div class="pow" aria-hidden="true">¡TURNOS!</div>` : ''}
+      ${f.plantilla === 'marmol' ? `<div class="monograma" aria-hidden="true">${esc((f.nombre || '·').trim()[0].toUpperCase())}</div>` : ''}
       <div class="rub">${rubro} · ${esc(f.barrio)}</div>
       <h1>${esc(f.nombre)}</h1>
       ${f.bio ? `<p>${esc(f.bio)}</p>` : ''}
@@ -394,6 +525,7 @@ function pintar(f) {
     </header>
     ${f.plantilla === 'neon' ? `<div class="${f.rubro === 'tatuaje' ? 'tubo' : 'poste'}" aria-hidden="true"></div>` : ''}
     ${f.plantilla === 'sastre' ? '<div class="orla" aria-hidden="true">✦</div>' : ''}
+    ${f.plantilla === 'retro' ? '<div class="franjas" aria-hidden="true"></div>' : ''}
     ${f.plantilla === 'galeria' && f.fotos.length ? `<div class="expo"><span>${f.rubro === 'tatuaje' ? 'Selección de obra' : 'Selección de trabajos'}</span><span>${f.fotos.length ? String(f.fotos.length).padStart(2, '0') + ' piezas' : ''}</span></div>` : ''}
     ${f.plantilla === 'acido' ? `<div class="cinta" aria-hidden="true"><div>${Array(8).fill(`<span>${esc(f.nombre)}</span><span>✦</span><span>${rubro}</span><span>✦</span>`).join('')}</div></div>` : ''}
     ${f.fotos.length ? `<section style="padding-top:10px"><div class="fotos ${f.fotos.length === 1 ? 'una' : f.fotos.length < 4 ? 'pocas' : ''}">${f.fotos.slice(0, 8).map((u, i) => `<button style="background-image:url('${u}')" data-lbl="${f.rubro === 'tatuaje' ? 'Obra' : 'Corte'}" data-u="${u}" aria-label="Ver trabajo ${i + 1}"></button>`).join('')}</div>
