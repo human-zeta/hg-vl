@@ -9,9 +9,12 @@
 <!--
   OFICIOS — LA plantilla. Una sola página pinta las webs de todos los del programa:
   www.hg-vl.com/o/<slug> → Caddy reescribe a /oficios/sitio/index.html, y esta página
-  lee la ficha de api.hg-vl.com/v1/_oficios/sitio/<slug>. Cuatro estilos por data-p: papel y neon
-  (barbero independiente; neon = el llamativo), tinta y acido (tatuador; acido = el llamativo). ?llave=… = vista previa del dueño antes de publicarse.
-  ?demo=tinta|papel|neon|acido|sastre|galeria = datos inventados, para la página de la campaña.
+  lee la ficha de api.hg-vl.com/v1/_oficios/sitio/<slug>. Seis estilos por data-p (papel, tinta, neon, acido,
+  sastre, galeria); cualquiera sirve para barbero o tatuador. ?llave=… = vista previa del dueño antes de publicarse.
+  ?demo=tinta|papel|neon|acido|sastre|galeria[&rubro=barberia|tatuaje] = datos inventados para la
+  página de la campaña; con &rubro= del otro oficio muestra la versión cruzada (CRUCE).
+  FONDO INMERSIVO (046): con MÁS de 5 referidos al día la ficha trae `fondo: true` y la web pinta un
+  shader vivo detrás de todo, en los colores de su estilo (--bg/--acc/--acc2). ?demo=…&fondo=1 lo muestra.
   El turno NO bloquea agenda (eso es la versión «modernizar»): arma el pedido, manda
   a pagar la seña a SU link de MP y abre WhatsApp. Si tiene agenda de citas de
   Google, el turno va por ahí.
@@ -145,6 +148,9 @@ body[data-p=neon]::before{content:"";position:fixed;left:-50%;right:-50%;bottom:
   background:repeating-linear-gradient(-55deg,#ff2b4f 0 16px,#fff 16px 30px,#2b6bff 30px 46px,#fff 46px 60px);background-size:120px 100%;
   animation:poste 1.6s linear infinite;box-shadow:0 0 22px rgba(255,43,214,.55),inset 0 3px 6px rgba(255,255,255,.6),inset 0 -6px 10px rgba(0,0,0,.35)}
 @keyframes poste{to{background-position:120px 0}}
+.tubo{height:10px;border-radius:5px;margin:14px 0 18px;background:linear-gradient(90deg,var(--acc),var(--acc2),var(--acc));background-size:200% 100%;
+  box-shadow:0 0 12px var(--acc),0 0 30px var(--acc),0 0 60px rgba(34,225,255,.45);animation:tubo 3s linear infinite}
+@keyframes tubo{to{background-position:200% 0}}
 
 /* ════ ÁCIDO — el tatuador llamativo: cromo, verde ácido, cinta que corre ════ */
 [data-p=acido]{--bg:#0a0a0a;--bg2:#111;--card:#141414;--line:#2c2c2c;--ink:#f2f2f2;--mute:#9a9a9a;--acc:#c6ff00;--acc2:#c6ff00;--on:#0a0a0a;
@@ -215,7 +221,7 @@ body[data-p=acido]::before{content:"";position:fixed;inset:0;z-index:40;pointer-
 [data-p=galeria] .fotos{grid-template-columns:1fr 1fr;gap:34px 18px;counter-reset:obra}
 [data-p=galeria] .fotos button{grid-column:auto!important;grid-row:auto!important;aspect-ratio:4/5;border-radius:0;position:relative;overflow:visible;counter-increment:obra}
 [data-p=galeria] .fotos button:first-child{grid-column:1/-1!important;aspect-ratio:4/3}
-[data-p=galeria] .fotos button::after{content:"Obra " counter(obra,decimal-leading-zero);position:absolute;left:0;top:calc(100% + 8px);font:500 11px/1 'Inter Tight',sans-serif;letter-spacing:.14em;text-transform:uppercase;color:var(--mute)}
+[data-p=galeria] .fotos button::after{content:attr(data-lbl) " " counter(obra,decimal-leading-zero);position:absolute;left:0;top:calc(100% + 8px);font:500 11px/1 'Inter Tight',sans-serif;letter-spacing:.14em;text-transform:uppercase;color:var(--mute)}
 [data-p=galeria] .fotos+p{margin-top:44px!important}
 [data-p=galeria] .svc{padding:20px 0}
 [data-p=galeria] .svc b{font-weight:500}
@@ -223,12 +229,21 @@ body[data-p=acido]::before{content:"";position:fixed;inset:0;z-index:40;pointer-
 [data-p=galeria] .turno{border:1px solid #111}
 .expo{display:flex;justify-content:space-between;gap:10px;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--mute);border-top:1px solid #111;padding-top:10px;margin:0 0 22px}
 
-@media(prefers-reduced-motion:reduce){.poste,.cinta div,body[data-p=neon]::before,[data-p=neon] .hero h1{animation:none!important}}
+/* ── fondo inmersivo (premio por referidos) ── */
+#fondoInm{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:0;transition:opacity 1.2s var(--ease)}
+#fondoInm.on{opacity:1}
+body.fondo #app,body.fondo footer,body.fondo .previa{position:relative;z-index:1}
+body.fondo[data-p=neon]::before{display:none}
+body.fondo .svc,body.fondo .turno,body.fondo .donde .dias{backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.pausada{background:#1a1a1a;color:#fff;text-align:center;font-size:13px;font-weight:700;padding:8px 12px}
+@media(prefers-reduced-motion:reduce){.tubo,.poste,.cinta div,body[data-p=neon]::before,[data-p=neon] .hero h1{animation:none!important}}
 [hidden]{display:none!important}
 </style>
 </head>
 <body data-p="papel">
+<canvas id="fondoInm" aria-hidden="true"></canvas>
 <div class="previa" id="previa" hidden>Vista previa · tu web todavía no está publicada</div>
+<div class="pausada" id="pausada" hidden>Tu web está pausada porque venció la cuota: solo la ves vos. <a href="/oficios/?editar=1" style="text-decoration:underline">Reactivala</a></div>
 <main id="app"><div class="vacio"><p>Cargando…</p></div></main>
 <div class="lb" id="lb"><button class="x" aria-label="Cerrar">✕</button><img alt=""></div>
 
@@ -293,8 +308,39 @@ const DEMOS = {
     fotos: ['✂', '⚡', '★', '✂', '⚡', '★'].map((g, i) => tile(['#ff4d1c', '#121110', '#e8e0d2'][i % 3], i % 3 === 2 ? '#121110' : '#fbf8f2', g)), publicado: true },
 };
 
+/* El mismo estilo con el OTRO oficio: los seis sirven para barbero y para tatuador. */
+const H_BAR = { 2: [['10:00', '20:00']], 3: [['10:00', '20:00']], 4: [['10:00', '20:00']], 5: [['10:00', '21:00']], 6: [['09:00', '17:00']] };
+const H_TAT = { 3: [['12:00', '20:00']], 4: [['12:00', '20:00']], 5: [['12:00', '20:00']], 6: [['11:00', '18:00']] };
+const S_BAR = [{ nombre: 'Corte', precio: 1200000, min: 40 }, { nombre: 'Fade', precio: 1400000, min: 45 }, { nombre: 'Corte + barba', precio: 1800000, min: 60 }];
+const S_TAT = [{ nombre: 'Flash (diseño único)', precio: 4500000, min: 90 }, { nombre: 'Tatuaje chico', precio: 5500000, min: 120 }, { nombre: 'Sesión (por hora)', precio: 4000000, min: 60 }];
+const cruce = (base, extra) => ({ ...base, slug: 'demo', whatsapp: '5492212003824', instagram: 'ejemplo', direccion: null, ciudad: 'La Plata',
+  sena: { link: 'https://www.mercadopago.com.ar/', monto: extra.rubro === 'tatuaje' ? 1500000 : 300000 }, agenda: null, publicado: true, ...extra });
+const CRUCE = {
+  tinta: cruce(DEMOS.tinta, { rubro: 'barberia', nombre: 'Brujo Barber', bio: 'Barbería oscura: fades, navaja y diseños a mano alzada. Se atiende con turno.',
+    modalidad: 'local', local: 'Sillón 2 · Barbería Norte', barrio: 'Los Hornos', servicios: S_BAR, horarios: H_BAR,
+    fotos: ['✂', '🗡', '💀', '✂', '🌹', '🪒'].map((g, i) => tile(['#ece4d6', '#e2d6c2', '#f3ecdf'][i % 3], '#1a1414', g)) }),
+  acido: cruce(DEMOS.acido, { rubro: 'barberia', nombre: 'Tokyo Fade', bio: 'Fades, freestyle y colores fantasía. Cortes que no pasan desapercibidos.',
+    modalidad: 'casa', local: null, barrio: 'Villa Elvira', servicios: [...S_BAR, { nombre: 'Color fantasía', precio: 3500000, min: 120 }], horarios: H_BAR,
+    fotos: ['✂', '⚡', '☠', '✂', '✦', '⚡'].map((g, i) => tile(['#141414', '#c6ff00', '#1e1e1e'][i % 3], i % 3 === 1 ? '#0a0a0a' : '#f2f2f2', g)) }),
+  galeria: cruce(DEMOS.galeria, { rubro: 'barberia', nombre: 'Julia Corte', bio: 'Barbera. Cada corte pensado para esa cara. Acá están los trabajos reales, sin filtro.',
+    modalidad: 'estudio', local: 'Estudio privado', barrio: 'Gonnet', servicios: S_BAR, horarios: H_BAR,
+    fotos: ['✂', '◐', '✧', '◯', '✂'].map((g, i) => tile(['#ecebe6', '#dcdad2', '#f4f3ef'][i % 3], '#2a2a26', g)) }),
+  papel: cruce(DEMOS.papel, { rubro: 'tatuaje', nombre: 'Pato Tattoo', bio: 'Tatuador. Flash chiquito, línea simple y precios claros. Tatúo en mi estudio de Tolosa.',
+    modalidad: 'estudio', local: 'Estudio en Tolosa', barrio: 'Tolosa', servicios: S_TAT, horarios: H_TAT,
+    fotos: ['🐍', '☾', '★', '🗡', '🐍', '☾'].map((g, i) => tile(['#ff4d1c', '#121110', '#e8e0d2'][i % 3], i % 3 === 2 ? '#121110' : '#fbf8f2', g)) }),
+  neon: cruce(DEMOS.neon, { rubro: 'tatuaje', nombre: 'Lila Neón', bio: 'Color y neotradicional. Sesiones de tarde y noche, con música y buena onda.',
+    modalidad: 'estudio', local: 'Box en Estudio Diagonal', barrio: 'Centro', servicios: S_TAT, horarios: H_TAT,
+    fotos: ['🌹', '🐍', '👁', '🌙', '🦋', '💀'].map((g, i) => tile(['#1a0833', '#07040f', '#26093a'][i % 3], ['#ff2bd6', '#22e1ff', '#ff2bd6'][i % 3], g)) }),
+  sastre: cruce(DEMOS.sastre, { rubro: 'tatuaje', nombre: 'Casa Olivo', bio: 'Estudio de tatuaje con cita previa. Línea fina y botánica en un espacio tranquilo.',
+    modalidad: 'estudio', local: 'Estudio con cita', barrio: 'Barrio Norte', servicios: S_TAT, horarios: H_TAT,
+    fotos: ['❧', '☙', '✦', '❀', '❧', '☙'].map((g, i) => tile(['#1f3d2f', '#efe7d8', '#2b2622'][i % 3], ['#a8864a', '#1f3d2f', '#d8c39a'][i % 3], g)) }),
+};
+
 async function cargar() {
-  if (params.get('demo')) return DEMOS[params.get('demo')] || DEMOS.papel;
+  if (params.get('demo')) {
+    const base = DEMOS[params.get('demo')] || DEMOS.papel, r = params.get('rubro');
+    return r && r !== base.rubro && CRUCE[base.plantilla] ? CRUCE[base.plantilla] : base;
+  }
   const m = /^\/o\/([a-z0-9-]+)\/?$/.exec(location.pathname);
   const slug = m ? m[1] : params.get('s');
   if (!slug) throw new Error('Esta web no existe.');
@@ -329,6 +375,8 @@ function pintar(f) {
   $('meta[name=description]').content = (f.bio || `${f.nombre}, ${f.rubro === 'tatuaje' ? 'tatuador' : 'barbero'} en ${f.barrio}, ${f.ciudad}. Sacá turno online.`).slice(0, 160);
   $('meta[name=theme-color]').content = getComputedStyle(document.body).getPropertyValue('--bg').trim();
   $('#previa').hidden = f.publicado !== false;
+  $('#pausada').hidden = !f.suspendida;
+  if (f.fondo || (params.get('demo') && params.get('fondo'))) fondoInmersivo();
   const rubro = f.rubro === 'tatuaje' ? 'Tatuador' : 'Barbero';
   const hoy = estadoHoy(f), wa = (t) => `https://wa.me/${f.whatsapp}?text=${encodeURIComponent(t)}`;
   const lugar = f.modalidad === 'domicilio' ? 'Voy a domicilio' : f.modalidad === 'casa' ? 'Atiendo en mi espacio' : (f.local || (f.modalidad === 'estudio' ? 'Estudio' : 'Local'));
@@ -344,11 +392,11 @@ function pintar(f) {
       <div class="hoy ${hoy.on ? 'on' : ''}"><i></i>${esc(hoy.txt)}</div>
       <div class="ctas"><a class="btn btn-acc" href="#turno">Sacar turno</a><a class="btn btn-line" href="${wa('Hola ' + f.nombre + '! Te hago una consulta:')}" target="_blank" rel="noopener">WhatsApp</a></div>
     </header>
-    ${f.plantilla === 'neon' ? '<div class="poste" aria-hidden="true"></div>' : ''}
+    ${f.plantilla === 'neon' ? `<div class="${f.rubro === 'tatuaje' ? 'tubo' : 'poste'}" aria-hidden="true"></div>` : ''}
     ${f.plantilla === 'sastre' ? '<div class="orla" aria-hidden="true">✦</div>' : ''}
-    ${f.plantilla === 'galeria' && f.fotos.length ? `<div class="expo"><span>Selección de obra</span><span>${f.fotos.length ? String(f.fotos.length).padStart(2, '0') + ' piezas' : ''}</span></div>` : ''}
+    ${f.plantilla === 'galeria' && f.fotos.length ? `<div class="expo"><span>${f.rubro === 'tatuaje' ? 'Selección de obra' : 'Selección de trabajos'}</span><span>${f.fotos.length ? String(f.fotos.length).padStart(2, '0') + ' piezas' : ''}</span></div>` : ''}
     ${f.plantilla === 'acido' ? `<div class="cinta" aria-hidden="true"><div>${Array(8).fill(`<span>${esc(f.nombre)}</span><span>✦</span><span>${rubro}</span><span>✦</span>`).join('')}</div></div>` : ''}
-    ${f.fotos.length ? `<section style="padding-top:10px"><div class="fotos ${f.fotos.length === 1 ? 'una' : f.fotos.length < 4 ? 'pocas' : ''}">${f.fotos.slice(0, 8).map((u, i) => `<button style="background-image:url('${u}')" data-u="${u}" aria-label="Ver trabajo ${i + 1}"></button>`).join('')}</div>
+    ${f.fotos.length ? `<section style="padding-top:10px"><div class="fotos ${f.fotos.length === 1 ? 'una' : f.fotos.length < 4 ? 'pocas' : ''}">${f.fotos.slice(0, 8).map((u, i) => `<button style="background-image:url('${u}')" data-lbl="${f.rubro === 'tatuaje' ? 'Obra' : 'Corte'}" data-u="${u}" aria-label="Ver trabajo ${i + 1}"></button>`).join('')}</div>
       ${f.instagram ? `<p style="text-align:center;margin-top:14px"><a class="ig" href="https://instagram.com/${esc(f.instagram)}" target="_blank" rel="noopener">${IG_SVG}Ver más en Instagram</a></p>` : ''}</section>` : ''}
     <section><h2>Servicios</h2><div class="svcs">${f.servicios.map((s) => `<div class="svc"><div><b>${esc(s.nombre)}</b><small>${s.min} min</small></div><span class="p">${fmt(s.precio)}</span></div>`).join('')}</div>
       ${f.sena ? `<p class="nota">Los turnos se confirman con una seña${f.sena.monto ? ' de ' + fmt(f.sena.monto) : ''} que se descuenta del total.</p>` : ''}</section>
@@ -366,6 +414,70 @@ function pintar(f) {
   turno(f, wa);
 }
 $('#lb').onclick = () => $('#lb').classList.remove('on');
+
+/* ── el fondo inmersivo: tinta que fluye en los colores del estilo ──
+   Domain warping sobre fbm. Sigue al dedo/mouse y al scroll. Con
+   prefers-reduced-motion pinta un solo cuadro quieto. Sin WebGL, no hace nada. */
+function fondoInmersivo() {
+  const cv = $('#fondoInm'), gl = cv.getContext('webgl', { antialias: false, premultipliedAlpha: false });
+  if (!gl) return;
+  document.body.classList.add('fondo');
+  const css = getComputedStyle(document.body);
+  const rgb = (v) => { const h = css.getPropertyValue(v).trim().replace('#', '');
+    const x = h.length === 3 ? h.split('').map((c) => c + c).join('') : h;
+    return [0, 2, 4].map((i) => parseInt(x.slice(i, i + 2), 16) / 255); };
+  const bg = rgb('--bg'), claro = (bg[0] + bg[1] + bg[2]) / 3 > .5;
+  const vs = 'attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}';
+  const fs = `precision mediump float;
+uniform vec2 R;uniform float T;uniform vec2 M;uniform float S;uniform vec3 B,A,C;uniform float K;
+float h(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+float n(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);
+  return mix(mix(h(i),h(i+vec2(1,0)),f.x),mix(h(i+vec2(0,1)),h(i+vec2(1,1)),f.x),f.y);}
+float fbm(vec2 p){float v=0.,a=.5;mat2 r=mat2(.8,.6,-.6,.8);for(int i=0;i<5;i++){v+=a*n(p);p=r*p*2.02;a*=.5;}return v;}
+void main(){
+  vec2 uv=(gl_FragCoord.xy-.5*R)/min(R.x,R.y);
+  vec2 p=uv*1.6+vec2(0.,S*.35)+(M-.5)*.35;
+  float t=T*.045;
+  vec2 q=vec2(fbm(p+t),fbm(p+vec2(5.2,1.3)-t));
+  vec2 r=vec2(fbm(p+3.*q+vec2(1.7,9.2)+t*1.3),fbm(p+3.*q+vec2(8.3,2.8)-t));
+  float f=fbm(p+3.5*r);
+  vec3 col=mix(B,A,smoothstep(.25,.85,f));
+  col=mix(col,C,smoothstep(.45,1.,length(r)*.75)*.8);
+  col+=C*pow(max(0.,1.-abs(f-.62)*9.),3.)*.35;
+  float v=smoothstep(1.35,.2,length(uv));
+  col=mix(B,col,K*v);
+  gl_FragColor=vec4(col,1.);
+}`;
+  const sh = (t, src) => { const o = gl.createShader(t); gl.shaderSource(o, src); gl.compileShader(o); return o; };
+  const pr = gl.createProgram();
+  gl.attachShader(pr, sh(gl.VERTEX_SHADER, vs)); gl.attachShader(pr, sh(gl.FRAGMENT_SHADER, fs)); gl.linkProgram(pr);
+  if (!gl.getProgramParameter(pr, gl.LINK_STATUS)) return document.body.classList.remove('fondo');
+  gl.useProgram(pr);
+  gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+  const lp = gl.getAttribLocation(pr, 'p'); gl.enableVertexAttribArray(lp); gl.vertexAttribPointer(lp, 2, gl.FLOAT, false, 0, 0);
+  const U = (k) => gl.getUniformLocation(pr, k);
+  gl.uniform3fv(U('B'), bg); gl.uniform3fv(U('A'), rgb('--acc')); gl.uniform3fv(U('C'), rgb('--acc2'));
+  // En los estilos claros el fondo acompaña sin comerse la lectura.
+  gl.uniform1f(U('K'), claro ? .38 : .7);
+  const escala = Math.min(devicePixelRatio || 1, 1.5) * .6;     // media resolución: es un fondo, no una foto
+  const medir = () => { cv.width = innerWidth * escala; cv.height = innerHeight * escala; gl.viewport(0, 0, cv.width, cv.height); };
+  medir(); addEventListener('resize', medir);
+  let mx = .5, my = .5, tx = .5, ty = .5;
+  addEventListener('pointermove', (e) => { tx = e.clientX / innerWidth; ty = 1 - e.clientY / innerHeight; }, { passive: true });
+  const quieto = matchMedia('(prefers-reduced-motion: reduce)').matches, t0 = performance.now();
+  const cuadro = (ahora) => {
+    mx += (tx - mx) * .04; my += (ty - my) * .04;
+    gl.uniform2f(U('R'), cv.width, cv.height); gl.uniform1f(U('T'), quieto ? 40 : (ahora - t0) / 1000);
+    gl.uniform2f(U('M'), mx, my); gl.uniform1f(U('S'), scrollY / innerHeight);
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+    if (!quieto && !document.hidden) requestAnimationFrame(cuadro);
+  };
+  document.addEventListener('visibilitychange', () => { if (!document.hidden && !quieto) requestAnimationFrame(cuadro); });
+  if (quieto) addEventListener('scroll', () => requestAnimationFrame(cuadro), { passive: true });
+  requestAnimationFrame(cuadro);
+  cv.classList.add('on');
+}
 
 /* ── el turno ── */
 function turno(f, wa) {

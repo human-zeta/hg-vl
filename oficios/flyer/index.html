@@ -33,7 +33,8 @@ body{background:#d9d6d0;font-family:'DM Sans',system-ui,sans-serif;color:var(--k
 .af .preg{font-size:20pt;margin-top:14mm;line-height:1.2}
 .af h1{font-family:'Bebas Neue',Impact,sans-serif;font-weight:400;font-size:112pt;line-height:.84;letter-spacing:-.005em;margin-top:6mm}
 .af h1 span{display:inline-block;background:var(--k);color:var(--p);padding:0 3mm;margin-top:2mm}
-.af ul{list-style:none;margin-top:10mm;font-size:15pt;line-height:1.35}
+.af h1 .mes{font-style:normal;font-size:38pt;margin-left:4mm;letter-spacing:.02em}
+.af ul{list-style:none;margin-top:8mm;font-size:15pt;line-height:1.3}
 .af li{padding:2.2mm 0;border-bottom:.4mm solid var(--k);display:flex;gap:4mm}
 .af li b{font-family:'Space Mono',monospace;font-size:11pt;min-width:9mm}
 .af .pie{margin-top:auto;display:grid;grid-template-columns:1fr 58mm;gap:8mm;align-items:end}
@@ -75,11 +76,12 @@ body{background:#d9d6d0;font-family:'DM Sans',system-ui,sans-serif;color:var(--k
   <div class="top"><span>Human Glitche · Oficios</span><span>Programa 2026</span></div>
   <div class="tijera" aria-hidden="true">✂</div>
   <p class="preg">¿Cortás o tatuás por tu cuenta<br>y estás <b>arrancando</b>?</p>
-  <h1>Tu web<br><span>$30.000</span></h1>
+  <h1>Tu web<br><span>$50.000</span><em class="mes">por mes</em></h1>
   <ul>
     <li><b>01</b>Tus trabajos, tus precios y tu Instagram en una página tuya</li>
     <li><b>02</b>Turnos con seña que van directo a tu Mercado Pago</li>
-    <li><b>03</b>Un solo pago. Sin mensualidad. Salen todas el 10 de octubre</li>
+    <li><b>03</b>Traé colegas: cada uno te baja $4.000, hasta $30.000 por mes</li>
+    <li><b>04</b>Con más de 5, tu web se lleva un fondo inmersivo</li>
   </ul>
   <div class="pie">
     <div><div class="cupos">100 cupos para barberos<br>100 para tatuadores<small>Salen todas juntas el 10/10, o antes si se llena el cupo.</small></div><div class="url">hg-vl.com/oficios</div></div>
@@ -105,8 +107,8 @@ function armar() {
   const url = BASE + (o ? '?o=' + o : '');
   $('#urlTxt').textContent = url;
   qr($('#qr1'), url, 440);
-  const card = `<div class="card"><div><div class="t">Human Glitche · Oficios</div><h2>Tu web<br><span>$30.000</span></h2>
-    <p>Para barberos y tatuadores independientes que arrancan. Tus trabajos, tus precios y turnos con seña a tu Mercado Pago.</p><div class="u">hg-vl.com/oficios · sale el 10/10</div></div><div class="qr"></div></div>`;
+  const card = `<div class="card"><div><div class="t">Human Glitche · Oficios</div><h2>Tu web<br><span>$50.000/mes</span></h2>
+    <p>Para barberos y tatuadores independientes que arrancan. Turnos con seña a tu Mercado Pago. Traé colegas y baja hasta $30.000.</p><div class="u">hg-vl.com/oficios · sale el 10/10</div></div><div class="qr"></div></div>`;
   $('#cards').innerHTML = card.repeat(8);
   document.querySelectorAll('#cards .qr').forEach((el) => qr(el, url, 240));
   const q = $('#que').value;
