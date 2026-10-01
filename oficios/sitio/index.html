@@ -9,9 +9,10 @@
 <!--
   OFICIOS — LA plantilla. Una sola página pinta las webs de todos los del programa:
   www.hg-vl.com/o/<slug> → Caddy reescribe a /oficios/sitio/index.html, y esta página
-  lee la ficha de api.hg-vl.com/v1/_oficios/sitio/<slug>. Seis estilos por data-p (papel, tinta, neon, acido,
-  sastre, galeria, y desde 047: pizarra, retro, comic, marmol); cualquiera sirve para barbero o tatuador. ?llave=… = vista previa del dueño antes de publicarse.
-  ?demo=tinta|papel|neon|acido|sastre|galeria[&rubro=barberia|tatuaje] = datos inventados para la
+  lee la ficha de api.hg-vl.com/v1/_oficios/sitio/<slug>. Diez estilos por data-p (papel, tinta, acido, sastre,
+  galeria, retro, marmol, y desde 048: lino, holo, noir — reemplazan a neon, pizarra y comic); cualquiera
+  sirve para barbero o tatuador. ?llave=… = vista previa del dueño antes de publicarse.
+  ?demo=<estilo>[&rubro=barberia|tatuaje] = datos inventados para la
   página de la campaña; con &rubro= del otro oficio muestra la versión cruzada (CRUCE).
   FONDO INMERSIVO (046): con MÁS de 5 referidos al día la ficha trae `fondo: true` y la web pinta un
   shader vivo detrás de todo, en los colores de su estilo (--bg/--acc/--acc2). ?demo=…&fondo=1 lo muestra.
@@ -21,7 +22,7 @@
 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Pirata+One&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500;1,600&family=Jost:wght@400;500&family=Instrument+Serif:ital@0;1&family=Inter+Tight:wght@400;500;600&family=Tilt+Neon&family=Outfit:wght@400;600;800&family=Unbounded:wght@600;900&family=Space+Mono:wght@400;700&family=Space+Grotesk:wght@400;600;700&family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,700;12..96,800&family=Caveat+Brush&family=Kalam:wght@400;700&family=Shrikhand&family=Bangers&family=Playfair+Display:ital,wght@0,500;0,700;1,500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Pirata+One&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500;1,600&family=Jost:wght@400;500&family=Instrument+Serif:ital@0;1&family=Inter+Tight:wght@400;500;600&family=Outfit:wght@400;600;800&family=Unbounded:wght@600;900&family=Space+Mono:wght@400;700&family=Space+Grotesk:wght@400;600;700&family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,700;12..96,800&family=Shrikhand&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;1,9..144,300;1,9..144,400&family=DM+Sans:wght@400;500;700&family=Syne:wght@700;800&family=Manrope:wght@400;600;800&family=Bodoni+Moda:ital,opsz,wght@0,6..96,500;1,6..96,400;1,6..96,500&family=Courier+Prime:wght@400;700&family=Playfair+Display:ital,wght@0,500;0,700;1,500&display=swap" rel="stylesheet">
 <style>
 :root{--r:18px;--ease:cubic-bezier(.2,.8,.2,1)}
 [data-p=tinta]{--bg:#0b0a0a;--bg2:#121010;--card:#171414;--line:#2a2424;--ink:#ece4d6;--mute:#a2978a;--acc:#d9312b;--acc2:#ff5a4e;--on:#fff;
@@ -123,34 +124,92 @@ footer a{text-decoration:underline}
 .vacio h1{font-size:56px;margin-bottom:12px}
 .vacio p{color:var(--mute)}
 
-/* ════ NEÓN — el barbero llamativo: tubos que titilan, poste que gira, piso synthwave ════ */
-[data-p=neon]{--bg:#07040f;--bg2:#0d0719;--card:#120b1f;--line:#2e1d4a;--ink:#fdf4ff;--mute:#b9a6d6;--acc:#ff2bd6;--acc2:#22e1ff;--on:#12031a;
-  --d:'Tilt Neon',system-ui,sans-serif;--b:'Outfit',system-ui,sans-serif;--dw:400;--rad:14px}
-body[data-p=neon] #app,body[data-p=neon] footer{position:relative;z-index:1}
-body[data-p=neon]{background:radial-gradient(ellipse 90% 50% at 50% 0%,#2a0b45 0%,transparent 60%),var(--bg)}
-body[data-p=neon]::before{content:"";position:fixed;left:-50%;right:-50%;bottom:-10vh;height:55vh;z-index:0;opacity:.7;pointer-events:none;
-  background-image:linear-gradient(rgba(255,43,214,.35) 1px,transparent 1px),linear-gradient(90deg,rgba(34,225,255,.3) 1px,transparent 1px);
-  background-size:60px 60px;transform:perspective(420px) rotateX(62deg);transform-origin:bottom;animation:piso 2.4s linear infinite;
-  -webkit-mask-image:linear-gradient(transparent,#000 60%);mask-image:linear-gradient(transparent,#000 60%)}
-@keyframes piso{to{background-position:0 60px}}
-[data-p=neon] .hero h1{color:#fff;text-shadow:0 0 6px #fff,0 0 18px var(--acc),0 0 42px var(--acc),0 0 80px var(--acc);animation:titila 6s infinite}
-[data-p=neon] .top .nom{color:var(--acc2);text-shadow:0 0 12px var(--acc2)}
-@keyframes titila{0%,19%,21%,23%,55%,57%,100%{opacity:1}20%,22%,56%{opacity:.55;text-shadow:none}}
-[data-p=neon] .rub{color:var(--acc2);text-shadow:0 0 10px var(--acc2)}
-[data-p=neon] h2{color:#fff;text-shadow:0 0 14px var(--acc2),0 0 30px var(--acc2)}
-[data-p=neon] .btn-acc{background:var(--acc);color:#fff;box-shadow:0 0 18px var(--acc),0 0 46px rgba(255,43,214,.5)}
-[data-p=neon] .btn-line{border-color:var(--acc2);color:var(--acc2);box-shadow:inset 0 0 12px rgba(34,225,255,.25),0 0 12px rgba(34,225,255,.25)}
-[data-p=neon] .svc .p{color:var(--acc2);text-shadow:0 0 12px var(--acc2)}
-[data-p=neon] .fotos button{border:1px solid var(--acc);box-shadow:0 0 14px rgba(255,43,214,.45)}
-[data-p=neon] .turno{border-color:var(--acc2);box-shadow:0 0 24px rgba(34,225,255,.2),inset 0 0 30px rgba(255,43,214,.06)}
-[data-p=neon] .chip.sel,[data-p=neon] .day.sel,[data-p=neon] .slot.sel{box-shadow:0 0 16px var(--acc)}
-.poste{height:26px;border-radius:13px;margin:6px 0 10px;border:1px solid rgba(255,255,255,.35);
-  background:repeating-linear-gradient(-55deg,#ff2b4f 0 16px,#fff 16px 30px,#2b6bff 30px 46px,#fff 46px 60px);background-size:120px 100%;
-  animation:poste 1.6s linear infinite;box-shadow:0 0 22px rgba(255,43,214,.55),inset 0 3px 6px rgba(255,255,255,.6),inset 0 -6px 10px rgba(0,0,0,.35)}
-@keyframes poste{to{background-position:120px 0}}
-.tubo{height:10px;border-radius:5px;margin:14px 0 18px;background:linear-gradient(90deg,var(--acc),var(--acc2),var(--acc));background-size:200% 100%;
-  box-shadow:0 0 12px var(--acc),0 0 30px var(--acc),0 0 60px rgba(34,225,255,.45);animation:tubo 3s linear infinite}
-@keyframes tubo{to{background-position:200% 0}}
+/* ════ LINO — aesthetic suave: lino, terracota rosada y salvia; serif en cursiva, foto en arco ════ */
+[data-p=lino]{--bg:#f3ece3;--bg2:#ebe2d6;--card:#fbf7f2;--line:#e2d7c8;--ink:#3d3530;--mute:#8f8478;--acc:#b9806a;--acc2:#8a9a7b;--on:#fbf7f2;
+  --d:'Fraunces',Georgia,serif;--b:'DM Sans',system-ui,sans-serif;--dw:300;--rad:22px}
+body[data-p=lino]{background:radial-gradient(40% 30% at 85% 8%,rgba(185,128,106,.18),transparent 70%),radial-gradient(45% 35% at 5% 60%,rgba(138,154,123,.16),transparent 70%),var(--bg)}
+[data-p=lino] .hero{text-align:center;padding-top:52px}
+[data-p=lino] .hero p{margin-inline:auto;font-size:17px}
+[data-p=lino] .hero .ctas{justify-content:center}
+[data-p=lino] .hero h1{font-style:italic;font-weight:300;font-size:clamp(64px,18vw,120px);letter-spacing:-.03em;font-variation-settings:'opsz' 144}
+[data-p=lino] .rub{color:var(--acc);letter-spacing:.28em;font-weight:500;font-size:11px}
+[data-p=lino] .rub::before,[data-p=lino] .rub::after{content:" ✧ ";color:var(--acc2)}
+[data-p=lino] h2{font-style:italic;font-weight:300;text-align:center}
+[data-p=lino] .top .nom{font-style:italic;font-size:24px}
+[data-p=lino] .btn{font-weight:500;letter-spacing:.02em}
+[data-p=lino] .btn-acc{background:var(--acc);color:#fbf7f2;box-shadow:0 10px 24px -12px rgba(185,128,106,.8)}
+[data-p=lino] .btn-line{border-color:var(--ink)}
+[data-p=lino] .fotos{gap:10px}
+[data-p=lino] .fotos button{border-radius:18px}
+[data-p=lino] .fotos button:first-child{border-radius:999px 999px 18px 18px}
+[data-p=lino] .svcs{border:0;display:grid;gap:10px}
+[data-p=lino] .svc{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px 18px}
+[data-p=lino] .svc b{font-weight:500}
+[data-p=lino] .svc .p{font-style:italic;font-weight:400;color:var(--acc);font-size:28px}
+[data-p=lino] .turno{border-radius:28px;box-shadow:0 20px 50px -30px rgba(61,53,48,.35)}
+[data-p=lino] .chip,[data-p=lino] .day,[data-p=lino] .slot,[data-p=lino] .inp{border-radius:999px}
+[data-p=lino] .day{border-radius:18px}
+.destello{text-align:center;color:var(--acc2);letter-spacing:.8em;font-size:14px;margin:0 0 24px}
+
+/* ════ HOLO — Y2K iridiscente: perla, manchas tornasol y vidrio esmerilado ════ */
+[data-p=holo]{--bg:#eef0f7;--bg2:#e6e8f3;--card:rgba(255,255,255,.55);--line:rgba(255,255,255,.85);--ink:#1b1b2f;--mute:#5d5f7a;--acc:#8b5cf6;--acc2:#ec4899;--on:#fff;
+  --d:'Syne',system-ui,sans-serif;--b:'Manrope',system-ui,sans-serif;--dw:800;--rad:999px}
+body[data-p=holo]{background:var(--bg)}
+body[data-p=holo]::before{content:"";position:fixed;inset:-20%;z-index:0;pointer-events:none;filter:blur(60px);opacity:.75;
+  background:radial-gradient(30% 25% at 20% 20%,#f9a8d4,transparent 70%),radial-gradient(30% 25% at 80% 30%,#a5f3fc,transparent 70%),
+    radial-gradient(35% 30% at 30% 80%,#c4b5fd,transparent 70%),radial-gradient(30% 25% at 85% 85%,#bbf7d0,transparent 70%);animation:holo 18s ease-in-out infinite alternate}
+@keyframes holo{to{transform:rotate(25deg) scale(1.15)}}
+body[data-p=holo] #app,body[data-p=holo] footer{position:relative;z-index:1}
+[data-p=holo] .hero h1{font-size:clamp(60px,17vw,116px);letter-spacing:-.05em;text-transform:lowercase;
+  background:linear-gradient(100deg,#8b5cf6,#ec4899,#06b6d4,#a3e635,#8b5cf6);background-size:300% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:iris 8s linear infinite}
+@keyframes iris{to{background-position:300% 0}}
+[data-p=holo] .rub{display:inline-block;padding:6px 12px;border-radius:999px;background:rgba(255,255,255,.6);border:1px solid #fff;color:var(--acc);backdrop-filter:blur(8px)}
+[data-p=holo] h2{text-transform:lowercase;letter-spacing:-.04em}
+[data-p=holo] .top .nom{text-transform:lowercase;font-size:22px}
+[data-p=holo] .btn-acc{background:linear-gradient(100deg,#8b5cf6,#ec4899);color:#fff;box-shadow:0 10px 30px -10px rgba(236,72,153,.6)}
+[data-p=holo] .btn-line{background:rgba(255,255,255,.55);border:1px solid #fff;backdrop-filter:blur(8px)}
+[data-p=holo] .svcs{border:0;display:grid;gap:10px}
+[data-p=holo] .svc,[data-p=holo] .turno,[data-p=holo] .ig,[data-p=holo] .hoy{background:rgba(255,255,255,.5);border:1px solid #fff;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+[data-p=holo] .svc{border-radius:22px;padding:16px 18px}
+[data-p=holo] .svc .p{background:linear-gradient(100deg,#8b5cf6,#ec4899);-webkit-background-clip:text;background-clip:text;color:transparent}
+[data-p=holo] .turno{border-radius:30px;box-shadow:0 20px 60px -30px rgba(139,92,246,.5)}
+[data-p=holo] .fotos{gap:10px}
+[data-p=holo] .fotos button{border-radius:24px;border:2px solid #fff;box-shadow:0 10px 30px -15px rgba(139,92,246,.6)}
+[data-p=holo] .chip,[data-p=holo] .day,[data-p=holo] .slot,[data-p=holo] .inp{background:rgba(255,255,255,.55);border-color:#fff}
+[data-p=holo] .day{border-radius:18px}
+[data-p=holo] .dias div{border-color:rgba(27,27,47,.1)}
+.estrellas{display:flex;justify-content:space-between;color:var(--acc);font-size:22px;margin:0 6px 18px;opacity:.8}
+
+/* ════ NOIR — cine en blanco y negro: franjas, grano, máquina de escribir y créditos ════ */
+[data-p=noir]{--bg:#0b0b0b;--bg2:#121212;--card:#131313;--line:#2b2b2b;--ink:#f2f0ea;--mute:#8d8d86;--acc:#f2f0ea;--acc2:#c1121f;--on:#0b0b0b;
+  --d:'Bodoni Moda',Georgia,serif;--b:'Courier Prime',ui-monospace,monospace;--dw:500;--rad:0px;--fondo-k:.32}
+body[data-p=noir]::after{content:"";position:fixed;inset:0;z-index:40;pointer-events:none;opacity:.12;mix-blend-mode:screen;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+[data-p=noir] .hero{position:relative;padding:58px 0 46px;text-align:center}
+[data-p=noir] .hero::before,[data-p=noir] .hero::after{content:"";position:absolute;left:-16px;right:-16px;height:22px;background:#000}
+[data-p=noir] .hero::before{top:0}[data-p=noir] .hero::after{bottom:0}
+[data-p=noir] .hero p{margin-inline:auto}
+[data-p=noir] .hero .ctas{justify-content:center}
+[data-p=noir] .hero h1{font-style:italic;font-weight:400;font-size:clamp(62px,17vw,118px);letter-spacing:-.02em}
+[data-p=noir] .rub{color:var(--mute);letter-spacing:.3em;font-weight:400}
+[data-p=noir] .rub::before{content:"● ";color:var(--acc2)}
+[data-p=noir] h2{text-align:center;font-style:italic;font-weight:400}
+[data-p=noir] h2::before,[data-p=noir] h2::after{content:"—";margin:0 .3em;color:var(--mute)}
+[data-p=noir] .top .nom{font-family:var(--b);font-size:14px;letter-spacing:.3em;text-transform:uppercase}
+[data-p=noir] .btn{text-transform:uppercase;letter-spacing:.2em;font-size:12.5px}
+[data-p=noir] .btn-acc{background:#f2f0ea;color:#0b0b0b}
+[data-p=noir] .btn-line{border-color:#f2f0ea}
+[data-p=noir] .fotos{gap:4px;padding:6px 24px;
+  background:repeating-linear-gradient(#000 0 7px,#d8d6cf 7px 15px) left 7px top/10px 100% no-repeat,
+    repeating-linear-gradient(#000 0 7px,#d8d6cf 7px 15px) right 7px top/10px 100% no-repeat,#000}
+[data-p=noir] .fotos button{filter:grayscale(1) contrast(1.2);border-radius:0;border:4px solid #000}
+[data-p=noir] .svcs{border:0;text-align:center}
+[data-p=noir] .svc{flex-direction:column;align-items:center;gap:2px;border:0;padding:12px 0}
+[data-p=noir] .svc b{text-transform:uppercase;letter-spacing:.24em;font-size:14px;font-weight:400;color:var(--mute)}
+[data-p=noir] .svc .p{font-style:italic;font-size:34px;color:var(--ink)}
+[data-p=noir] .turno{border:1px solid #f2f0ea}
+[data-p=noir] .ig,[data-p=noir] .hoy{border-radius:0}
+.claqueta{display:flex;justify-content:space-between;font:400 11px/1 'Courier Prime',monospace;letter-spacing:.24em;text-transform:uppercase;color:var(--mute);border-block:1px solid var(--line);padding:9px 0;margin:4px 0 22px}
 
 /* ════ ÁCIDO — el tatuador llamativo: cromo, verde ácido, cinta que corre ════ */
 [data-p=acido]{--bg:#0a0a0a;--bg2:#111;--card:#141414;--line:#2c2c2c;--ink:#f2f2f2;--mute:#9a9a9a;--acc:#c6ff00;--acc2:#c6ff00;--on:#0a0a0a;
@@ -229,29 +288,6 @@ body[data-p=acido]::before{content:"";position:fixed;inset:0;z-index:40;pointer-
 [data-p=galeria] .turno{border:1px solid #111}
 .expo{display:flex;justify-content:space-between;gap:10px;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--mute);border-top:1px solid #111;padding-top:10px;margin:0 0 22px}
 
-/* ════ PIZARRA — la barbería de barrio: pizarrón, tiza y fotos pegadas con cinta ════ */
-[data-p=pizarra]{--bg:#1d2622;--bg2:#222c28;--card:#243029;--line:#3d4a44;--ink:#f1efe6;--mute:#b9bdb2;--acc:#f4d35e;--acc2:#f1efe6;--on:#1d2622;
-  --d:'Caveat Brush',cursive;--b:'Kalam',system-ui,sans-serif;--dw:400;--rad:6px}
-body[data-p=pizarra]{background:radial-gradient(ellipse at 20% 10%,rgba(255,255,255,.06),transparent 50%),radial-gradient(ellipse at 80% 70%,rgba(255,255,255,.04),transparent 55%),var(--bg)}
-[data-p=pizarra] #app{border-inline:14px solid #5a3d28;min-height:100vh;box-shadow:inset 0 0 60px rgba(0,0,0,.45)}
-[data-p=pizarra] .hero h1{font-size:clamp(70px,19vw,124px);transform:rotate(-2deg);text-shadow:0 0 1px rgba(255,255,255,.6)}
-[data-p=pizarra] .rub{color:var(--acc)}
-[data-p=pizarra] h2{font-size:clamp(46px,10vw,64px)}
-[data-p=pizarra] h2::after{content:"";display:block;width:120px;height:6px;margin-top:4px;border-radius:6px;background:var(--acc);opacity:.85;transform:rotate(-1.5deg)}
-[data-p=pizarra] .btn{font-family:var(--b);font-weight:700;font-size:17px}
-[data-p=pizarra] .btn-acc{background:var(--acc);color:#1d2622;transform:rotate(-1deg)}
-[data-p=pizarra] .btn-line{border:2px dashed var(--ink)}
-[data-p=pizarra] .svcs,[data-p=pizarra] .svc{border-color:rgba(241,239,230,.25);border-style:dashed}
-[data-p=pizarra] .svc b{font-size:20px}
-[data-p=pizarra] .svc .p{color:var(--acc);font-size:38px}
-[data-p=pizarra] .fotos{gap:14px;padding:6px}
-[data-p=pizarra] .fotos button{border-radius:2px;border:6px solid #f1efe6;border-bottom-width:18px;position:relative;overflow:visible;box-shadow:0 8px 16px rgba(0,0,0,.4)}
-[data-p=pizarra] .fotos button:nth-child(odd){transform:rotate(-2deg)}
-[data-p=pizarra] .fotos button:nth-child(even){transform:rotate(1.8deg)}
-[data-p=pizarra] .fotos button::before{content:"";position:absolute;top:-12px;left:50%;width:54px;height:18px;margin-left:-27px;background:rgba(244,211,94,.75);transform:rotate(-4deg)}
-[data-p=pizarra] .turno{border:2px dashed rgba(241,239,230,.45);background:rgba(0,0,0,.12)}
-[data-p=pizarra] .ig,[data-p=pizarra] .hoy{border-style:dashed}
-
 /* ════ RETRO — años 70: crema, mostaza y naranja, franjas y letra gorda ════ */
 [data-p=retro]{--bg:#f6e9cf;--bg2:#efdcb6;--card:#fbf2df;--line:#e0c89a;--ink:#3b2314;--mute:#7a5a41;--acc:#e0621b;--acc2:#b8421a;--on:#fff7e8;
   --d:'Shrikhand',serif;--b:'Outfit',system-ui,sans-serif;--dw:400;--rad:999px}
@@ -269,28 +305,6 @@ body[data-p=pizarra]{background:radial-gradient(ellipse at 20% 10%,rgba(255,255,
 [data-p=retro] .turno{border:3px solid var(--ink);border-radius:28px;box-shadow:6px 6px 0 #f2b33d}
 [data-p=retro] .chip,[data-p=retro] .day,[data-p=retro] .slot,[data-p=retro] .inp{border-radius:14px}
 .franjas{height:54px;margin:6px -16px 20px;background:linear-gradient(#f2b33d 0 25%,#e0621b 25% 50%,#b8421a 50% 75%,#3b2314 75%);border-radius:0 0 50% 50%/0 0 100% 100%}
-
-/* ════ CÓMIC — historieta: puntos, bordes negros y ¡POW! ════ */
-[data-p=comic]{--bg:#fff4c7;--bg2:#ffe98a;--card:#fff;--line:#111;--ink:#111;--mute:#3a3a3a;--acc:#e8322b;--acc2:#1f5fd6;--on:#fff;
-  --d:'Bangers',system-ui,sans-serif;--b:'Bricolage Grotesque',system-ui,sans-serif;--dw:400;--rad:10px}
-body[data-p=comic]{background:radial-gradient(circle,rgba(232,50,43,.22) 1.4px,transparent 1.6px) 0 0/12px 12px,var(--bg)}
-[data-p=comic] .hero h1{font-size:clamp(72px,20vw,130px);letter-spacing:.02em;color:#ffd21f;-webkit-text-stroke:3px #111;text-shadow:6px 6px 0 #111;transform:skew(-4deg)}
-[data-p=comic] .rub{color:#fff;background:var(--acc2);padding:5px 10px;border:2px solid #111;display:inline-block;transform:rotate(-2deg)}
-[data-p=comic] h2{letter-spacing:.03em;color:var(--acc)}
-[data-p=comic] .hero p{color:#111;background:#fff;border:2.5px solid #111;border-radius:18px;padding:12px 16px;position:relative;box-shadow:4px 4px 0 #111}
-[data-p=comic] .btn{border:2.5px solid #111;box-shadow:4px 4px 0 #111;font-weight:800;text-transform:uppercase}
-[data-p=comic] .btn-acc{background:var(--acc);color:#fff}
-[data-p=comic] .btn-line{background:#fff}
-[data-p=comic] .fotos{gap:10px}
-[data-p=comic] .fotos button{border:3px solid #111;border-radius:4px;box-shadow:4px 4px 0 #111}
-[data-p=comic] .svcs{border:0;display:grid;gap:10px}
-[data-p=comic] .svc{background:#fff;border:2.5px solid #111;border-radius:12px;padding:14px 16px;box-shadow:4px 4px 0 #111}
-[data-p=comic] .svc .p{color:var(--acc2);font-size:34px}
-[data-p=comic] .turno{border:3px solid #111;box-shadow:6px 6px 0 #111}
-[data-p=comic] .chip,[data-p=comic] .day,[data-p=comic] .slot{border:2px solid #111}
-[data-p=comic] .ig,[data-p=comic] .hoy{border:2px solid #111;background:#fff}
-.pow{position:relative;width:128px;height:128px;margin:-8px 0 10px auto;display:grid;place-items:center;font:28px/1 'Bangers',sans-serif;color:#111;transform:rotate(10deg);
-  background:#ffd21f;clip-path:polygon(50% 0,61% 22%,85% 10%,77% 35%,100% 42%,80% 57%,93% 80%,67% 74%,57% 100%,45% 78%,20% 92%,24% 67%,0 58%,20% 43%,8% 18%,34% 24%)}
 
 /* ════ MÁRMOL — el lujo: negro veteado, dorado y mayúsculas finas ════ */
 [data-p=marmol]{--bg:#0f0e0d;--bg2:#171513;--card:#16140f;--line:#3a3223;--ink:#f3ede1;--mute:#a79d8a;--acc:#c9a45c;--acc2:#e6cf9a;--on:#0f0e0d;
@@ -322,10 +336,10 @@ body[data-p=marmol]{background:linear-gradient(115deg,transparent 40%,rgba(201,1
 #fondoInm{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:0;transition:opacity 1.2s var(--ease)}
 #fondoInm.on{opacity:1}
 body.fondo #app,body.fondo footer,body.fondo .previa{position:relative;z-index:1}
-body.fondo[data-p=neon]::before{display:none}
+body.fondo[data-p=holo]::before{display:none}
 body.fondo .svc,body.fondo .turno,body.fondo .donde .dias{backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
 .pausada{background:#1a1a1a;color:#fff;text-align:center;font-size:13px;font-weight:700;padding:8px 12px}
-@media(prefers-reduced-motion:reduce){.tubo,.poste,.cinta div,body[data-p=neon]::before,[data-p=neon] .hero h1{animation:none!important}}
+@media(prefers-reduced-motion:reduce){.cinta div,body[data-p=holo]::before,[data-p=holo] .hero h1{animation:none!important}}
 [hidden]{display:none!important}
 </style>
 </head>
@@ -361,13 +375,6 @@ const DEMOS = {
     horarios: { 2: [['12:00', '20:00']], 3: [['12:00', '20:00']], 4: [['12:00', '20:00']], 5: [['12:00', '21:00']], 6: [['11:00', '19:00']] },
     sena: { link: 'https://www.mercadopago.com.ar/', monto: 1500000 }, agenda: null,
     fotos: ['🗡', '🌹', '🐍', '👁', '🌙', '💀'].map((g, i) => tile(['#ece4d6', '#e2d6c2', '#f3ecdf'][i % 3], '#1a1414', g)), publicado: true },
-  neon: { slug: 'demo', rubro: 'barberia', plantilla: 'neon', nombre: 'Dante Fade', whatsapp: '5492212003824', instagram: 'ejemplo',
-    bio: 'Fades de noche y diseños a navaja. Música fuerte, café y turnos hasta las 23.', modalidad: 'local', local: 'Sillón 3 · Barbería Norte',
-    direccion: null, barrio: 'Villa Elvira', ciudad: 'La Plata',
-    servicios: [{ nombre: 'Fade', precio: 1300000, min: 45 }, { nombre: 'Fade + diseño', precio: 1600000, min: 60 }, { nombre: 'Corte + barba', precio: 1700000, min: 60 }, { nombre: 'Color fantasía', precio: 3500000, min: 120 }],
-    horarios: { 2: [['16:00', '23:00']], 3: [['16:00', '23:00']], 4: [['16:00', '23:00']], 5: [['16:00', '23:30']], 6: [['14:00', '23:30']] },
-    sena: { link: 'https://www.mercadopago.com.ar/', monto: 300000 }, agenda: null,
-    fotos: ['✂', '⚡', '💈', '✂', '⚡', '💈'].map((g, i) => tile(['#1a0833', '#07040f', '#26093a'][i % 3], ['#ff2bd6', '#22e1ff', '#ff2bd6'][i % 3], g)), publicado: true },
   acido: { slug: 'demo', rubro: 'tatuaje', plantilla: 'acido', nombre: 'Mora Ink', whatsapp: '5492212003824', instagram: 'ejemplo',
     bio: 'Blackwork, ornamental y dotwork. Diseños únicos: cada flash se tatúa una sola vez.', modalidad: 'estudio', local: 'Box en Estudio Diagonal',
     direccion: null, barrio: 'Centro', ciudad: 'La Plata',
@@ -395,13 +402,6 @@ const DEMOS = {
     horarios: { 1: [['14:00', '21:00']], 2: [['10:00', '13:00'], ['15:00', '21:00']], 3: [['10:00', '13:00'], ['15:00', '21:00']], 4: [['14:00', '21:00']], 5: [['10:00', '13:00'], ['15:00', '21:00']], 6: [['09:00', '15:00']] },
     sena: { link: 'https://www.mercadopago.com.ar/', monto: 300000 }, agenda: null,
     fotos: ['✂', '⚡', '★', '✂', '⚡', '★'].map((g, i) => tile(['#ff4d1c', '#121110', '#e8e0d2'][i % 3], i % 3 === 2 ? '#121110' : '#fbf8f2', g)), publicado: true },
-  pizarra: { slug: 'demo', rubro: 'barberia', plantilla: 'pizarra', nombre: 'Don Tito', whatsapp: '5492212003824', instagram: 'ejemplo',
-    bio: 'Barbería de barrio desde siempre. Corte, barba y charla. Sin turno también, si hay lugar.', modalidad: 'local', local: 'Sillón del fondo · Peluquería Tito',
-    direccion: null, barrio: 'Berisso', ciudad: 'La Plata',
-    servicios: [{ nombre: 'Corte', precio: 900000, min: 30 }, { nombre: 'Corte + barba', precio: 1400000, min: 50 }, { nombre: 'Barba con navaja', precio: 700000, min: 25 }, { nombre: 'Corte niño', precio: 750000, min: 25 }],
-    horarios: { 2: [['09:00', '13:00'], ['16:00', '20:00']], 3: [['09:00', '13:00'], ['16:00', '20:00']], 4: [['09:00', '13:00'], ['16:00', '20:00']], 5: [['09:00', '13:00'], ['16:00', '20:30']], 6: [['09:00', '14:00']] },
-    sena: null, agenda: null,
-    fotos: ['✂', '💈', '🪒', '✂', '💈', '🪒'].map((g, i) => tile(['#e9e4d6', '#d8d2c0', '#f1ecde'][i % 3], '#1d2622', g)), publicado: true },
   retro: { slug: 'demo', rubro: 'tatuaje', plantilla: 'retro', nombre: 'Flor Setentas', whatsapp: '5492212003824', instagram: 'ejemplo',
     bio: 'Tatuadora. Old school, flores y soles que sonríen. Color que dura y buena onda.', modalidad: 'estudio', local: 'Estudio Girasol',
     direccion: null, barrio: 'Meridiano V', ciudad: 'La Plata',
@@ -409,13 +409,6 @@ const DEMOS = {
     horarios: { 3: [['13:00', '20:00']], 4: [['13:00', '20:00']], 5: [['13:00', '20:00']], 6: [['12:00', '18:00']] },
     sena: { link: 'https://www.mercadopago.com.ar/', monto: 1500000 }, agenda: null,
     fotos: ['🌼', '☀', '🍒', '🌈', '🌼', '☀'].map((g, i) => tile(['#f2b33d', '#e0621b', '#fbf2df'][i % 3], i % 3 === 2 ? '#3b2314' : '#fff7e8', g)), publicado: true },
-  comic: { slug: 'demo', rubro: 'barberia', plantilla: 'comic', nombre: 'Kapow Cuts', whatsapp: '5492212003824', instagram: 'ejemplo',
-    bio: '¡Fades con superpoderes! Diseños, colores y cortes que se ven desde la otra cuadra.', modalidad: 'casa', local: null,
-    direccion: null, barrio: 'San Carlos', ciudad: 'La Plata',
-    servicios: [{ nombre: 'Fade', precio: 1200000, min: 45 }, { nombre: 'Fade + diseño', precio: 1500000, min: 60 }, { nombre: 'Color fantasía', precio: 3200000, min: 120 }],
-    horarios: { 2: [['11:00', '20:00']], 3: [['11:00', '20:00']], 4: [['11:00', '20:00']], 5: [['11:00', '21:00']], 6: [['10:00', '18:00']] },
-    sena: { link: 'https://www.mercadopago.com.ar/', monto: 300000 }, agenda: null,
-    fotos: ['✂', '⚡', '💥', '✂', '⚡', '💥'].map((g, i) => tile(['#ffd21f', '#1f5fd6', '#e8322b'][i % 3], i % 3 === 0 ? '#111' : '#fff', g)), publicado: true },
   marmol: { slug: 'demo', rubro: 'tatuaje', plantilla: 'marmol', nombre: 'Aurelio', whatsapp: '5492212003824', instagram: 'ejemplo',
     bio: 'Realismo en negro y gris. Piezas grandes, con consulta previa y agenda cerrada por mes.', modalidad: 'estudio', local: 'Estudio privado',
     direccion: null, barrio: 'Centro', ciudad: 'La Plata',
@@ -423,8 +416,28 @@ const DEMOS = {
     horarios: { 3: [['11:00', '19:00']], 4: [['11:00', '19:00']], 5: [['11:00', '19:00']] },
     sena: { link: 'https://www.mercadopago.com.ar/', monto: 3000000 }, agenda: null,
     fotos: ['☽', '✦', '♛', '☽', '✦'].map((g, i) => tile(['#1a1714', '#241f18', '#15120f'][i % 3], '#c9a45c', g)), publicado: true },
+  lino: { slug: 'demo', rubro: 'barberia', plantilla: 'lino', nombre: 'Juli Navarro', whatsapp: '5492212003824', instagram: 'ejemplo',
+    bio: 'Barbera. Cortes suaves, texturas y cuidado de barba en un espacio tranquilo, con turno.', modalidad: 'estudio', local: 'Estudio Lino',
+    direccion: null, barrio: 'City Bell', ciudad: 'La Plata',
+    servicios: [{ nombre: 'Corte con textura', precio: 1400000, min: 50 }, { nombre: 'Corte + perfilado de barba', precio: 1900000, min: 70 }, { nombre: 'Ritual de barba', precio: 1100000, min: 40 }],
+    horarios: { 2: [['10:00', '18:00']], 3: [['10:00', '18:00']], 4: [['10:00', '18:00']], 5: [['10:00', '19:00']], 6: [['10:00', '15:00']] },
+    sena: { link: 'https://www.mercadopago.com.ar/', monto: 400000 }, agenda: null,
+    fotos: ['✂', '✧', '❀', '✂', '✧', '❀'].map((g, i) => tile(['#e8d5c8', '#dfe3d6', '#f6efe6'][i % 3], ['#b9806a', '#8a9a7b', '#3d3530'][i % 3], g)), publicado: true },
+  holo: { slug: 'demo', rubro: 'barberia', plantilla: 'holo', nombre: 'Nico Holo', whatsapp: '5492212003824', instagram: 'ejemplo',
+    bio: 'Fades, colores fantasía y diseños. Si lo viste en TikTok, lo hacemos.', modalidad: 'local', local: 'Sillón 2 · Barbería Norte',
+    direccion: null, barrio: 'Villa Elvira', ciudad: 'La Plata',
+    servicios: [{ nombre: 'Fade', precio: 1300000, min: 45 }, { nombre: 'Fade + diseño', precio: 1600000, min: 60 }, { nombre: 'Color fantasía', precio: 3500000, min: 120 }, { nombre: 'Platinado', precio: 4500000, min: 150 }],
+    horarios: { 2: [['12:00', '21:00']], 3: [['12:00', '21:00']], 4: [['12:00', '21:00']], 5: [['12:00', '22:00']], 6: [['11:00', '20:00']] },
+    sena: { link: 'https://www.mercadopago.com.ar/', monto: 300000 }, agenda: null,
+    fotos: ['✂', '✦', '⚡', '✂', '✦', '⚡'].map((g, i) => tile(['#f5d0fe', '#cffafe', '#ddd6fe'][i % 3], ['#8b5cf6', '#ec4899', '#06b6d4'][i % 3], g)), publicado: true },
+  noir: { slug: 'demo', rubro: 'barberia', plantilla: 'noir', nombre: 'Bruno Vega', whatsapp: '5492212003824', instagram: 'ejemplo',
+    bio: 'Barbería clásica de película. Navaja, toalla caliente y un corte que no pasa de moda.', modalidad: 'local', local: 'Sillón 1 · Salón Ideal',
+    direccion: null, barrio: 'Centro', ciudad: 'La Plata',
+    servicios: [{ nombre: 'Corte clásico', precio: 1400000, min: 45 }, { nombre: 'Afeitado a navaja', precio: 1200000, min: 40 }, { nombre: 'Corte y afeitado', precio: 2300000, min: 80 }],
+    horarios: { 2: [['10:00', '20:00']], 3: [['10:00', '20:00']], 4: [['10:00', '20:00']], 5: [['10:00', '21:00']], 6: [['09:00', '15:00']] },
+    sena: { link: 'https://www.mercadopago.com.ar/', monto: 400000 }, agenda: null,
+    fotos: ['✂', '🎩', '🪒', '✂', '🎩', '🪒'].map((g, i) => tile(['#2a2a2a', '#d9d7d0', '#151515'][i % 3], i % 3 === 1 ? '#111' : '#eee', g)), publicado: true },
 };
-
 /* El mismo estilo con el OTRO oficio: los seis sirven para barbero y para tatuador. */
 const H_BAR = { 2: [['10:00', '20:00']], 3: [['10:00', '20:00']], 4: [['10:00', '20:00']], 5: [['10:00', '21:00']], 6: [['09:00', '17:00']] };
 const H_TAT = { 3: [['12:00', '20:00']], 4: [['12:00', '20:00']], 5: [['12:00', '20:00']], 6: [['11:00', '18:00']] };
@@ -445,26 +458,25 @@ const CRUCE = {
   papel: cruce(DEMOS.papel, { rubro: 'tatuaje', nombre: 'Pato Tattoo', bio: 'Tatuador. Flash chiquito, línea simple y precios claros. Tatúo en mi estudio de Tolosa.',
     modalidad: 'estudio', local: 'Estudio en Tolosa', barrio: 'Tolosa', servicios: S_TAT, horarios: H_TAT,
     fotos: ['🐍', '☾', '★', '🗡', '🐍', '☾'].map((g, i) => tile(['#ff4d1c', '#121110', '#e8e0d2'][i % 3], i % 3 === 2 ? '#121110' : '#fbf8f2', g)) }),
-  neon: cruce(DEMOS.neon, { rubro: 'tatuaje', nombre: 'Lila Neón', bio: 'Color y neotradicional. Sesiones de tarde y noche, con música y buena onda.',
-    modalidad: 'estudio', local: 'Box en Estudio Diagonal', barrio: 'Centro', servicios: S_TAT, horarios: H_TAT,
-    fotos: ['🌹', '🐍', '👁', '🌙', '🦋', '💀'].map((g, i) => tile(['#1a0833', '#07040f', '#26093a'][i % 3], ['#ff2bd6', '#22e1ff', '#ff2bd6'][i % 3], g)) }),
   sastre: cruce(DEMOS.sastre, { rubro: 'tatuaje', nombre: 'Casa Olivo', bio: 'Estudio de tatuaje con cita previa. Línea fina y botánica en un espacio tranquilo.',
     modalidad: 'estudio', local: 'Estudio con cita', barrio: 'Barrio Norte', servicios: S_TAT, horarios: H_TAT,
     fotos: ['❧', '☙', '✦', '❀', '❧', '☙'].map((g, i) => tile(['#1f3d2f', '#efe7d8', '#2b2622'][i % 3], ['#a8864a', '#1f3d2f', '#d8c39a'][i % 3], g)) }),
-  pizarra: cruce(DEMOS.pizarra, { rubro: 'tatuaje', nombre: 'Tinta del Barrio', bio: 'Tatuajes simples y a buen precio. Flash en la pizarra, se elige y se hace en el día.',
-    modalidad: 'estudio', local: 'Local de la esquina', barrio: 'Berisso', servicios: S_TAT, horarios: H_TAT, sena: null,
-    fotos: ['⚓', '❤', '🗡', '⚓', '❤', '🗡'].map((g, i) => tile(['#e9e4d6', '#d8d2c0', '#f1ecde'][i % 3], '#1d2622', g)) }),
   retro: cruce(DEMOS.retro, { rubro: 'barberia', nombre: 'El Setenta', bio: 'Barbería con discos, bigotes y patillas. Cortes con onda de otra época.',
     modalidad: 'local', local: 'Sillón 1 · Discos & Tijeras', barrio: 'Meridiano V', servicios: S_BAR, horarios: H_BAR,
     fotos: ['✂', '☀', '💈', '✂', '☀', '💈'].map((g, i) => tile(['#f2b33d', '#e0621b', '#fbf2df'][i % 3], i % 3 === 2 ? '#3b2314' : '#fff7e8', g)) }),
-  comic: cruce(DEMOS.comic, { rubro: 'tatuaje', nombre: 'Zap Tattoo', bio: 'Tatuajes pop y de dibujo animado. Color plano, línea gruesa y cero aburrimiento.',
-    modalidad: 'estudio', local: 'Box en Estudio Diagonal', barrio: 'Centro', servicios: S_TAT, horarios: H_TAT,
-    fotos: ['💥', '⚡', '★', '💥', '⚡', '★'].map((g, i) => tile(['#ffd21f', '#1f5fd6', '#e8322b'][i % 3], i % 3 === 0 ? '#111' : '#fff', g)) }),
   marmol: cruce(DEMOS.marmol, { rubro: 'barberia', nombre: 'Maison Vidal', bio: 'Barbería de caballeros. Toalla caliente, navaja y whisky, con reserva.',
     modalidad: 'local', local: 'Sillón privado · Salón Vidal', barrio: 'Centro', servicios: [{ nombre: 'Corte', precio: 2000000, min: 45 }, { nombre: 'Afeitado de lujo', precio: 1800000, min: 45 }, { nombre: 'Ritual completo', precio: 3500000, min: 90 }], horarios: H_BAR,
     fotos: ['✂', '♛', '✦', '✂', '♛'].map((g, i) => tile(['#1a1714', '#241f18', '#15120f'][i % 3], '#c9a45c', g)) }),
+  lino: cruce(DEMOS.lino, { rubro: 'tatuaje', nombre: 'Mía Lino', bio: 'Tatuadora. Fine line, flores y letras chiquitas. Diseños delicados con cita previa.',
+    modalidad: 'estudio', local: 'Estudio Lino', barrio: 'City Bell', servicios: S_TAT, horarios: H_TAT,
+    fotos: ['❀', '☾', '✧', '❀', '☾'].map((g, i) => tile(['#e8d5c8', '#dfe3d6', '#f6efe6'][i % 3], ['#b9806a', '#8a9a7b', '#3d3530'][i % 3], g)) }),
+  holo: cruce(DEMOS.holo, { rubro: 'tatuaje', nombre: 'Kira Holo', bio: 'Tatuajes a color, estrellas, mariposas y todo lo Y2K. Flash nuevo cada semana.',
+    modalidad: 'estudio', local: 'Box en Estudio Diagonal', barrio: 'Centro', servicios: S_TAT, horarios: H_TAT,
+    fotos: ['🦋', '✦', '💿', '🦋', '✦', '💿'].map((g, i) => tile(['#f5d0fe', '#cffafe', '#ddd6fe'][i % 3], ['#8b5cf6', '#ec4899', '#06b6d4'][i % 3], g)) }),
+  noir: cruce(DEMOS.noir, { rubro: 'tatuaje', nombre: 'Ezequiel Sombra', bio: 'Realismo en negro y gris. Retratos, cine y piezas grandes con consulta previa.',
+    modalidad: 'estudio', local: 'Estudio privado', barrio: 'Centro', servicios: S_TAT, horarios: H_TAT,
+    fotos: ['🎞', '👁', '🌹', '🎞', '👁', '🌹'].map((g, i) => tile(['#2a2a2a', '#d9d7d0', '#151515'][i % 3], i % 3 === 1 ? '#111' : '#eee', g)) }),
 };
-
 async function cargar() {
   if (params.get('demo')) {
     const base = DEMOS[params.get('demo')] || DEMOS.papel, r = params.get('rubro');
@@ -515,7 +527,6 @@ function pintar(f) {
   <div class="wrap">
     <div class="top"><span class="nom">${esc(f.nombre)}</span>${f.instagram ? `<a class="ig" href="https://instagram.com/${esc(f.instagram)}" target="_blank" rel="noopener">${IG_SVG}@${esc(f.instagram)}</a>` : ''}</div>
     <header class="hero">
-      ${f.plantilla === 'comic' ? `<div class="pow" aria-hidden="true">¡TURNOS!</div>` : ''}
       ${f.plantilla === 'marmol' ? `<div class="monograma" aria-hidden="true">${esc((f.nombre || '·').trim()[0].toUpperCase())}</div>` : ''}
       <div class="rub">${rubro} · ${esc(f.barrio)}</div>
       <h1>${esc(f.nombre)}</h1>
@@ -523,7 +534,9 @@ function pintar(f) {
       <div class="hoy ${hoy.on ? 'on' : ''}"><i></i>${esc(hoy.txt)}</div>
       <div class="ctas"><a class="btn btn-acc" href="#turno">Sacar turno</a><a class="btn btn-line" href="${wa('Hola ' + f.nombre + '! Te hago una consulta:')}" target="_blank" rel="noopener">WhatsApp</a></div>
     </header>
-    ${f.plantilla === 'neon' ? `<div class="${f.rubro === 'tatuaje' ? 'tubo' : 'poste'}" aria-hidden="true"></div>` : ''}
+    ${f.plantilla === 'lino' ? '<div class="destello" aria-hidden="true">✧ ✧ ✧</div>' : ''}
+    ${f.plantilla === 'holo' ? '<div class="estrellas" aria-hidden="true"><span>✦</span><span>✧</span><span>✦</span><span>✧</span><span>✦</span></div>' : ''}
+    ${f.plantilla === 'noir' ? `<div class="claqueta" aria-hidden="true"><span>Esc. 01</span><span>Toma 1</span><span>${esc(f.barrio)}</span></div>` : ''}
     ${f.plantilla === 'sastre' ? '<div class="orla" aria-hidden="true">✦</div>' : ''}
     ${f.plantilla === 'retro' ? '<div class="franjas" aria-hidden="true"></div>' : ''}
     ${f.plantilla === 'galeria' && f.fotos.length ? `<div class="expo"><span>${f.rubro === 'tatuaje' ? 'Selección de obra' : 'Selección de trabajos'}</span><span>${f.fotos.length ? String(f.fotos.length).padStart(2, '0') + ' piezas' : ''}</span></div>` : ''}
@@ -591,7 +604,7 @@ void main(){
   const U = (k) => gl.getUniformLocation(pr, k);
   gl.uniform3fv(U('B'), bg); gl.uniform3fv(U('A'), rgb('--acc')); gl.uniform3fv(U('C'), rgb('--acc2'));
   // En los estilos claros el fondo acompaña sin comerse la lectura.
-  gl.uniform1f(U('K'), claro ? .38 : .7);
+  gl.uniform1f(U('K'), parseFloat(css.getPropertyValue('--fondo-k')) || (claro ? .38 : .7));   // un estilo puede pedir menos
   const escala = Math.min(devicePixelRatio || 1, 1.5) * .6;     // media resolución: es un fondo, no una foto
   const medir = () => { cv.width = innerWidth * escala; cv.height = innerHeight * escala; gl.viewport(0, 0, cv.width, cv.height); };
   medir(); addEventListener('resize', medir);
