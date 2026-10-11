@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>HUMAN GLITCHE · VISUAL LAB — la puerta</title>
-<meta name="description" content="Visual Lab en la superficie, Human Glitche en el núcleo. Un dominio, una profundidad. Estudio de visuales en vivo, mapping y shaders en Buenos Aires.">
-<meta property="og:title" content="HUMAN GLITCHE · VISUAL LAB — la puerta">
-<meta property="og:description" content="Visual Lab en la superficie, Human Glitche en el núcleo. Un dominio, una profundidad.">
+<title>HUMAN GLITCHE · laboratorio creativo para artistas visuales y de tiempo real</title>
+<meta name="description" content="Human Glitche es un laboratorio creativo para artistas visuales y de tiempo real: 68 herramientas libres, comunidad y formación, y un estudio de dirección visual. Fundado por Zeta en La Plata, abierto a artistas de todo el mundo.">
+<meta property="og:title" content="HUMAN GLITCHE · para artistas que ven la interfaz y la quieren rediseñar">
+<meta property="og:description" content="Laboratorio creativo para artistas visuales y de tiempo real. Herramientas libres, comunidad y oficio.">
 <meta name="theme-color" content="#050505">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%23050505'/%3E%3Ccircle cx='8' cy='8' r='4.5' fill='none' stroke='%23b8ff00' stroke-width='1.5'/%3E%3Ccircle cx='8' cy='8' r='1.6' fill='%23ff2d55'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -156,11 +156,21 @@ html.world-composited #stage{opacity:0}
   display:flex; justify-content:space-between}
 .ac-id span{white-space:nowrap}
 
-/* las dos puertas */
-.doors{display:grid; gap:var(--s4); width:100%; max-width:64rem;
+/* qué es, en una línea: lo primero que lee alguien que llega de un pitch */
+.pitch{max-width:44rem; animation:rise 1s .25s cubic-bezier(.2,.9,.25,1) both;
+  /* el fondo de partículas es intenso: la línea va sobre un velo, como los chips del HUD */
+  background:rgba(5,5,5,.62); padding:var(--s2) var(--s4); border-radius:6px;
+  backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px)}
+.pitch__t{font-family:var(--display); font-size:clamp(1.6rem,1rem + 2.4vw,3rem);
+  line-height:1.02; letter-spacing:.02em; margin:0}
+.pitch__d{color:var(--ink-muted); margin:var(--s2) auto 0; max-width:52ch}
+.pitch__t,.pitch__d{text-shadow:0 0 2px var(--black), 0 1px 14px var(--black), 0 0 28px var(--black)}
+
+/* las tres capas: Lab, Comunidad y formación, Studio */
+.doors{display:grid; gap:var(--s4); width:100%; max-width:72rem;
   animation:rise 1s .35s cubic-bezier(.2,.9,.25,1) both}
 @keyframes rise{from{opacity:0; transform:translateY(18px)} to{opacity:1; transform:none}}
-@media (min-width:860px){ .doors{grid-template-columns:1fr 1fr; gap:var(--s6)} }
+@media (min-width:860px){ .doors{grid-template-columns:repeat(3,1fr); gap:var(--s6)} }
 .door{position:relative; overflow:hidden; display:block; text-align:left;
   text-decoration:none; color:var(--white);
   border:1px solid rgba(240,237,230,.14);
@@ -169,6 +179,8 @@ html.world-composited #stage{opacity:0}
   transition:border-color .25s, background .25s, transform .25s, box-shadow .25s}
 .door:hover,.door:focus-visible{transform:translateY(-3px)}
 .door--core{border-left:2px solid var(--glitch)}
+.door--tools{border-left:2px solid var(--celeste)}
+.door--tools .door__go{background:var(--celeste)}
 .door--core:hover,.door--core:focus-visible{border-color:var(--glitch);
   box-shadow:0 18px 50px rgba(255,45,85,.16)}
 .door--lab{border-left:2px solid var(--acid)}
@@ -217,6 +229,25 @@ html.world-composited #stage{opacity:0}
 
 a:focus-visible{outline:2px solid var(--acid); outline-offset:4px}
 
+/* Con la línea y tres puertas, todo tiene que seguir entrando en una pantalla:
+   la credencial se achica un poco y las puertas se compactan. */
+@media (min-width:861px){
+  :root{--badge-h:clamp(150px,25vh,260px)}
+  .colophon{max-width:none; line-height:2}
+  .gate{gap:clamp(.6rem,1.6vh,1.2rem); padding-bottom:clamp(3.4rem,8vh,5rem)}
+  .pitch{max-width:60rem}
+  .pitch__t{font-size:clamp(1.5rem,.9rem + 1.6vw,2.6rem)}
+  .pitch__d{max-width:70ch; font-size:.9375rem}
+  .door{padding:clamp(.75rem,1.6vh,1.2rem) clamp(1rem,1.6vw,1.4rem)}
+  .door__t{font-size:clamp(1.6rem,1rem + 1.3vw,2.4rem)}
+  .door__d{font-size:.875rem}
+  .door__go{margin-top:var(--s2); padding:8px 16px}
+}
+/* Celular bajo (iPhone SE y parecidos): la línea grande se queda, la bajada se va. */
+@media (max-width:860px) and (max-height:700px){
+  .pitch__d{display:none}
+}
+
 /* Angosto = todo más chico, no menos cosas: la credencial y las dos puertas
    tienen que caber juntas sin recorte. */
 @media (max-width:860px){
@@ -230,7 +261,18 @@ a:focus-visible{outline:2px solid var(--acid); outline-offset:4px}
   /* La credencial chica no da el ancho para las dos etiquetas del pie;
      el nivel de acceso ya lo dice el chip OPERADOR de arriba. */
   .ac-id span:last-child{display:none}
-  .door{padding:.85rem 1rem}
+  /* tres puertas en columna: la credencial cede lugar y cada puerta se
+     queda con etiqueta, título y botón; la bajada la cuenta la línea de arriba. */
+  :root{--badge-h:clamp(120px,16vh,170px)}
+  .pitch__t{font-size:1.35rem}
+  .pitch__d{font-size:.8125rem; line-height:1.5}
+  .doors{gap:var(--s2)}
+  .door{padding:.7rem 1rem; display:grid; grid-template-columns:1fr auto;
+    align-items:center; column-gap:var(--s3)}
+  .door__k{grid-column:1 / -1}
+  .door__d{display:none}
+  .door__t{grid-column:1}
+  .door__go{grid-column:2; grid-row:2; margin-top:0}
   .door__t{font-size:1.5rem; margin:.35rem 0 .2rem}
   .door__d{font-size:.8125rem}
   .door__go{margin-top:.6rem; padding:9px 16px; font-size:.5625rem}
@@ -240,15 +282,17 @@ a:focus-visible{outline:2px solid var(--acid); outline-offset:4px}
 @media (max-height:620px){
   :root{--badge-h:clamp(130px,20vh,190px)}
   .door__d{display:none}
+  .pitch__d{display:none}
   .colophon{display:none}
 }
 
 @media (prefers-reduced-motion:reduce){
-  .ac-hang,.doors,.colophon{animation:none}
+  .ac-hang,.pitch,.doors,.colophon{animation:none}
   .pulse-dot{animation:none}
   .door__clip{display:none}
 }
 </style>
+<script defer src="/analitica/hg.js"></script>
 </head>
 
 <body>
@@ -264,11 +308,11 @@ a:focus-visible{outline:2px solid var(--acid); outline-offset:4px}
 <div class="hud hud--tl" aria-hidden="true"><span class="pulse-dot"></span>LA PUERTA · HG-VL<br>
   <span id="hgClock">--:--:--</span> · ACCESO RESTRINGIDO</div>
 <div class="tag" aria-hidden="true">Un dominio · una profundidad</div>
-<div class="mark" aria-hidden="true">BUENOS AIRES — AR · 34°36′S 58°22′O · EST. 2022</div>
+<div class="mark" aria-hidden="true">LA PLATA, AR · 34°55′S 57°57′O · EST. 2022</div>
 <div class="hud hud--bc" id="hint" aria-hidden="true">MOVÉ — LA INTERFAZ SE PELA · CLICK — ONDA</div>
 
 <main class="gate">
-  <h1 class="vh">HUMAN GLITCHE · VISUAL LAB — la puerta</h1>
+  <h1 class="vh">Human Glitche: laboratorio creativo para artistas visuales y de tiempo real</h1>
 
   <div class="ac-hang" id="acHang" aria-hidden="true">
     <div class="ac-strap"><span>HUMAN GLITCHE · VISUAL LAB · HUMAN GLITCHE · VISUAL LAB</span></div>
@@ -284,27 +328,41 @@ a:focus-visible{outline:2px solid var(--acid); outline-offset:4px}
     </div>
   </div>
 
-  <nav class="doors" aria-label="Entradas al sitio">
-    <a class="door door--core" href="/home.html">
-      <span class="door__k">El núcleo · no comercial</span>
-      <span class="door__t">HUMAN GLITCHE</span>
-      <span class="door__d">Manifiesto, academia, labs y comunidad. El porqué.</span>
-      <span class="door__go">ENTRAR A LA COMUNIDAD →</span>
+  <header class="pitch">
+    <p class="pitch__t">Para artistas que ven la interfaz y la quieren rediseñar.</p>
+    <p class="pitch__d">Human Glitche es un laboratorio creativo para artistas visuales y de tiempo real. Herramientas libres, comunidad y oficio. Desde La Plata, para artistas de todo el mundo.</p>
+  </header>
+
+  <nav class="doors" aria-label="Las tres capas de Human Glitche">
+    <a class="door door--tools" href="/labs/">
+      <span class="door__k">Lab · gratis, sin registro</span>
+      <span class="door__t">HERRAMIENTAS</span>
+      <span class="door__d">68 herramientas de navegador: shaders, video, audio, streaming y show.</span>
+      <span class="door__go">ENTRAR AL LAB →</span>
+    </a>
+    <a class="door door--core" href="/home.html#comunidad">
+      <span class="door__k">Comunidad y formación</span>
+      <span class="door__t">COMUNIDAD</span>
+      <span class="door__d">Discord, academia y talleres, abiertos a artistas de cualquier lugar.</span>
+      <span class="door__go">SUMARTE →</span>
       <span class="door__whisper">Quien ve la interfaz ya no puede dejar de rediseñarla</span>
     </a>
-    <a class="door door--lab" href="/vl/">
+    <a class="door door--lab door--studio" href="/vl/">
       <video class="door__clip" id="labClip" src="/puerta/assets/gigs/gig-02.mp4"
              poster="/puerta/assets/gigs/gig-02.jpg" muted loop playsinline preload="none"></video>
       <span class="door__scrim"></span>
-      <span class="door__k">La superficie · el estudio</span>
-      <span class="door__t">VISUAL LAB</span>
-      <span class="door__d">Galería, servicios y el trabajo del estudio.</span>
-      <span class="door__go">ENTRAR AL ESTUDIO →</span>
+      <span class="door__k">Studio · dirección visual</span>
+      <span class="door__t">STUDIO</span>
+      <span class="door__d">Visuales en vivo, mapping e identidad para artistas y shows.</span>
+      <span class="door__go">TRABAJAR CON EL ESTUDIO →</span>
     </a>
   </nav>
 
-  <p class="colophon">© 2026 HUMAN GLITCHE — VISUAL LAB — BUENOS AIRES
+  <p class="colophon">© 2026 HUMAN GLITCHE · LA PLATA, AR · PARA EL MUNDO
+    <span class="sep">·</span><a href="https://www.instagram.com/human.zeta/" target="_blank" rel="noopener">Fundado por Zeta ↗</a><br>
+    <a href="https://discord.gg/CgmxdSecHY" target="_blank" rel="noopener">Discord</a>
     <span class="sep">·</span><a href="/studio/">▶ intro cinematic</a>
+    <span class="sep">·</span><a href="https://0800webs.com" target="_blank" rel="noopener">¿Tenés un comercio? 0800 ↗</a>
     <span class="sep">·</span><a href="/privacidad.html">Privacidad</a>
     <span class="sep">·</span><a href="/terminos.html">Términos</a></p>
 </main>
