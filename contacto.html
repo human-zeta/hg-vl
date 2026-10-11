@@ -242,6 +242,7 @@ section{position:relative;padding:0 8vw;}
   .fbot{flex-direction:column;gap:0.5rem;}
 }
 </style>
+<script defer src="/analitica/hg.js"></script>
 </head>
 <body>
 
@@ -436,7 +437,7 @@ section{position:relative;padding:0 8vw;}
         <a href="https://www.youtube.com/@Human.Glitche" target="_blank" rel="noopener">YOUTUBE</a>
         <a href="https://x.com/HGlitche" target="_blank" rel="noopener">X / TWITTER</a>
         <a href="https://kick.com/visuallab" target="_blank" rel="noopener">KICK</a>
-        <a href="https://discord.gg/mkHhBdUw" target="_blank" rel="noopener">DISCORD</a>
+        <a href="https://discord.gg/CgmxdSecHY" target="_blank" rel="noopener">DISCORD</a>
         <a href="https://github.com/human-zeta" target="_blank" rel="noopener">GITHUB</a>
       </div>
     </div>
@@ -792,6 +793,7 @@ section{position:relative;padding:0 8vw;}
 
     try{
       await pushContacto(record);
+      if(window.hgTrack) window.hgTrack('consulta-enviada', { segmento: segmento || 'sin-dato' });
       showOk(adjuntosPendientes > 0);
     }catch(err){
       // Backend gated / sin respuesta → degradar con gracia, nunca romper.

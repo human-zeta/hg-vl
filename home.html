@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>HUMAN GLITCHE — VISUAL LAB</title>
-<meta name="description" content="Laboratorio de visuales en tiempo real, shaders y comunidad. Arte · Código · Comunidad · Visuales en vivo desde Buenos Aires.">
+<meta name="description" content="Laboratorio de visuales en tiempo real, shaders y comunidad. Arte · Código · Comunidad · Visuales en vivo desde La Plata, para artistas de todo el mundo.">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Human Glitche">
 <meta property="og:title" content="HUMAN GLITCHE — VISUAL LAB">
@@ -415,27 +415,6 @@ body.ctrl-collapsed #ctrl-toggle{bottom:2rem;}
 .ex-item:hover{border-color:rgba(184,255,0,0.4);background:rgba(184,255,0,0.07);}
 .ex-name{font-size:9px;letter-spacing:0.1em;color:#f0ede6;}
 .ex-desc{font-size:7.5px;letter-spacing:0.05em;color:rgba(240,237,230,0.3);margin-top:3px;line-height:1.5;}
-#lobby-list{display:flex;flex-direction:column;gap:6px;}
-#lobby-empty{font-size:8px;letter-spacing:0.08em;color:rgba(240,237,230,0.2);text-align:center;padding:0.6rem 0;}
-.lobby-item{
-  display:block;padding:9px 11px;border:1px solid rgba(240,237,230,0.1);border-radius:2px;
-  background:rgba(255,255,255,0.02);text-decoration:none;transition:all 0.2s;cursor:pointer;
-}
-.lobby-item:hover{border-color:rgba(184,255,0,0.25);background:rgba(184,255,0,0.03);}
-.lobby-item.launched{border-color:rgba(255,45,85,0.2);background:rgba(255,45,85,0.02);}
-.li-top{display:flex;align-items:center;gap:6px;margin-bottom:3px;}
-.li-type{
-  font-size:7px;letter-spacing:0.16em;text-transform:uppercase;
-  padding:2px 6px;border-radius:20px;border:1px solid transparent;
-}
-.li-title{font-size:9px;letter-spacing:0.08em;color:#f0ede6;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.li-status{font-size:7px;letter-spacing:0.12em;text-transform:uppercase;color:rgba(240,237,230,0.3);margin-top:2px;}
-.li-status.lanzada{color:var(--glitch);}
-#lobby-see-all{
-  display:block;margin-top:8px;font-size:8px;letter-spacing:0.14em;
-  color:rgba(184,255,0,0.5);text-decoration:none;transition:color 0.2s;text-align:center;padding:4px 0;
-}
-#lobby-see-all:hover{color:var(--acid);}
 #profile-doc-links{display:flex;flex-direction:column;gap:7px;}
 #profile-doc-links a{
   font-size:8.5px;letter-spacing:0.1em;color:rgba(240,237,230,0.45);text-decoration:none;
@@ -1048,6 +1027,7 @@ body.visual-mode #exit-visual{z-index:9000!important;}
 #mobile-fab{display:none;}
 #mobile-hud{display:none;}
 </style>
+<script defer src="/analitica/hg.js"></script>
 </head>
 <body>
 
@@ -1132,19 +1112,10 @@ body.visual-mode #exit-visual{z-index:9000!important;}
       </div>
 
       <div class="profile-block">
-        <div class="profile-block-title">⚡ SALAS ACTIVAS — tus lobbies en curso</div>
-        <div id="lobby-list">
-          <div id="lobby-empty">Cargando salas…</div>
-        </div>
-        <a href="lobbies.html" id="lobby-see-all">→ VER TODAS LAS SALAS</a>
-      </div>
-
-      <div class="profile-block">
         <div class="profile-block-title">☉ BLOG & DOCUMENTACIÓN</div>
         <div id="profile-doc-links">
           <a href="perfil.html" id="profile-perfil-link">⌬ MI PERFIL — PARCHES Y REDES</a>
           <a href="academia.html" id="profile-academy-link">✦ ACADEMIA HG — TEMARIOS Y CLASES</a>
-          <a href="diario.html">📰 EL DIARIO HG — TECNOLOGÍA COTIDIANA</a>
           <a href="admin.html" id="profile-admin-link">⛒ PANEL ADMIN — SUSCRIPCIONES Y COMUNIDAD</a>
           <a href="/es/blog/" target="_blank">→ BLOG COMPLETO</a>
           <a href="https://github.com/human-zeta/Aether-ISF-generator" target="_blank">→ AETHER ISF — DOCS & CÓDIGO</a>
@@ -1255,10 +1226,9 @@ body.visual-mode #exit-visual{z-index:9000!important;}
     <a href="#blog">BLOG</a>
     <a href="#comunidad">COMUNIDAD</a>
     <a href="labs/" class="nav-gated">⚗ LABS</a>
-    <a href="test/" class="nav-gated">TEST</a>
     <a href="glitch-night/" class="nav-gated">NIGHT</a>
     <a href="/vl/">◫ VISUAL LAB</a>
-    <a href="/servicios-selector/">SERVICIOS</a>
+    <a href="https://discord.gg/CgmxdSecHY" target="_blank" rel="noopener">DISCORD</a>
     <a href="#" id="nav-repo-mobile" class="nav-auth-btn nav-mobile-only" data-hud-tog="repo-toggle">⛒ REPO</a>
     <a href="#" id="nav-profile-mobile" class="nav-auth-btn nav-mobile-only auth-hidden" data-hud-tog="profile-toggle" data-needs-auth="1">⌬ PERFIL</a>
     <a href="#" id="nav-auth-btn" class="nav-auth-btn">INGRESAR / REGISTRO</a>
@@ -1272,7 +1242,7 @@ body.visual-mode #exit-visual{z-index:9000!important;}
     <span class="hero-tag">VISUAL LAB × HUMAN GLITCHE</span>
     <div class="hud-chip hud-chip--tl" aria-hidden="true"><span class="pdot"></span>LA CASA · HG-VL · <span id="hgClock">--:--:--</span><br>
       FONDO — MAREA · NAVIER-STOKES EN VIVO · MOVÉ, EL AGUA EMPUJA<br>
-      BUENOS AIRES — AR · 34°36′S 58°22′O · EST. 2022</div>
+      LA PLATA, AR · 34°55′S 57°57′O · EST. 2022</div>
     <div class="hero-glass" aria-hidden="true"></div>
     <h1 class="hero-title glitch" data-text="VISUAL-LAB">VISUAL<br><span class="ac">--LAB-</span></h1>
     <p class="hero-sub">La realidad es una interfaz — diseñada por alguien, en algún momento, con alguna intención. Human Glitche es el laboratorio de quienes la ven, la cuestionan y construyen la versión siguiente.</p>
@@ -1311,8 +1281,6 @@ body.visual-mode #exit-visual{z-index:9000!important;}
       <div class="access-grid">
         <a class="acc rev" href="#manifiesto"><span class="ai">◆</span><h4>MANIFIESTO</h4><p>La filosofía: el glitch, la interfaz, los tres pilares.</p></a>
         <a class="acc rev" href="test/"><span class="ai">⌁</span><h4>TEST DEL GLITCH</h4><p>12 preguntas para saber si ya viste la interfaz.</p></a>
-        <a class="acc rev" href="diario.html"><span class="ai">✎</span><h4>DIARIO</h4><p>Publicación diaria: tecnología sin jerga, para todos.</p></a>
-        <a class="acc rev" href="diario.html#biblioteca"><span class="ai">▤</span><h4>BIBLIOTECA</h4><p>El archivo cultural: Martín Fierro, Facundo, Quiroga…</p></a>
       </div>
 
       <div class="mapa-group rev"><b>✦ CREAR</b> — herramientas y formación</div>
@@ -1325,11 +1293,9 @@ body.visual-mode #exit-visual{z-index:9000!important;}
 
       <div class="mapa-group rev"><b>☉ EXPANDIR</b> — la red</div>
       <div class="access-grid">
-        <a class="acc rev" href="lobbies.html"><span class="ai">⌂</span><h4>SALAS</h4><p>Los lobbies en vivo de la comunidad.</p></a>
         <a class="acc rev" href="glitch-night/"><span class="ai">☾</span><h4>GLITCH NIGHT</h4><p>La experiencia nocturna de la comunidad.</p></a>
         <a class="acc rev" href="perfil.html"><span class="ai">⌬</span><h4>PERFIL</h4><p>Tu cuenta: parches, XP y redes.</p></a>
         <a class="acc rev" href="starter-kits.html"><span class="ai">⛭</span><h4>STARTER KIT</h4><p>Por dónde empezar: equipo, software y ruta.</p></a>
-        <a class="acc rev" href="equipos.html"><span class="ai">⚙</span><h4>EQUIPOS</h4><p>El hardware que usamos y recomendamos.</p></a>
         <a class="acc vl rev" href="/vl/"><span class="ai">◫</span><h4>VISUAL LAB</h4><p>El estudio: galería + servicios. La rama comercial de HG.</p></a>
       </div>
     </div>
@@ -1346,7 +1312,6 @@ body.visual-mode #exit-visual{z-index:9000!important;}
       <div class="aether-links rev rd3">
         <a href="aether-2/" class="aether-app-btn">⚡ ENTRAR AL FORGE</a>
         <a href="labs/shaders-lab/" class="aether-link">⌘ LAB — 5 PIEZAS ÉPICAS →</a>
-        <a href="aether.html" class="aether-link">VERSIÓN 1.0 →</a>
         <a href="https://github.com/human-zeta/Aether-ISF-generator" class="aether-link" target="_blank">GITHUB →</a>
       </div>
       <div class="viz-stat rev rd3">
@@ -1415,14 +1380,11 @@ body.visual-mode #exit-visual{z-index:9000!important;}
 
     <div class="exp-intro rev">✦ EXPERIENCIAS Y RECURSOS — todo lo que se abre al sumarte</div>
     <div class="exp-row rev">
-      <a class="exp-chip" href="test/">⌁ TEST DEL GLITCH</a>
       <a class="exp-chip" href="glitch-night/">☾ GLITCH NIGHT</a>
       <a class="exp-chip" href="labs/">⚗ LABS</a>
       <a class="exp-chip" href="academia.html">✦ ACADEMIA</a>
-      <a class="exp-chip" href="lobbies.html">⌂ SALAS</a>
       <a class="exp-chip" href="perfil.html">⌬ PERFIL</a>
       <a class="exp-chip" href="starter-kits.html">⛭ STARTER KIT</a>
-      <a class="exp-chip" href="equipos.html">⚙ EQUIPOS</a>
     </div>
 
     <div class="plans">
@@ -1471,15 +1433,15 @@ body.visual-mode #exit-visual{z-index:9000!important;}
         <a href="labs/">LABS</a>
         <a href="academia.html">ACADEMIA</a>
         <a href="starter-kits.html">STARTER KIT</a>
-        <a href="equipos.html">EQUIPOS</a>
         <a href="contacto.html">CONTACTO</a>
         <a href="/vl/">VISUAL LAB</a>
+        <a href="https://0800webs.com" target="_blank" rel="noopener">¿COMERCIO? 0800 ↗</a>
         <a href="/privacidad.html">PRIVACIDAD</a>
         <a href="/terminos.html">TÉRMINOS</a>
       </div>
     </div>
     <div class="fbot">
-      <span class="fcopy">© 2026 HUMAN GLITCHE — VISUAL LAB — BUENOS AIRES</span>
+      <span class="fcopy">© 2026 HUMAN GLITCHE · LA PLATA, AR · PARA EL MUNDO · <a href="https://www.instagram.com/human.zeta/" target="_blank" rel="noopener" style="color:inherit; text-decoration:none; border-bottom:1px solid currentColor">FUNDADO POR ZETA ↗</a></span>
       <span class="facid">QUIEN VE LA INTERFAZ, YA NO PUEDE DEJAR DE REDISEÑARLA.</span>
     </div>
   </section>
@@ -2984,47 +2946,6 @@ document.querySelectorAll('.rev,.mline').forEach(el=>obs.observe(el));
     }
   }
 
-  const TYPE_COLORS_PANEL = {
-    'PROYECTO':'#b8ff00','COLLAB':'#00d4ff','JAM':'#ff6b00','BRAINSTORM':'#9b59ff','PRODUCCIÓN':'#ff2d8a'
-  };
-
-  async function loadLobbies(session){
-    const lobbyList  = document.getElementById('lobby-list');
-    const lobbyEmpty = document.getElementById('lobby-empty');
-    if(!lobbyList || !lobbyEmpty) return;
-    lobbyList.querySelectorAll('.lobby-item').forEach(el=>el.remove());
-    lobbyEmpty.style.display = 'block';
-    lobbyEmpty.textContent = 'Cargando salas…';
-    try{
-      const r = await fetch(`${FB_URL}/lobbies.json`);
-      const data = r.ok ? await r.json() : null;
-      if(!data){ lobbyEmpty.textContent = 'No estás en ninguna sala — ¿arrancamos?'; return; }
-      const mine = Object.entries(data)
-        .map(([id,l])=>({id,...l}))
-        .filter(l => l && l.members && l.members[session.uid]);
-      if(!mine.length){ lobbyEmpty.textContent = 'No estás en ninguna sala — ¿arrancamos?'; return; }
-      lobbyEmpty.style.display = 'none';
-      mine.forEach(l=>{
-        const color = TYPE_COLORS_PANEL[l.type] || 'var(--acid)';
-        const count = Object.keys(l.members||{}).length;
-        const launched = l.status === 'launched';
-        const div = document.createElement('a');
-        div.className = 'lobby-item' + (launched ? ' launched' : '');
-        div.href = 'lobbies.html';
-        div.innerHTML = `
-          <div class="li-top">
-            <span class="li-type" style="color:${color};border-color:${color}30;background:${color}11;">${l.type||''}</span>
-            <span class="li-title">${l.title||'Sin título'}</span>
-          </div>
-          <div class="li-status${launched?' lanzada':''}">${launched?'● LANZADA':`${count} / ${l.capacity||4} — ESPERANDO`}</div>
-        `;
-        lobbyList.appendChild(div);
-      });
-    }catch(e){
-      lobbyEmpty.textContent = 'No se pudieron cargar las salas.';
-    }
-  }
-
   async function checkAdmin(session){
     const adminLink = document.getElementById('profile-admin-link');
     if(!adminLink) return;
@@ -3057,7 +2978,6 @@ document.querySelectorAll('.rev,.mline').forEach(el=>obs.observe(el));
     renderIdentity(session);
     loadProfile(session);
     loadExclusive(session);
-    loadLobbies(session);
     checkAdmin(session);
   }
   function closePanel(){ overlay.classList.remove('show'); setStatus(''); }
