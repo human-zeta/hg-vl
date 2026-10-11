@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Oficios · Human Glitche</title>
+<meta name="description" content="Web del programa Oficios de Human Glitche.">
+<meta name="theme-color" content="#0d0b09">
+<!--
+  OFICIOS — LA plantilla. Una sola página pinta las webs de todos los del programa:
+  www.hg-vl.com/o/<slug> → Caddy reescribe a /oficios/sitio/index.html, y esta página
+  lee la ficha de api.hg-vl.com/v1/_oficios/sitio/<slug>. Diez estilos por data-p (papel, tinta, acido, sastre,
+  galeria, retro, marmol, y desde 048: lino, holo, noir — reemplazan a neon, pizarra y comic); cualquiera
+  sirve para barbero o tatuador. ?llave=… = vista previa del dueño antes de publicarse.
+  ?demo=<estilo>[&rubro=barberia|tatuaje] = datos inventados para la
+  página de la campaña; con &rubro= del otro oficio muestra la versión cruzada (CRUCE).
+  FONDO INMERSIVO (046): con MÁS de 5 referidos al día la ficha trae `fondo: true` y la web pinta un
+  shader vivo detrás de todo, en los colores de su estilo (--bg/--acc/--acc2). ?demo=…&fondo=1 lo muestra.
+  El turno NO bloquea agenda (eso es la versión «modernizar»): arma el pedido, manda
+  a pagar la seña a SU link de MP y abre WhatsApp. Si tiene agenda de citas de
+  Google, el turno va por ahí.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Pirata+One&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500;1,600&family=Jost:wght@400;500&family=Instrument+Serif:ital@0;1&family=Inter+Tight:wght@400;500;600&family=Outfit:wght@400;600;800&family=Unbounded:wght@600;900&family=Space+Mono:wght@400;700&family=Space+Grotesk:wght@400;600;700&family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,700;12..96,800&family=Shrikhand&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;1,9..144,300;1,9..144,400&family=DM+Sans:wght@400;500;700&family=Syne:wght@700;800&family=Manrope:wght@400;600;800&family=Bodoni+Moda:ital,opsz,wght@0,6..96,500;1,6..96,400;1,6..96,500&family=Courier+Prime:wght@400;700&family=Playfair+Display:ital,wght@0,500;0,700;1,500&display=swap" rel="stylesheet">
+<style>
+:root{--r:18px;--ease:cubic-bezier(.2,.8,.2,1)}
+[data-p=tinta]{--bg:#0b0a0a;--bg2:#121010;--card:#171414;--line:#2a2424;--ink:#ece4d6;--mute:#a2978a;--acc:#d9312b;--acc2:#ff5a4e;--on:#fff;
+  --d:'Pirata One',serif;--b:'Space Grotesk',system-ui,sans-serif;--dw:400;--dstyle:normal;--rad:4px}
+[data-p=papel]{--bg:#f1ebe0;--bg2:#e8e0d2;--card:#fbf8f2;--line:#ddd4c4;--ink:#121110;--mute:#6e675c;--acc:#ff4d1c;--acc2:#c93a10;--on:#121110;
+  --d:'Bricolage Grotesque',system-ui,sans-serif;--b:'Bricolage Grotesque',system-ui,sans-serif;--dw:800;--dstyle:normal;--rad:22px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--b);font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{color:inherit;text-decoration:none}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+input{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--acc);outline-offset:3px}
+.wrap{width:min(720px,100% - 32px);margin-inline:auto}
+h1,h2,h3{font-family:var(--d);font-weight:var(--dw);line-height:.95;letter-spacing:-.01em}
+[data-p=papel] h1,[data-p=papel] h2{letter-spacing:-.04em}
+h2{font-size:clamp(38px,8vw,56px);margin-bottom:18px}
+section{padding:44px 0}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:15px 22px;border-radius:var(--rad);font-weight:700;font-size:15px;min-height:50px;transition:transform .2s var(--ease),filter .2s;text-align:center}
+.btn:active{transform:scale(.97)}
+.btn-acc{background:var(--acc);color:var(--on)}
+.btn-acc:hover{filter:brightness(1.08)}
+.btn-line{border:1px solid var(--line);}
+.btn-line:hover{border-color:var(--acc)}
+.btn-wa{background:#1f9d55;color:#fff}
+.btn:disabled{opacity:.35;pointer-events:none}
+[data-p=papel] .btn-acc{border:1.5px solid var(--ink);box-shadow:0 4px 0 var(--ink)}
+[data-p=tinta] .btn-acc{box-shadow:4px 4px 0 var(--ink)}
+
+.previa{background:var(--acc);color:var(--on);text-align:center;font-size:13px;font-weight:700;padding:8px 12px}
+.top{display:flex;justify-content:space-between;align-items:center;padding:16px 0}
+.top .nom{font-family:var(--d);font-size:26px;font-weight:var(--dw)}
+.ig{display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:700;padding:9px 14px;border:1px solid var(--line);border-radius:999px}
+.ig svg{width:16px;height:16px}
+
+.hero{padding:40px 0 30px}
+.hero .rub{font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--acc);font-weight:700}
+.hero h1{font-size:clamp(64px,17vw,118px);margin:10px 0 16px;word-break:break-word}
+.hero p{color:var(--mute);font-size:18px;max-width:520px;white-space:pre-line}
+.hoy{display:inline-flex;align-items:center;gap:8px;margin:20px 0 22px;font-size:14px;font-weight:600;padding:8px 14px;border:1px solid var(--line);border-radius:999px}
+.hoy i{width:8px;height:8px;border-radius:50%;background:var(--mute)}
+.hoy.on i{background:#3ddc84;box-shadow:0 0 10px #3ddc84}
+.hero .ctas{display:flex;gap:10px;flex-wrap:wrap}
+
+.fotos{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.fotos button{aspect-ratio:1;border-radius:calc(var(--rad)/2);overflow:hidden;background:var(--card) center/cover}
+.fotos button:first-child{grid-column:span 2;grid-row:span 2}
+.fotos.pocas{grid-template-columns:repeat(2,1fr)}
+.fotos.pocas button:first-child{grid-column:auto;grid-row:auto}
+.fotos.una{grid-template-columns:1fr}.fotos.una button{aspect-ratio:4/3}
+.lb{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.92);display:none;place-items:center;padding:16px}
+.lb.on{display:grid}
+.lb img{max-width:100%;max-height:88vh;border-radius:8px}
+.lb .x{position:absolute;top:14px;right:18px;font-size:28px;color:#fff}
+
+.svcs{border-top:1px solid var(--line)}
+.svc{display:flex;justify-content:space-between;gap:14px;align-items:baseline;padding:16px 0;border-bottom:1px solid var(--line)}
+.svc b{font-size:18px;font-weight:700}
+.svc small{display:block;color:var(--mute);font-size:13px}
+.svc .p{font-family:var(--d);font-weight:var(--dw);font-size:30px;color:var(--acc2);white-space:nowrap}
+[data-p=papel] .svc .p{color:var(--ink);font-size:24px}
+
+.turno{background:var(--card);border:1px solid var(--line);border-radius:calc(var(--rad) + 6px);padding:22px}
+[data-p=papel] .turno{border:1.5px solid var(--ink);box-shadow:0 5px 0 var(--ink)}
+.lbl{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);font-weight:700;margin:18px 0 8px}
+.lbl:first-child{margin-top:0}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{padding:11px 14px;border:1px solid var(--line);border-radius:var(--rad);font-size:14px;font-weight:600;min-height:44px;transition:.15s}
+.chip.sel{background:var(--acc);border-color:var(--acc);color:var(--on)}
+.days{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;scrollbar-width:thin}
+.day{flex:none;width:62px;padding:9px 0;border:1px solid var(--line);border-radius:var(--rad);text-align:center}
+.day small{display:block;font-size:11px;color:var(--mute);text-transform:uppercase}
+.day b{display:block;font-family:var(--d);font-weight:var(--dw);font-size:26px;line-height:1.1}
+.day.sel{background:var(--acc);border-color:var(--acc);color:var(--on)}
+.day.sel small{color:var(--on);opacity:.75}
+.slots{display:grid;grid-template-columns:repeat(auto-fill,minmax(76px,1fr));gap:6px}
+.slot{padding:11px 0;border:1px solid var(--line);border-radius:calc(var(--rad)/1.5);font-size:14px;font-variant-numeric:tabular-nums;min-height:44px}
+.slot.sel{background:var(--acc);border-color:var(--acc);color:var(--on);font-weight:700}
+.inp{width:100%;padding:13px 15px;background:var(--bg);border:1px solid var(--line);border-radius:calc(var(--rad)/1.5);outline:none;min-height:48px}
+.inp:focus{border-color:var(--acc)}
+.pasos{display:grid;gap:10px;margin-top:18px}
+.paso{display:grid;grid-template-columns:34px 1fr;gap:12px;align-items:center}
+.paso .n{width:34px;height:34px;border-radius:50%;border:1px solid var(--acc);color:var(--acc);display:grid;place-items:center;font-weight:800}
+.paso .btn{width:100%}
+.nota{font-size:13px;color:var(--mute);margin-top:12px}
+.resumen{margin-top:16px;padding:14px;border-radius:calc(var(--rad)/1.5);background:var(--bg);font-size:14px}
+.resumen div{display:flex;justify-content:space-between;gap:10px;padding:3px 0}
+.resumen span:first-child{color:var(--mute)}
+
+.dias{font-size:15px}
+.dias div{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line)}
+.dias div.hoy-d{color:var(--acc2);font-weight:700}
+.dias span:last-child{color:var(--mute)}
+.dias div.hoy-d span:last-child{color:inherit}
+.donde p{color:var(--mute);margin-bottom:14px}
+.donde b{color:var(--ink)}
+footer{padding:40px 0 60px;text-align:center;font-size:12px;color:var(--mute);border-top:1px solid var(--line);margin-top:30px}
+footer a{text-decoration:underline}
+.vacio{padding:120px 20px;text-align:center}
+.vacio h1{font-size:56px;margin-bottom:12px}
+.vacio p{color:var(--mute)}
+
+/* ════ LINO — aesthetic suave: lino, terracota rosada y salvia; serif en cursiva, foto en arco ════ */
+[data-p=lino]{--bg:#f3ece3;--bg2:#ebe2d6;--card:#fbf7f2;--line:#e2d7c8;--ink:#3d3530;--mute:#8f8478;--acc:#b9806a;--acc2:#8a9a7b;--on:#fbf7f2;
+  --d:'Fraunces',Georgia,serif;--b:'DM Sans',system-ui,sans-serif;--dw:300;--rad:22px}
+body[data-p=lino]{background:radial-gradient(40% 30% at 85% 8%,rgba(185,128,106,.18),transparent 70%),radial-gradient(45% 35% at 5% 60%,rgba(138,154,123,.16),transparent 70%),var(--bg)}
+[data-p=lino] .hero{text-align:center;padding-top:52px}
+[data-p=lino] .hero p{margin-inline:auto;font-size:17px}
+[data-p=lino] .hero .ctas{justify-content:center}
+[data-p=lino] .hero h1{font-style:italic;font-weight:300;font-size:clamp(64px,18vw,120px);letter-spacing:-.03em;font-variation-settings:'opsz' 144}
+[data-p=lino] .rub{color:var(--acc);letter-spacing:.28em;font-weight:500;font-size:11px}
+[data-p=lino] .rub::before,[data-p=lino] .rub::after{content:" ✧ ";color:var(--acc2)}
+[data-p=lino] h2{font-style:italic;font-weight:300;text-align:center}
+[data-p=lino] .top .nom{font-style:italic;font-size:24px}
+[data-p=lino] .btn{font-weight:500;letter-spacing:.02em}
+[data-p=lino] .btn-acc{background:var(--acc);color:#fbf7f2;box-shadow:0 10px 24px -12px rgba(185,128,106,.8)}
+[data-p=lino] .btn-line{border-color:var(--ink)}
+[data-p=lino] .fotos{gap:10px}
+[data-p=lino] .fotos button{border-radius:18px}
+[data-p=lino] .fotos button:first-child{border-radius:999px 999px 18px 18px}
+[data-p=lino] .svcs{border:0;display:grid;gap:10px}
+[data-p=lino] .svc{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px 18px}
+[data-p=lino] .svc b{font-weight:500}
+[data-p=lino] .svc .p{font-style:italic;font-weight:400;color:var(--acc);font-size:28px}
+[data-p=lino] .turno{border-radius:28px;box-shadow:0 20px 50px -30px rgba(61,53,48,.35)}
+[data-p=lino] .chip,[data-p=lino] .day,[data-p=lino] .slot,[data-p=lino] .inp{border-radius:999px}
+[data-p=lino] .day{border-radius:18px}
+.destello{text-align:center;color:var(--acc2);letter-spacing:.8em;font-size:14px;margin:0 0 24px}
+
+/* ════ HOLO — Y2K iridiscente: perla, manchas tornasol y vidrio esmerilado ════ */
+[data-p=holo]{--bg:#eef0f7;--bg2:#e6e8f3;--card:rgba(255,255,255,.55);--line:rgba(255,255,255,.85);--ink:#1b1b2f;--mute:#5d5f7a;--acc:#8b5cf6;--acc2:#ec4899;--on:#fff;
+  --d:'Syne',system-ui,sans-serif;--b:'Manrope',system-ui,sans-serif;--dw:800;--rad:999px}
+body[data-p=holo]{background:var(--bg)}
+body[data-p=holo]::before{content:"";position:fixed;inset:-20%;z-index:0;pointer-events:none;filter:blur(60px);opacity:.75;
+  background:radial-gradient(30% 25% at 20% 20%,#f9a8d4,transparent 70%),radial-gradient(30% 25% at 80% 30%,#a5f3fc,transparent 70%),
+    radial-gradient(35% 30% at 30% 80%,#c4b5fd,transparent 70%),radial-gradient(30% 25% at 85% 85%,#bbf7d0,transparent 70%);animation:holo 18s ease-in-out infinite alternate}
+@keyframes holo{to{transform:rotate(25deg) scale(1.15)}}
+body[data-p=holo] #app,body[data-p=holo] footer{position:relative;z-index:1}
+[data-p=holo] .hero h1{font-size:clamp(60px,17vw,116px);letter-spacing:-.05em;text-transform:lowercase;
+  background:linear-gradient(100deg,#8b5cf6,#ec4899,#06b6d4,#a3e635,#8b5cf6);background-size:300% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:iris 8s linear infinite}
+@keyframes iris{to{background-position:300% 0}}
+[data-p=holo] .rub{display:inline-block;padding:6px 12px;border-radius:999px;background:rgba(255,255,255,.6);border:1px solid #fff;color:var(--acc);backdrop-filter:blur(8px)}
+[data-p=holo] h2{text-transform:lowercase;letter-spacing:-.04em}
+[data-p=holo] .top .nom{text-transform:lowercase;font-size:22px}
+[data-p=holo] .btn-acc{background:linear-gradient(100deg,#8b5cf6,#ec4899);color:#fff;box-shadow:0 10px 30px -10px rgba(236,72,153,.6)}
+[data-p=holo] .btn-line{background:rgba(255,255,255,.55);border:1px solid #fff;backdrop-filter:blur(8px)}
+[data-p=holo] .svcs{border:0;display:grid;gap:10px}
+[data-p=holo] .svc,[data-p=holo] .turno,[data-p=holo] .ig,[data-p=holo] .hoy{background:rgba(255,255,255,.5);border:1px solid #fff;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+[data-p=holo] .svc{border-radius:22px;padding:16px 18px}
+[data-p=holo] .svc .p{background:linear-gradient(100deg,#8b5cf6,#ec4899);-webkit-background-clip:text;background-clip:text;color:transparent}
+[data-p=holo] .turno{border-radius:30px;box-shadow:0 20px 60px -30px rgba(139,92,246,.5)}
+[data-p=holo] .fotos{gap:10px}
+[data-p=holo] .fotos button{border-radius:24px;border:2px solid #fff;box-shadow:0 10px 30px -15px rgba(139,92,246,.6)}
+[data-p=holo] .chip,[data-p=holo] .day,[data-p=holo] .slot,[data-p=holo] .inp{background:rgba(255,255,255,.55);border-color:#fff}
+[data-p=holo] .day{border-radius:18px}
+[data-p=holo] .dias div{border-color:rgba(27,27,47,.1)}
+.estrellas{display:flex;justify-content:space-between;color:var(--acc);font-size:22px;margin:0 6px 18px;opacity:.8}
+
+/* ════ NOIR — cine en blanco y negro: franjas, grano, máquina de escribir y créditos ════ */
+[data-p=noir]{--bg:#0b0b0b;--bg2:#121212;--card:#131313;--line:#2b2b2b;--ink:#f2f0ea;--mute:#8d8d86;--acc:#f2f0ea;--acc2:#c1121f;--on:#0b0b0b;
+  --d:'Bodoni Moda',Georgia,serif;--b:'Courier Prime',ui-monospace,monospace;--dw:500;--rad:0px;--fondo-k:.32}
+body[data-p=noir]::after{content:"";position:fixed;inset:0;z-index:40;pointer-events:none;opacity:.12;mix-blend-mode:screen;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+[data-p=noir] .hero{position:relative;padding:58px 0 46px;text-align:center}
+[data-p=noir] .hero::before,[data-p=noir] .hero::after{content:"";position:absolute;left:-16px;right:-16px;height:22px;background:#000}
+[data-p=noir] .hero::before{top:0}[data-p=noir] .hero::after{bottom:0}
+[data-p=noir] .hero p{margin-inline:auto}
+[data-p=noir] .hero .ctas{justify-content:center}
+[data-p=noir] .hero h1{font-style:italic;font-weight:400;font-size:clamp(62px,17vw,118px);letter-spacing:-.02em}
+[data-p=noir] .rub{color:var(--mute);letter-spacing:.3em;font-weight:400}
+[data-p=noir] .rub::before{content:"● ";color:var(--acc2)}
+[data-p=noir] h2{text-align:center;font-style:italic;font-weight:400}
+[data-p=noir] h2::before,[data-p=noir] h2::after{content:"—";margin:0 .3em;color:var(--mute)}
+[data-p=noir] .top .nom{font-family:var(--b);font-size:14px;letter-spacing:.3em;text-transform:uppercase}
+[data-p=noir] .btn{text-transform:uppercase;letter-spacing:.2em;font-size:12.5px}
+[data-p=noir] .btn-acc{background:#f2f0ea;color:#0b0b0b}
+[data-p=noir] .btn-line{border-color:#f2f0ea}
+[data-p=noir] .fotos{gap:4px;padding:6px 24px;
+  background:repeating-linear-gradient(#000 0 7px,#d8d6cf 7px 15px) left 7px top/10px 100% no-repeat,
+    repeating-linear-gradient(#000 0 7px,#d8d6cf 7px 15px) right 7px top/10px 100% no-repeat,#000}
+[data-p=noir] .fotos button{filter:grayscale(1) contrast(1.2);border-radius:0;border:4px solid #000}
+[data-p=noir] .svcs{border:0;text-align:center}
+[data-p=noir] .svc{flex-direction:column;align-items:center;gap:2px;border:0;padding:12px 0}
+[data-p=noir] .svc b{text-transform:uppercase;letter-spacing:.24em;font-size:14px;font-weight:400;color:var(--mute)}
+[data-p=noir] .svc .p{font-style:italic;font-size:34px;color:var(--ink)}
+[data-p=noir] .turno{border:1px solid #f2f0ea}
+[data-p=noir] .ig,[data-p=noir] .hoy{border-radius:0}
+.claqueta{display:flex;justify-content:space-between;font:400 11px/1 'Courier Prime',monospace;letter-spacing:.24em;text-transform:uppercase;color:var(--mute);border-block:1px solid var(--line);padding:9px 0;margin:4px 0 22px}
+
+/* ════ ÁCIDO — el tatuador llamativo: cromo, verde ácido, cinta que corre ════ */
+[data-p=acido]{--bg:#0a0a0a;--bg2:#111;--card:#141414;--line:#2c2c2c;--ink:#f2f2f2;--mute:#9a9a9a;--acc:#c6ff00;--acc2:#c6ff00;--on:#0a0a0a;
+  --d:'Unbounded',system-ui,sans-serif;--b:'Space Mono',ui-monospace,monospace;--dw:900;--rad:0px}
+body[data-p=acido]::before{content:"";position:fixed;inset:0;z-index:40;pointer-events:none;opacity:.09;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+[data-p=acido] .hero h1{text-transform:uppercase;letter-spacing:-.05em;font-size:clamp(56px,15vw,112px);
+  background:linear-gradient(180deg,#fff 0%,#cfd3d8 38%,#6d737a 50%,#e9ecef 62%,#8a9096 100%);-webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(5px 5px 0 var(--acc))}
+[data-p=acido] h2{text-transform:uppercase;letter-spacing:-.04em;font-size:clamp(30px,7vw,44px)}
+[data-p=acido] .rub{display:inline-block;background:var(--acc);color:#0a0a0a;padding:4px 8px;transform:rotate(-2deg)}
+[data-p=acido] .top .nom{text-transform:uppercase;font-size:18px}
+[data-p=acido] .btn{text-transform:uppercase;letter-spacing:.04em;font-size:13px}
+[data-p=acido] .btn-acc{box-shadow:5px 5px 0 #fff}
+[data-p=acido] .btn-acc:hover{transform:translate(-2px,-2px);box-shadow:7px 7px 0 #fff}
+[data-p=acido] .btn-line{border:2px solid #fff}
+[data-p=acido] .svc .p{font-size:22px;color:var(--acc)}
+[data-p=acido] .fotos button{filter:grayscale(1) contrast(1.15);transition:filter .3s,outline-color .3s;outline:2px solid transparent;outline-offset:-2px}
+[data-p=acido] .fotos button:hover{filter:none;outline-color:var(--acc)}
+[data-p=acido] .turno{border:2px solid var(--acc)}
+[data-p=acido] .ig,[data-p=acido] .hoy{border-radius:0}
+.cinta{margin:18px -24px 6px;background:var(--acc);color:#0a0a0a;transform:rotate(-3deg);overflow:hidden;padding:10px 0;border-block:2px solid #0a0a0a}
+.cinta div{display:flex;gap:26px;width:max-content;animation:cinta 16s linear infinite;font-family:'Unbounded',sans-serif;font-weight:900;font-size:20px;text-transform:uppercase;white-space:nowrap}
+@keyframes cinta{to{transform:translateX(-50%)}}
+/* ════ SASTRE — el barbero elegante: barbería de autor, carta de menú, marcos de galería ════ */
+[data-p=sastre]{--bg:#f4efe6;--bg2:#ece5d8;--card:#fbf8f2;--line:#d9cfbd;--ink:#1d2a23;--mute:#6d6a5f;--acc:#1f3d2f;--acc2:#a8864a;--on:#f4efe6;
+  --d:'Cormorant Garamond',Georgia,serif;--b:'Jost',system-ui,sans-serif;--dw:500;--rad:2px}
+[data-p=sastre] .hero{text-align:center;padding-top:56px}
+[data-p=sastre] .hero p{margin-inline:auto}
+[data-p=sastre] .hero .ctas{justify-content:center}
+[data-p=sastre] .hero h1{font-style:italic;font-weight:500;font-size:clamp(64px,18vw,120px);letter-spacing:-.02em}
+[data-p=sastre] .rub{color:var(--acc2);letter-spacing:.32em;font-weight:500}
+[data-p=sastre] h2{font-style:italic;font-weight:500;text-align:center}
+[data-p=sastre] h2::after{content:"";display:block;width:44px;height:1px;background:var(--acc2);margin:14px auto 0}
+[data-p=sastre] .top{border-bottom:1px solid var(--line)}
+[data-p=sastre] .top .nom{font-style:italic;font-size:24px}
+[data-p=sastre] .btn{letter-spacing:.14em;text-transform:uppercase;font-size:12.5px;font-weight:500}
+[data-p=sastre] .btn-acc{background:var(--acc);color:#f4efe6;box-shadow:inset 0 0 0 1px var(--acc),inset 0 0 0 3px #f4efe6,inset 0 0 0 4px var(--acc2)}
+[data-p=sastre] .btn-line{border-color:var(--ink)}
+[data-p=sastre] .svcs{border:0}
+[data-p=sastre] .svc{border:0;align-items:baseline;padding:12px 0}
+[data-p=sastre] .svc>div{flex:1;display:flex;align-items:baseline;gap:10px}
+[data-p=sastre] .svc>div::after{content:"";flex:1;border-bottom:1px dotted var(--mute);transform:translateY(-4px);order:2}
+[data-p=sastre] .svc small{order:3;display:inline;font-style:italic}
+[data-p=sastre] .svc b{font-weight:500;font-size:17px}
+[data-p=sastre] .svc .p{font-style:italic;font-size:28px;color:var(--acc)}
+[data-p=sastre] .fotos{gap:12px}
+[data-p=sastre] .fotos button{border-radius:0;border:7px solid #fbf8f2;outline:1px solid var(--acc2);outline-offset:-1px;box-shadow:0 10px 22px -10px rgba(0,0,0,.4)}
+[data-p=sastre] .turno{border:1px solid var(--acc2);box-shadow:inset 0 0 0 5px var(--card),inset 0 0 0 6px var(--line)}
+[data-p=sastre] .hoy{border-color:var(--acc2)}
+.orla{text-align:center;color:var(--acc2);letter-spacing:.5em;font-size:13px;margin:4px 0 26px}
+.orla::before,.orla::after{content:"";display:inline-block;width:60px;height:1px;background:var(--acc2);vertical-align:middle;margin:0 14px}
+
+/* ════ GALERÍA — el tatuador elegante: muestra de museo, obras numeradas, mucho aire ════ */
+[data-p=galeria]{--bg:#fafaf8;--bg2:#f1f1ee;--card:#fff;--line:#e3e3de;--ink:#111;--mute:#7a7a72;--acc:#111;--acc2:#111;--on:#fff;
+  --d:'Instrument Serif',Georgia,serif;--b:'Inter Tight',system-ui,sans-serif;--dw:400;--rad:0px}
+[data-p=galeria] .wrap{width:min(760px,100% - 40px)}
+[data-p=galeria] .hero{padding:72px 0 40px}
+[data-p=galeria] .hero h1{font-size:clamp(72px,20vw,140px);letter-spacing:-.035em;line-height:.88}
+[data-p=galeria] .rub{color:var(--mute);letter-spacing:.2em;font-weight:500;font-size:11px}
+[data-p=galeria] .hero p{font-size:19px;color:#3a3a36;max-width:440px}
+[data-p=galeria] h2{font-size:clamp(40px,9vw,64px);letter-spacing:-.03em}
+[data-p=galeria] .top .nom{font-size:22px}
+[data-p=galeria] .btn{font-weight:500;font-size:14px}
+[data-p=galeria] .btn-acc{background:#111;color:#fff}
+[data-p=galeria] .btn-line{border-color:#111}
+[data-p=galeria] .ig,[data-p=galeria] .hoy{border-radius:0}
+[data-p=galeria] .fotos{grid-template-columns:1fr 1fr;gap:34px 18px;counter-reset:obra}
+[data-p=galeria] .fotos button{grid-column:auto!important;grid-row:auto!important;aspect-ratio:4/5;border-radius:0;position:relative;overflow:visible;counter-increment:obra}
+[data-p=galeria] .fotos button:first-child{grid-column:1/-1!important;aspect-ratio:4/3}
+[data-p=galeria] .fotos button::after{content:attr(data-lbl) " " counter(obra,decimal-leading-zero);position:absolute;left:0;top:calc(100% + 8px);font:500 11px/1 'Inter Tight',sans-serif;letter-spacing:.14em;text-transform:uppercase;color:var(--mute)}
+[data-p=galeria] .fotos+p{margin-top:44px!important}
+[data-p=galeria] .svc{padding:20px 0}
+[data-p=galeria] .svc b{font-weight:500}
+[data-p=galeria] .svc .p{font-size:30px;color:#111}
+[data-p=galeria] .turno{border:1px solid #111}
+.expo{display:flex;justify-content:space-between;gap:10px;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--mute);border-top:1px solid #111;padding-top:10px;margin:0 0 22px}
+
+/* ════ RETRO — años 70: crema, mostaza y naranja, franjas y letra gorda ════ */
+[data-p=retro]{--bg:#f6e9cf;--bg2:#efdcb6;--card:#fbf2df;--line:#e0c89a;--ink:#3b2314;--mute:#7a5a41;--acc:#e0621b;--acc2:#b8421a;--on:#fff7e8;
+  --d:'Shrikhand',serif;--b:'Outfit',system-ui,sans-serif;--dw:400;--rad:999px}
+[data-p=retro] .hero{text-align:center}
+[data-p=retro] .hero p{margin-inline:auto}
+[data-p=retro] .hero .ctas{justify-content:center}
+[data-p=retro] .hero h1{font-size:clamp(58px,16vw,112px);color:var(--acc);text-shadow:3px 3px 0 #f2b33d,6px 6px 0 var(--acc2),9px 9px 0 var(--ink);line-height:1}
+[data-p=retro] .rub{color:var(--ink);background:#f2b33d;padding:6px 14px;border-radius:999px;display:inline-block}
+[data-p=retro] h2{color:var(--acc2)}
+[data-p=retro] .btn-acc{background:var(--acc);color:#fff7e8;box-shadow:0 5px 0 var(--acc2)}
+[data-p=retro] .btn-line{border:2px solid var(--ink)}
+[data-p=retro] .fotos{gap:10px}
+[data-p=retro] .fotos button{border-radius:26px;border:4px solid var(--card);box-shadow:0 0 0 3px #f2b33d}
+[data-p=retro] .svc .p{color:var(--acc)}
+[data-p=retro] .turno{border:3px solid var(--ink);border-radius:28px;box-shadow:6px 6px 0 #f2b33d}
+[data-p=retro] .chip,[data-p=retro] .day,[data-p=retro] .slot,[data-p=retro] .inp{border-radius:14px}
+.franjas{height:54px;margin:6px -16px 20px;background:linear-gradient(#f2b33d 0 25%,#e0621b 25% 50%,#b8421a 50% 75%,#3b2314 75%);border-radius:0 0 50% 50%/0 0 100% 100%}
+
+/* ════ MÁRMOL — el lujo: negro veteado, dorado y mayúsculas finas ════ */
+[data-p=marmol]{--bg:#0f0e0d;--bg2:#171513;--card:#16140f;--line:#3a3223;--ink:#f3ede1;--mute:#a79d8a;--acc:#c9a45c;--acc2:#e6cf9a;--on:#0f0e0d;
+  --d:'Playfair Display',Georgia,serif;--b:'Jost',system-ui,sans-serif;--dw:500;--rad:0px}
+body[data-p=marmol]{background:linear-gradient(115deg,transparent 40%,rgba(201,164,92,.07) 41%,transparent 43%),linear-gradient(35deg,transparent 60%,rgba(255,255,255,.04) 61%,transparent 63%),linear-gradient(160deg,transparent 20%,rgba(255,255,255,.03) 21%,transparent 24%),var(--bg)}
+[data-p=marmol] .hero{text-align:center;padding-top:60px}
+[data-p=marmol] .hero p{margin-inline:auto}
+[data-p=marmol] .hero .ctas{justify-content:center}
+[data-p=marmol] .hero h1{text-transform:uppercase;letter-spacing:.12em;font-size:clamp(44px,12vw,86px);font-weight:500;background:linear-gradient(180deg,#f7e7bd,#c9a45c 55%,#8f6d2c);-webkit-background-clip:text;background-clip:text;color:transparent}
+[data-p=marmol] .rub{color:var(--acc);letter-spacing:.4em;font-weight:500}
+[data-p=marmol] h2{text-transform:uppercase;letter-spacing:.14em;font-size:clamp(28px,6vw,40px);text-align:center;color:var(--acc2)}
+[data-p=marmol] h2::before,[data-p=marmol] h2::after{content:"◆";display:block;font-size:10px;color:var(--acc);margin:10px 0}
+[data-p=marmol] h2::before{display:none}
+[data-p=marmol] .top{border-bottom:1px solid var(--line)}
+[data-p=marmol] .top .nom{text-transform:uppercase;letter-spacing:.18em;font-size:16px;color:var(--acc)}
+[data-p=marmol] .btn{text-transform:uppercase;letter-spacing:.18em;font-size:12px;font-weight:500}
+[data-p=marmol] .btn-acc{background:linear-gradient(180deg,#e6cf9a,#c9a45c);color:#0f0e0d}
+[data-p=marmol] .btn-line{border-color:var(--acc);color:var(--acc)}
+[data-p=marmol] .fotos{gap:10px}
+[data-p=marmol] .fotos button{border:1px solid var(--acc);outline:1px solid rgba(201,164,92,.35);outline-offset:4px}
+[data-p=marmol] .svcs{border-color:var(--line)}
+[data-p=marmol] .svc b{font-weight:500;letter-spacing:.06em;text-transform:uppercase;font-size:15px}
+[data-p=marmol] .svc .p{color:var(--acc);font-size:28px}
+[data-p=marmol] .turno{border:1px solid var(--acc);box-shadow:inset 0 0 0 5px var(--card),inset 0 0 0 6px var(--line)}
+[data-p=marmol] .ig,[data-p=marmol] .hoy{border-radius:0;border-color:var(--line)}
+.monograma{width:74px;height:74px;margin:0 auto 6px;border:1px solid var(--acc);border-radius:50%;display:grid;place-items:center;font:500 34px/1 'Playfair Display',serif;color:var(--acc);font-style:italic;box-shadow:0 0 0 5px var(--bg),0 0 0 6px rgba(201,164,92,.4)}
+
+/* ── fondo inmersivo (premio por referidos) ── */
+#fondoInm{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:0;transition:opacity 1.2s var(--ease)}
+#fondoInm.on{opacity:1}
+body.fondo #app,body.fondo footer,body.fondo .previa{position:relative;z-index:1}
+body.fondo[data-p=holo]::before{display:none}
+body.fondo .svc,body.fondo .turno,body.fondo .donde .dias{backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.pausada{background:#1a1a1a;color:#fff;text-align:center;font-size:13px;font-weight:700;padding:8px 12px}
+@media(prefers-reduced-motion:reduce){.cinta div,body[data-p=holo]::before,[data-p=holo] .hero h1{animation:none!important}}
+[hidden]{display:none!important}
+</style>
+</head>
+<body data-p="papel">
+<canvas id="fondoInm" aria-hidden="true"></canvas>
+<div class="previa" id="previa" hidden>Vista previa · tu web todavía no está publicada</div>
+<div class="pausada" id="pausada" hidden>Tu web está pausada porque venció la cuota: solo la ves vos. <a href="/oficios/?editar=1" style="text-decoration:underline">Reactivala</a></div>
+<main id="app"><div class="vacio"><p>Cargando…</p></div></main>
+<div class="lb" id="lb"><button class="x" aria-label="Cerrar">✕</button><img alt=""></div>
+
+<script>
+const LOCAL = /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
+const API = (LOCAL ? 'http://127.0.0.1:3131' : 'https://api.hg-vl.com') + '/v1/_oficios';
+const params = new URLSearchParams(location.search);
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const fmt = (c) => '$' + Math.round(c / 100).toLocaleString('es-AR');
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const pad = (n) => String(n).padStart(2, '0');
+const aMin = (h) => { const [a, b] = h.split(':').map(Number); return a * 60 + b; };
+const hhmm = (m) => pad(Math.floor(m / 60)) + ':' + pad(m % 60);
+const DIAS = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'], DIAS_L = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
+const MESES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+const IG_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg>';
+
+/* Datos inventados para mostrar los dos estilos en la página de la campaña. */
+const tile = (bg, fg, glifo) => 'data:image/svg+xml,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300"><rect width="300" height="300" fill="${bg}"/><g opacity=".14" stroke="${fg}">${[...Array(10)].map((_, i) => `<line x1="${i * 40 - 100}" y1="0" x2="${i * 40 + 100}" y2="300"/>`).join('')}</g><text x="150" y="185" font-size="120" text-anchor="middle" fill="${fg}">${glifo}</text></svg>`);
+const DEMOS = {
+  tinta: { slug: 'demo', rubro: 'tatuaje', plantilla: 'tinta', nombre: 'Vera Tinta', whatsapp: '5492212003824', instagram: 'ejemplo',
+    bio: 'Tatuadora. Línea fina, botánica y blackwork. Flash nuevo todas las semanas.', modalidad: 'estudio', local: 'Box en Estudio Diagonal',
+    direccion: 'Diagonal 74 N° 1313', barrio: 'Centro', ciudad: 'La Plata',
+    servicios: [{ nombre: 'Flash del día', precio: 4500000, min: 90 }, { nombre: 'Tatuaje chico (hasta 8 cm)', precio: 5500000, min: 120 }, { nombre: 'Sesión (por hora)', precio: 4000000, min: 60 }],
+    horarios: { 2: [['12:00', '20:00']], 3: [['12:00', '20:00']], 4: [['12:00', '20:00']], 5: [['12:00', '21:00']], 6: [['11:00', '19:00']] },
+    sena: { link: 'https://www.mercadopago.com.ar/', monto: 1500000 }, agenda: null,
+    fotos: ['🗡', '🌹', '🐍', '👁', '🌙', '💀'].map((g, i) => tile(['#ece4d6', '#e2d6c2', '#f3ecdf'][i % 3], '#1a1414', g)), publicado: true },
+  acido: { slug: 'demo', rubro: 'tatuaje', plantilla: 'acido', nombre: 'Mora Ink', whatsapp: '5492212003824', instagram: 'ejemplo',
+    bio: 'Blackwork, ornamental y dotwork. Diseños únicos: cada flash se tatúa una sola vez.', modalidad: 'estudio', local: 'Box en Estudio Diagonal',
+    direccion: null, barrio: 'Centro', ciudad: 'La Plata',
+    servicios: [{ nombre: 'Flash (diseño único)', precio: 5000000, min: 90 }, { nombre: 'Blackwork mediano', precio: 11000000, min: 180 }, { nombre: 'Sesión (por hora)', precio: 4500000, min: 60 }],
+    horarios: { 3: [['13:00', '20:00']], 4: [['13:00', '20:00']], 5: [['13:00', '20:00']], 6: [['12:00', '19:00']] },
+    sena: { link: 'https://www.mercadopago.com.ar/', monto: 2000000 }, agenda: null,
+    fotos: ['☠', '✦', '🐍', '👁', '☾', '✧'].map((g, i) => tile(['#141414', '#c6ff00', '#1e1e1e'][i % 3], i % 3 === 1 ? '#0a0a0a' : '#f2f2f2', g)), publicado: true },
+  sastre: { slug: 'demo', rubro: 'barberia', plantilla: 'sastre', nombre: 'Ernesto', whatsapp: '5492212003824', instagram: 'ejemplo',
+    bio: 'Barbería de autor. Tijera, navaja y toalla caliente, sin apuro y con reserva.', modalidad: 'local', local: 'Sillón 1 · Casa Obrador',
+    direccion: null, barrio: 'Barrio Norte', ciudad: 'La Plata',
+    servicios: [{ nombre: 'Corte a tijera', precio: 1500000, min: 45 }, { nombre: 'Afeitado clásico', precio: 1200000, min: 40 }, { nombre: 'Corte y barba', precio: 2200000, min: 75 }, { nombre: 'Arreglo de barba', precio: 900000, min: 30 }],
+    horarios: { 2: [['10:00', '19:00']], 3: [['10:00', '19:00']], 4: [['10:00', '19:00']], 5: [['10:00', '20:00']], 6: [['09:00', '14:00']] },
+    sena: { link: 'https://www.mercadopago.com.ar/', monto: 400000 }, agenda: null,
+    fotos: ['✂', '☙', '✦', '❧', '✂', '☙'].map((g, i) => tile(['#1f3d2f', '#efe7d8', '#2b2622'][i % 3], ['#a8864a', '#1f3d2f', '#d8c39a'][i % 3], g)), publicado: true },
+  galeria: { slug: 'demo', rubro: 'tatuaje', plantilla: 'galeria', nombre: 'Sol Ferrán', whatsapp: '5492212003824', instagram: 'ejemplo',
+    bio: 'Tatuadora. Línea fina y botánica en piezas únicas. Cada diseño se dibuja para una sola piel.', modalidad: 'estudio', local: 'Estudio privado',
+    direccion: null, barrio: 'City Bell', ciudad: 'La Plata',
+    servicios: [{ nombre: 'Pieza pequeña', precio: 6000000, min: 120 }, { nombre: 'Pieza mediana', precio: 12000000, min: 240 }, { nombre: 'Diseño a medida (consulta)', precio: 1500000, min: 30 }],
+    horarios: { 3: [['12:00', '19:00']], 4: [['12:00', '19:00']], 5: [['12:00', '19:00']], 6: [['11:00', '16:00']] },
+    sena: { link: 'https://www.mercadopago.com.ar/', monto: 2000000 }, agenda: null,
+    fotos: ['❀', '☾', '✧', '↟', '◯'].map((g, i) => tile(['#ecebe6', '#dcdad2', '#f4f3ef'][i % 3], '#2a2a26', g)), publicado: true },
+  papel: { slug: 'demo', rubro: 'barberia', plantilla: 'papel', nombre: 'Lucho', whatsapp: '5492212003824', instagram: 'ejemplo',
+    bio: 'Barbero hace 7 años. Corto en mi estudio o voy a tu casa. Fades limpios y buena música.', modalidad: 'casa', local: null, direccion: null, barrio: 'Tolosa', ciudad: 'La Plata',
+    servicios: [{ nombre: 'Corte', precio: 1100000, min: 40 }, { nombre: 'Fade', precio: 1250000, min: 45 }, { nombre: 'Corte + barba', precio: 1600000, min: 60 }, { nombre: 'Solo barba', precio: 650000, min: 25 }],
+    horarios: { 1: [['14:00', '21:00']], 2: [['10:00', '13:00'], ['15:00', '21:00']], 3: [['10:00', '13:00'], ['15:00', '21:00']], 4: [['14:00', '21:00']], 5: [['10:00', '13:00'], ['15:00', '21:00']], 6: [['09:00', '15:00']] },
+    sena: { link: 'https://www.mercadopago.com.ar/', monto: 300000 }, agenda: null,
+    fotos: ['✂', '⚡', '★', '✂', '⚡', '★'].map((g, i) => tile(['#ff4d1c', '#121110', '#e8e0d2'][i % 3], i % 3 === 2 ? '#121110' : '#fbf8f2', g)), publicado: true },
+  retro: { slug: 'demo', rubro: 'tatuaje', plantilla: 'retro', nombre: 'Flor Setentas', whatsapp: '5492212003824', instagram: 'ejemplo',
+    bio: 'Tatuadora. Old school, flores y soles que sonríen. Color que dura y buena onda.', modalidad: 'estudio', local: 'Estudio Girasol',
+    direccion: null, barrio: 'Meridiano V', ciudad: 'La Plata',
+    servicios: [{ nombre: 'Flash old school', precio: 4000000, min: 90 }, { nombre: 'Tatuaje a color', precio: 7500000, min: 150 }, { nombre: 'Sesión (por hora)', precio: 4200000, min: 60 }],
+    horarios: { 3: [['13:00', '20:00']], 4: [['13:00', '20:00']], 5: [['13:00', '20:00']], 6: [['12:00', '18:00']] },
+    sena: { link: 'https://www.mercadopago.com.ar/', monto: 1500000 }, agenda: null,
+    fotos: ['🌼', '☀', '🍒', '🌈', '🌼', '☀'].map((g, i) => tile(['#f2b33d', '#e0621b', '#fbf2df'][i % 3], i % 3 === 2 ? '#3b2314' : '#fff7e8', g)), publicado: true },
+  marmol: { slug: 'demo', rubro: 'tatuaje', plantilla: 'marmol', nombre: 'Aurelio', whatsapp: '5492212003824', instagram: 'ejemplo',
+    bio: 'Realismo en negro y gris. Piezas grandes, con consulta previa y agenda cerrada por mes.', modalidad: 'estudio', local: 'Estudio privado',
+    direccion: null, barrio: 'Centro', ciudad: 'La Plata',
+    servicios: [{ nombre: 'Consulta y diseño', precio: 2000000, min: 45 }, { nombre: 'Pieza mediana', precio: 15000000, min: 240 }, { nombre: 'Jornada completa', precio: 30000000, min: 420 }],
+    horarios: { 3: [['11:00', '19:00']], 4: [['11:00', '19:00']], 5: [['11:00', '19:00']] },
+    sena: { link: 'https://www.mercadopago.com.ar/', monto: 3000000 }, agenda: null,
+    fotos: ['☽', '✦', '♛', '☽', '✦'].map((g, i) => tile(['#1a1714', '#241f18', '#15120f'][i % 3], '#c9a45c', g)), publicado: true },
+  lino: { slug: 'demo', rubro: 'barberia', plantilla: 'lino', nombre: 'Juli Navarro', whatsapp: '5492212003824', instagram: 'ejemplo',
+    bio: 'Barbera. Cortes suaves, texturas y cuidado de barba en un espacio tranquilo, con turno.', modalidad: 'estudio', local: 'Estudio Lino',
+    direccion: null, barrio: 'City Bell', ciudad: 'La Plata',
+    servicios: [{ nombre: 'Corte con textura', precio: 1400000, min: 50 }, { nombre: 'Corte + perfilado de barba', precio: 1900000, min: 70 }, { nombre: 'Ritual de barba', precio: 1100000, min: 40 }],
+    horarios: { 2: [['10:00', '18:00']], 3: [['10:00', '18:00']], 4: [['10:00', '18:00']], 5: [['10:00', '19:00']], 6: [['10:00', '15:00']] },
+    sena: { link: 'https://www.mercadopago.com.ar/', monto: 400000 }, agenda: null,
+    fotos: ['✂', '✧', '❀', '✂', '✧', '❀'].map((g, i) => tile(['#e8d5c8', '#dfe3d6', '#f6efe6'][i % 3], ['#b9806a', '#8a9a7b', '#3d3530'][i % 3], g)), publicado: true },
+  holo: { slug: 'demo', rubro: 'barberia', plantilla: 'holo', nombre: 'Nico Holo', whatsapp: '5492212003824', instagram: 'ejemplo',
+    bio: 'Fades, colores fantasía y diseños. Si lo viste en TikTok, lo hacemos.', modalidad: 'local', local: 'Sillón 2 · Barbería Norte',
+    direccion: null, barrio: 'Villa Elvira', ciudad: 'La Plata',
+    servicios: [{ nombre: 'Fade', precio: 1300000, min: 45 }, { nombre: 'Fade + diseño', precio: 1600000, min: 60 }, { nombre: 'Color fantasía', precio: 3500000, min: 120 }, { nombre: 'Platinado', precio: 4500000, min: 150 }],
+    horarios: { 2: [['12:00', '21:00']], 3: [['12:00', '21:00']], 4: [['12:00', '21:00']], 5: [['12:00', '22:00']], 6: [['11:00', '20:00']] },
+    sena: { link: 'https://www.mercadopago.com.ar/', monto: 300000 }, agenda: null,
+    fotos: ['✂', '✦', '⚡', '✂', '✦', '⚡'].map((g, i) => tile(['#f5d0fe', '#cffafe', '#ddd6fe'][i % 3], ['#8b5cf6', '#ec4899', '#06b6d4'][i % 3], g)), publicado: true },
+  noir: { slug: 'demo', rubro: 'barberia', plantilla: 'noir', nombre: 'Bruno Vega', whatsapp: '5492212003824', instagram: 'ejemplo',
+    bio: 'Barbería clásica de película. Navaja, toalla caliente y un corte que no pasa de moda.', modalidad: 'local', local: 'Sillón 1 · Salón Ideal',
+    direccion: null, barrio: 'Centro', ciudad: 'La Plata',
+    servicios: [{ nombre: 'Corte clásico', precio: 1400000, min: 45 }, { nombre: 'Afeitado a navaja', precio: 1200000, min: 40 }, { nombre: 'Corte y afeitado', precio: 2300000, min: 80 }],
+    horarios: { 2: [['10:00', '20:00']], 3: [['10:00', '20:00']], 4: [['10:00', '20:00']], 5: [['10:00', '21:00']], 6: [['09:00', '15:00']] },
+    sena: { link: 'https://www.mercadopago.com.ar/', monto: 400000 }, agenda: null,
+    fotos: ['✂', '🎩', '🪒', '✂', '🎩', '🪒'].map((g, i) => tile(['#2a2a2a', '#d9d7d0', '#151515'][i % 3], i % 3 === 1 ? '#111' : '#eee', g)), publicado: true },
+};
+/* El mismo estilo con el OTRO oficio: los seis sirven para barbero y para tatuador. */
+const H_BAR = { 2: [['10:00', '20:00']], 3: [['10:00', '20:00']], 4: [['10:00', '20:00']], 5: [['10:00', '21:00']], 6: [['09:00', '17:00']] };
+const H_TAT = { 3: [['12:00', '20:00']], 4: [['12:00', '20:00']], 5: [['12:00', '20:00']], 6: [['11:00', '18:00']] };
+const S_BAR = [{ nombre: 'Corte', precio: 1200000, min: 40 }, { nombre: 'Fade', precio: 1400000, min: 45 }, { nombre: 'Corte + barba', precio: 1800000, min: 60 }];
+const S_TAT = [{ nombre: 'Flash (diseño único)', precio: 4500000, min: 90 }, { nombre: 'Tatuaje chico', precio: 5500000, min: 120 }, { nombre: 'Sesión (por hora)', precio: 4000000, min: 60 }];
+const cruce = (base, extra) => ({ ...base, slug: 'demo', whatsapp: '5492212003824', instagram: 'ejemplo', direccion: null, ciudad: 'La Plata',
+  sena: { link: 'https://www.mercadopago.com.ar/', monto: extra.rubro === 'tatuaje' ? 1500000 : 300000 }, agenda: null, publicado: true, ...extra });
+const CRUCE = {
+  tinta: cruce(DEMOS.tinta, { rubro: 'barberia', nombre: 'Brujo Barber', bio: 'Barbería oscura: fades, navaja y diseños a mano alzada. Se atiende con turno.',
+    modalidad: 'local', local: 'Sillón 2 · Barbería Norte', barrio: 'Los Hornos', servicios: S_BAR, horarios: H_BAR,
+    fotos: ['✂', '🗡', '💀', '✂', '🌹', '🪒'].map((g, i) => tile(['#ece4d6', '#e2d6c2', '#f3ecdf'][i % 3], '#1a1414', g)) }),
+  acido: cruce(DEMOS.acido, { rubro: 'barberia', nombre: 'Tokyo Fade', bio: 'Fades, freestyle y colores fantasía. Cortes que no pasan desapercibidos.',
+    modalidad: 'casa', local: null, barrio: 'Villa Elvira', servicios: [...S_BAR, { nombre: 'Color fantasía', precio: 3500000, min: 120 }], horarios: H_BAR,
+    fotos: ['✂', '⚡', '☠', '✂', '✦', '⚡'].map((g, i) => tile(['#141414', '#c6ff00', '#1e1e1e'][i % 3], i % 3 === 1 ? '#0a0a0a' : '#f2f2f2', g)) }),
+  galeria: cruce(DEMOS.galeria, { rubro: 'barberia', nombre: 'Julia Corte', bio: 'Barbera. Cada corte pensado para esa cara. Acá están los trabajos reales, sin filtro.',
+    modalidad: 'estudio', local: 'Estudio privado', barrio: 'Gonnet', servicios: S_BAR, horarios: H_BAR,
+    fotos: ['✂', '◐', '✧', '◯', '✂'].map((g, i) => tile(['#ecebe6', '#dcdad2', '#f4f3ef'][i % 3], '#2a2a26', g)) }),
+  papel: cruce(DEMOS.papel, { rubro: 'tatuaje', nombre: 'Pato Tattoo', bio: 'Tatuador. Flash chiquito, línea simple y precios claros. Tatúo en mi estudio de Tolosa.',
+    modalidad: 'estudio', local: 'Estudio en Tolosa', barrio: 'Tolosa', servicios: S_TAT, horarios: H_TAT,
+    fotos: ['🐍', '☾', '★', '🗡', '🐍', '☾'].map((g, i) => tile(['#ff4d1c', '#121110', '#e8e0d2'][i % 3], i % 3 === 2 ? '#121110' : '#fbf8f2', g)) }),
+  sastre: cruce(DEMOS.sastre, { rubro: 'tatuaje', nombre: 'Casa Olivo', bio: 'Estudio de tatuaje con cita previa. Línea fina y botánica en un espacio tranquilo.',
+    modalidad: 'estudio', local: 'Estudio con cita', barrio: 'Barrio Norte', servicios: S_TAT, horarios: H_TAT,
+    fotos: ['❧', '☙', '✦', '❀', '❧', '☙'].map((g, i) => tile(['#1f3d2f', '#efe7d8', '#2b2622'][i % 3], ['#a8864a', '#1f3d2f', '#d8c39a'][i % 3], g)) }),
+  retro: cruce(DEMOS.retro, { rubro: 'barberia', nombre: 'El Setenta', bio: 'Barbería con discos, bigotes y patillas. Cortes con onda de otra época.',
+    modalidad: 'local', local: 'Sillón 1 · Discos & Tijeras', barrio: 'Meridiano V', servicios: S_BAR, horarios: H_BAR,
+    fotos: ['✂', '☀', '💈', '✂', '☀', '💈'].map((g, i) => tile(['#f2b33d', '#e0621b', '#fbf2df'][i % 3], i % 3 === 2 ? '#3b2314' : '#fff7e8', g)) }),
+  marmol: cruce(DEMOS.marmol, { rubro: 'barberia', nombre: 'Maison Vidal', bio: 'Barbería de caballeros. Toalla caliente, navaja y whisky, con reserva.',
+    modalidad: 'local', local: 'Sillón privado · Salón Vidal', barrio: 'Centro', servicios: [{ nombre: 'Corte', precio: 2000000, min: 45 }, { nombre: 'Afeitado de lujo', precio: 1800000, min: 45 }, { nombre: 'Ritual completo', precio: 3500000, min: 90 }], horarios: H_BAR,
+    fotos: ['✂', '♛', '✦', '✂', '♛'].map((g, i) => tile(['#1a1714', '#241f18', '#15120f'][i % 3], '#c9a45c', g)) }),
+  lino: cruce(DEMOS.lino, { rubro: 'tatuaje', nombre: 'Mía Lino', bio: 'Tatuadora. Fine line, flores y letras chiquitas. Diseños delicados con cita previa.',
+    modalidad: 'estudio', local: 'Estudio Lino', barrio: 'City Bell', servicios: S_TAT, horarios: H_TAT,
+    fotos: ['❀', '☾', '✧', '❀', '☾'].map((g, i) => tile(['#e8d5c8', '#dfe3d6', '#f6efe6'][i % 3], ['#b9806a', '#8a9a7b', '#3d3530'][i % 3], g)) }),
+  holo: cruce(DEMOS.holo, { rubro: 'tatuaje', nombre: 'Kira Holo', bio: 'Tatuajes a color, estrellas, mariposas y todo lo Y2K. Flash nuevo cada semana.',
+    modalidad: 'estudio', local: 'Box en Estudio Diagonal', barrio: 'Centro', servicios: S_TAT, horarios: H_TAT,
+    fotos: ['🦋', '✦', '💿', '🦋', '✦', '💿'].map((g, i) => tile(['#f5d0fe', '#cffafe', '#ddd6fe'][i % 3], ['#8b5cf6', '#ec4899', '#06b6d4'][i % 3], g)) }),
+  noir: cruce(DEMOS.noir, { rubro: 'tatuaje', nombre: 'Ezequiel Sombra', bio: 'Realismo en negro y gris. Retratos, cine y piezas grandes con consulta previa.',
+    modalidad: 'estudio', local: 'Estudio privado', barrio: 'Centro', servicios: S_TAT, horarios: H_TAT,
+    fotos: ['🎞', '👁', '🌹', '🎞', '👁', '🌹'].map((g, i) => tile(['#2a2a2a', '#d9d7d0', '#151515'][i % 3], i % 3 === 1 ? '#111' : '#eee', g)) }),
+};
+async function cargar() {
+  if (params.get('demo')) {
+    const base = DEMOS[params.get('demo')] || DEMOS.papel, r = params.get('rubro');
+    return r && r !== base.rubro && CRUCE[base.plantilla] ? CRUCE[base.plantilla] : base;
+  }
+  const m = /^\/o\/([a-z0-9-]+)\/?$/.exec(location.pathname);
+  const slug = m ? m[1] : params.get('s');
+  if (!slug) throw new Error('Esta web no existe.');
+  const q = params.get('llave') ? '?llave=' + encodeURIComponent(params.get('llave')) : '';
+  const r = await fetch(`${API}/sitio/${encodeURIComponent(slug)}${q}`);
+  if (!r.ok) throw new Error(r.status === 404 ? 'Esta web no existe o todavía no está publicada.' : 'No pudimos cargar la web. Probá en un rato.');
+  return r.json();
+}
+
+/* ── cálculo de horarios ── */
+function franjasDe(f, d) { return (f.horarios[d.getDay()] || f.horarios[String(d.getDay())] || []).map(([a, b]) => [aMin(a), aMin(b)]); }
+function slotsDe(f, d, min) {
+  const ahora = new Date(), hoy = d.toDateString() === ahora.toDateString();
+  const desde = hoy ? ahora.getHours() * 60 + ahora.getMinutes() + 60 : 0, out = [];
+  for (const [a, b] of franjasDe(f, d)) for (let m = a; m + min <= b; m += 30) if (m >= desde) out.push(m);
+  return out;
+}
+function estadoHoy(f) {
+  const n = new Date(), m = n.getHours() * 60 + n.getMinutes(), fr = franjasDe(f, n);
+  const ahora = fr.find(([a, b]) => m >= a && m < b);
+  if (ahora) return { on: true, txt: `Atendiendo ahora · hasta las ${hhmm(ahora[1])}` };
+  const luego = fr.find(([a]) => a > m);
+  if (luego) return { on: false, txt: `Hoy desde las ${hhmm(luego[0])}` };
+  for (let i = 1; i < 8; i++) { const d = new Date(n.getFullYear(), n.getMonth(), n.getDate() + i), x = franjasDe(f, d);
+    if (x.length) return { on: false, txt: `Próximo día: ${i === 1 ? 'mañana' : DIAS_L[d.getDay()]} desde las ${hhmm(x[0][0])}` }; }
+  return { on: false, txt: 'Consultá por WhatsApp' };
+}
+
+function pintar(f) {
+  document.body.dataset.p = f.plantilla;
+  document.title = `${f.nombre} — ${f.rubro === 'tatuaje' ? 'Tatuador' : 'Barbero'} en ${f.barrio}`;
+  $('meta[name=description]').content = (f.bio || `${f.nombre}, ${f.rubro === 'tatuaje' ? 'tatuador' : 'barbero'} en ${f.barrio}, ${f.ciudad}. Sacá turno online.`).slice(0, 160);
+  $('meta[name=theme-color]').content = getComputedStyle(document.body).getPropertyValue('--bg').trim();
+  $('#previa').hidden = f.publicado !== false;
+  $('#pausada').hidden = !f.suspendida;
+  if (f.fondo || (params.get('demo') && params.get('fondo'))) fondoInmersivo();
+  const rubro = f.rubro === 'tatuaje' ? 'Tatuador' : 'Barbero';
+  const hoy = estadoHoy(f), wa = (t) => `https://wa.me/${f.whatsapp}?text=${encodeURIComponent(t)}`;
+  const lugar = f.modalidad === 'domicilio' ? 'Voy a domicilio' : f.modalidad === 'casa' ? 'Atiendo en mi espacio' : (f.local || (f.modalidad === 'estudio' ? 'Estudio' : 'Local'));
+  const dHoy = new Date().getDay();
+
+  $('#app').innerHTML = `
+  <div class="wrap">
+    <div class="top"><span class="nom">${esc(f.nombre)}</span>${f.instagram ? `<a class="ig" href="https://instagram.com/${esc(f.instagram)}" target="_blank" rel="noopener">${IG_SVG}@${esc(f.instagram)}</a>` : ''}</div>
+    <header class="hero">
+      ${f.plantilla === 'marmol' ? `<div class="monograma" aria-hidden="true">${esc((f.nombre || '·').trim()[0].toUpperCase())}</div>` : ''}
+      <div class="rub">${rubro} · ${esc(f.barrio)}</div>
+      <h1>${esc(f.nombre)}</h1>
+      ${f.bio ? `<p>${esc(f.bio)}</p>` : ''}
+      <div class="hoy ${hoy.on ? 'on' : ''}"><i></i>${esc(hoy.txt)}</div>
+      <div class="ctas"><a class="btn btn-acc" href="#turno">Sacar turno</a><a class="btn btn-line" href="${wa('Hola ' + f.nombre + '! Te hago una consulta:')}" target="_blank" rel="noopener">WhatsApp</a></div>
+    </header>
+    ${f.plantilla === 'lino' ? '<div class="destello" aria-hidden="true">✧ ✧ ✧</div>' : ''}
+    ${f.plantilla === 'holo' ? '<div class="estrellas" aria-hidden="true"><span>✦</span><span>✧</span><span>✦</span><span>✧</span><span>✦</span></div>' : ''}
+    ${f.plantilla === 'noir' ? `<div class="claqueta" aria-hidden="true"><span>Esc. 01</span><span>Toma 1</span><span>${esc(f.barrio)}</span></div>` : ''}
+    ${f.plantilla === 'sastre' ? '<div class="orla" aria-hidden="true">✦</div>' : ''}
+    ${f.plantilla === 'retro' ? '<div class="franjas" aria-hidden="true"></div>' : ''}
+    ${f.plantilla === 'galeria' && f.fotos.length ? `<div class="expo"><span>${f.rubro === 'tatuaje' ? 'Selección de obra' : 'Selección de trabajos'}</span><span>${f.fotos.length ? String(f.fotos.length).padStart(2, '0') + ' piezas' : ''}</span></div>` : ''}
+    ${f.plantilla === 'acido' ? `<div class="cinta" aria-hidden="true"><div>${Array(8).fill(`<span>${esc(f.nombre)}</span><span>✦</span><span>${rubro}</span><span>✦</span>`).join('')}</div></div>` : ''}
+    ${f.fotos.length ? `<section style="padding-top:10px"><div class="fotos ${f.fotos.length === 1 ? 'una' : f.fotos.length < 4 ? 'pocas' : ''}">${f.fotos.slice(0, 8).map((u, i) => `<button style="background-image:url('${u}')" data-lbl="${f.rubro === 'tatuaje' ? 'Obra' : 'Corte'}" data-u="${u}" aria-label="Ver trabajo ${i + 1}"></button>`).join('')}</div>
+      ${f.instagram ? `<p style="text-align:center;margin-top:14px"><a class="ig" href="https://instagram.com/${esc(f.instagram)}" target="_blank" rel="noopener">${IG_SVG}Ver más en Instagram</a></p>` : ''}</section>` : ''}
+    <section><h2>Servicios</h2><div class="svcs">${f.servicios.map((s) => `<div class="svc"><div><b>${esc(s.nombre)}</b><small>${s.min} min</small></div><span class="p">${fmt(s.precio)}</span></div>`).join('')}</div>
+      ${f.sena ? `<p class="nota">Los turnos se confirman con una seña${f.sena.monto ? ' de ' + fmt(f.sena.monto) : ''} que se descuenta del total.</p>` : ''}</section>
+    <section id="turno"><h2>Sacá tu turno</h2><div class="turno" id="turnoBox"></div></section>
+    <section class="donde"><h2>Dónde y cuándo</h2>
+      <p><b>${esc(lugar)}</b><br>${f.direccion ? esc(f.direccion) + ' · ' : ''}${esc(f.barrio)}, ${esc(f.ciudad)}${f.modalidad === 'casa' ? '<br>La dirección te la paso por WhatsApp al confirmar.' : ''}</p>
+      ${f.direccion ? `<p><a class="btn btn-line" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(f.direccion + ', ' + f.ciudad)}">Cómo llegar</a></p>` : ''}
+      <div class="dias">${[1, 2, 3, 4, 5, 6, 0].map((d) => { const fr = f.horarios[d] || f.horarios[String(d)] || [];
+        return `<div class="${d === dHoy ? 'hoy-d' : ''}"><span>${DIAS_L[d][0].toUpperCase() + DIAS_L[d].slice(1)}</span><span>${fr.length ? fr.map((x) => x.join(' – ')).join(' y ') : 'Cerrado'}</span></div>`; }).join('')}</div>
+    </section>
+  </div>
+  <footer><div class="wrap">Web del programa <a href="/oficios/">Oficios</a> de Human Glitche${params.get('demo') ? ' · <b>ejemplo con datos inventados</b>' : ''}</div></footer>`;
+
+  $$('.fotos button').forEach((b) => b.onclick = () => { $('#lb img').src = b.dataset.u; $('#lb').classList.add('on'); });
+  turno(f, wa);
+}
+$('#lb').onclick = () => $('#lb').classList.remove('on');
+
+/* ── el fondo inmersivo: tinta que fluye en los colores del estilo ──
+   Domain warping sobre fbm. Sigue al dedo/mouse y al scroll. Con
+   prefers-reduced-motion pinta un solo cuadro quieto. Sin WebGL, no hace nada. */
+function fondoInmersivo() {
+  const cv = $('#fondoInm'), gl = cv.getContext('webgl', { antialias: false, premultipliedAlpha: false });
+  if (!gl) return;
+  document.body.classList.add('fondo');
+  const css = getComputedStyle(document.body);
+  const rgb = (v) => { const h = css.getPropertyValue(v).trim().replace('#', '');
+    const x = h.length === 3 ? h.split('').map((c) => c + c).join('') : h;
+    return [0, 2, 4].map((i) => parseInt(x.slice(i, i + 2), 16) / 255); };
+  const bg = rgb('--bg'), claro = (bg[0] + bg[1] + bg[2]) / 3 > .5;
+  const vs = 'attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}';
+  const fs = `precision mediump float;
+uniform vec2 R;uniform float T;uniform vec2 M;uniform float S;uniform vec3 B,A,C;uniform float K;
+float h(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+float n(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);
+  return mix(mix(h(i),h(i+vec2(1,0)),f.x),mix(h(i+vec2(0,1)),h(i+vec2(1,1)),f.x),f.y);}
+float fbm(vec2 p){float v=0.,a=.5;mat2 r=mat2(.8,.6,-.6,.8);for(int i=0;i<5;i++){v+=a*n(p);p=r*p*2.02;a*=.5;}return v;}
+void main(){
+  vec2 uv=(gl_FragCoord.xy-.5*R)/min(R.x,R.y);
+  vec2 p=uv*1.6+vec2(0.,S*.35)+(M-.5)*.35;
+  float t=T*.045;
+  vec2 q=vec2(fbm(p+t),fbm(p+vec2(5.2,1.3)-t));
+  vec2 r=vec2(fbm(p+3.*q+vec2(1.7,9.2)+t*1.3),fbm(p+3.*q+vec2(8.3,2.8)-t));
+  float f=fbm(p+3.5*r);
+  vec3 col=mix(B,A,smoothstep(.25,.85,f));
+  col=mix(col,C,smoothstep(.45,1.,length(r)*.75)*.8);
+  col+=C*pow(max(0.,1.-abs(f-.62)*9.),3.)*.35;
+  float v=smoothstep(1.35,.2,length(uv));
+  col=mix(B,col,K*v);
+  gl_FragColor=vec4(col,1.);
+}`;
+  const sh = (t, src) => { const o = gl.createShader(t); gl.shaderSource(o, src); gl.compileShader(o); return o; };
+  const pr = gl.createProgram();
+  gl.attachShader(pr, sh(gl.VERTEX_SHADER, vs)); gl.attachShader(pr, sh(gl.FRAGMENT_SHADER, fs)); gl.linkProgram(pr);
+  if (!gl.getProgramParameter(pr, gl.LINK_STATUS)) return document.body.classList.remove('fondo');
+  gl.useProgram(pr);
+  gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+  const lp = gl.getAttribLocation(pr, 'p'); gl.enableVertexAttribArray(lp); gl.vertexAttribPointer(lp, 2, gl.FLOAT, false, 0, 0);
+  const U = (k) => gl.getUniformLocation(pr, k);
+  gl.uniform3fv(U('B'), bg); gl.uniform3fv(U('A'), rgb('--acc')); gl.uniform3fv(U('C'), rgb('--acc2'));
+  // En los estilos claros el fondo acompaña sin comerse la lectura.
+  gl.uniform1f(U('K'), parseFloat(css.getPropertyValue('--fondo-k')) || (claro ? .38 : .7));   // un estilo puede pedir menos
+  const escala = Math.min(devicePixelRatio || 1, 1.5) * .6;     // media resolución: es un fondo, no una foto
+  const medir = () => { cv.width = innerWidth * escala; cv.height = innerHeight * escala; gl.viewport(0, 0, cv.width, cv.height); };
+  medir(); addEventListener('resize', medir);
+  let mx = .5, my = .5, tx = .5, ty = .5;
+  addEventListener('pointermove', (e) => { tx = e.clientX / innerWidth; ty = 1 - e.clientY / innerHeight; }, { passive: true });
+  const quieto = matchMedia('(prefers-reduced-motion: reduce)').matches, t0 = performance.now();
+  const cuadro = (ahora) => {
+    mx += (tx - mx) * .04; my += (ty - my) * .04;
+    gl.uniform2f(U('R'), cv.width, cv.height); gl.uniform1f(U('T'), quieto ? 40 : (ahora - t0) / 1000);
+    gl.uniform2f(U('M'), mx, my); gl.uniform1f(U('S'), scrollY / innerHeight);
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+    if (!quieto && !document.hidden) requestAnimationFrame(cuadro);
+  };
+  document.addEventListener('visibilitychange', () => { if (!document.hidden && !quieto) requestAnimationFrame(cuadro); });
+  if (quieto) addEventListener('scroll', () => requestAnimationFrame(cuadro), { passive: true });
+  requestAnimationFrame(cuadro);
+  cv.classList.add('on');
+}
+
+/* ── el turno ── */
+function turno(f, wa) {
+  const box = $('#turnoBox');
+  if (f.agenda) {
+    box.innerHTML = `<p>Elegí un horario libre en mi agenda: se reserva al toque y te llega la confirmación.</p>
+      <div class="pasos">
+        <div class="paso"><span class="n">1</span><a class="btn btn-acc" href="${esc(f.agenda)}" target="_blank" rel="noopener">Elegir horario en mi agenda</a></div>
+        ${f.sena ? `<div class="paso"><span class="n">2</span><a class="btn btn-line" href="${esc(f.sena.link)}" target="_blank" rel="noopener">Pagar la seña${f.sena.monto ? ' de ' + fmt(f.sena.monto) : ''}</a></div>
+        <div class="paso"><span class="n">3</span><a class="btn btn-wa" href="${wa('Hola ' + f.nombre + '! Reservé un turno en tu agenda y te mando el comprobante de la seña.')}" target="_blank" rel="noopener">Mandar el comprobante</a></div>` : ''}
+      </div>`;
+    return;
+  }
+  const S = { svc: 0, dia: null, ini: null };
+  const dias = [];
+  const h = new Date();
+  for (let i = 0; i < 14 && dias.length < 10; i++) { const d = new Date(h.getFullYear(), h.getMonth(), h.getDate() + i); if (franjasDe(f, d).length) dias.push(d); }
+  function render() {
+    const s = f.servicios[S.svc];
+    const conLugar = dias.filter((d) => slotsDe(f, d, s.min).length);
+    if (!S.dia || !conLugar.some((d) => d.toDateString() === S.dia.toDateString())) S.dia = conLugar[0] || null;
+    const slots = S.dia ? slotsDe(f, S.dia, s.min) : [];
+    if (!slots.includes(S.ini)) S.ini = null;
+    const nombre = ($('#tNombre') || {}).value || '';
+    box.innerHTML = `<div class="lbl">Servicio</div><div class="chips">${f.servicios.map((x, i) => `<button class="chip ${i === S.svc ? 'sel' : ''}" data-s="${i}">${esc(x.nombre)}</button>`).join('')}</div>
+      <div class="lbl">Día</div><div class="days">${conLugar.map((d) => `<button class="day ${S.dia && d.toDateString() === S.dia.toDateString() ? 'sel' : ''}" data-d="${d.toISOString()}"><small>${d.toDateString() === h.toDateString() ? 'Hoy' : DIAS[d.getDay()]}</small><b>${d.getDate()}</b></button>`).join('') || '<span class="nota">No hay días con horario en las próximas dos semanas. Escribime por WhatsApp.</span>'}</div>
+      ${S.dia ? `<div class="lbl">Horario</div><div class="slots">${slots.map((m) => `<button class="slot ${m === S.ini ? 'sel' : ''}" data-m="${m}">${hhmm(m)}</button>`).join('')}</div>` : ''}
+      <div class="lbl">Tu nombre</div><input class="inp" id="tNombre" autocomplete="name" placeholder="Para saber quién viene" value="${esc(nombre)}">
+      <div id="tFin"></div>
+      <p class="nota">El turno queda confirmado cuando ${esc(f.nombre)} te responde por WhatsApp.</p>`;
+    $$('.chip', box).forEach((b) => b.onclick = () => { S.svc = +b.dataset.s; render(); });
+    $$('.day', box).forEach((b) => b.onclick = () => { S.dia = new Date(b.dataset.d); S.ini = null; render(); });
+    $$('.slot', box).forEach((b) => b.onclick = () => { S.ini = +b.dataset.m; render(); });
+    $('#tNombre').oninput = fin; fin();
+  }
+  function fin() {
+    const s = f.servicios[S.svc], n = $('#tNombre').value.trim(), el = $('#tFin');
+    if (S.ini == null || !S.dia) { el.innerHTML = ''; return; }
+    const cuando = `${DIAS_L[S.dia.getDay()]} ${S.dia.getDate()} de ${MESES[S.dia.getMonth()]} a las ${hhmm(S.ini)}`;
+    const msg = `Hola ${f.nombre}! Quiero sacar turno:\n\n• ${s.nombre} (${fmt(s.precio)})\n• ${cuando}${n ? `\n• A nombre de ${n}` : ''}` + (f.sena ? `\n\nYa pagué la seña${f.sena.monto ? ' de ' + fmt(f.sena.monto) : ''}, te mando el comprobante.` : '\n\n¿Me lo confirmás?');
+    el.innerHTML = `<div class="resumen"><div><span>${esc(s.nombre)}</span><b>${fmt(s.precio)}</b></div><div><span>Cuándo</span><b>${cuando}</b></div>
+      ${f.sena && f.sena.monto ? `<div><span>Seña ahora</span><b>${fmt(f.sena.monto)}</b></div><div><span>En el turno</span><b>${fmt(Math.max(0, s.precio - f.sena.monto))}</b></div>` : ''}</div>
+      <div class="pasos">${f.sena
+        ? `<div class="paso"><span class="n">1</span><a class="btn btn-acc" href="${esc(f.sena.link)}" target="_blank" rel="noopener">Pagar la seña${f.sena.monto ? ' de ' + fmt(f.sena.monto) : ''}</a></div>
+           <div class="paso"><span class="n">2</span><a class="btn btn-wa" href="${wa(msg)}" target="_blank" rel="noopener">Mandar el turno por WhatsApp</a></div>`
+        : `<div class="paso"><span class="n">1</span><a class="btn btn-wa" href="${wa(msg)}" target="_blank" rel="noopener">Pedir el turno por WhatsApp</a></div>`}</div>`;
+  }
+  render();
+}
+
+cargar().then(pintar).catch((e) => {
+  $('#app').innerHTML = `<div class="vacio"><h1>Uy.</h1><p>${esc(e.message)}</p><p style="margin-top:20px"><a class="btn btn-line" href="/oficios/">Ver el programa Oficios</a></p></div>`;
+});
+</script>
+</body>
+</html>
