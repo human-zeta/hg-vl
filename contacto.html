@@ -242,6 +242,7 @@ section{position:relative;padding:0 8vw;}
   .fbot{flex-direction:column;gap:0.5rem;}
 }
 </style>
+<script defer src="/analitica/hg.js"></script>
 </head>
 <body>
 
@@ -792,6 +793,7 @@ section{position:relative;padding:0 8vw;}
 
     try{
       await pushContacto(record);
+      if(window.hgTrack) window.hgTrack('consulta-enviada', { segmento: segmento || 'sin-dato' });
       showOk(adjuntosPendientes > 0);
     }catch(err){
       // Backend gated / sin respuesta → degradar con gracia, nunca romper.
