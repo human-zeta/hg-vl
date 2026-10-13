@@ -59,11 +59,13 @@ a{color:var(--acid);text-decoration:none}a:hover{color:var(--white)}
 .media img{width:100%;aspect-ratio:16/9;object-fit:cover;border:1px solid var(--line);border-radius:3px;background:#0b0b0b;display:block}
 .media.one{grid-template-columns:1fr}
 .works{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem}
-.work{border:1px solid var(--line);border-radius:4px;padding:1.8rem;background:rgba(240,237,230,.02)}
+.work{overflow:hidden;border:1px solid var(--line);border-radius:4px;padding:1.8rem;background:rgba(240,237,230,.02)}
 .badge{display:inline-block;font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;padding:.3rem .6rem;border-radius:2px;margin-bottom:1rem}
 .badge.prox{background:var(--acid);color:var(--black);font-weight:700}
 .badge.dev{border:1px solid var(--glitch);color:var(--glitch)}
 .work h3{font-family:var(--display);font-weight:400;font-size:2.1rem;line-height:1;margin-bottom:.6rem}
+.cover{width:calc(100% + 3.6rem);margin:-1.8rem -1.8rem 1.4rem;display:block;height:auto;border-radius:4px 4px 0 0}
+.wmeta{font-family:var(--mono);font-size:11px!important;letter-spacing:.08em;color:var(--acid)!important;margin-bottom:.6rem}
 .work p{color:var(--soft);font-size:.96rem}
 .bio{display:grid;grid-template-columns:1fr 1fr;gap:2.5rem;margin-top:1.5rem}
 .bio p{color:var(--soft)}.bio p b{color:var(--white);font-weight:500}
@@ -162,10 +164,13 @@ footer a{color:var(--soft)}
 <section id="obras">
   <div class="sec"><span class="n">02 · OBRA ACTUAL</span><h2>Lo que viene.</h2></div>
   <div class="works">
-    <div class="work"><span class="badge prox">Próximamente</span>
-      <!-- TODO(Juan): título de la obra, nombre del tema, duración y año. -->
-      <h3>Videoclip con IA</h3>
-      <p>Obra en colaboración con el músico <b style="color:var(--white)">Agustín Bragoni</b>: un video creado íntegramente con inteligencia artificial.</p></div>
+    <div class="work"><img class="cover" src="img/operacion-eh.webp" width="1600" height="900" loading="lazy" alt="Portada de Operación EH, videoclip con IA en colaboración con Agustín Bragoni">
+      <span class="badge prox">Próximamente</span>
+      <!-- TODO(Juan): nombre del tema y año. Portada provisoria. -->
+      <h3>Operación EH</h3>
+      <p class="wmeta">Videoclip con IA · 5:10</p>
+      <p>Obra en colaboración con el músico <b style="color:var(--white)">Agustín Bragoni</b>: un video creado íntegramente con inteligencia artificial. Dirección: Zeta.</p>
+      <div class="stack"><span>Seedance 2.5</span><span>Gemini Omni Flash</span><span>Nano Banana 2</span><span>MiniMax Hailuo</span><span>Veo 3</span><span>Premiere Pro</span><span>VDMX6</span><span>Synesthesia</span></div></div>
     <div class="work"><span class="badge dev">En desarrollo</span>
       <h3>La interfaz se pela</h3>
       <!-- TODO(Juan): sumar sinopsis corta aprobada (ver dossier). -->
