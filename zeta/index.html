@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ZETA · Artista visual · La Plata</title>
+<meta name="description" content="Zeta, artista visual de La Plata. Visuales en vivo, mapping a gran escala y VFX con IA: Tomorrowland 2025, Lollapalooza Argentina, Festival Marea.">
+<meta property="og:type" content="profile">
+<meta property="og:site_name" content="Human Glitche">
+<meta property="og:title" content="ZETA · Artista visual">
+<meta property="og:description" content="Visuales en vivo, mapping a gran escala y VFX con IA. Desde La Plata.">
+<meta property="og:url" content="https://zeta.hg-vl.com/">
+<meta property="og:image" content="https://hg-vl.com/galeria/labs/malena-narvay-dualidad-electronic-band-live.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="canonical" href="https://zeta.hg-vl.com/">
+<!--
+  RUTAS: todo es absoluto desde la raíz (/galeria/..., /analitica/...) para que
+  la página funcione igual en hg-vl.com/zeta/ y como raíz de zeta.hg-vl.com
+  (Caddy reescribe el subdominio a /zeta/ y deja pasar /galeria/ y /analitica/;
+  ver drafts/zeta-caddy.md).
+  FACTUALIDAD: todo sale de /galeria/. No se inventan citas, prensa ni datos.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--black:#050505;--white:#f0ede6;--acid:#b8ff00;--glitch:#ff2d55;
+--mono:'Space Mono',monospace;--display:'Bebas Neue',sans-serif;--body:'DM Sans',sans-serif;
+--line:rgba(240,237,230,.12);--soft:rgba(240,237,230,.6);--faint:rgba(240,237,230,.34)}
+html{scroll-behavior:smooth}
+body{background:var(--black);color:var(--white);font-family:var(--body);line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{color:var(--acid);text-decoration:none}a:hover{color:var(--white)}
+.wrap{max-width:1040px;margin:0 auto;padding:0 1.5rem;position:relative;z-index:2}
+.topbar{display:flex;justify-content:space-between;align-items:baseline;padding:1.4rem 1.5rem 0;max-width:1040px;margin:0 auto;position:relative;z-index:3;font-family:var(--mono);font-size:10px;letter-spacing:.24em}
+.topbar b{color:var(--acid)}.topbar nav a{color:var(--faint);margin-left:1rem}.topbar nav a:hover{color:var(--acid)}
+.hero{position:relative;min-height:min(88vh,820px);display:flex;align-items:flex-end;padding-bottom:4rem;margin-top:-3rem}
+.hero-bg{position:absolute;inset:0;z-index:0;overflow:hidden}
+.hero-bg img{width:100%;height:100%;object-fit:cover;filter:saturate(1.2) contrast(1.1)}
+.hero-bg::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(5,5,5,.35),rgba(5,5,5,.5) 50%,var(--black))}
+.kicker{font-family:var(--mono);font-size:11px;letter-spacing:.32em;color:var(--acid);text-transform:uppercase;margin-bottom:1rem}
+.hero h1{font-family:var(--display);font-weight:400;font-size:clamp(6rem,24vw,15rem);line-height:.82;letter-spacing:.02em;position:relative}
+.hero h1 span{color:var(--acid)}
+.hero h1::after{content:'ZETA';position:absolute;left:4px;top:0;color:var(--glitch);opacity:.35;mix-blend-mode:screen;clip-path:inset(42% 0 40% 0);animation:gl 4s infinite steps(1)}
+@keyframes gl{0%,92%{transform:none}94%{transform:translateX(-6px)}96%{transform:translateX(5px)}}
+.lede{font-size:clamp(1.1rem,2.4vw,1.45rem);font-weight:300;max-width:640px;margin-top:1.2rem}
+.lede b{color:var(--acid);font-weight:500}
+.chips{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:1.6rem}
+.chips span{font-family:var(--mono);font-size:10px;letter-spacing:.14em;border:1px solid var(--line);padding:.35rem .7rem;border-radius:2px;color:var(--soft);background:rgba(5,5,5,.4)}
+.sec{margin:5rem 0 2rem}.sec .n{font-family:var(--mono);font-size:11px;letter-spacing:.28em;color:var(--acid);display:block;margin-bottom:.6rem}
+.sec h2{font-family:var(--display);font-weight:400;font-size:clamp(2.2rem,6vw,3.6rem);line-height:1}
+.sec p{color:var(--soft);max-width:680px;margin-top:.8rem}
+.show{display:grid;grid-template-columns:1fr 1.3fr;gap:2rem;border-top:1px solid var(--line);padding:2.4rem 0;align-items:center}
+.show .yr{font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--acid);text-transform:uppercase}
+.show h3{font-family:var(--display);font-weight:400;font-size:clamp(2rem,5vw,3.2rem);line-height:.95;margin:.3rem 0 .6rem}
+.show p{color:var(--soft);font-size:.98rem}.show p b{color:var(--white);font-weight:500}
+.show .yt{display:inline-block;margin-top:.8rem;font-family:var(--mono);font-size:11px;letter-spacing:.1em}
+.media{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:.5rem}
+.media img{width:100%;aspect-ratio:16/9;object-fit:cover;border:1px solid var(--line);border-radius:3px;background:#0b0b0b;display:block}
+.media.one{grid-template-columns:1fr}
+.works{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem}
+.work{border:1px solid var(--line);border-radius:4px;padding:1.8rem;background:rgba(240,237,230,.02)}
+.badge{display:inline-block;font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;padding:.3rem .6rem;border-radius:2px;margin-bottom:1rem}
+.badge.prox{background:var(--acid);color:var(--black);font-weight:700}
+.badge.dev{border:1px solid var(--glitch);color:var(--glitch)}
+.work h3{font-family:var(--display);font-weight:400;font-size:2.1rem;line-height:1;margin-bottom:.6rem}
+.work p{color:var(--soft);font-size:.96rem}
+.bio{display:grid;grid-template-columns:1fr 1fr;gap:2.5rem;margin-top:1.5rem}
+.bio p{color:var(--soft)}.bio p b{color:var(--white);font-weight:500}
+.stack{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:1rem}
+.stack span{font-family:var(--mono);font-size:10px;letter-spacing:.1em;border:1px solid var(--line);padding:.25rem .55rem;border-radius:2px;color:var(--faint)}
+.contact{margin:5rem 0 2rem;border:1px solid rgba(184,255,0,.4);border-radius:4px;padding:3rem 2rem;text-align:center}
+.contact h2{font-family:var(--display);font-weight:400;font-size:clamp(2.2rem,6vw,3.8rem);line-height:1;margin-bottom:1rem}
+.contact p{color:var(--soft);max-width:540px;margin:0 auto 1.8rem}
+.btns{display:flex;gap:.9rem;justify-content:center;flex-wrap:wrap}
+.btn{font-family:var(--mono);font-size:12px;letter-spacing:.14em;padding:.85rem 1.5rem;border-radius:3px;text-transform:uppercase}
+.btn.p{background:var(--acid);color:var(--black);font-weight:700}.btn.p:hover{background:var(--white);color:var(--black)}
+.btn.g{border:1px solid var(--line);color:var(--white)}.btn.g:hover{border-color:var(--acid);color:var(--acid)}
+footer{border-top:1px solid var(--line);margin-top:3rem;padding:2rem 0 3rem;font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--faint)}
+footer a{color:var(--soft)}
+@media(max-width:760px){.show,.bio{grid-template-columns:1fr;gap:1.2rem}.hero{min-height:min(80vh,720px)}.topbar nav a:not(:last-child){display:none}}
+:focus-visible{outline:2px solid var(--acid);outline-offset:2px}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;scroll-behavior:auto!important}}
+</style>
+<script defer src="/analitica/hg.js"></script>
+</head>
+<body>
+<header class="topbar">
+  <div><b>ZETA</b> · LA PLATA</div>
+  <nav><a href="#shows">SHOWS</a><a href="#obras">OBRAS</a><a href="#contacto">CONTACTO</a><a href="https://hg-vl.com/">HUMAN GLITCHE →</a></nav>
+</header>
+
+<section class="hero">
+  <div class="hero-bg"><img src="/galeria/labs/malena-narvay-dualidad-electronic-band-live.jpg" alt="" fetchpriority="high"></div>
+  <div class="wrap" style="width:100%">
+    <div class="kicker">Artista visual · La Plata, Argentina</div>
+    <h1>ZETA<span>.</span></h1>
+    <!-- TODO(Juan): confirmar o reemplazar el statement con tus palabras. -->
+    <p class="lede">Diseño la <b>interfaz visual</b> de lo que se vive en un escenario: visuales en vivo, mapping a gran escala y VFX con IA.</p>
+    <div class="chips"><span>Tomorrowland 2025</span><span>Lollapalooza Argentina</span><span>Festival Marea</span><span>Tecnópolis 2025</span></div>
+  </div>
+</section>
+
+<main class="wrap">
+<section id="shows">
+  <div class="sec"><span class="n">01 · SHOWS SELECCIONADOS</span><h2>En escena.</h2>
+  <p>Una selección del archivo. Los registros en video son de los canales oficiales de cada artista y festival.</p></div>
+
+  <article class="show">
+    <div><span class="yr">Bélgica · 2025</span><h3>Tomorrowland</h3>
+      <p><b>Set de pantalla wide screen</b> para el show de Malena Narvay en Tomorrowland 2025, y creación total del contenido de sus shows en vivo sincronizados por SMPTE (Dualidad, AGS Tecnópolis 2025).</p>
+      <a class="yt" href="https://www.youtube.com/watch?v=JdgMZnNayGU" target="_blank" rel="noopener">VER AGS TECNÓPOLIS 2025 →</a></div>
+    <div class="media">
+      <img loading="lazy" src="/galeria/tomorrowland/01.gif" alt="Tomorrowland 2025, pieza 01">
+      <img loading="lazy" src="/galeria/tomorrowland/03.gif" alt="Tomorrowland 2025, pieza 03">
+      <img loading="lazy" src="/galeria/tomorrowland/13.gif" alt="Tomorrowland 2025, pieza 13">
+      <img loading="lazy" src="/galeria/tomorrowland/14.gif" alt="Tomorrowland 2025, pieza 14">
+    </div>
+  </article>
+
+  <article class="show">
+    <div><span class="yr">Argentina · 2022</span><h3>Lollapalooza</h3>
+      <p><b>Visuales para el show de Luck Ra</b> en Lollapalooza Argentina 2022 y <b>logos animados</b> de Luck Ra, Oscu y Lil Cake para sus shows en el festival.</p>
+      <a class="yt" href="https://www.youtube.com/watch?v=OMT6lk5wmas" target="_blank" rel="noopener">VER EL RECITAL →</a></div>
+    <div class="media">
+      <img loading="lazy" src="/galeria/lolla/01-luck-ra.gif" alt="Logo animado de Luck Ra">
+      <img loading="lazy" src="/galeria/lolla/02-oscu.gif" alt="Logo animado de Oscu">
+      <img loading="lazy" src="/galeria/lolla/03-lil-cake.gif" alt="Logo animado de Lil Cake">
+    </div>
+  </article>
+
+  <article class="show">
+    <div><span class="yr">Mar del Plata</span><h3>Festival Marea</h3>
+      <p><b>Mapping de 80 × 200 metros</b> sobre los silos del puerto y show de luces.</p>
+      <a class="yt" href="https://www.youtube.com/watch?v=UixJ_ggrkoE" target="_blank" rel="noopener">VER EL MAPPING →</a></div>
+    <div class="media one"><img loading="lazy" src="https://i.ytimg.com/vi/UixJ_ggrkoE/hqdefault.jpg" alt="Mapping sobre los silos del puerto de Mar del Plata"></div>
+  </article>
+
+  <article class="show">
+    <div><span class="yr">Show en vivo</span><h3>Estadio Uno</h3>
+      <p><b>Contenido visual para el show</b>: cuatro piezas del set, una por momento.</p></div>
+    <div class="media">
+      <img loading="lazy" src="/galeria/rio/01-magdalena.gif" alt="Estadio Uno, Magdalena">
+      <img loading="lazy" src="/galeria/rio/02-mai.gif" alt="Estadio Uno, Mai">
+      <img loading="lazy" src="/galeria/rio/03-simon.gif" alt="Estadio Uno, Simon">
+      <img loading="lazy" src="/galeria/rio/04-rio.gif" alt="Estadio Uno, Río">
+    </div>
+  </article>
+
+  <article class="show">
+    <div><span class="yr">Videoclip · VFX + IA</span><h3>Martín Cirio</h3>
+      <p><b>VFX e imagen generada con IA</b> en “Mani for Supermarket”: ocho escenas construidas, generadas y compuestas una a una. Dirección Francisco Scigliano, productora Lucato.</p>
+      <a class="yt" href="https://www.youtube.com/watch?v=egVeg8gXhEA" target="_blank" rel="noopener">VER LA PIEZA →</a></div>
+    <div class="media">
+      <img loading="lazy" src="/galeria/cirio/03-puca-style.gif" alt="Mani for Supermarket, escena Puca style">
+      <img loading="lazy" src="/galeria/cirio/06-throat.gif" alt="Mani for Supermarket, escena Throat">
+    </div>
+  </article>
+  <p style="margin-top:1rem;font-family:var(--mono);font-size:11px;color:var(--faint)">Archivo completo en <a href="https://hg-vl.com/galeria/">hg-vl.com/galeria</a>.</p>
+</section>
+
+<section id="obras">
+  <div class="sec"><span class="n">02 · OBRA ACTUAL</span><h2>Lo que viene.</h2></div>
+  <div class="works">
+    <div class="work"><span class="badge prox">Próximamente</span>
+      <!-- TODO(Juan): título de la obra, nombre del tema, duración y año. -->
+      <h3>Videoclip con IA</h3>
+      <p>Obra en colaboración con el músico <b style="color:var(--white)">Agustín Bragoni</b>: un video creado íntegramente con inteligencia artificial.</p></div>
+    <div class="work"><span class="badge dev">En desarrollo</span>
+      <h3>La interfaz se pela</h3>
+      <!-- TODO(Juan): sumar sinopsis corta aprobada (ver dossier). -->
+      <p>Pieza audiovisual en vivo, en desarrollo.</p></div>
+  </div>
+</section>
+
+<section>
+  <div class="sec"><span class="n">03 · ENFOQUE</span><h2>Ver la interfaz.<br>Rediseñarla.</h2></div>
+  <div class="bio">
+    <!-- TODO(Juan): bio con formación, años de trayectoria y premios si los hay. -->
+    <p>Zeta es el proyecto artístico de <b>Juan Cruz Martinez</b>, desde La Plata. Empezó en 2018 creando por gusto, con 80 animaciones en Photoshop sin cliente, y llegó al mapping a gran escala, los visuales en vivo y los VFX con IA para artistas masivos.</p>
+    <div><p>Cruza la exploración con <b>IA a alta velocidad</b> con <b>producción 3D propia</b> para construir con control total lo que la IA sola no resuelve. Es también fundador de <a href="https://hg-vl.com/">Human Glitche</a>, un ecosistema abierto para artistas.</p>
+    <div class="stack"><span>Cinema 4D</span><span>Octane</span><span>Insydium</span><span>IA generativa</span><span>SMPTE</span><span>Mapping</span></div></div>
+  </div>
+</section>
+
+<section class="contact" id="contacto">
+  <h2>Booking y colaboraciones</h2>
+  <p>Shows, festivales, convocatorias y obra en colaboración.</p>
+  <div class="btns">
+    <a class="btn p" href="https://www.instagram.com/human.zeta/" target="_blank" rel="noopener">Instagram @human.zeta</a>
+    <a class="btn g" href="mailto:hola@hg-vl.com">hola@hg-vl.com</a>
+  </div>
+</section>
+</main>
+<footer class="wrap">ZETA · La Plata, Argentina · Parte de <a href="https://hg-vl.com/">Human Glitche</a></footer>
+</body>
+</html>
