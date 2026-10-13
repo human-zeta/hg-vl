@@ -56,6 +56,7 @@ a{color:var(--acid);text-decoration:none}a:hover{color:var(--white)}
 .show p{color:var(--soft);font-size:.98rem}.show p b{color:var(--white);font-weight:500}
 .show .yt{display:inline-block;margin-top:.8rem;font-family:var(--mono);font-size:11px;letter-spacing:.1em}
 .media{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:.5rem}
+.artists{list-style:none;display:flex;flex-wrap:wrap;gap:.5rem}.artists li{font-family:var(--display);font-size:clamp(1.4rem,3vw,2rem);letter-spacing:.02em;border:1px solid var(--line);border-radius:3px;padding:.3rem .9rem}
 .media img{width:100%;aspect-ratio:16/9;object-fit:cover;border:1px solid var(--line);border-radius:3px;background:#0b0b0b;display:block}
 .media.one{grid-template-columns:1fr}
 .works{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem}
@@ -157,13 +158,13 @@ footer a{color:var(--soft)}
   </article>
 
   <article class="show">
-    <div><span class="yr">Show en vivo</span><h3>Estadio Uno</h3>
-      <p><b>Contenido visual para el show</b>: cuatro piezas del set, una por momento.</p></div>
+    <div><span class="yr">Show en vivo</span><h3>Rose in Rio</h3>
+      <p><b>Contenido visual para Rose in Rio</b>, la fecha en la que tocó Magdalena: cuatro piezas del set, una por momento.</p></div>
     <div class="media">
-      <img loading="lazy" src="/galeria/rio/01-magdalena.gif" alt="Estadio Uno, Magdalena">
-      <img loading="lazy" src="/galeria/rio/02-mai.gif" alt="Estadio Uno, Mai">
-      <img loading="lazy" src="/galeria/rio/03-simon.gif" alt="Estadio Uno, Simon">
-      <img loading="lazy" src="/galeria/rio/04-rio.gif" alt="Estadio Uno, Río">
+      <img loading="lazy" src="/galeria/rio/01-magdalena.gif" alt="Rose in Rio, Magdalena">
+      <img loading="lazy" src="/galeria/rio/02-mai.gif" alt="Rose in Rio, Mai">
+      <img loading="lazy" src="/galeria/rio/03-simon.gif" alt="Rose in Rio, Simon">
+      <img loading="lazy" src="/galeria/rio/04-rio.gif" alt="Rose in Rio, Río">
     </div>
   </article>
 
@@ -175,6 +176,10 @@ footer a{color:var(--soft)}
       <img loading="lazy" src="/galeria/cirio/03-puca-style.gif" alt="Mani for Supermarket, escena Puca style">
       <img loading="lazy" src="/galeria/cirio/06-throat.gif" alt="Mani for Supermarket, escena Throat">
     </div>
+  </article>
+  <article class="show">
+    <div><span class="yr">Electrónica</span><h3>Visuales para</h3></div>
+    <ul class="artists"><li>Kolombo</li><li>Mariano Mellino</li><li>Bastida</li><li>Cid Inc</li><li>Sound Exile</li></ul>
   </article>
   <p style="margin-top:1rem;font-family:var(--mono);font-size:11px;color:var(--faint)">Archivo completo en <a href="https://hg-vl.com/galeria/">hg-vl.com/galeria</a>.</p>
 </section>
