@@ -1,0 +1,1406 @@
+<!doctype html><html lang="es"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TRACK — Human Glitche · el cuerpo maneja el show</title>
+<meta name="description" content="TRACK: pose, manos y cara frente a la cámara manejan shaders ISF, MIDI y OSC. 100% en el navegador, sin subir nada.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{ --acid:#b8ff00; --glitch:#ff2d55; --cyan:#3ad0ff; --ink:#f0ede6; --line:rgba(240,237,230,.12); --bg:#050505; }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{height:100%;background:var(--bg);color:var(--ink);font-family:'Space Mono',monospace;overflow:hidden;}
+  #gl{position:fixed;inset:0;width:100vw;height:100vh;display:block;z-index:1;background:#050505;}
+  #top{position:fixed;top:0;left:0;right:0;z-index:10;display:flex;justify-content:space-between;align-items:center;padding:16px 20px;pointer-events:none;gap:12px;}
+  #top a,#top .lab{pointer-events:auto;}
+  .brand{font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:.04em;line-height:.8;}
+  .brand b{color:var(--acid);font-weight:400;}
+  .brand .sub{display:block;font-family:'Space Mono';font-size:9px;letter-spacing:.18em;color:rgba(240,237,230,.45);margin-top:4px;}
+  #top .navlinks{display:flex;gap:16px;pointer-events:auto;flex-wrap:wrap;justify-content:flex-end;}
+  #top a{font-size:10px;letter-spacing:.2em;color:rgba(240,237,230,.4);text-decoration:none;}
+  #top a:hover{color:var(--acid);}
+  #panel{position:fixed;right:0;top:0;bottom:0;width:380px;z-index:9;background:rgba(5,5,5,.82);backdrop-filter:blur(9px);border-left:1px solid var(--line);
+    padding:78px 16px 22px;overflow:auto;transition:transform .25s;}
+  #panel.hide{transform:translateX(100%);}
+  #toggle,#peek{position:fixed;z-index:11;background:rgba(5,5,5,.7);border:1px solid var(--line);color:var(--ink);
+    font:inherit;font-size:10px;letter-spacing:.18em;padding:7px 10px;cursor:pointer;}
+  #toggle{right:14px;top:64px;}
+  #peek{display:none;top:12px;right:12px;z-index:30;letter-spacing:.16em;}
+  #toggle:hover,#peek:hover{border-color:var(--acid);color:var(--acid);}
+  h2{font-size:9px;letter-spacing:.2em;color:rgba(240,237,230,.4);text-transform:uppercase;margin:16px 0 9px;}
+  #panel h2:first-of-type{margin-top:0;}
+  #drop,#idrop{border:1.5px dashed var(--line);border-radius:7px;padding:14px 10px;text-align:center;cursor:pointer;transition:.2s;background:rgba(184,255,0,.02);font-size:11px;}
+  #drop:hover,#drop.over,#idrop:hover,#idrop.over{border-color:var(--acid);background:rgba(184,255,0,.06);}
+  #drop .sm,#idrop .sm{color:rgba(240,237,230,.45);font-size:9px;margin-top:5px;}
+  .src-row,.row{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;}
+  .src-row button,.row button,.btn{flex:1;background:transparent;border:1px solid var(--line);color:var(--ink);font:inherit;font-size:10px;letter-spacing:.06em;padding:8px 6px;cursor:pointer;border-radius:4px;}
+  .src-row button:hover,.row button:hover,.btn:hover,#toggle:hover{border-color:var(--acid);color:var(--acid);}
+  .src-row button.on,.btn.on,.tg.on{border-color:var(--acid);color:var(--acid);background:rgba(184,255,0,.12);}
+  .tg{background:transparent;border:1px solid var(--line);color:rgba(240,237,230,.7);font:inherit;font-size:10px;letter-spacing:.06em;padding:7px 8px;border-radius:4px;cursor:pointer;}
+  .tg:hover{border-color:var(--acid);}
+  .togs{display:flex;gap:6px;margin-top:8px;}
+  .togs .tg{flex:1;}
+  #fname,#fnameSh,#status,#statusline{font-size:10px;color:rgba(240,237,230,.5);margin-top:7px;word-break:break-all;line-height:1.45;}
+  #status b{color:var(--acid);font-weight:400;}
+  #status.err{color:var(--glitch);}
+  #statusline{color:var(--cyan);}
+  .fams{display:grid;grid-template-columns:1fr 1fr;gap:5px;}
+  .fam{background:rgba(184,255,0,.04);border:1px solid var(--line);color:var(--ink);font:inherit;font-size:10px;padding:8px 4px;cursor:pointer;border-radius:3px;}
+  .fam:hover{border-color:var(--acid);color:var(--acid);}
+  .fam.on{border-color:var(--acid);color:var(--acid);background:rgba(184,255,0,.12);}
+  .colorrow,.checkrow{display:flex;align-items:center;justify-content:space-between;margin:7px 0;font-size:10px;gap:8px;}
+  .colorrow input[type=color]{width:38px;height:24px;border:1px solid var(--line);background:none;cursor:pointer;border-radius:3px;}
+  .checkrow input{accent-color:var(--acid);}
+  select,input[type=text],input[type=number]{width:100%;background:#0a0a0a;color:var(--ink);border:1px solid var(--line);font:inherit;font-size:10px;padding:5px 6px;border-radius:4px;}
+  input[type=range]{width:100%;accent-color:var(--acid);}
+  .ctrl{margin:0 0 8px;}
+  .ctrl label,.sl{display:flex;justify-content:space-between;font-size:10px;letter-spacing:.04em;color:rgba(240,237,230,.65);margin-bottom:3px;}
+  .ctrl b,.sl b{color:var(--acid);font-weight:400;}
+  .ctrl.driven{opacity:.72;}
+  .ctrl.driven b::after{content:' · mapeado';color:var(--cyan);font-size:9px;}
+  .route{border:1px solid var(--line);border-radius:5px;padding:9px 10px;margin-bottom:7px;}
+  .rh{display:flex;gap:6px;align-items:center;}
+  .rh select{flex:1;width:auto;}
+  .x{flex:0 0 auto;background:transparent;border:1px solid var(--line);color:var(--glitch);font:inherit;font-size:11px;width:28px;height:28px;border-radius:4px;cursor:pointer;}
+  .x:hover{border-color:var(--glitch);}
+  .fld{display:block;font-size:9px;letter-spacing:.08em;color:rgba(240,237,230,.45);margin-top:7px;}
+  .fld select,.fld input{margin-top:3px;}
+  .mini{display:flex;gap:6px;margin-top:7px;}
+  .mini label{flex:1;font-size:9px;letter-spacing:.08em;color:rgba(240,237,230,.45);}
+  .mini input{margin-top:3px;}
+  .rr{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px;}
+  .rr label{font-size:9px;letter-spacing:.08em;color:rgba(240,237,230,.45);display:flex;justify-content:space-between;}
+  .rr label b{color:var(--acid);font-weight:400;}
+  .inv{margin-top:6px;width:100%;}
+  .obar,.meter .bar{height:6px;background:rgba(240,237,230,.08);border-radius:3px;overflow:hidden;}
+  .obar{margin-top:7px;}
+  .obar i,.meter .bar i{display:block;height:100%;width:0%;background:var(--acid);}
+  .meters{display:flex;flex-direction:column;gap:5px;margin-top:6px;}
+  .meter{display:flex;align-items:center;gap:6px;font-size:9px;letter-spacing:.04em;color:rgba(240,237,230,.5);}
+  .meter .nm{width:126px;flex-shrink:0;}
+  .meter .bar{flex:1;}
+  .meter .vv{width:34px;text-align:right;color:var(--acid);}
+  .meter.dim{opacity:.35;}
+  details summary{cursor:pointer;font-size:10px;letter-spacing:.12em;color:rgba(240,237,230,.55);margin:8px 0;}
+  .empty{font-size:10px;color:rgba(240,237,230,.35);padding:6px 0;}
+  #editbtn{width:100%;background:transparent;border:1px solid var(--line);color:rgba(240,237,230,.6);font:inherit;font-size:10px;letter-spacing:.1em;padding:9px;cursor:pointer;border-radius:4px;margin-top:6px;}
+  #editbtn:hover{border-color:var(--acid);color:var(--acid);}
+  #editor{display:none;margin-top:8px;}
+  #editor.open{display:block;}
+  #editor textarea{width:100%;height:140px;background:#0a0a0a;color:rgba(240,237,230,.8);border:1px solid var(--line);font:10px/1.5 'Space Mono',monospace;padding:8px;border-radius:4px;resize:vertical;}
+  #renderBtn{width:100%;background:var(--acid);color:#050505;border:none;font:inherit;font-size:11px;letter-spacing:.1em;padding:9px;cursor:pointer;border-radius:4px;margin-top:6px;}
+  .alert{font-size:10px;line-height:1.5;border:1px solid rgba(255,45,85,.5);color:#ffd5de;background:rgba(255,45,85,.08);padding:8px 10px;border-radius:4px;margin-bottom:8px;}
+  .alert.warn{border-color:rgba(184,255,0,.35);color:rgba(240,237,230,.82);background:rgba(184,255,0,.05);}
+  .dot{width:8px;height:8px;border-radius:50%;background:#555;display:inline-block;margin-right:5px;}
+  .dot.live{background:var(--acid);box-shadow:0 0 8px var(--acid);}
+  .midiline{display:flex;align-items:center;gap:6px;font-size:10px;margin-bottom:6px;}
+  .note{font-size:9.5px;color:rgba(240,237,230,.4);line-height:1.7;margin-top:16px;border-left:1px solid rgba(184,255,0,.3);padding-left:10px;}
+  .note b{color:var(--acid);font-weight:400;}
+  #pip{position:fixed;left:16px;bottom:16px;width:min(340px,46vw);aspect-ratio:16/9;z-index:8;border:1px solid var(--line);background:#000;overflow:hidden;transition:border-color .2s,opacity .25s;}
+  #pip.hot{border-color:rgba(184,255,0,.75);}
+  #pip.over{border-color:var(--acid);}
+  #pip video,#pip canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;}
+  #pip canvas{z-index:1;background:transparent;}
+  #pip.mirror video,#pip.mirror canvas{transform:scaleX(-1);}
+  #camMsg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:14px;font-size:10px;line-height:1.55;color:rgba(240,237,230,.78);background:rgba(0,0,0,.55);z-index:2;}
+  #camMsg.hide{display:none;}
+  #pipTag{position:absolute;left:0;right:0;bottom:0;z-index:3;padding:5px 8px;font-size:8px;letter-spacing:.12em;text-transform:uppercase;color:var(--acid);background:linear-gradient(transparent,rgba(0,0,0,.75));pointer-events:none;}
+  .hint{position:fixed;left:16px;bottom:calc(16px + min(191px,26vw) + 10px);z-index:8;font-size:10px;letter-spacing:.1em;color:rgba(240,237,230,.4);pointer-events:none;}
+  .hint b{color:var(--acid);font-weight:400;}
+  #toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);z-index:20;background:rgba(5,5,5,.94);border:1px solid var(--acid);color:var(--acid);
+    font-size:11px;padding:9px 16px;border-radius:5px;opacity:0;transition:opacity .2s;pointer-events:none;}
+  #toast.show{opacity:1;}
+  #fileVideo,#fileIsf,#fileJson{display:none;}
+  body.clean #top,body.clean #panel,body.clean #toggle,body.clean .hint{opacity:0;visibility:hidden;pointer-events:none;}
+  body.clean #pip:not(.keep){opacity:0;pointer-events:none;transition:none;}
+  body.clean #peek{display:block;}
+  body.clean{cursor:none;}
+  body.clean #peek{cursor:pointer;}
+  @media(max-width:720px){
+    #panel{width:100%;}
+    .brand{font-size:24px;}
+    .hint{display:none;}
+    #pip{width:46vw;}
+  }
+  :focus-visible{outline:2px solid var(--acid,#b8ff00);outline-offset:2px;}
+  @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important;scroll-behavior:auto !important;}}
+</style><script defer src="/analitica/hg.js"></script>
+</head><body data-models="boot" data-shader="boot" data-cam="boot" data-pose="0" data-hands="0" data-face="0">
+<canvas id="gl"></canvas>
+<div id="pip">
+  <video id="cam" playsinline muted autoplay></video>
+  <canvas id="overlay"></canvas>
+  <div id="camMsg">tocá activar cámara, o soltá un video. no se sube a ningún lado.</div>
+  <div id="pipTag">cargando</div>
+</div>
+<div id="top">
+  <div class="brand lab"><b>TRACK</b><span class="sub">Human Glitche · el cuerpo → shader · MIDI · OSC</span></div>
+  <div class="navlinks">
+    <a href="/pulso/">PULSO ↔</a>
+    <a href="/control/">CONTROL ↔</a>
+    <a href="/labs/">← LABS</a>
+  </div>
+</div>
+<button type="button" id="toggle">PANEL</button>
+<button type="button" id="peek">UI</button>
+<div class="hint"><b>H</b> limpio · <b>F</b> pantalla · <b>M</b> espejo</div>
+<div id="toast"></div>
+<div id="panel">
+  <div id="alerts" role="status"></div>
+  <h2>1 · cámara</h2>
+  <div id="drop"><div>⤓ soltá un video o hacé clic</div><div class="sm">MP4/WEBM · queda en tu máquina</div></div>
+  <input id="fileVideo" type="file" accept="video/*">
+  <div class="src-row">
+    <button type="button" id="camBtn">activar cámara</button>
+  </div>
+  <div class="togs">
+    <button type="button" class="tg on" id="mirrorBtn" aria-pressed="true">espejo</button>
+    <button type="button" class="tg on" id="poseBtn" aria-pressed="true">pose</button>
+    <button type="button" class="tg on" id="handsBtn" aria-pressed="true">manos</button>
+    <button type="button" class="tg" id="faceBtn" aria-pressed="false" title="la primera vez baja el modelo de cara">cara</button>
+  </div>
+  <div id="fname"></div>
+  <div id="statusline">bajando modelos…</div>
+
+  <h2>2 · shader</h2>
+  <div class="fams" id="samples"></div>
+  <div class="colorrow"><span>color A</span><input type="color" id="colA" value="#050507"></div>
+  <div class="colorrow"><span>color B</span><input type="color" id="colB" value="#b8ff00"></div>
+  <div id="params"></div>
+  <div id="idrop"><div>⤓ soltá un .fs de ISF</div><div class="sm">el mismo formato que PULSO · no se sube</div></div>
+  <input id="fileIsf" type="file" accept=".fs,.txt,.frag,.glsl,text/plain">
+  <div id="fnameSh"></div>
+  <button type="button" id="editbtn">CÓDIGO ISF ▴</button>
+  <div id="editor"><textarea id="src" spellcheck="false"></textarea><button type="button" id="renderBtn">▶ RENDER</button></div>
+  <div id="status"></div>
+
+  <h2>3 · salida</h2>
+  <div class="row">
+    <button type="button" id="cleanBtn">LIMPIO</button>
+    <button type="button" id="fsBtn">PANTALLA</button>
+    <button type="button" id="projectBtn">PROYECCIÓN</button>
+  </div>
+  <label class="checkrow"><span>mostrar cámara en la salida limpia</span><input type="checkbox" id="showCam"></label>
+
+  <h2>4 · MIDI y OSC</h2>
+  <div class="midiline"><span class="dot" id="mdot"></span><span id="mtxt">MIDI off</span></div>
+  <div class="row">
+    <button type="button" id="midiBtn">habilitar MIDI</button>
+    <select id="port" title="puerto de salida MIDI"><option value="">— sin puerto —</option></select>
+  </div>
+  <div class="row">
+    <input id="oscurl" type="text" placeholder="ws://localhost:8080" spellcheck="false" autocomplete="off">
+    <button type="button" id="oscConn">conectar</button>
+  </div>
+  <div id="oscStat" class="empty">OSC manda un float 0–1 por WebSocket. El navegador no tira UDP.</div>
+
+  <h2>5 · mapeo</h2>
+  <div class="row">
+    <button type="button" id="presetShader">preset shader</button>
+    <button type="button" id="presetMidi">preset MIDI</button>
+    <button type="button" id="addRoute">+ ruta</button>
+  </div>
+  <div id="mapRows"></div>
+  <div class="row">
+    <button type="button" id="saveBtn">guardar</button>
+    <button type="button" id="loadBtn">cargar</button>
+    <button type="button" id="expBtn">⤓ JSON</button>
+    <button type="button" id="impBtn">⤒ JSON</button>
+  </div>
+  <input id="fileJson" type="file" accept="application/json">
+
+  <h2>6 · señales</h2>
+  <details open>
+    <summary>en vivo · der/izq es lo que ves</summary>
+    <div class="meters" id="meters"></div>
+  </details>
+
+  <p class="note">Todo corre en tu máquina: la cámara <b>no se sube</b>. La primera vez se bajan los modelos de MediaPipe para trackear. Cada ruta toma una señal, la suaviza, la recorta con desde/hasta y puede invertirla. El destino es un input del shader, un CC, una nota MIDI o una dirección OSC. La misma señal puede ir a varios lados: sumá otra ruta. <b>H</b> limpia la interfaz, <b>F</b> es pantalla completa, <b>proyección</b> hace las dos. Y de la cámara mira para abajo: el preset de la muñeca invierte, así arriba es arriba.</p>
+</div>
+<script type="module">
+const $=id=>document.getElementById(id);
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const num=(v,d)=>Number.isFinite(+v)?+v:d;
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const LS_KEY='hg_track_v1';
+
+const SIGNALS=[
+  ['munecaDerX','muñeca der X'],
+  ['munecaDerY','muñeca der Y'],
+  ['munecaIzqX','muñeca izq X'],
+  ['munecaIzqY','muñeca izq Y'],
+  ['centroX','centro X'],
+  ['centroY','centro Y'],
+  ['aperturaDer','apertura mano der'],
+  ['aperturaIzq','apertura mano izq'],
+  ['pinchDer','pinch der'],
+  ['pinchIzq','pinch izq'],
+  ['velocidadDer','velocidad der'],
+  ['velocidadIzq','velocidad izq'],
+  ['anguloDer','ángulo brazo der'],
+  ['anguloIzq','ángulo brazo izq'],
+  ['boca','boca abierta'],
+  ['sonrisa','sonrisa'],
+];
+const SIG_IDS=new Set(SIGNALS.map(s=>s[0]));
+const ANA={
+  Left:{shoulder:11,elbow:13,wrist:15,thumb:21,index:19,pinky:17},
+  Right:{shoulder:12,elbow:14,wrist:16,thumb:22,index:20,pinky:18},
+};
+const POSE_DER={
+  Left:[[11,13],[13,15],[15,17],[15,19],[15,21],[11,23],[23,25],[25,27],[27,29],[27,31],[29,31]],
+  Right:[[12,14],[14,16],[16,18],[16,20],[16,22],[12,24],[24,26],[26,28],[28,30],[28,32],[30,32]],
+};
+const POSE_MID=[[11,12],[23,24]];
+const HAND_LINKS=[
+  [0,1],[1,2],[2,3],[3,4],
+  [0,5],[5,6],[6,7],[7,8],
+  [5,9],[9,10],[10,11],[11,12],
+  [9,13],[13,14],[14,15],[15,16],
+  [13,17],[17,18],[18,19],[19,20],
+  [0,17]
+];
+const WASM='https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.21/wasm';
+const MODELS={
+  pose:'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task',
+  hands:'https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task',
+  face:'https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task',
+};
+
+const SAMPLES={
+  AURA:{desc:'foco que sigue la mano',colA:'#050507',colB:'#b8ff00',body:`
+float hash(vec2 p){ p=fract(p*vec2(123.34,456.21)); p+=dot(p,p+45.32); return fract(p.x*p.y); }
+void main(){
+  vec2 uv=isf_FragNormCoord-0.5;
+  float aspect=RENDERSIZE.x/max(RENDERSIZE.y,1.0);
+  uv.x*=aspect;
+  vec2 c=vec2((px-0.5)*aspect, py-0.5);
+  vec2 d=uv-c;
+  float r=length(d);
+  float rad=0.045+energy*0.38+pinch*0.06;
+  float aura=exp(-pow(r/max(rad,0.001),2.0));
+  float ang=atan(d.y,d.x);
+  float rays=pow(abs(sin(ang*(5.0+glitch*6.0)+TIME*(0.5+spin*1.6))),14.0);
+  rays*=exp(-r*2.6)*(0.25+energy);
+  float ring=smoothstep(0.012,0.0,abs(r-(0.10+pinch*0.5)))*(0.35+energy);
+  float grain=(hash(uv*30.0+TIME)-0.5)*glitch*0.3;
+  float v=clamp(aura+rays+ring+grain,0.0,1.0);
+  vec3 col=mix(colA.rgb,colB.rgb,v);
+  col+=colB.rgb*aura*0.55;
+  col*=smoothstep(1.25,0.15,length(uv));
+  gl_FragColor=vec4(max(col,0.0),1.0);
+}`},
+  CORTINA:{desc:'telón de luz',colA:'#07040a',colB:'#ff2d55',body:`
+float hash(float n){ return fract(sin(n)*43758.5453); }
+void main(){
+  vec2 uv=isf_FragNormCoord;
+  float slit=exp(-pow((uv.x-px)*16.0,2.0))*(0.4+energy*0.9+pinch*0.4);
+  float bands=sin(uv.x*(5.0+energy*26.0)+py*5.0+TIME*(0.35+spin));
+  bands=smoothstep(0.15,0.9,bands*0.5+0.5);
+  float scan=smoothstep(0.018,0.0,abs(uv.y-fract(TIME*0.12+py)));
+  float g=step(0.84,hash(floor(uv.y*36.0)+floor(TIME*7.0)))*glitch;
+  float v=clamp(slit+bands*(0.2+energy*0.55)+scan*0.4+g,0.0,1.0);
+  v*=smoothstep(0.0,0.08,uv.y)*smoothstep(1.0,0.9,uv.y);
+  vec3 col=mix(colA.rgb,colB.rgb,v);
+  col+=colB.rgb*slit*0.45;
+  gl_FragColor=vec4(max(col,0.0),1.0);
+}`},
+  ORBITA:{desc:'anillos que orbitan la mano',colA:'#04060a',colB:'#3ad0ff',body:`
+void main(){
+  vec2 uv=isf_FragNormCoord-0.5;
+  float aspect=RENDERSIZE.x/max(RENDERSIZE.y,1.0);
+  uv.x*=aspect;
+  vec2 c=vec2((px-0.5)*aspect, py-0.5);
+  vec2 d=uv-c;
+  float r=length(d);
+  float a=atan(d.y,d.x);
+  float folds=3.0+floor(energy*5.0);
+  float slice=6.283185/folds;
+  a=abs(mod(a+TIME*(0.25+spin), slice)-slice*0.5);
+  float rings=sin(r*(16.0+pinch*36.0)-TIME*(0.8+spin*2.0)+a*3.0);
+  rings=smoothstep(0.05,0.85,rings*0.5+0.5);
+  float core=exp(-r*r/(0.012+energy*0.05));
+  float v=clamp(rings*(0.3+energy*0.75)+core,0.0,1.0);
+  v+=step(0.72,fract(a*6.0+TIME))*glitch*0.45*smoothstep(0.9,0.05,r);
+  vec3 col=mix(colA.rgb,colB.rgb,v);
+  col*=smoothstep(1.3,0.2,length(uv));
+  gl_FragColor=vec4(max(col,0.0),1.0);
+}`},
+  CAMPO:{desc:'grilla que se dobla al centro',colA:'#07060a',colB:'#b8ff00',body:`
+float hash(vec2 p){ return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453); }
+void main(){
+  vec2 uv=isf_FragNormCoord;
+  float aspect=RENDERSIZE.x/max(RENDERSIZE.y,1.0);
+  vec2 p=vec2(uv.x*aspect, uv.y);
+  vec2 c=vec2(px*aspect, py);
+  vec2 d=p-c;
+  float pull=(0.12+energy*0.9)/(1.0+dot(d,d)*7.0);
+  p+=d*pull*0.7;
+  p.x+=sin(p.y*7.0+TIME*(0.4+spin))*pinch*0.1;
+  p.y+=cos(p.x*5.0-TIME*0.3)*glitch*0.05;
+  vec2 g=abs(fract(p*vec2(11.0,8.0))-0.5);
+  float line=smoothstep(0.045,0.0,min(g.x,g.y));
+  float pulse=exp(-length(d)*(2.2-energy));
+  float n=step(0.93,hash(floor(p*10.0)+floor(TIME*5.0)))*glitch;
+  float v=clamp(line*(0.4+pulse*0.8)+pulse*0.28+n,0.0,1.0);
+  vec3 col=mix(colA.rgb,colB.rgb,v);
+  gl_FragColor=vec4(max(col,0.0),1.0);
+}`}
+};
+
+const state={
+  mirror:true, pose:true, hands:true, face:false, showCam:false,
+  shader:'AURA', custom:'', colA:'#050507', colB:'#b8ff00',
+  oscUrl:'ws://localhost:8080', midiPort:'', manual:{},
+};
+let routes=[];
+const sig={}; for(const [id] of SIGNALS) sig[id]=0;
+const live={};
+const velPrev={};
+let saveTimer=null, persistOn=false;
+
+function cleanOsc(s){
+  s=String(s||'').trim();
+  if(!s.startsWith('/')) s='/'+s;
+  s=s.replace(/[^\x21-\x7e]/g,'');
+  return (s||'/track').slice(0,80);
+}
+function normRoute(r,i=0){
+  r=(r&&typeof r==='object')?r:{};
+  return {
+    signal: SIG_IDS.has(r.signal)?r.signal:'munecaDerX',
+    smooth: clamp(num(r.smooth,0.5),0,0.95),
+    inLo: clamp(num(r.inLo,0),0,1),
+    inHi: clamp(num(r.inHi,1),0,1),
+    invert: !!r.invert,
+    dest: ['shader','cc','note','osc'].includes(r.dest)?r.dest:'shader',
+    param: String(r.param||'px').slice(0,40),
+    ch: clamp(parseInt(r.ch,10)||1,1,16),
+    cc: clamp(Number.isFinite(+r.cc)?+r.cc:20,0,127),
+    note: clamp(Number.isFinite(+r.note)?+r.note:60,0,127),
+    thresh: clamp(num(r.thresh,0.65),0,1),
+    osc: cleanOsc(r.osc||('/track/'+(i+1))),
+  };
+}
+function defaultShaderRoutes(){
+  return [
+    {signal:'munecaDerX',smooth:0.55,inLo:0.08,inHi:0.92,dest:'shader',param:'px',osc:'/track/px'},
+    {signal:'munecaDerY',smooth:0.55,inLo:0.08,inHi:0.92,invert:true,dest:'shader',param:'py',osc:'/track/py'},
+    {signal:'aperturaDer',smooth:0.4,inLo:0.05,inHi:0.9,dest:'shader',param:'energy',osc:'/track/energy'},
+    {signal:'pinchDer',smooth:0.35,inLo:0,inHi:1,invert:true,dest:'shader',param:'pinch',osc:'/track/pinch'},
+  ].map(normRoute);
+}
+function defaultMidiRoutes(){
+  return [
+    {signal:'munecaDerX',smooth:0.45,inLo:0.08,inHi:0.92,dest:'cc',cc:20,ch:1,osc:'/track/x'},
+    {signal:'munecaDerY',smooth:0.45,inLo:0.08,inHi:0.92,invert:true,dest:'cc',cc:21,ch:1,osc:'/track/y'},
+    {signal:'aperturaDer',smooth:0.35,inLo:0.05,inHi:0.9,dest:'cc',cc:22,ch:1,osc:'/track/open'},
+    {signal:'pinchDer',smooth:0.3,inLo:0,inHi:1,invert:true,dest:'cc',cc:23,ch:1,osc:'/track/pinch'},
+  ].map(normRoute);
+}
+function serialize(){
+  return {
+    v:1, mirror:state.mirror, pose:state.pose, hands:state.hands, face:state.face, showCam:state.showCam,
+    shader:state.shader, custom:state.custom?state.custom.slice(0,150000):'',
+    colA:state.colA, colB:state.colB, oscUrl:state.oscUrl, midiPort:state.midiPort,
+    manual:state.manual,
+    routes:routes.map(r=>({
+      signal:r.signal,smooth:r.smooth,inLo:r.inLo,inHi:r.inHi,invert:r.invert,
+      dest:r.dest,param:r.param,ch:r.ch,cc:r.cc,note:r.note,thresh:r.thresh,osc:r.osc
+    }))
+  };
+}
+function persist(){
+  const data=serialize();
+  try{ localStorage.setItem(LS_KEY, JSON.stringify(data)); }
+  catch(e){
+    try{ data.custom=''; localStorage.setItem(LS_KEY, JSON.stringify(data)); }catch(e2){}
+  }
+}
+function touch(){ if(!persistOn) return; clearTimeout(saveTimer); saveTimer=setTimeout(persist,400); }
+function readStore(){ try{ return JSON.parse(localStorage.getItem(LS_KEY)||'null'); }catch(e){ return null; } }
+function applyData(data){
+  if(!data||typeof data!=='object') throw new Error('JSON inválido');
+  if(typeof data.mirror==='boolean') state.mirror=data.mirror;
+  if(typeof data.pose==='boolean') state.pose=data.pose;
+  if(typeof data.hands==='boolean') state.hands=data.hands;
+  if(typeof data.face==='boolean') state.face=data.face;
+  if(typeof data.showCam==='boolean') state.showCam=data.showCam;
+  if(typeof data.colA==='string') state.colA=data.colA;
+  if(typeof data.colB==='string') state.colB=data.colB;
+  if(typeof data.oscUrl==='string') state.oscUrl=data.oscUrl;
+  if(typeof data.midiPort==='string') state.midiPort=data.midiPort;
+  if(data.manual&&typeof data.manual==='object'){
+    for(const k of Object.keys(data.manual)) if(Number.isFinite(+data.manual[k])) state.manual[k]=+data.manual[k];
+  }
+  if(Array.isArray(data.routes)) routes=data.routes.slice(0,24).map(normRoute);
+  if(typeof data.custom==='string' && data.custom.includes('/*')){ state.custom=data.custom.slice(0,150000); state.shader=''; }
+  else if(typeof data.shader==='string' && SAMPLES[data.shader]){ state.shader=data.shader; state.custom=''; }
+}
+
+const alerts={};
+function renderAlerts(){
+  const el=$('alerts'); el.innerHTML='';
+  for(const a of Object.values(alerts)){
+    const d=document.createElement('div');
+    d.className='alert'+(a.warn?' warn':'');
+    d.textContent=a.msg;
+    el.appendChild(d);
+  }
+}
+function alertSet(key,msg,warn){ alerts[key]={msg,warn:!!warn}; renderAlerts(); }
+function alertClear(key){ if(!alerts[key]) return; delete alerts[key]; renderAlerts(); }
+let toastT;
+function toast(msg){ const el=$('toast'); el.textContent=msg; el.classList.add('show'); clearTimeout(toastT); toastT=setTimeout(()=>el.classList.remove('show'),1600); }
+function flash(btn,label){ const o=btn.textContent; btn.textContent=label||'✓'; setTimeout(()=>{ btn.textContent=o; },800); }
+
+function syncToggles(){
+  const press=(id,on)=>{ const el=$(id); el.classList.toggle('on',on); el.setAttribute('aria-pressed',on?'true':'false'); };
+  press('mirrorBtn',state.mirror); press('poseBtn',state.pose); press('handsBtn',state.hands); press('faceBtn',state.face);
+  $('pip').classList.toggle('mirror',state.mirror);
+  $('pip').classList.toggle('keep',state.showCam);
+  $('showCam').checked=state.showCam;
+  $('colA').value=state.colA; $('colB').value=state.colB;
+  $('oscurl').value=state.oscUrl;
+}
+
+/* ---------- ISF ---------- */
+let Renderer=null, renderer=null, glName='', lastGood='';
+let floatInputs=[], floatByName=new Map(), colorNames=new Set();
+function hexToArr(h){
+  h=String(h||'#000000'); if(h[0]==='#') h=h.slice(1);
+  if(h.length===3) h=h.split('').map(c=>c+c).join('');
+  const n=parseInt(h,16); if(!Number.isFinite(n)) return [0,0,0,1];
+  return [((n>>16)&255)/255, ((n>>8)&255)/255, (n&255)/255, 1].map(x=>Math.round(x*1000)/1000);
+}
+function isfHeader(desc){
+  return JSON.stringify({
+    DESCRIPTION:desc, CREDIT:'Human Glitche', ISFVSN:'2', CATEGORIES:['generator'],
+    INPUTS:[
+      {NAME:'px',TYPE:'float',DEFAULT:0.5,MIN:0,MAX:1},
+      {NAME:'py',TYPE:'float',DEFAULT:0.62,MIN:0,MAX:1},
+      {NAME:'energy',TYPE:'float',DEFAULT:0.4,MIN:0,MAX:1},
+      {NAME:'pinch',TYPE:'float',DEFAULT:0.35,MIN:0,MAX:1},
+      {NAME:'spin',TYPE:'float',DEFAULT:0.45,MIN:0,MAX:3},
+      {NAME:'glitch',TYPE:'float',DEFAULT:0.12,MIN:0,MAX:1},
+      {NAME:'colA',TYPE:'color',DEFAULT:hexToArr($('colA').value)},
+      {NAME:'colB',TYPE:'color',DEFAULT:hexToArr($('colB').value)},
+    ]
+  },null,2);
+}
+function sampleSource(name){ return '/*'+isfHeader(SAMPLES[name].desc)+'*/\n'+SAMPLES[name].body; }
+function parseHeader(src){
+  const m=String(src).match(/\/\*\s*({[\s\S]*?})\s*\*\//);
+  if(!m) throw new Error('no está el bloque /*{ ... }*/');
+  return JSON.parse(m[1]);
+}
+function setUniform(input,val){ try{ renderer.setValue(input.NAME,val); }catch(e){} }
+function setColors(){
+  if(!renderer) return;
+  if(colorNames.has('colA')) try{ renderer.setValue('colA', hexToArr($('colA').value)); }catch(e){}
+  if(colorNames.has('colB')) try{ renderer.setValue('colB', hexToArr($('colB').value)); }catch(e){}
+}
+function status(msg,isErr){ const el=$('status'); el.classList.toggle('err',!!isErr); el.textContent=msg; }
+function markShader(name){ for(const b of $('samples').children) b.classList.toggle('on', b.dataset.name===name); }
+function stepFor(input){ const span=Math.abs(input.MAX-input.MIN)||1; return span>20?'0.1':'0.01'; }
+function buildParams(){
+  const wrap=$('params'); wrap.innerHTML='';
+  for(const input of floatInputs){
+    if(!Number.isFinite(+state.manual[input.NAME])) state.manual[input.NAME]=input.DEFAULT;
+    const row=document.createElement('div'); row.className='ctrl'; row.dataset.param=input.NAME;
+    row.innerHTML=`<label><span>${esc(input.NAME)}</span> <b>${(+state.manual[input.NAME]).toFixed(2)}</b></label>
+      <input type="range" min="${input.MIN}" max="${input.MAX}" step="${stepFor(input)}" value="${state.manual[input.NAME]}" aria-label="${esc(input.NAME)}">`;
+    const range=row.querySelector('input'), b=row.querySelector('b');
+    range.addEventListener('input',()=>{ state.manual[input.NAME]=+range.value; b.textContent=(+range.value).toFixed(2); touch(); });
+    wrap.appendChild(row);
+  }
+}
+function loadSource(src){
+  $('src').value=src;
+  if(!renderer){ status('sin WebGL no hay shader',true); document.body.dataset.shader='nogl'; return false; }
+  let header; try{ header=parseHeader(src); }catch(e){ status('header ISF inválido: '+e.message,true); document.body.dataset.shader='err'; return false; }
+  try{ renderer.loadSource(src); }
+  catch(e){
+    status('no compiló: '+e.message,true);
+    document.body.dataset.shader='err';
+    if(lastGood && lastGood!==src){ try{ renderer.loadSource(lastGood); }catch(e2){} }
+    return false;
+  }
+  lastGood=src;
+  colorNames=new Set((header.INPUTS||[]).filter(i=>i&&i.TYPE==='color').map(i=>String(i.NAME)));
+  for(const id of ['colA','colB']){
+    const row=$(id)&&$(id).closest('.colorrow');
+    if(row) row.style.opacity=colorNames.has(id)?'1':'0.4';
+  }
+  const inputs=(header.INPUTS||[]).filter(i=>i&&i.TYPE!=='event');
+  floatInputs=inputs.filter(i=>i.TYPE==='float'||i.TYPE==='long').map(i=>({
+    NAME:String(i.NAME), TYPE:i.TYPE,
+    MIN:Number.isFinite(+i.MIN)?+i.MIN:0,
+    MAX:Number.isFinite(+i.MAX)?+i.MAX:1,
+    DEFAULT:Number.isFinite(+i.DEFAULT)?+i.DEFAULT:0,
+  }));
+  floatByName=new Map(floatInputs.map(i=>[i.NAME,i]));
+  for(const i of floatInputs){
+    if(!Number.isFinite(+state.manual[i.NAME])) state.manual[i.NAME]=i.DEFAULT;
+    setUniform(i, state.manual[i.NAME]);
+  }
+  setColors();
+  buildParams();
+  renderRoutes();
+  status('OK · '+floatInputs.length+' inputs float');
+  document.body.dataset.shader='ok';
+  return true;
+}
+function loadSample(name, keepColors){
+  const s=SAMPLES[name]; if(!s) return;
+  state.shader=name; state.custom='';
+  if(!keepColors){ state.colA=s.colA; state.colB=s.colB; $('colA').value=s.colA; $('colB').value=s.colB; }
+  markShader(name);
+  $('fnameSh').textContent='';
+  loadSource(sampleSource(name));
+}
+function paintParams(driven){
+  for(const row of $('params').children){
+    const name=row.dataset.param;
+    const range=row.querySelector('input'); const b=row.querySelector('b');
+    if(!range) continue;
+    if(driven.has(name)){
+      row.classList.add('driven'); range.disabled=true;
+      const v=driven.get(name); range.value=String(v); b.textContent=(+v).toFixed(2);
+    }else if(row.classList.contains('driven')){
+      row.classList.remove('driven'); range.disabled=false;
+      const v=state.manual[name];
+      if(Number.isFinite(+v)) range.value=String(v);
+      b.textContent=(+range.value).toFixed(2);
+    }
+  }
+}
+function initGL(){
+  const c=$('gl');
+  const gl=c.getContext('webgl',{preserveDrawingBuffer:true,antialias:false,alpha:false,powerPreference:'high-performance'});
+  if(!gl){
+    alertSet('gl','No hay WebGL en este navegador. Sin GPU no hay shader. Si MediaPipe arranca, el tracking igual puede seguir en CPU.');
+    document.body.dataset.shader='nogl';
+    return;
+  }
+  const ext=gl.getExtension('WEBGL_debug_renderer_info');
+  if(ext){
+    glName=gl.getParameter(ext.UNMASKED_RENDERER_WEBGL)||'';
+    if(/swiftshader|llvmpipe|softpipe|software/i.test(glName)){
+      alertSet('glsoft','Este navegador está usando una GPU de software. El shader sale, pero el tracking va a ir justo y puede pasar a CPU.',true);
+    }
+  }
+  if(!Renderer){
+    alertSet('isf','No se pudo cargar el host ISF. Sin eso no hay shader; el tracking, el MIDI y el OSC siguen.');
+    document.body.dataset.shader='noisf';
+    return;
+  }
+  try{ renderer=new Renderer(gl); }
+  catch(e){ alertSet('isf','El host ISF no arrancó. '+(e.message||'')); document.body.dataset.shader='noisf'; }
+}
+function resize(){
+  const soft=/swiftshader|llvmpipe|softpipe|software/i.test(glName);
+  const d=soft?1:Math.min(window.devicePixelRatio||1,1.5);
+  const w=Math.max(2,Math.floor(innerWidth*d)), h=Math.max(2,Math.floor(innerHeight*d));
+  const c=$('gl');
+  if(c.width!==w||c.height!==h){ c.width=w; c.height=h; }
+}
+
+/* ---------- rutas ---------- */
+function paramOptions(selected){
+  const names=floatInputs.map(i=>i.NAME);
+  if(selected && !names.includes(selected)) names.push(selected);
+  if(!names.length) names.push(selected||'px');
+  return names.map(n=>`<option value="${esc(n)}"${n===selected?' selected':''}>${esc(n)}</option>`).join('');
+}
+function destFields(r){
+  if(r.dest==='shader') return `<label class="fld">input<select class="param">${paramOptions(r.param)}</select></label>`;
+  if(r.dest==='cc') return `<div class="mini"><label>canal<input class="ch" type="number" min="1" max="16" value="${r.ch}"></label><label>CC<input class="cc" type="number" min="0" max="127" value="${r.cc}"></label></div>`;
+  if(r.dest==='note') return `<div class="mini"><label>canal<input class="ch" type="number" min="1" max="16" value="${r.ch}"></label><label>nota<input class="note" type="number" min="0" max="127" value="${r.note}"></label><label>umbral<input class="thresh" type="number" min="0" max="1" step="0.01" value="${r.thresh}"></label></div>`;
+  return `<label class="fld">dirección<input class="osc" type="text" value="${esc(r.osc)}" spellcheck="false"></label>`;
+}
+function renderRoutes(){
+  const wrap=$('mapRows'); wrap.innerHTML='';
+  if(!routes.length){ wrap.innerHTML='<div class="empty">no hay rutas. agregá una o cargá un preset.</div>'; return; }
+  routes.forEach((r,i)=>{
+    const row=document.createElement('div'); row.className='route'; row.dataset.i=String(i);
+    row.innerHTML=`<div class="rh">
+        <select class="sig" aria-label="señal">${SIGNALS.map(([id,label])=>`<option value="${id}"${id===r.signal?' selected':''}>${label}</option>`).join('')}</select>
+        <select class="dest" aria-label="destino">
+          <option value="shader"${r.dest==='shader'?' selected':''}>shader</option>
+          <option value="cc"${r.dest==='cc'?' selected':''}>MIDI CC</option>
+          <option value="note"${r.dest==='note'?' selected':''}>MIDI nota</option>
+          <option value="osc"${r.dest==='osc'?' selected':''}>OSC</option>
+        </select>
+        <button type="button" class="x" data-x aria-label="borrar ruta">✕</button>
+      </div>
+      ${destFields(r)}
+      <label class="sl">suavizado <b class="sv">${r.smooth.toFixed(2)}</b></label>
+      <input class="smooth" type="range" min="0" max="0.95" step="0.01" value="${r.smooth}" aria-label="suavizado">
+      <div class="rr">
+        <div><label>desde <b class="lov">${r.inLo.toFixed(2)}</b></label><input class="inLo" type="range" min="0" max="1" step="0.01" value="${r.inLo}" aria-label="desde"></div>
+        <div><label>hasta <b class="hiv">${r.inHi.toFixed(2)}</b></label><input class="inHi" type="range" min="0" max="1" step="0.01" value="${r.inHi}" aria-label="hasta"></div>
+      </div>
+      <button type="button" class="tg inv${r.invert?' on':''}" data-inv aria-pressed="${r.invert}">invertir</button>
+      <div class="obar" aria-hidden="true"><i></i></div>`;
+    wrap.appendChild(row);
+  });
+}
+function routeFrom(e){
+  const row=e.target.closest('.route'); if(!row) return null;
+  return routes[+row.dataset.i]||null;
+}
+function onRouteInput(e){
+  const r=routeFrom(e); if(!r) return;
+  const t=e.target;
+  if(t.classList.contains('smooth')){ r.smooth=+t.value; const b=t.previousElementSibling&&t.previousElementSibling.querySelector('.sv'); if(b) b.textContent=(+t.value).toFixed(2); }
+  else if(t.classList.contains('inLo')){ r.inLo=+t.value; const b=t.previousElementSibling&&t.previousElementSibling.querySelector('.lov'); if(b) b.textContent=(+t.value).toFixed(2); }
+  else if(t.classList.contains('inHi')){ r.inHi=+t.value; const b=t.previousElementSibling&&t.previousElementSibling.querySelector('.hiv'); if(b) b.textContent=(+t.value).toFixed(2); }
+  else if(t.classList.contains('ch')) r.ch=clamp(parseInt(t.value,10)||1,1,16);
+  else if(t.classList.contains('cc')) r.cc=clamp(parseInt(t.value,10)||0,0,127);
+  else if(t.classList.contains('note')) r.note=clamp(parseInt(t.value,10)||0,0,127);
+  else if(t.classList.contains('thresh')) r.thresh=clamp(+t.value||0,0,1);
+  else if(t.classList.contains('osc')) r.osc=String(t.value||'').slice(0,80);
+  touch();
+}
+function onRouteChange(e){
+  const r=routeFrom(e); if(!r) return;
+  const t=e.target;
+  if(t.classList.contains('sig')) r.signal=t.value;
+  else if(t.classList.contains('param')) r.param=t.value;
+  else if(t.classList.contains('dest')){
+    r.dest=t.value; r._noteOn=false; r._lastCc=null; r._last=null;
+    renderRoutes();
+  }else if(t.classList.contains('osc')){ r.osc=cleanOsc(t.value); t.value=r.osc; }
+  touch();
+}
+function onRouteClick(e){
+  const row=e.target.closest('.route'); if(!row) return;
+  const i=+row.dataset.i;
+  if(e.target.closest('[data-x]')){
+    const r=routes[i];
+    if(r&&r._noteOn) sendNote(r.ch,r.note,false,0);
+    routes.splice(i,1); renderRoutes(); touch(); return;
+  }
+  if(e.target.closest('[data-inv]')){
+    const r=routes[i]; if(!r) return;
+    r.invert=!r.invert;
+    const b=e.target.closest('[data-inv]');
+    b.classList.toggle('on', r.invert);
+    b.setAttribute('aria-pressed', r.invert?'true':'false');
+    touch();
+  }
+}
+function evalRoute(r, raw){
+  if(!Number.isFinite(raw)) raw=0;
+  const k=clamp(r.smooth,0,0.95);
+  r._s = r._s==null ? raw : r._s*k + raw*(1-k);
+  let lo=r.inLo, hi=r.inHi;
+  if(hi<lo){ const t=lo; lo=hi; hi=t; }
+  let n=(r._s-lo)/Math.max(1e-4, hi-lo);
+  n=clamp(n,0,1);
+  if(r.invert) n=1-n;
+  return n;
+}
+function seen(id){ return !!live[id]; }
+
+/* ---------- MIDI / OSC (igual que CONTROL: CC/nota, OSC binario por WebSocket) ---------- */
+let midiAccess=null, midiOut=null, ws=null;
+function sendCC(ch,cc,v){ if(midiOut) midiOut.send([0xB0|((ch-1)&15), cc&127, v&127]); }
+function sendNote(ch,note,on,vel){ if(midiOut) midiOut.send([(on?0x90:0x80)|((ch-1)&15), note&127, on?(vel&127):0]); }
+function midiUnsupported(){
+  const iOS=/iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform==='MacIntel' && navigator.maxTouchPoints>1);
+  if(iOS) return 'Web MIDI no existe en iPhone ni iPad. El shader y el OSC siguen andando; las notas y los CC, no.';
+  return 'Este navegador no tiene Web MIDI. Usá Chrome o Edge en la computadora. El shader y el OSC siguen.';
+}
+function fillPorts(){
+  const sel=$('port'); const cur=state.midiPort||sel.value;
+  sel.innerHTML='<option value="">— sin puerto —</option>';
+  if(midiAccess) for(const o of midiAccess.outputs.values()) sel.innerHTML+=`<option value="${esc(o.id)}">${esc(o.name||'puerto')}</option>`;
+  const has=[...sel.options].some(o=>o.value===cur);
+  sel.value=has?cur:'';
+  pickPort();
+}
+function pickPort(){
+  state.midiPort=$('port').value;
+  midiOut=(midiAccess && state.midiPort) ? midiAccess.outputs.get(state.midiPort) : null;
+  $('mtxt').textContent = midiOut ? '▶ '+midiOut.name : (midiAccess?'elegí un puerto':'MIDI off');
+  touch();
+}
+async function enableMIDI(){
+  if(!navigator.requestMIDIAccess){ alertSet('midi', midiUnsupported(), true); $('mtxt').textContent='sin Web MIDI'; return; }
+  try{
+    midiAccess=await navigator.requestMIDIAccess({sysex:false});
+    midiAccess.onstatechange=fillPorts;
+    $('mdot').classList.add('live');
+    fillPorts();
+    alertClear('midi');
+    if(!midiAccess.outputs.size) alertSet('midi','MIDI habilitado, pero no hay puertos de salida. En Mac activá el IAC Driver; en Windows, loopMIDI.',true);
+    else toast('MIDI listo');
+  }catch(e){
+    $('mtxt').textContent='MIDI denegado';
+    alertSet('midi','El navegador bloqueó Web MIDI. Sin eso no salen CC ni notas; el shader y el OSC siguen.',true);
+  }
+}
+function oscEnc(addr,val){
+  const pad=u=>{ const p=(4-(u.length%4))%4; const o=new Uint8Array(u.length+p); o.set(u); return o; };
+  const a=pad(new TextEncoder().encode(addr+'\0')), t=pad(new TextEncoder().encode(',f\0'));
+  const f=new Uint8Array(4); new DataView(f.buffer).setFloat32(0,val,false);
+  const out=new Uint8Array(a.length+t.length+4); out.set(a,0); out.set(t,a.length); out.set(f,a.length+t.length);
+  return out.buffer;
+}
+function oscSend(addr,val){ if(ws&&ws.readyState===1){ try{ ws.send(oscEnc(addr,val)); }catch(e){} } }
+function connectOsc(){
+  const url=($('oscurl').value||'').trim();
+  state.oscUrl=url; touch();
+  if(ws){ try{ws.close();}catch(e){} ws=null; }
+  if(!url){ $('oscStat').textContent='OSC manda un float 0–1 por WebSocket. El navegador no tira UDP.'; $('oscStat').className='empty'; return; }
+  let sock;
+  try{ sock=new WebSocket(url); }
+  catch(e){ $('oscStat').textContent='URL de OSC inválida'; alertSet('osc','La URL de OSC no sirve. Tiene que ser un WebSocket, por ejemplo ws://localhost:8080.',true); return; }
+  $('oscStat').textContent='conectando OSC…';
+  ws=sock; sock.binaryType='arraybuffer';
+  let opened=false;
+  const fail=()=>{
+    $('oscStat').textContent='OSC no conectó';
+    alertSet('osc','No conectó el WebSocket OSC. El navegador no manda UDP: hace falta un puente local escuchando ese ws://.',true);
+  };
+  sock.onopen=()=>{ opened=true; $('oscStat').textContent='OSC conectado · float 0–1'; $('oscStat').className='empty'; alertClear('osc'); toast('OSC conectado'); };
+  sock.onclose=()=>{ if(ws!==sock) return; if(!opened) fail(); else $('oscStat').textContent='OSC cerrado'; };
+  sock.onerror=fail;
+}
+
+function applyOutputs(){
+  const driven=new Map(), used=new Set();
+  for(const r of routes){
+    if(!seen(r.signal)){ r._out=null; continue; }
+    const n=evalRoute(r, sig[r.signal]||0);
+    r._out=n;
+    if(r.dest==='shader'){
+      const input=floatByName.get(r.param);
+      if(!input||!renderer) continue;
+      const val=input.MIN + n*((input.MAX??1)-(input.MIN??0));
+      setUniform(input, val);
+      driven.set(input.NAME, val); used.add(input.NAME);
+    }else if(r.dest==='cc'){
+      const v=Math.round(clamp(n,0,1)*127);
+      if(v!==r._lastCc){ r._lastCc=v; sendCC(r.ch,r.cc,v); }
+    }else if(r.dest==='note'){
+      const vel=Math.max(1, Math.round(clamp(n,0,1)*127));
+      if(!r._noteOn && n>=r.thresh){ r._noteOn=true; sendNote(r.ch,r.note,true,vel); }
+      else if(r._noteOn && n<r.thresh-0.08){ r._noteOn=false; sendNote(r.ch,r.note,false,0); }
+    }else if(r.dest==='osc'){
+      if(r._last==null || Math.abs(r._last-n)>=0.004){ r._last=n; oscSend(cleanOsc(r.osc), n); }
+    }
+  }
+  if(renderer){
+    setColors();
+    for(const input of floatInputs){
+      if(used.has(input.NAME)) continue;
+      const v=Number.isFinite(+state.manual[input.NAME])?+state.manual[input.NAME]:input.DEFAULT;
+      setUniform(input, v);
+    }
+    paintParams(driven);
+  }
+}
+function paintRouteBars(){
+  const rows=$('mapRows').children;
+  for(let i=0;i<routes.length;i++){
+    if(!rows[i]||!rows[i].classList.contains('route')) continue;
+    const bar=rows[i].querySelector('.obar i');
+    if(bar) bar.style.width=((routes[i]._out==null?0:routes[i]._out)*100)+'%';
+  }
+}
+
+/* ---------- señales ---------- */
+function sx(x){ return state.mirror ? 1-x : x; }
+function okPose(p){ return !!(p && (p.visibility==null || p.visibility>0.45)); }
+function dist(a,b){ return Math.hypot(a.x-b.x, a.y-b.y); }
+function screenAna(side){
+  if(state.mirror) return side==='der' ? 'Left' : 'Right';
+  return side==='der' ? 'Right' : 'Left';
+}
+function setSig(id, value, ok, now){
+  if(ok && Number.isFinite(value)){
+    const v=clamp(value,0,1);
+    live[id]={v,t:now}; sig[id]=v; return;
+  }
+  const h=live[id];
+  if(!h){ sig[id]=0; return; }
+  const age=now-h.t;
+  if(age<480){ sig[id]=h.v; return; }
+  const v=h.v*Math.exp(-(age-480)/320);
+  if(v<0.02){ delete live[id]; sig[id]=0; return; }
+  sig[id]=v;
+}
+function velocity(key,x,y,now){
+  const p=velPrev[key];
+  if(!p){ velPrev[key]={x,y,t:now,v:0}; return 0; }
+  const dt=(now-p.t)/1000;
+  // mismo cuadro de video: no borrar la lectura anterior
+  if(dt<0.08) return p.v||0;
+  if(dt>1.25){ velPrev[key]={x,y,t:now,v:0}; return 0; }
+  const v=clamp(Math.hypot(x-p.x,y-p.y)/dt/0.85, 0, 1);
+  velPrev[key]={x,y,t:now,v};
+  return v;
+}
+function armAngle(lm, ana){
+  const a=lm[ana.shoulder], b=lm[ana.elbow], c=lm[ana.wrist];
+  if(!okPose(a)||!okPose(b)||!okPose(c)) return null;
+  const v1x=a.x-b.x, v1y=a.y-b.y, v2x=c.x-b.x, v2y=c.y-b.y;
+  const n1=Math.hypot(v1x,v1y), n2=Math.hypot(v2x,v2y);
+  if(n1<1e-4||n2<1e-4) return null;
+  const cos=clamp((v1x*v2x+v1y*v2y)/(n1*n2),-1,1);
+  const deg=Math.acos(cos)*180/Math.PI;
+  return clamp((deg-25)/150, 0, 1);
+}
+function bodyCenter(lm){
+  let x=0,y=0,w=0;
+  for(const i of [11,12,23,24]){
+    const p=lm[i]; if(!okPose(p)) continue;
+    const k=p.visibility==null?1:p.visibility;
+    x+=p.x*k; y+=p.y*k; w+=k;
+  }
+  if(w<0.5) return null;
+  return {x:x/w,y:y/w};
+}
+function openness(hand, poseLm, ana){
+  if(hand && hand.length>=21){
+    const palm=dist(hand[0], hand[9]);
+    if(palm<1e-4) return null;
+    let s=0; for(const t of [4,8,12,16,20]) s+=dist(hand[0], hand[t]);
+    return clamp((s/5/palm - 0.9)/1.5, 0, 1);
+  }
+  if(!poseLm) return null;
+  const w=poseLm[ana.wrist]; if(!okPose(w)) return null;
+  let s=0,n=0;
+  for(const t of [ana.thumb, ana.index, ana.pinky]){
+    if(!okPose(poseLm[t])) continue;
+    s+=dist(w, poseLm[t]); n++;
+  }
+  if(!n) return null;
+  const ref=dist(poseLm[ana.shoulder], poseLm[ana.elbow]);
+  if(ref<1e-4) return null;
+  return clamp((s/n)/ref/0.9, 0, 1);
+}
+function pinchOf(hand, poseLm, ana){
+  if(hand && hand.length>=21){
+    const palm=dist(hand[0], hand[9]);
+    if(palm<1e-4) return null;
+    return clamp(dist(hand[4], hand[8])/palm/1.35, 0, 1);
+  }
+  if(!poseLm) return null;
+  const th=poseLm[ana.thumb], ix=poseLm[ana.index];
+  if(!okPose(th)||!okPose(ix)) return null;
+  const ref=dist(poseLm[ana.shoulder], poseLm[ana.elbow]);
+  if(ref<1e-4) return null;
+  return clamp(dist(th, ix)/ref/0.6, 0, 1);
+}
+function handFor(anaName){
+  const lms=handRes?.landmarks||[];
+  const hands=handRes?.handedness||handRes?.handednesses||[];
+  for(let i=0;i<lms.length;i++){
+    if(hands[i]?.[0]?.categoryName===anaName) return lms[i];
+  }
+  return null;
+}
+function updateSignals(now){
+  const poseLm=(state.pose && poseRes?.landmarks?.[0] && poseRes.landmarks[0].length>=33) ? poseRes.landmarks[0] : null;
+  const derName=screenAna('der'), izqName=screenAna('izq');
+  const derAna=ANA[derName], izqAna=ANA[izqName];
+  const handDer=state.hands ? handFor(derName) : null;
+  const handIzq=state.hands ? handFor(izqName) : null;
+  const point=(ana, hand)=>{
+    if(hand&&hand[0]) return hand[0];
+    if(poseLm && okPose(poseLm[ana.wrist])) return poseLm[ana.wrist];
+    return null;
+  };
+  const pDer=point(derAna, handDer), pIzq=point(izqAna, handIzq);
+  if(pDer){
+    setSig('munecaDerX', sx(pDer.x), true, now);
+    setSig('munecaDerY', pDer.y, true, now);
+    setSig('velocidadDer', velocity('der', sx(pDer.x), pDer.y, now), true, now);
+  }else{
+    setSig('munecaDerX',0,false,now); setSig('munecaDerY',0,false,now); setSig('velocidadDer',0,false,now);
+    delete velPrev.der;
+  }
+  if(pIzq){
+    setSig('munecaIzqX', sx(pIzq.x), true, now);
+    setSig('munecaIzqY', pIzq.y, true, now);
+    setSig('velocidadIzq', velocity('izq', sx(pIzq.x), pIzq.y, now), true, now);
+  }else{
+    setSig('munecaIzqX',0,false,now); setSig('munecaIzqY',0,false,now); setSig('velocidadIzq',0,false,now);
+    delete velPrev.izq;
+  }
+  if(poseLm){
+    const c=bodyCenter(poseLm);
+    if(c){ setSig('centroX', sx(c.x), true, now); setSig('centroY', c.y, true, now); }
+    else { setSig('centroX',0,false,now); setSig('centroY',0,false,now); }
+    const ad=armAngle(poseLm, derAna), ai=armAngle(poseLm, izqAna);
+    setSig('anguloDer', ad==null?0:ad, ad!=null, now);
+    setSig('anguloIzq', ai==null?0:ai, ai!=null, now);
+  }else{
+    setSig('centroX',0,false,now); setSig('centroY',0,false,now);
+    setSig('anguloDer',0,false,now); setSig('anguloIzq',0,false,now);
+  }
+  const od=openness(handDer, poseLm, derAna), oi=openness(handIzq, poseLm, izqAna);
+  setSig('aperturaDer', od==null?0:od, od!=null, now);
+  setSig('aperturaIzq', oi==null?0:oi, oi!=null, now);
+  const pd=pinchOf(handDer, poseLm, derAna), pi=pinchOf(handIzq, poseLm, izqAna);
+  setSig('pinchDer', pd==null?0:pd, pd!=null, now);
+  setSig('pinchIzq', pi==null?0:pi, pi!=null, now);
+  const blends=state.face ? (faceRes?.faceBlendshapes?.[0]?.categories||[]) : [];
+  if(state.face && blends.length){
+    let jaw=0, sl=0, sr=0;
+    for(const c of blends){
+      if(c.categoryName==='jawOpen') jaw=c.score;
+      else if(c.categoryName==='mouthSmileLeft') sl=c.score;
+      else if(c.categoryName==='mouthSmileRight') sr=c.score;
+    }
+    setSig('boca', jaw, true, now);
+    setSig('sonrisa', (sl+sr)/2, true, now);
+  }else{
+    setSig('boca',0,false,now); setSig('sonrisa',0,false,now);
+  }
+}
+
+/* ---------- dibujo del esqueleto (en el espacio de la cámara; el espejo es CSS) ---------- */
+function drawLinks(ctx, lm, links, color, w, h, check){
+  ctx.strokeStyle=color; ctx.lineWidth=Math.max(2, w/340); ctx.lineCap='round'; ctx.lineJoin='round';
+  ctx.beginPath();
+  for(const [a,b] of links){
+    const pa=lm[a], pb=lm[b];
+    if(!pa||!pb) continue;
+    if(check && (!check(pa)||!check(pb))) continue;
+    ctx.moveTo(pa.x*w, pa.y*h); ctx.lineTo(pb.x*w, pb.y*h);
+  }
+  ctx.stroke();
+}
+function drawDots(ctx, lm, idxs, color, w, h, check, rad){
+  ctx.fillStyle=color;
+  for(const i of idxs){
+    const p=lm[i]; if(!p||(check&&!check(p))) continue;
+    ctx.beginPath(); ctx.arc(p.x*w, p.y*h, rad, 0, Math.PI*2); ctx.fill();
+  }
+}
+function drawOverlay(){
+  const ctx=overlay.getContext('2d');
+  const w=overlay.width, h=overlay.height;
+  if(!w||!h){ return; }
+  ctx.clearRect(0,0,w,h);
+  if(!videoReady()) return;
+  const poseLm=(state.pose && poseRes?.landmarks?.[0])||null;
+  if(poseLm){
+    const derName=screenAna('der'), izqName=screenAna('izq');
+    drawLinks(ctx, poseLm, POSE_DER[derName], '#b8ff00', w, h, okPose);
+    drawLinks(ctx, poseLm, POSE_DER[izqName], '#3ad0ff', w, h, okPose);
+    drawLinks(ctx, poseLm, POSE_MID, 'rgba(240,237,230,.85)', w, h, okPose);
+    if(okPose(poseLm[0]) && okPose(poseLm[11]) && okPose(poseLm[12])){
+      const mx=(poseLm[11].x+poseLm[12].x)/2, my=(poseLm[11].y+poseLm[12].y)/2;
+      ctx.strokeStyle='rgba(240,237,230,.7)'; ctx.beginPath();
+      ctx.moveTo(poseLm[0].x*w, poseLm[0].y*h); ctx.lineTo(mx*w, my*h); ctx.stroke();
+    }
+    const idxs=[]; for(let i=0;i<33;i++) idxs.push(i);
+    drawDots(ctx, poseLm, idxs, '#f0ede6', w, h, okPose, Math.max(2.2, w/220));
+    for(const name of [derName, izqName]){
+      const p=poseLm[ANA[name].wrist]; if(!okPose(p)) continue;
+      ctx.fillStyle = name===derName ? '#b8ff00' : '#3ad0ff';
+      ctx.beginPath(); ctx.arc(p.x*w, p.y*h, Math.max(5, w/90), 0, Math.PI*2); ctx.fill();
+    }
+    const c=bodyCenter(poseLm);
+    if(c){
+      ctx.strokeStyle='#b8ff00'; ctx.lineWidth=1.5;
+      ctx.beginPath(); ctx.moveTo(c.x*w-8,c.y*h); ctx.lineTo(c.x*w+8,c.y*h);
+      ctx.moveTo(c.x*w,c.y*h-8); ctx.lineTo(c.x*w,c.y*h+8); ctx.stroke();
+    }
+  }
+  if(state.hands){
+    const derName=screenAna('der');
+    const lms=handRes?.landmarks||[];
+    const hands=handRes?.handedness||handRes?.handednesses||[];
+    for(let i=0;i<lms.length;i++){
+      const name=hands[i]?.[0]?.categoryName;
+      const color = name===derName ? '#b8ff00' : '#3ad0ff';
+      drawLinks(ctx, lms[i], HAND_LINKS, color, w, h, null);
+      drawDots(ctx, lms[i], lms[i].map((_,k)=>k), color, w, h, null, Math.max(2, w/240));
+    }
+  }
+  const faceLm=state.face && faceRes?.faceLandmarks?.[0];
+  if(faceLm && faceLm.length){
+    let minX=1,minY=1,maxX=0,maxY=0;
+    for(const p of faceLm){ if(p.x<minX)minX=p.x; if(p.y<minY)minY=p.y; if(p.x>maxX)maxX=p.x; if(p.y>maxY)maxY=p.y; }
+    ctx.strokeStyle='#ff2d55'; ctx.lineWidth=Math.max(1.5, w/400);
+    ctx.strokeRect(minX*w, minY*h, (maxX-minX)*w, (maxY-minY)*h);
+    const nose=faceLm[1];
+    if(nose){ ctx.fillStyle='#ff2d55'; ctx.beginPath(); ctx.arc(nose.x*w, nose.y*h, Math.max(3,w/160), 0, Math.PI*2); ctx.fill(); }
+  }
+}
+
+/* ---------- MediaPipe ---------- */
+let PoseLandmarker, HandLandmarker, FaceLandmarker, FilesetResolver;
+let vision=null, poseTask=null, handsTask=null, faceTask=null;
+let poseRes=null, handRes=null, faceRes=null;
+let poseCount=0, handCount=0, faceCount=0;
+let modelState='boot', poseDel='', handDel='';
+let faceLoading=false, detectFails=0, ts=0;
+function nextTs(){ const t=performance.now(); ts=Math.max(ts+0.001, t); return ts; }
+function withTimeout(p, ms){ return Promise.race([p, new Promise((_,rej)=>setTimeout(()=>rej(new Error('tardó demasiado')), ms))]); }
+async function createTask(kind, delegate){
+  const baseOptions={modelAssetPath:MODELS[kind], delegate};
+  const common={baseOptions, runningMode:'VIDEO'};
+  if(kind==='pose') return withTimeout(PoseLandmarker.createFromOptions(vision, {...common, numPoses:1, minPoseDetectionConfidence:0.5, minPosePresenceConfidence:0.5, minTrackingConfidence:0.5}), 40000);
+  if(kind==='hands') return withTimeout(HandLandmarker.createFromOptions(vision, {...common, numHands:2, minHandDetectionConfidence:0.5, minHandPresenceConfidence:0.5, minTrackingConfidence:0.5}), 40000);
+  return withTimeout(FaceLandmarker.createFromOptions(vision, {...common, numFaces:1, outputFaceBlendshapes:true, minFaceDetectionConfidence:0.35, minFacePresenceConfidence:0.35, minTrackingConfidence:0.35}), 40000);
+}
+async function createFallback(kind){
+  try{ return {task:await createTask(kind,'GPU'), delegate:'GPU'}; }
+  catch(gpuErr){
+    try{ return {task:await createTask(kind,'CPU'), delegate:'CPU'}; }
+    catch(cpuErr){ throw new Error((cpuErr&&cpuErr.message)||(gpuErr&&gpuErr.message)||'falló el modelo'); }
+  }
+}
+async function bootModels(){
+  if(!FilesetResolver){ modelState='fail'; document.body.dataset.models='fail'; return; }
+  try{
+    vision=await withTimeout(FilesetResolver.forVisionTasks(WASM), 40000);
+    const pose=await createFallback('pose'); poseTask=pose.task; poseDel=pose.delegate;
+    const hands=await createFallback('hands'); handsTask=hands.task; handDel=hands.delegate;
+    modelState='ok';
+    document.body.dataset.models='ok';
+    document.body.dataset.delegate=poseDel+'/'+handDel;
+    if(poseDel==='CPU' || handDel==='CPU'){
+      const who=poseDel==='CPU' && handDel==='CPU' ? 'el tracking' : (poseDel==='CPU'?'la pose':'las manos');
+      alertSet('gpu','Sin GPU para '+who+': sigue en CPU. Anda, pero más justo.',true);
+    }
+    if(state.face) ensureFace();
+  }catch(e){
+    modelState='fail';
+    document.body.dataset.models='fail';
+    alertSet('mp','No arrancó el tracking ('+(e.message||'error')+'). La cámara sigue en tu máquina; los modelos se bajan de Google la primera vez.');
+  }
+}
+async function ensureFace(){
+  if(faceTask||faceLoading) return;
+  faceLoading=true; $('faceBtn').textContent='cara…';
+  try{
+    const r=await createFallback('face');
+    faceTask=r.task;
+    if(r.delegate==='CPU') alertSet('facegpu','La cara quedó en CPU.',true);
+    else alertClear('facegpu');
+    document.body.dataset.facemodel='on';
+  }catch(e){
+    state.face=false; syncToggles();
+    alertSet('face','No pude cargar el modelo de cara. Pose y manos siguen. '+(e.message||''));
+    document.body.dataset.facemodel='fail';
+  }finally{
+    faceLoading=false; $('faceBtn').textContent='cara';
+  }
+}
+function runDetect(){
+  const stamp=nextTs();
+  poseCount=0; handCount=0; faceCount=0;
+  let failed=false;
+  if(state.pose && poseTask){
+    try{ poseRes=poseTask.detectForVideo(video, stamp); poseCount=poseRes?.landmarks?.length||0; }
+    catch(e){ poseRes=null; failed=true; }
+  }else poseRes=null;
+  if(state.hands && handsTask){
+    try{ handRes=handsTask.detectForVideo(video, stamp); handCount=handRes?.landmarks?.length||0; }
+    catch(e){ handRes=null; failed=true; }
+  }else handRes=null;
+  if(state.face && faceTask){
+    try{ faceRes=faceTask.detectForVideo(video, stamp); faceCount=faceRes?.faceLandmarks?.length||0; }
+    catch(e){ faceRes=null; failed=true; }
+  }else if(!state.face) faceRes=null;
+  if(failed){ detectFails++; if(detectFails===3) alertSet('detect','El tracking está fallando. Si la cámara está abierta, recargá. Pose y manos pueden ir a tirones.',true); }
+  else if(poseCount||handCount||faceCount){ detectFails=0; alertClear('detect'); }
+}
+
+/* ---------- cámara / video local ---------- */
+const video=$('cam'), overlay=$('overlay');
+let stream=null, blobUrl='';
+video.muted=true; video.playsInline=true;
+function videoReady(){ return video.readyState>=2 && video.videoWidth>0 && !video.paused && !video.ended; }
+function showCamMsg(t){ const el=$('camMsg'); el.textContent=t; el.classList.remove('hide'); }
+function hideCamMsg(){ $('camMsg').classList.add('hide'); }
+function stopStream(){ if(stream){ stream.getTracks().forEach(t=>t.stop()); stream=null; } }
+function camError(e){
+  const n=e&&e.name;
+  if(n==='NotAllowedError') return 'Permiso de cámara bloqueado. Habilitalo en el candado del navegador y volvé a tocar activar.';
+  if(n==='NotFoundError') return 'No hay cámara en este equipo. Cargá un video local: el tracking es el mismo y no se sube.';
+  if(n==='NotReadableError') return 'La cámara está ocupada por otro programa.';
+  if(n==='SecurityError' || !window.isSecureContext) return 'La cámara pide HTTPS (o localhost).';
+  if(n==='TimeoutError') return 'La cámara no respondió. Cargá un video local si estás sin webcam.';
+  return 'No se pudo abrir la cámara. Cargá un video local: no se sube.';
+}
+async function getCam(){
+  const md=navigator.mediaDevices;
+  try{
+    return await md.getUserMedia({video:{facingMode:'user',width:{ideal:960},height:{ideal:540}},audio:false});
+  }catch(e){
+    if(e && e.name==='OverconstrainedError') return md.getUserMedia({video:true,audio:false});
+    throw e;
+  }
+}
+async function startCamera(){
+  if(!navigator.mediaDevices?.getUserMedia){
+    const msg='Este navegador no abre la cámara. Chrome o Edge, en HTTPS. O cargá un video local.';
+    alertSet('cam', msg); showCamMsg(msg); document.body.dataset.cam='none'; return;
+  }
+  showCamMsg('esperando permiso de cámara…');
+  stopStream();
+  if(blobUrl){ URL.revokeObjectURL(blobUrl); blobUrl=''; }
+  video.removeAttribute('src'); video.srcObject=null;
+  try{ stream=await Promise.race([getCam(), new Promise((_,rej)=>setTimeout(()=>rej(Object.assign(new Error('timeout'),{name:'TimeoutError'})), 8000))]); }
+  catch(e){
+    alertSet('cam', camError(e)); showCamMsg(camError(e));
+    document.body.dataset.cam = e&&e.name==='NotAllowedError' ? 'denied' : 'none';
+    $('camBtn').classList.remove('on'); $('camBtn').textContent='activar cámara';
+    return;
+  }
+  alertClear('cam');
+  video.srcObject=stream; video.loop=false;
+  try{ await video.play(); }catch(e){ showCamMsg('el navegador no dejó arrancar la cámara'); document.body.dataset.cam='denied'; return; }
+  hideCamMsg();
+  document.body.dataset.cam='live';
+  $('camBtn').classList.add('on'); $('camBtn').textContent='cámara activa';
+  $('fname').textContent='';
+}
+async function useFile(file){
+  if(!file) return;
+  stopStream();
+  if(blobUrl) URL.revokeObjectURL(blobUrl);
+  blobUrl=URL.createObjectURL(file);
+  video.srcObject=null; video.src=blobUrl; video.loop=true;
+  try{ await video.play(); }
+  catch(e){ showCamMsg('no pude reproducir ese video'); return; }
+  alertClear('cam'); hideCamMsg();
+  document.body.dataset.cam='file';
+  $('fname').textContent=file.name+' · local, no se sube';
+  $('camBtn').classList.remove('on'); $('camBtn').textContent='activar cámara';
+}
+function syncOverlaySize(){
+  const w=video.videoWidth, h=video.videoHeight;
+  if(!w||!h) return;
+  if(overlay.width!==w||overlay.height!==h){ overlay.width=w; overlay.height=h; }
+}
+
+/* ---------- loop ---------- */
+const meterEls={};
+function buildMeters(){
+  const wrap=$('meters'); wrap.innerHTML='';
+  for(const [id,label] of SIGNALS){
+    const row=document.createElement('div'); row.className='meter';
+    row.innerHTML=`<span class="nm">${label}</span><div class="bar"><i></i></div><span class="vv">0.00</span>`;
+    meterEls[id]={row, bar:row.querySelector('i'), vv:row.querySelector('.vv')};
+    wrap.appendChild(row);
+  }
+}
+function paintMeters(){
+  for(const [id] of SIGNALS){
+    const el=meterEls[id]; if(!el) continue;
+    el.bar.style.width=((sig[id]||0)*100)+'%';
+  }
+}
+let lastSlow=0, nextDetect=0;
+function slowUI(){
+  const del=[poseDel,handDel].filter(Boolean).join('/')||'…';
+  const tracking=!!(poseCount||handCount||faceCount);
+  $('pip').classList.toggle('hot', tracking && videoReady());
+  let text;
+  if(modelState==='boot') text='bajando modelos…';
+  else if(modelState==='fail') text='sin modelos de tracking';
+  else{
+    const bits=[];
+    if(state.pose) bits.push(poseCount?'pose':'sin pose');
+    if(state.hands) bits.push(handCount?handCount+' manos':'sin manos');
+    if(state.face) bits.push(faceCount?'cara':'sin cara');
+    bits.push(del);
+    text=bits.join(' · ');
+  }
+  $('pipTag').textContent=text;
+  $('statusline').textContent=text;
+  document.body.dataset.pose=String(poseCount);
+  document.body.dataset.hands=String(handCount);
+  document.body.dataset.face=String(faceCount);
+  document.body.dataset.delegate=del;
+  document.body.dataset.wx=(sig.munecaDerX||0).toFixed(3);
+  document.body.dataset.wy=(sig.munecaDerY||0).toFixed(3);
+  for(const [id] of SIGNALS){
+    const el=meterEls[id]; if(!el) continue;
+    el.vv.textContent=(sig[id]||0).toFixed(2);
+    el.row.classList.toggle('dim', (id==='boca'||id==='sonrisa') && !state.face);
+  }
+}
+function frame(t){
+  requestAnimationFrame(frame);
+  resize();
+  syncOverlaySize();
+  if(!document.hidden && videoReady() && modelState==='ok' && t>=nextDetect){
+    const t0=performance.now();
+    runDetect();
+    updateSignals(performance.now());
+    const spent=performance.now()-t0;
+    nextDetect=t+(spent>26?Math.min(80,spent):0);
+  }
+  applyOutputs();
+  paintRouteBars();
+  paintMeters();
+  try{ if(renderer) renderer.draw($('gl')); }catch(e){}
+  drawOverlay();
+  if(t-lastSlow>200){ lastSlow=t; slowUI(); }
+}
+
+async function goFullscreen(){
+  const el=document.documentElement;
+  const req=el.requestFullscreen||el.webkitRequestFullscreen;
+  if(!req) throw new Error('no');
+  await req.call(el);
+}
+function exitClean(){
+  document.body.classList.remove('clean');
+  if(document.fullscreenElement){ const ex=document.exitFullscreen||document.webkitExitFullscreen; if(ex) ex.call(document).catch(()=>{}); }
+}
+
+function reloadFromState(){
+  syncToggles();
+  if(state.custom){ markShader(''); loadSource(state.custom); }
+  else loadSample(state.shader||'AURA', true);
+  if(state.face) ensureFace();
+}
+
+function download(name, text, type){
+  const b=new Blob([text],{type:type||'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(b); a.download=name; a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href), 1500);
+}
+
+async function loadLibs(){
+  try{ ({Renderer}=await import('https://esm.sh/interactive-shader-format')); }
+  catch(e){ alertSet('isf','No se pudo cargar el host ISF (esm.sh). Sin red no hay shader.'); }
+  try{ ({PoseLandmarker, HandLandmarker, FaceLandmarker, FilesetResolver}=await import('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.21')); }
+  catch(e){ alertSet('mp','No se pudo cargar MediaPipe. El tracking baja la librería, no sube tu cámara. Revisá la conexión.'); }
+}
+
+function wire(){
+  for(const name of Object.keys(SAMPLES)){
+    const b=document.createElement('button'); b.type='button'; b.className='fam'; b.dataset.name=name; b.textContent=name;
+    b.addEventListener('click',()=>{ loadSample(name,false); touch(); });
+    $('samples').appendChild(b);
+  }
+  $('mapRows').addEventListener('input', onRouteInput);
+  $('mapRows').addEventListener('change', onRouteChange);
+  $('mapRows').addEventListener('click', onRouteClick);
+  $('toggle').addEventListener('click',()=>$('panel').classList.toggle('hide'));
+  $('peek').addEventListener('click', exitClean);
+  $('cleanBtn').addEventListener('click',()=>document.body.classList.toggle('clean'));
+  $('fsBtn').addEventListener('click',()=>{ goFullscreen().catch(()=>toast('este navegador no dio pantalla completa')); });
+  $('projectBtn').addEventListener('click', async()=>{
+    document.body.classList.add('clean');
+    try{ if(!document.fullscreenElement) await goFullscreen(); }
+    catch(e){ toast('salida limpia. pantalla completa no disponible'); }
+  });
+  $('mirrorBtn').addEventListener('click',()=>{ state.mirror=!state.mirror; delete velPrev.der; delete velPrev.izq; syncToggles(); touch(); });
+  $('poseBtn').addEventListener('click',()=>{ state.pose=!state.pose; syncToggles(); touch(); });
+  $('handsBtn').addEventListener('click',()=>{ state.hands=!state.hands; syncToggles(); touch(); });
+  $('faceBtn').addEventListener('click', async()=>{
+    state.face=!state.face; syncToggles(); touch();
+    if(state.face) await ensureFace();
+  });
+  $('showCam').addEventListener('change',()=>{ state.showCam=$('showCam').checked; syncToggles(); touch(); });
+  $('camBtn').addEventListener('click', startCamera);
+  $('drop').addEventListener('click',()=>$('fileVideo').click());
+  $('fileVideo').addEventListener('change',e=>{ if(e.target.files[0]) useFile(e.target.files[0]); });
+  $('drop').addEventListener('dragover',e=>{ e.preventDefault(); $('drop').classList.add('over'); });
+  $('drop').addEventListener('dragleave',()=>$('drop').classList.remove('over'));
+  $('drop').addEventListener('drop',e=>{ e.preventDefault(); $('drop').classList.remove('over'); const f=[...e.dataTransfer.files].find(f=>f.type.startsWith('video/')); if(f) useFile(f); });
+  $('idrop').addEventListener('click',()=>$('fileIsf').click());
+  $('fileIsf').addEventListener('change',e=>{ if(e.target.files[0]) readIsf(e.target.files[0]); });
+  $('idrop').addEventListener('dragover',e=>{ e.preventDefault(); $('idrop').classList.add('over'); });
+  $('idrop').addEventListener('dragleave',()=>$('idrop').classList.remove('over'));
+  $('idrop').addEventListener('drop',e=>{ e.preventDefault(); $('idrop').classList.remove('over'); const f=e.dataTransfer.files[0]; if(f) readIsf(f); });
+  $('editbtn').addEventListener('click',()=>$('editor').classList.toggle('open'));
+  $('renderBtn').addEventListener('click',()=>{
+    const src=$('src').value;
+    state.custom=src.slice(0,150000); state.shader=''; markShader('');
+    if(loadSource(src)){ $('fnameSh').textContent='código editado'; touch(); }
+  });
+  $('colA').addEventListener('input', onColor);
+  $('colB').addEventListener('input', onColor);
+  $('midiBtn').addEventListener('click', enableMIDI);
+  $('port').addEventListener('change', pickPort);
+  $('oscConn').addEventListener('click', connectOsc);
+  $('oscurl').addEventListener('change',()=>{ state.oscUrl=$('oscurl').value.trim(); touch(); });
+  $('addRoute').addEventListener('click',()=>{
+    if(routes.length>=24) return;
+    routes.push(normRoute({signal:'centroX',smooth:0.5,dest:'shader',param:floatInputs[0]?.NAME||'px',cc:24,osc:'/track/nuevo'}, routes.length));
+    renderRoutes(); touch();
+  });
+  $('presetShader').addEventListener('click',()=>{ routes=defaultShaderRoutes(); renderRoutes(); touch(); toast('preset shader'); });
+  $('presetMidi').addEventListener('click',()=>{ routes=defaultMidiRoutes(); renderRoutes(); touch(); toast('preset MIDI'); });
+  $('saveBtn').addEventListener('click',()=>{ persist(); flash($('saveBtn'),'✓'); });
+  $('loadBtn').addEventListener('click',()=>{
+    const data=readStore();
+    if(!data){ toast('no hay nada guardado'); return; }
+    try{ applyData(data); reloadFromState(); flash($('loadBtn'),'✓'); }
+    catch(e){ toast('el guardado no se pudo leer'); }
+  });
+  $('expBtn').addEventListener('click',()=>download('track-mapeo.json', JSON.stringify(serialize(),null,2)));
+  $('impBtn').addEventListener('click',()=>$('fileJson').click());
+  $('fileJson').addEventListener('change',e=>{
+    const f=e.target.files[0]; if(!f) return;
+    f.text().then(t=>{
+      try{ const data=JSON.parse(t); if(!data||!Array.isArray(data.routes)) throw new Error('sin rutas'); applyData(data); reloadFromState(); persist(); toast('JSON cargado'); }
+      catch(err){ toast('ese JSON no es un mapeo de TRACK'); }
+    });
+    e.target.value='';
+  });
+  addEventListener('keydown',e=>{
+    if(e.metaKey||e.ctrlKey||e.altKey) return;
+    if(e.target.matches('input,textarea,select')) return;
+    if(e.key==='h'||e.key==='H') document.body.classList.toggle('clean');
+    if(e.key==='f'||e.key==='F') goFullscreen().catch(()=>toast('este navegador no dio pantalla completa'));
+    if(e.key==='m'||e.key==='M'){ state.mirror=!state.mirror; delete velPrev.der; delete velPrev.izq; syncToggles(); touch(); }
+    if(e.key==='Escape') document.body.classList.remove('clean');
+  });
+  addEventListener('dragover',e=>{
+    if(e.dataTransfer&&[...e.dataTransfer.items].some(i=>i.kind==='file')) e.preventDefault();
+  });
+  addEventListener('drop',e=>{
+    const f=e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files[0];
+    if(!f) return;
+    if(e.target.closest('#drop')||e.target.closest('#idrop')) return;
+    e.preventDefault();
+    const name=f.name.toLowerCase();
+    if(name.endsWith('.json')) f.text().then(t=>{ try{ applyData(JSON.parse(t)); reloadFromState(); persist(); toast('JSON cargado'); }catch(err){ toast('JSON inválido'); } });
+    else if(name.endsWith('.fs')||name.endsWith('.frag')||name.endsWith('.glsl')) readIsf(f);
+    else if(f.type.startsWith('video/')) useFile(f);
+  });
+  addEventListener('pagehide',()=>{ for(const r of routes) if(r._noteOn) sendNote(r.ch,r.note,false,0); });
+}
+function onColor(){ state.colA=$('colA').value; state.colB=$('colB').value; setColors(); touch(); }
+async function readIsf(file){
+  const text=await file.text();
+  state.custom=text.slice(0,150000); state.shader=''; markShader('');
+  if(loadSource(state.custom)){ $('fnameSh').textContent=file.name+' · local'; touch(); }
+}
+async function main(){
+  const stored=readStore();
+  if(stored && typeof stored==='object'){ try{ applyData(stored); }catch(e){ routes=defaultShaderRoutes(); } }
+  if(!routes.length) routes=defaultShaderRoutes();
+  syncToggles();
+  buildMeters();
+  wire();
+  renderRoutes();
+  if(!navigator.requestMIDIAccess) alertSet('midi', midiUnsupported(), true);
+  await loadLibs();
+  initGL();
+  reloadFromState();
+  persistOn=true;
+  requestAnimationFrame(frame);
+  bootModels();
+  startCamera();
+}
+window.__track={ sig, state, live, seen, get routes(){return routes;} };
+main();
+</script>
+</body></html>

@@ -41,7 +41,7 @@ Todos exportan HTML transparente para Browser Source: [**OVERLAY**](https://hg-v
 
 ### 🎛️ Show en vivo y control
 
-[**CONTROL**](https://hg-vl.com/control/) (control surface web → MIDI a VDMX/Resolume/Ableton, OSC por WebSocket) · [**SMPTE**](https://hg-vl.com/smpte/) (generador y checker de timecode LTC) · [**TEST PATTERNS**](https://hg-vl.com/test-patterns/) (cartas de ajuste para calibrar proyectores) · [**GIGS**](https://hg-vl.com/gigs/) · [**RIDER**](https://hg-vl.com/rider/) · [**CUE SHEET**](https://hg-vl.com/cue-sheet/) · [**CHECKLIST**](https://hg-vl.com/checklist-show/)
+[**CONTROL**](https://hg-vl.com/control/) (control surface web → MIDI a VDMX/Resolume/Ableton, OSC por WebSocket) · [**TRACK**](https://hg-vl.com/track/) (el cuerpo frente a la cámara → shader ISF, MIDI y OSC) · [**SMPTE**](https://hg-vl.com/smpte/) (generador y checker de timecode LTC) · [**TEST PATTERNS**](https://hg-vl.com/test-patterns/) (cartas de ajuste para calibrar proyectores) · [**GIGS**](https://hg-vl.com/gigs/) · [**RIDER**](https://hg-vl.com/rider/) · [**CUE SHEET**](https://hg-vl.com/cue-sheet/) · [**CHECKLIST**](https://hg-vl.com/checklist-show/)
 
 ### 🎬 Producción y marca
 
