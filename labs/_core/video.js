@@ -3,7 +3,7 @@
 // Si WebCodecs o el codec no están, se vuelve al seek de <video> en el hilo principal.
 import { applyLoop } from './loop-fx.js';
 import { lumaFromImageData, shouldKeepScene, thresholdFor } from './scene.js';
-import { clipTimestamps, fitSize, frameDelayMs, sceneTimestamps, spreadTimestamps } from './timeline.js';
+import { audioSliceRange, clipTimestamps, fitSize, frameDelayMs, sceneTimestamps, spreadTimestamps } from './timeline.js';
 import { muxAnimatedWebp } from './webp-anim.js';
 import { zipFrames } from './zip-store.js';
 
@@ -564,6 +564,95 @@ export function triggerDownload(url, filename) {
   document.body.appendChild(a);
   a.click();
   a.remove();
+}
+
+export function downloadBlob(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  triggerDownload(url, filename);
+  setTimeout(() => URL.revokeObjectURL(url), 20000);
+}
+
+// Recorta un AudioBuffer ya decodificado. Se queda con los primeros
+// dos canales: H.264/AAC de Instagram no quiere un 5.1.
+export function clipAudioBuffer(buffer, startSec, durSec, maxChannels = 2) {
+  const range = audioSliceRange(buffer.length, buffer.sampleRate, startSec, durSec);
+  if (!range.frames) throw new Error('El recorte de audio quedó vacío.');
+  const ch = Math.max(1, Math.min(maxChannels, buffer.numberOfChannels));
+  const Ctor = globalThis.OfflineAudioContext || globalThis.AudioContext;
+  if (!Ctor) throw new Error('Este navegador no puede recortar audio.');
+  const ctx = new Ctor(1, 1, buffer.sampleRate);
+  const out = ctx.createBuffer(ch, range.frames, buffer.sampleRate);
+  for (let c = 0; c < ch; c++) {
+    out.copyToChannel(buffer.getChannelData(c).subarray(range.start, range.end), c);
+  }
+  return out;
+}
+
+// Motor para clips que se dibujan (kinetic, stingers, audiograma), no para
+// un archivo de video. Si hay VideoEncoder pero no alpha, la transparencia
+// sale como secuencia PNG. Sin WebCodecs, queda MediaRecorder.
+export async function detectDrawnExport(opts = {}) {
+  const { probeDrawnExport } = await import('./encode-sequence.js');
+  const probe = await probeDrawnExport(opts);
+  if (probe.ok) {
+    return {
+      engine: 'webcodecs',
+      container: probe.container,
+      videoCodec: probe.videoCodec || null,
+      audioCodec: probe.audioCodec || null,
+      audioSampleRate: probe.audioSampleRate || null,
+      resample: !!probe.resample,
+      alpha: !!probe.alpha,
+    };
+  }
+  if (opts.alpha) {
+    if (probe.webcodecs || !mediaRecorderWebmMime()) {
+      return { engine: 'png', container: 'zip', videoCodec: 'png', audioCodec: null, alpha: true };
+    }
+    return { engine: 'mediarecorder', container: 'webm', videoCodec: null, audioCodec: null, alpha: false };
+  }
+  const liveAudio = opts.audio && typeof MediaRecorder === 'function';
+  if (liveAudio || mediaRecorderWebmMime()) {
+    return { engine: 'mediarecorder', container: opts.audio ? null : 'webm', videoCodec: null, audioCodec: null, alpha: false };
+  }
+  return { engine: 'none', container: null, videoCodec: null, audioCodec: null, alpha: false, reason: probe.reason || null };
+}
+
+export async function renderDrawnClip(opts) {
+  const { encodeSequence } = await import('./encode-sequence.js');
+  const format = opts.container === 'zip' ? 'zip' : opts.container;
+  const result = await encodeSequence({
+    width: opts.width,
+    height: opts.height,
+    fps: opts.fps,
+    format,
+    count: opts.count,
+    canvas: opts.canvas,
+    alpha: !!opts.alpha,
+    audio: opts.audio || null,
+    audioCodec: opts.audioCodec || null,
+    audioSampleRate: opts.audioSampleRate || null,
+    resample: !!opts.resample,
+    quality: opts.quality || null,
+    keyFrameInterval: opts.keyFrameInterval,
+    pace: opts.pace !== false,
+    fastStart: format === 'mp4',
+    extraFiles: opts.extraFiles,
+    renderFrame: opts.renderFrame,
+    onProgress: opts.onProgress,
+  });
+  const done = blobResult(
+    result.bytes,
+    result.mime,
+    result.ext,
+    result.frames,
+    result.codec,
+    opts.width,
+    opts.height,
+    format === 'zip' ? 'png' : 'webcodecs',
+  );
+  done.audioCodec = result.audioCodec || null;
+  return done;
 }
 
 let worker;

@@ -75,3 +75,37 @@ export function boomerangOrder(n) {
   for (let i = n - 2; i >= 1; i--) idx.push(i);
   return idx;
 }
+
+// Cuántos fotogramas entran en una duración a un fps dado.
+// round, no ceil: 1.2s a 60 fps son 72, y el archivo dura count/fps.
+export function exportFrameCount(durationSec, fps) {
+  const d = Number(durationSec);
+  const f = Number(fps);
+  if (!(d > 0) || !(f > 0)) return 1;
+  return Math.max(1, Math.round(d * f));
+}
+
+// Tiempo de la animación en el fotograma i. El último cae en `total`
+// para que el cierre (texto asentado, stinger descubierto, barra al 100%)
+// entre en el archivo. Los anteriores siguen i/fps * velocidad.
+export function frameSampleTime(index, count, fps, speed, total) {
+  const n = count | 0;
+  const span = Number(total);
+  if (!(span >= 0)) return 0;
+  if (n <= 1) return span;
+  if ((index | 0) >= n - 1) return span;
+  const f = Number(fps);
+  const s = Number(speed);
+  if (!(f > 0) || !(s > 0)) return 0;
+  return Math.min(span, (index / f) * s);
+}
+
+// Recorte de un AudioBuffer en muestras, sin flotar el índice.
+export function audioSliceRange(length, sampleRate, startSec, durSec) {
+  const n = Math.max(0, length | 0);
+  const sr = Math.max(1, sampleRate | 0);
+  const start = Math.max(0, Math.min(n, Math.floor(Math.max(0, Number(startSec) || 0) * sr)));
+  const want = Math.max(1, Math.ceil(Math.max(0, Number(durSec) || 0) * sr));
+  const end = Math.min(n, start + want);
+  return { start, end, frames: Math.max(0, end - start) };
+}

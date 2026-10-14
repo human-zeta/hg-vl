@@ -5,7 +5,8 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { applyLoop, blendRgba } from './loop-fx.js';
 import { lumaGrid, mad, shouldKeepScene, thresholdFor } from './scene.js';
-import { boomerangOrder, clipTimestamps, fitSize, sceneTimestamps, spreadTimestamps } from './timeline.js';
+import { audioSliceRange, boomerangOrder, clipTimestamps, exportFrameCount, fitSize, frameSampleTime, sceneTimestamps, spreadTimestamps } from './timeline.js';
+import { webmHasAlphaMode } from './webm-mark.js';
 import { extractWebpBitstream, muxAnimatedWebp } from './webp-anim.js';
 import { ZipStore, crc32 } from './zip-store.js';
 
@@ -44,6 +45,28 @@ assert.equal(sceneTs[0], 0);
 const capped = sceneTimestamps(3600, 12, 0, 100);
 assert.equal(capped.length, 100);
 assert.ok(capped[capped.length - 1] > 3000);
+
+assert.equal(exportFrameCount(1.2, 60), 72);
+assert.equal(exportFrameCount(2.6, 30), 78);
+assert.equal(exportFrameCount(0, 30), 1);
+assert.equal(frameSampleTime(0, 78, 30, 1, 2.6), 0);
+assert.equal(frameSampleTime(77, 78, 30, 1, 2.6), 2.6);
+assert.ok(frameSampleTime(30, 78, 30, 1, 2.6) < 2.6);
+const sped = frameSampleTime(10, 39, 30, 2, 2.6);
+assert.ok(Math.abs(sped - (10 / 30) * 2) < 1e-9);
+
+const range = audioSliceRange(48000 * 10, 48000, 1.5, 0.5);
+assert.equal(range.start, 72000);
+assert.equal(range.frames, 24000);
+assert.equal(range.end, 96000);
+const tail = audioSliceRange(1000, 48000, 0, 2);
+assert.equal(tail.start, 0);
+assert.equal(tail.frames, 1000);
+
+assert.equal(webmHasAlphaMode(new Uint8Array([0x00, 0x53, 0xc0, 0x81, 0x01, 0xff])), true);
+assert.equal(webmHasAlphaMode(new Uint8Array([0x53, 0xc0, 0x81, 0x00])), false);
+assert.equal(webmHasAlphaMode(new Uint8Array([0x53, 0xc0, 0x82, 0x00, 0x01])), true);
+assert.equal(webmHasAlphaMode(new Uint8Array([1, 2, 3, 4])), false);
 
 assert.deepEqual(boomerangOrder(4), [0, 1, 2, 3, 2, 1]);
 assert.deepEqual(boomerangOrder(2), [0, 1]);

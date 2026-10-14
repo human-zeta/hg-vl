@@ -76,7 +76,7 @@
     <div class="brand"><b>KINETIC TYPE</b><span class="sub">Human Glitche · el taller</span></div>
     <div class="nav"><a href="/labs/">← LABS</a><a href="/letras/">LETRAS →</a></div>
   </header>
-  <p class="intro">Animá <b>texto</b> para tus videos y streams — typewriter, scramble/decode, glitch reveal, pop, wave y neón. Ajustás fuente, color y ritmo, y exportás un <b>.webm con canal alpha real</b> (para OBS/Premiere/After Effects) o un PNG. 100% en tu navegador — la grabación pasa en tu máquina.</p>
+  <p class="intro">Animá <b>texto</b> para tus videos y streams — typewriter, scramble/decode, glitch reveal, pop, wave y neón. Ajustás fuente, color y ritmo, y exportás un <b>.webm con canal alpha real</b> (para OBS/Premiere/After Effects) o un PNG. 100% en tu navegador: el video se arma <b>frame a frame</b> en tu máquina, más rápido que en tiempo real.</p>
 
   <div class="layout">
     <div class="controls">
@@ -136,7 +136,7 @@
       <details open>
         <summary>Usar en OBS / editor</summary>
         <div class="body">
-          El <b>.webm tiene canal alpha</b>: en OBS lo sumás como <b>Fuente de medios</b> (marcá "bucle" si querés) y flota sobre tu escena; en Premiere/After Effects lo tirás a la timeline con transparencia. Para un lower-third animado o un título de intro. Si preferís fondo, activá <b>fondo sólido</b> antes de grabar. El <b>PNG</b> es el texto ya asentado, sin animación.
+          El <b>.webm tiene canal alpha</b>: en OBS lo sumás como <b>Fuente de medios</b> (marcá "bucle" si querés) y flota sobre tu escena; en Premiere/After Effects lo tirás a la timeline con transparencia. Para un lower-third animado o un título de intro. Si preferís fondo, activá <b>fondo sólido</b> antes de grabar. El <b>PNG</b> es el texto ya asentado, sin animación. Si el navegador no puede escribir alpha en el video, te baja un <b>ZIP de PNG</b> con transparencia (secuencia de imágenes). Sin WebCodecs, vuelve a la grabación en tiempo real.
         </div>
       </details>
     </div>
@@ -145,7 +145,9 @@
 </div>
 <div class="toast" id="toast"></div>
 
-<script>
+<script type="module">
+import { detectDrawnExport, downloadBlob, renderDrawnClip } from '/labs/_core/video.js';
+import { exportFrameCount, frameSampleTime } from '/labs/_core/timeline.js';
 const $=id=>document.getElementById(id);
 const ANIMS=[['typewriter','⌨ typewriter'],['scramble','⚄ scramble'],['glitch','▓ glitch'],['pop','◍ pop'],['wave','∿ wave'],['neon','✦ neón'],['slide','⇥ slide']];
 const SWATCHES=['#f0ede6','#b8ff00','#3ad0ff','#ff2d55','#ffb020','#9b6bff','#ff5edb'];
@@ -260,11 +262,11 @@ $('fsize').oninput=e=>{cfg.fsize=+e.target.value;$('sizeVal').textContent=cfg.fs
 $('color').oninput=e=>{cfg.color=e.target.value;build();};
 $('bgcolor').oninput=e=>{cfg.bgcolor=e.target.value;syncBg();build();};
 $('spd').oninput=e=>{cfg.spd=+e.target.value;$('spdVal').textContent=cfg.spd.toFixed(1)+'×';};
-$('chkBg').onclick=()=>{cfg.bg=!cfg.bg;$('chkBg').classList.toggle('on',cfg.bg);$('bgFld').style.display=cfg.bg?'':'none';build();};
+$('chkBg').onclick=()=>{cfg.bg=!cfg.bg;$('chkBg').classList.toggle('on',cfg.bg);$('bgFld').style.display=cfg.bg?'':'none';build();refreshCaps();};
 $('chkGlow').onclick=()=>{cfg.glow=!cfg.glow;$('chkGlow').classList.toggle('on',cfg.glow);build();};
 $('chkLoop').onclick=()=>{cfg.loop=!cfg.loop;$('chkLoop').classList.toggle('on',cfg.loop);build();};
-$('size').onchange=e=>{const[w,h]=e.target.value.split('x').map(Number);cfg.w=w;cfg.h=h;build();};
-$('fps').onchange=e=>{cfg.fps=+e.target.value;};
+$('size').onchange=e=>{const[w,h]=e.target.value.split('x').map(Number);cfg.w=w;cfg.h=h;build();refreshCaps();};
+$('fps').onchange=e=>{cfg.fps=+e.target.value;refreshCaps();};
 $('replay').onclick=()=>{t0=null;playing=true;if(!raf)loop();build();};
 
 let fc=0,ft=performance.now();(function fps(){fc++;const n=performance.now();if(n-ft>500){$('fpsread').textContent=Math.round(fc/((n-ft)/1000))+' fps';fc=0;ft=n;}requestAnimationFrame(fps);})();
@@ -312,7 +314,75 @@ async function fixWebmDuration(blob, durationMs){
   }catch(e){ return blob; }
 }
 
+let caps=null, exporting=false, capToken=0;
+async function refreshCaps(){
+  if(exporting) return;
+  const token=++capToken;
+  let next;
+  try{
+    next=await detectDrawnExport({width:cfg.w,height:cfg.h,fps:cfg.fps,alpha:!cfg.bg,quality:cfg.bg?'medium':'high'});
+  }catch(err){
+    if(token!==capToken||exporting) return;
+    $('recinfo').textContent='no pude ver el motor · '+((err&&err.message)||'error');
+    return;
+  }
+  if(token!==capToken||exporting) return;
+  caps=next;
+  if(caps.engine==='webcodecs'&&caps.alpha) $('recinfo').textContent='motor WebCodecs · VP9 con alpha · frame a frame';
+  else if(caps.engine==='webcodecs') $('recinfo').textContent='motor WebCodecs · '+(caps.videoCodec||caps.container)+' · frame a frame';
+  else if(caps.engine==='png') $('recinfo').textContent='sin alpha en video · la salida es una secuencia PNG';
+  else if(caps.engine==='mediarecorder') $('recinfo').textContent='sin WebCodecs · grabación en tiempo real';
+  else $('recinfo').textContent='este navegador no puede exportar video';
+  $('rec').textContent=caps.engine==='png'?'⏺ GRABAR .zip':'⏺ GRABAR .webm';
+}
+async function recordDrawn(container,alpha){
+  const off=document.createElement('canvas');
+  const eng=makeEngine(off,{...cfg});
+  const outDur=eng.total/cfg.spd;
+  const count=exportFrameCount(outDur,cfg.fps);
+  const result=await renderDrawnClip({
+    width:cfg.w,height:cfg.h,fps:cfg.fps,count,canvas:off,
+    container,alpha,quality:alpha?'high':'medium',
+    renderFrame:(_ctx,i)=>{eng.drawFrame(frameSampleTime(i,count,cfg.fps,cfg.spd,eng.total));},
+    onProgress:(p)=>{$('recinfo').textContent='codificando '+p.index+'/'+p.total;},
+  });
+  const name=result.ext==='zip'?'hg-kinetic.zip':'hg-kinetic.'+result.ext;
+  downloadBlob(result.blob,name);
+  const label=result.ext==='zip'?'secuencia PNG':(alpha?'VP9 alpha':(result.codec||result.ext));
+  $('recinfo').textContent='✓ listo · '+((result.blob.size/1024)|0)+' KB · '+outDur.toFixed(1)+'s · '+label;
+  toast(result.ext==='zip'?'secuencia PNG ⬇':'.'+result.ext+' listo ⬇');
+}
 async function record(){
+  if(exporting) return;
+  if(document.fonts&&document.fonts.ready) await document.fonts.ready;
+  if(!caps) await refreshCaps();
+  exporting=true;
+  $('rec').disabled=true;$('replay').disabled=true;
+  const wasPlaying=playing; playing=false; if(raf) cancelAnimationFrame(raf); raf=0;
+  try{
+    if(caps.engine==='webcodecs') await recordDrawn(caps.container, !!caps.alpha && !cfg.bg);
+    else if(caps.engine==='png') await recordDrawn('zip', false);
+    else if(caps.engine==='mediarecorder') await recordLive();
+    else toast('este navegador no puede exportar');
+  }catch(err){
+    if(!cfg.bg && caps.engine!=='png'){
+      try{ $('recinfo').textContent='el video con alpha no salió · armo la secuencia PNG…'; await recordDrawn('zip', false); }
+      catch(e2){ toast('no pude exportar'); $('recinfo').textContent=(e2&&e2.message)||'falló'; }
+    } else if(caps.engine==='webcodecs'){
+      $('recinfo').textContent='WebCodecs no pudo · grabo en tiempo real…';
+      try{ await recordLive(); }catch(e2){ toast((e2&&e2.message)||'no pude exportar'); }
+    } else {
+      toast((err&&err.message)||'no pude exportar');
+      $('recinfo').textContent=(err&&err.message)||'falló';
+    }
+  }finally{
+    exporting=false;
+    $('rec').disabled=false;$('replay').disabled=false;
+    $('rec').textContent=caps&&caps.engine==='png'?'⏺ GRABAR .zip':'⏺ GRABAR .webm';
+    if(wasPlaying){ playing=true; t0=null; loop(); }
+  }
+}
+async function recordLive(){
   const type=['video/webm;codecs=vp9','video/webm;codecs=vp8'].find(t=>MediaRecorder.isTypeSupported(t));
   if(!type){toast('sin soporte de grabación webm');return;}
   if(!cfg.bg && !await alphaOk(type)){ if(!confirm('Tu navegador no preservó el alpha en la prueba; el webm puede salir con fondo negro. ¿Grabar igual (o activá "fondo sólido")?'))return; }
@@ -342,5 +412,6 @@ function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');cle
 // init — esperar a que las fuentes carguen para medir bien
 if(document.fonts&&document.fonts.ready){document.fonts.ready.then(build);}
 build();
+refreshCaps();
 </script>
 </body></html>

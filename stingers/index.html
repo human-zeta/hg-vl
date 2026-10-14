@@ -82,7 +82,7 @@
     <div class="brand"><b>STINGERS</b><span class="sub">Human Glitche · el taller</span></div>
     <div class="nav"><a href="/labs/">← LABS</a><a href="/overlay/">OVERLAY →</a></div>
   </header>
-  <p class="intro">Generá <b>transiciones de escena (stingers)</b> para OBS — barrido de bloques, glitch, cortina, iris y swipe con tu <b>logo/texto</b>. Se graban como <b>.webm con canal alpha real</b> (para que las escenas se vean a través) y te damos el <b>punto de transición en ms</b> para cargarlo en OBS. 100% en tu navegador — la grabación pasa en tu máquina, no sube nada.</p>
+  <p class="intro">Generá <b>transiciones de escena (stingers)</b> para OBS — barrido de bloques, glitch, cortina, iris y swipe con tu <b>logo/texto</b>. Se exportan como <b>.webm con canal alpha real</b> (para que las escenas se vean a través) y te damos el <b>punto de transición en ms</b> para cargarlo en OBS. 100% en tu navegador: el video se arma <b>frame a frame</b> en tu máquina, más rápido que en tiempo real.</p>
 
   <div class="layout">
     <div class="controls">
@@ -111,7 +111,7 @@
         <h2 class="sec"><b>Salida</b></h2>
         <div class="fld"><label>Resolución</label><select id="size"><option value="1920x1080">1920 × 1080</option><option value="1280x720">1280 × 720 — liviano</option><option value="1080x1920">1080 × 1920 — vertical</option></select></div>
         <div class="fld"><label>FPS de grabación</label><select id="fps"><option value="60">60 fps</option><option value="30">30 fps</option></select></div>
-        <div class="note">Se graba con VP9 + alpha. Si tu navegador no soporta alpha, avisamos antes de grabar.</div>
+        <div class="note">Sale VP9 con alpha, frame a frame. Si este navegador no puede escribir alpha en el video, te bajamos un ZIP de PNG con transparencia. Sin WebCodecs, se graba en tiempo real.</div>
       </div>
     </div>
 
@@ -138,7 +138,7 @@
             <li>En <b>Punto de transición</b> elegí <b>Tiempo (ms)</b> y pegá el valor que te damos: <span class="bigms" id="tpMs">600 ms</span></li>
             <li>Aceptá. Ahora al cambiar de escena con esa transición, se reproduce el stinger.</li>
           </ol>
-          <div class="note">El alpha deja ver las dos escenas a través del stinger. Si necesitás también sonido de transición, se puede sumar después (OBS mezcla el audio del propio webm si lo tuviera). Este export es solo video con alpha.</div>
+          <div class="note">El alpha deja ver las dos escenas a través del stinger. Si necesitás también sonido de transición, se puede sumar después (OBS mezcla el audio del propio webm si lo tuviera). Este export es solo video con alpha. Si el archivo es un ZIP, importá la secuencia de PNG en el editor: cada cuadro trae transparencia.</div>
         </div>
       </details>
     </div>
@@ -147,7 +147,9 @@
 </div>
 <div class="toast" id="toast"></div>
 
-<script>
+<script type="module">
+import { detectDrawnExport, downloadBlob, renderDrawnClip } from '/labs/_core/video.js';
+import { exportFrameCount, frameSampleTime } from '/labs/_core/timeline.js';
 const $=id=>document.getElementById(id);
 
 /* ============================================================
@@ -249,12 +251,12 @@ function play(){readAll();playing=true;$('play').textContent='❚❚ ...';const 
 $('play').onclick=()=>{if(playing){playing=false;cancelAnimationFrame(previewRAF);$('play').textContent='▶ PREVISUALIZAR';return;}play();};
 $('scrub').oninput=e=>{if(playing){playing=false;cancelAnimationFrame(previewRAF);$('play').textContent='▶ PREVISUALIZAR';}renderAt(+e.target.value/1000);};
 ['logo'].forEach(id=>$(id).oninput=()=>{readAll();renderAt(+$('scrub').value/1000);});
-$('size').onchange=()=>{readAll();renderAt(+$('scrub').value/1000);};
+$('size').onchange=()=>{readAll();renderAt(+$('scrub').value/1000);refreshCaps();};
 $('dur').oninput=e=>{$('durVal').textContent=(+e.target.value).toFixed(1)+'s';readAll();};
 $('tp').oninput=e=>{$('tpVal').textContent=e.target.value+'%';readAll();renderAt(+$('scrub').value/1000);};
 $('accent').oninput=e=>{cfg.accent=e.target.value;renderAt(+$('scrub').value/1000);};
 $('accent2').oninput=e=>{cfg.accent2=e.target.value;renderAt(+$('scrub').value/1000);};
-$('fps').onchange=readAll;
+$('fps').onchange=()=>{readAll();refreshCaps();};
 $('chkLogo').onclick=()=>{cfg.showLogo=!cfg.showLogo;$('chkLogo').classList.toggle('on',cfg.showLogo);renderAt(+$('scrub').value/1000);};
 
 /* Chrome no escribe Duration en los WebM de MediaRecorder → no seekeable en Premiere/AE.
@@ -291,8 +293,76 @@ async function fixWebmDuration(blob, durationMs){
   }catch(e){ return blob; }
 }
 
-// ---- RECORD to alpha webm ----
+let caps=null, exporting=false, capToken=0;
+async function refreshCaps(){
+  if(exporting) return;
+  const token=++capToken;
+  let next;
+  try{
+    next=await detectDrawnExport({width:cfg.w,height:cfg.h,fps:cfg.fps,alpha:true,quality:'high'});
+  }catch(err){
+    if(token!==capToken||exporting) return;
+    $('recinfo').textContent='no pude ver el motor · '+((err&&err.message)||'error');
+    return;
+  }
+  if(token!==capToken||exporting) return;
+  caps=next;
+  if(caps.engine==='webcodecs') $('recinfo').textContent='motor WebCodecs · VP9 con alpha · frame a frame';
+  else if(caps.engine==='png') $('recinfo').textContent='sin alpha en video · la salida es una secuencia PNG';
+  else if(caps.engine==='mediarecorder') $('recinfo').textContent='sin WebCodecs · grabación en tiempo real';
+  else $('recinfo').textContent='este navegador no puede exportar video';
+  $('rec').textContent=caps.engine==='png'?'⏺ GRABAR .zip':'⏺ GRABAR .webm';
+}
+async function recordZipOrWebm(container){
+  const off=document.createElement('canvas');
+  off.width=cfg.w; off.height=cfg.h;
+  const rx=off.getContext('2d');
+  const count=exportFrameCount(cfg.dur,cfg.fps);
+  const ms=Math.round(cfg.dur*cfg.tp/100*1000);
+  const result=await renderDrawnClip({
+    width:cfg.w,height:cfg.h,fps:cfg.fps,count,canvas:off,
+    container,alpha:container==='webm',quality:'high',
+    extraFiles:container==='zip'?[{name:'transicion.txt',data:'punto de transición: '+ms+' ms\n'}]:null,
+    renderFrame:(_ctx,i)=>{
+      const t=frameSampleTime(i,count,cfg.fps,1,cfg.dur);
+      drawStinger(rx,cfg.w,cfg.h,cfg.dur?t/cfg.dur:1,{...cfg});
+    },
+    onProgress:(p)=>{$('recinfo').textContent='codificando '+p.index+'/'+p.total;},
+  });
+  const name=result.ext==='zip'?('hg-stinger-'+cfg.kind+'.zip'):('hg-stinger-'+cfg.kind+'.'+result.ext);
+  downloadBlob(result.blob,name);
+  const label=result.ext==='zip'?'secuencia PNG':'VP9 alpha';
+  $('recinfo').textContent='✓ listo · '+((result.blob.size/1024)|0)+' KB · '+label+' · punto de transición '+ms+' ms';
+  toast((result.ext==='zip'?'secuencia PNG ⬇':'.webm listo ⬇')+' · transición '+ms+'ms');
+}
 async function record(){
+  if(exporting) return;
+  readAll();
+  if(document.fonts&&document.fonts.ready) await document.fonts.ready;
+  if(!caps) await refreshCaps();
+  exporting=true;
+  $('rec').disabled=true;$('play').disabled=true;
+  const wasPlaying=playing;
+  if(playing){playing=false;cancelAnimationFrame(previewRAF);$('play').textContent='▶ PREVISUALIZAR';}
+  try{
+    if(caps.engine==='webcodecs') await recordZipOrWebm(caps.container||'webm');
+    else if(caps.engine==='png') await recordZipOrWebm('zip');
+    else if(caps.engine==='mediarecorder') await recordLive();
+    else toast('este navegador no puede exportar');
+  }catch(err){
+    if(caps.engine!=='png'){
+      try{ $('recinfo').textContent='el video con alpha no salió · armo la secuencia PNG…'; await recordZipOrWebm('zip'); }
+      catch(e2){ toast('no pude exportar'); $('recinfo').textContent=(e2&&e2.message)||'falló'; }
+    } else {
+      toast((err&&err.message)||'no pude exportar');
+    }
+  }finally{
+    exporting=false;
+    $('rec').disabled=false;$('play').disabled=false;
+    $('rec').textContent=caps&&caps.engine==='png'?'⏺ GRABAR .zip':'⏺ GRABAR .webm';
+  }
+}
+async function recordLive(){
   readAll();
   const type=['video/webm;codecs=vp9','video/webm;codecs=vp8'].find(t=>MediaRecorder.isTypeSupported(t));
   if(!type){toast('tu navegador no soporta grabar webm');return;}
@@ -335,5 +405,6 @@ function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');cle
 
 // init
 readAll();renderAt(0.5);$('scrub').value=500;
+refreshCaps();
 </script>
 </body></html>

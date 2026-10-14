@@ -1,7 +1,7 @@
 <!doctype html><html lang="es"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>AUDIOGRAMA — Human Glitche · tu tema en video vertical</title>
-<meta name="description" content="Convertí un tema (o un fragmento) en un video con onda animada, arte de tapa y título: vertical 9:16, 4:5, 1:1 o 16:9. Espectro real calculado en tu máquina, 5 estilos de onda y export de video con audio. 100% en tu navegador.">
+<meta name="description" content="Convertí un tema (o un fragmento) en un video con onda animada, arte de tapa y título: vertical 9:16, 4:5, 1:1 o 16:9. Espectro real calculado en tu máquina, 5 estilos de onda y export MP4 con audio. 100% en tu navegador.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&family=Anton&display=swap" rel="stylesheet">
 <style>
@@ -79,7 +79,7 @@
     <div class="brand"><b>AUDIOGRAMA</b><span class="sub">Human Glitche · el taller</span></div>
     <div class="nav"><a href="/labs/">← LABS</a><a href="/marcadores/">MARCADORES →</a></div>
   </header>
-  <p class="intro">Tu tema convertido en <b>video</b>: onda animada con el espectro real, arte de tapa y título. Elegís el <b>fragmento</b> (15s, 30s, 1 min o completo), el formato (<b>9:16</b> para reels/shorts, 4:5, 1:1 o 16:9) y uno de 5 <b>estilos de onda</b>. El análisis del audio y la grabación pasan enteros en tu máquina — nada se sube a ningún lado.</p>
+  <p class="intro">Tu tema convertido en <b>video</b>: onda animada con el espectro real, arte de tapa y título. Elegís el <b>fragmento</b> (15s, 30s, 1 min o completo), el formato (<b>9:16</b> para reels/shorts, 4:5, 1:1 o 16:9) y uno de 5 <b>estilos de onda</b>. El análisis y el armado del video pasan enteros en tu máquina — nada se sube. El archivo sale en <b>.mp4</b>, listo para Instagram.</p>
 
   <div class="layout">
     <div class="controls">
@@ -144,7 +144,7 @@
         <button class="btn rec" id="rec" disabled>● GRABAR VIDEO</button>
         <button class="btn" id="png" disabled>PNG DEL CUADRO</button>
       </div>
-      <p class="note" id="recNote">La grabación corre en tiempo real: un fragmento de 30 s tarda 30 s. Dejá la pestaña visible mientras graba.</p>
+      <p class="note" id="recNote">Se arma frame a frame, más rápido que en tiempo real, y el audio va adentro del .mp4.</p>
 
       <details>
         <summary>Cómo usarlo · y qué hacer con el archivo</summary>
@@ -153,9 +153,9 @@
             <li>Dropeá el tema. Se analiza entero en tu máquina (espectro a 30 cuadros por segundo) — unos segundos según el largo.</li>
             <li>Elegí el <b>fragmento</b>: hacé clic en la barra de onda para mover el arranque y elegí la duración. Para reels/shorts, 15 s o 30 s del estribillo.</li>
             <li>Sumá el <b>arte de tapa</b> y escribí el título. Con <b>✦ GENERAR</b> re-rolleás estilo, colores y fondo hasta que te guste.</li>
-            <li><b>● GRABAR VIDEO</b> reproduce el fragmento y captura el canvas con el audio adentro.</li>
+            <li><b>● GRABAR VIDEO</b> dibuja cada cuadro con la onda de ese instante y mete el audio adentro. No hace falta dejar la pestaña al frente.</li>
           </ol>
-          <p style="margin-top:12px"><b>Sobre el formato de salida:</b> el navegador graba en <code>.webm</code> (o <code>.mp4</code> si tu navegador lo soporta — Safari sí). El <code>.webm</code> entra directo en Premiere, Resolve y CapCut. Para subirlo tal cual a Instagram o TikTok conviene pasarlo a mp4: <code>ffmpeg -i audiograma.webm -c:v libx264 -c:a aac out.mp4</code>.</p>
+          <p style="margin-top:12px"><b>Sobre el formato de salida:</b> el archivo sale en <code>.mp4</code> con H.264 y AAC (si el navegador no codifica AAC, el audio va en Opus). En <b>9:16</b> queda listo para Instagram: el audio ya está adentro, no hace falta pasarlo por ffmpeg. Si tu navegador no tiene WebCodecs, la grabación vuelve a tiempo real y el formato depende del navegador.</p>
           <p style="margin-top:12px"><b>Se enchufa con:</b> <a href="/marcadores/" style="color:var(--acid)">MARCADORES</a> para encontrar el drop exacto que querés recortar, <a href="/paleta/" style="color:var(--acid)">PALETA</a> para sacar el acento del arte de tapa, y <a href="/letras/" style="color:var(--acid)">LETRAS</a> si querés un título con más carácter (exportalo en PNG y usalo como arte).</p>
         </div>
       </details>
@@ -166,7 +166,9 @@
 </div>
 <div class="toast" id="toast"></div>
 
-<script>
+<script type="module">
+import { clipAudioBuffer, detectDrawnExport, downloadBlob, renderDrawnClip } from '/labs/_core/video.js';
+import { exportFrameCount, frameSampleTime } from '/labs/_core/timeline.js';
 const $=id=>document.getElementById(id);
 const FMT={'9:16':[9,16],'4:5':[4,5],'1:1':[1,1],'16:9':[16,9]};
 const STYLES=[['espejo','Espejo'],['barras','Barras'],['anillo','Anillo'],['onda','Onda'],['bloques','Bloques']];
@@ -190,8 +192,8 @@ function chips(host,list,get,set){const h=$(host);h.innerHTML='';list.forEach(([
 chips('styles',STYLES,()=>cfg.style,v=>{cfg.style=v;draw();});
 chips('bgs',BGS,()=>cfg.bg,v=>{cfg.bg=v;$('bgColors').style.display=v==='arte'?'none':'';draw();});
 chips('durs',DURS,()=>cfg.dur,v=>{cfg.dur=v;clampStart();draw();drawTL();info();});
-chips('fmts',Object.keys(FMT).map(k=>[k,k]),()=>cfg.fmt,v=>{cfg.fmt=v;resize();draw();info();});
-chips('quals',QUALS,()=>cfg.qual,v=>{cfg.qual=v;resize();draw();info();});
+chips('fmts',Object.keys(FMT).map(k=>[k,k]),()=>cfg.fmt,v=>{cfg.fmt=v;resize();draw();info();refreshCaps();});
+chips('quals',QUALS,()=>cfg.qual,v=>{cfg.qual=v;resize();draw();info();refreshCaps();});
 chips('fx',[['glow','Glow'],['grain','Grano']],()=>null,()=>{});
 (function fxToggles(){const h=$('fx');h.innerHTML='';[['glow','Glow'],['grain','Grano']].forEach(([k,label])=>{
   const d=document.createElement('div');d.className='chip'+(cfg[k]?' on':'');d.textContent=label;
@@ -273,7 +275,7 @@ async function loadAudio(file){
   cfg.start=0; if(!cfg.title){cfg.title=file.name.replace(/\.[^.]+$/,'').replace(/[_-]+/g,' ').toUpperCase().slice(0,34);$('title').value=cfg.title;}
   $('metaA').innerHTML='<b>'+esc(file.name)+'</b> · '+fmtTime(buffer.duration)+' · '+buffer.sampleRate+' Hz · '+(buffer.numberOfChannels>1?'estéreo':'mono');
   clampStart();['play','rec','png'].forEach(id=>$(id).disabled=false);
-  drawTL();draw();info();toast('audio listo ✓');
+  drawTL();draw();info();refreshCaps();toast('audio listo ✓');
 }
 function loadCover(file){const r=new FileReader();r.onload=()=>{const im=new Image();
   im.onload=()=>{cover=im;coverName=file.name;$('metaI').innerHTML='<b>'+esc(file.name)+'</b> · '+im.width+'×'+im.height;draw();};
@@ -299,7 +301,8 @@ function drawTL(){const cv=$('tl'),g=cv.getContext('2d'),W=cv.width,H=cv.height;
     g.fillStyle=cfg.acc;g.globalAlpha=.75;g.fillRect(i,(H-h)/2,1,h);g.globalAlpha=1;}}
 
 /* ---------- canvas ---------- */
-function outSize(){const [a,b]=FMT[cfg.fmt];return a<b?[cfg.qual,Math.round(cfg.qual*b/a)]:[Math.round(cfg.qual*a/b),cfg.qual];}
+function even(n){n=Math.max(2,Math.round(n));return n%2?n+1:n;}
+function outSize(){const [a,b]=FMT[cfg.fmt];return a<b?[even(cfg.qual),even(cfg.qual*b/a)]:[even(cfg.qual*a/b),even(cfg.qual)];}
 function resize(){const [w,h]=outSize();const cv=$('stage');cv.width=w;cv.height=h;}
 function info(){const [w,h]=outSize();$('stageInfo').textContent=w+'×'+h+' · '+(buffer?fmtTime(cfg.start)+' → '+fmtTime(cfg.start+selDur()):'sin audio');}
 
@@ -493,7 +496,81 @@ function pickMime(){
   const c=['video/mp4;codecs=avc1.42E01E,mp4a.40.2','video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm'];
   for(const m of c)if(window.MediaRecorder&&MediaRecorder.isTypeSupported(m))return m;
   return '';}
-$('rec').onclick=()=>{
+let caps=null, exporting=false, capToken=0;
+async function refreshCaps(){
+  if(exporting||recording) return;
+  const token=++capToken;
+  const [w,h]=outSize();
+  let next;
+  try{
+    next=await detectDrawnExport({
+      width:w,height:h,fps:FPS,audio:true,
+      sampleRate:buffer?buffer.sampleRate:48000,
+      channels:buffer?Math.min(2,buffer.numberOfChannels):2,
+      quality:cfg.qual>=1080?'high':'medium',
+    });
+  }catch(err){
+    next={engine:'mediarecorder'};
+  }
+  if(token!==capToken||exporting||recording) return;
+  caps=next;
+  const note=$('recNote');
+  if(caps.engine==='webcodecs'){
+    const a=caps.audioCodec==='aac'?'AAC':'Opus';
+    note.innerHTML='Motor <b>WebCodecs</b> · H.264 + '+a+' · se arma frame a frame, más rápido que en tiempo real. Sale <b>.mp4</b> con el audio adentro, sin ffmpeg.';
+  } else if(caps.engine==='mediarecorder'){
+    note.innerHTML='Este navegador no tiene WebCodecs: la grabación corre <b>en tiempo real</b>. Dejá la pestaña visible.';
+  } else note.textContent='Este navegador no puede exportar el video.';
+}
+async function recordOffline(){
+  const [w,h]=outSize();
+  if($('stage').width!==w||$('stage').height!==h) resize();
+  const dur=selDur();
+  const count=exportFrameCount(dur,FPS);
+  const clip=clipAudioBuffer(buffer,cfg.start,dur);
+  const result=await renderDrawnClip({
+    width:w,height:h,fps:FPS,count,canvas:$('stage'),
+    container:'mp4',audio:clip,
+    audioCodec:caps.audioCodec,audioSampleRate:caps.audioSampleRate,resample:!!caps.resample,
+    quality:cfg.qual>=1080?'high':'medium',
+    renderFrame:(_ctx,i)=>{draw(frameSampleTime(i,count,FPS,1,dur));},
+    onProgress:(p)=>{$('rec').textContent='■ '+Math.round(p.index/p.total*100)+'%';
+      $('recNote').innerHTML='codificando <b>'+p.index+'/'+p.total+'</b> · H.264'+(caps.audioCodec==='aac'?' + AAC':' + Opus');},
+  });
+  const a=caps.audioCodec==='aac'?'AAC':'Opus';
+  downloadBlob(result.blob,'audiograma-'+cfg.fmt.replace(':','x')+'.mp4');
+  $('recNote').innerHTML='✓ listo · <b>'+(result.blob.size/1048576).toFixed(1)+' MB</b> · H.264 + '+a+' · '+dur.toFixed(1)+'s';
+  toast('mp4 ⬇ '+(result.blob.size/1048576).toFixed(1)+' MB');
+}
+async function record(){
+  if(recording){finishRec();return;}
+  if(exporting||!buffer) return;
+  await refreshCaps();
+  if(caps&&caps.engine==='webcodecs'){
+    exporting=true;
+    stopAll();
+    $('rec').disabled=true;$('play').disabled=true;$('png').disabled=true;$('gen').disabled=true;
+    $('rec').classList.add('on');
+    try{ await recordOffline(); }
+    catch(err){
+      exporting=false;
+      $('recNote').innerHTML='WebCodecs no pudo ('+esc(err&&err.message||'error')+'). Sigo en <b>tiempo real</b>…';
+      toast('sigo en tiempo real');
+      try{ await recordLive(); return; }
+      catch(e2){ toast((e2&&e2.message)||'no pude exportar'); }
+    } finally {
+      if(!recording){
+        exporting=false;
+        $('rec').disabled=false;$('play').disabled=false;$('png').disabled=false;$('gen').disabled=false;
+        $('rec').classList.remove('on');$('rec').textContent='● GRABAR VIDEO';
+        draw();
+      }
+    }
+    return;
+  }
+  await recordLive();
+}
+async function recordLive(){
   if(recording){finishRec();return;}
   if(!buffer)return;
   const mime=pickMime();
@@ -514,12 +591,14 @@ $('rec').onclick=()=>{
     download('audiograma-'+cfg.fmt.replace(':','x')+'.'+ext,blob);
     toast('video ⬇ '+(blob.size/1048576).toFixed(1)+' MB');
     recording=false;$('rec').classList.remove('on');$('rec').textContent='● GRABAR VIDEO';
-    $('recNote').innerHTML='La grabación corre en tiempo real: un fragmento de 30 s tarda 30 s. Dejá la pestaña visible mientras graba.';};
+    $('play').disabled=false;$('png').disabled=false;$('gen').disabled=false;$('rec').disabled=false;
+    refreshCaps();};
   recorder.start(250);
   recording=true;$('rec').classList.add('on');$('rec').textContent='■ CORTAR ('+Math.round(dur)+'s)';
   $('recNote').innerHTML='<b>Grabando…</b> no cambies de pestaña ni minimices: el navegador congela el canvas y el video sale con saltos.';
   recTimer=setTimeout(finishRec,dur*1000+250);
-};
+}
+$('rec').onclick=()=>{ record(); };
 function finishRec(){clearTimeout(recTimer);
   if(recorder&&recorder.state!=='inactive')recorder.stop();
   stopAll();draw();}
@@ -552,6 +631,7 @@ function syncChips(){
 resize();info();drawTL();
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>draw());
 draw();
+refreshCaps();
 function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),1600);}
 </script>
 </body></html>
