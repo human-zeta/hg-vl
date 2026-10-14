@@ -33,9 +33,12 @@
   .ctrl label{display:flex;justify-content:space-between;font-size:11px;color:rgba(240,237,230,.7);margin-bottom:5px;}
   .ctrl label b{color:var(--acid);font-weight:400;}
   .ctrl input[type=range]{width:100%;accent-color:var(--acid);}
-  .fmt{display:flex;gap:7px;margin-bottom:14px;}
-  .fmt button{flex:1;background:transparent;border:1px solid var(--line);color:var(--ink);font:inherit;font-size:11px;letter-spacing:.1em;padding:8px;cursor:pointer;border-radius:4px;}
+  .fmt{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:14px;}
+  .fmt button{background:transparent;border:1px solid var(--line);color:var(--ink);font:inherit;font-size:11px;letter-spacing:.1em;padding:8px;cursor:pointer;border-radius:4px;}
   .fmt button.on{border-color:var(--acid);color:var(--acid);background:rgba(184,255,0,.1);}
+  .fmt button:disabled{opacity:.35;cursor:not-allowed;}
+  .engine{font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:rgba(240,237,230,.42);margin-top:8px;text-align:center;line-height:1.6;}
+  .engine b{color:var(--acid);font-weight:400;}
   #go{width:100%;background:var(--acid);color:#050505;border:none;font-family:'Bebas Neue',sans-serif;font-size:23px;letter-spacing:.05em;padding:13px;cursor:pointer;border-radius:5px;transition:filter .15s;}
   #go:hover{filter:brightness(1.1);} #go:disabled{opacity:.5;cursor:wait;}
   #bar{height:5px;background:rgba(240,237,230,.1);border-radius:3px;margin-top:12px;overflow:hidden;display:none;}
@@ -56,7 +59,7 @@
 </head><body><script src="/gate/gate.js"></script>
 <div class="wrap">
   <header>
-    <div class="brand"><b>LOOP</b> ∞<span class="sub">Human Glitche · loops seamless de clips cortos · 100% local</span></div>
+    <div class="brand"><b>LOOP</b> ∞<span class="sub">Human Glitche · loops seamless · GIF, WebP, MP4 o WebM · 100% local</span></div>
     <a href="/home.html">← HOME</a>
   </header>
 
@@ -85,12 +88,15 @@
       <div class="ctrl" id="fadeCtrl"><label>fundido <b data-v="fade">0.5s</b></label><input type="range" id="fade" min="0.2" max="2" step="0.1" value="0.5"></div>
       <div class="vlabel">Formato</div>
       <div class="fmt" id="fmt">
-        <button class="on" data-f="webm">WebM (video)</button>
-        <button data-f="gif">GIF</button>
+        <button type="button" class="on" data-f="webm" disabled>WebM</button>
+        <button type="button" data-f="mp4" disabled>MP4</button>
+        <button type="button" data-f="gif">GIF</button>
+        <button type="button" data-f="webp" disabled>WebP</button>
       </div>
       <button id="go">⚡ CREAR LOOP</button>
       <div id="bar"><i></i></div>
-      <div id="status"></div>
+      <div id="status" aria-live="polite"></div>
+      <div id="engine" class="engine"></div>
     </div>
   </div>
 
@@ -103,156 +109,194 @@
     </div>
   </div>
 
-  <p class="note"><b>Boomerang</b> = el loop más seguro: nunca salta, porque la vuelta termina donde empezó. <b>Crossfade</b> = mantiene la dirección y disuelve el final contra el inicio. Para clips que ya loopean bien, igual sirve. Todo corre local; el video no se sube.</p>
+  <p class="note"><b>Boomerang</b> = el loop más seguro: nunca salta, porque la vuelta termina donde empezó. <b>Crossfade</b> = mantiene la dirección y disuelve el final contra el inicio. En Chrome se decodifica frame a frame con WebCodecs y se codifica en un Worker (GIF, WebP animado, MP4 o WebM). Si el codec no entra, cae al seek — y el WebM viejo, si hace falta, se graba en tiempo real. Todo local; el video no se sube.</p>
 </div>
 
 <script type="module">
-import { GIFEncoder, quantize, applyPalette } from 'https://cdn.jsdelivr.net/npm/gifenc@1.0.3/dist/gifenc.esm.js';
+import {
+  detectOutputs, engineLabel, fitOutputSize, probeVideo, progressLabel, renderClip,
+} from '/labs/_core/video.js';
 
-const $ = id => document.getElementById(id);
-const drop=$('drop'), fileInput=$('file'), stage=$('stage'), video=$('video');
-let videoURL=null, tech='boomerang', fmt='webm', lastURL=null;
+const $ = (id) => document.getElementById(id);
+const drop = $('drop');
+const fileInput = $('file');
+const stage = $('stage');
+const video = $('video');
+const bar = $('bar').querySelector('i');
+let videoURL = null;
+let lastURL = null;
+let currentFile = null;
+let probe = null;
+let tech = 'boomerang';
+let fmt = 'webm';
+let outputs = null;
 
-drop.addEventListener('click', ()=>fileInput.click());
-fileInput.addEventListener('change', e=>{ if(e.target.files[0]) loadVideo(e.target.files[0]); });
-drop.addEventListener('dragover', e=>{ e.preventDefault(); drop.classList.add('over'); });
-drop.addEventListener('dragleave', ()=>drop.classList.remove('over'));
-drop.addEventListener('drop', e=>{ e.preventDefault(); drop.classList.remove('over'); const f=[...e.dataTransfer.files].find(f=>f.type.startsWith('video/')); if(f) loadVideo(f); });
+drop.addEventListener('click', () => fileInput.click());
+fileInput.addEventListener('change', (e) => { if (e.target.files[0]) loadVideo(e.target.files[0]); });
+drop.addEventListener('dragover', (e) => { e.preventDefault(); drop.classList.add('over'); });
+drop.addEventListener('dragleave', () => drop.classList.remove('over'));
+drop.addEventListener('drop', (e) => {
+  e.preventDefault();
+  drop.classList.remove('over');
+  const f = [...e.dataTransfer.files].find((file) => file.type.startsWith('video/'));
+  if (f) loadVideo(f);
+});
 
-function loadVideo(file){
-  if(videoURL) URL.revokeObjectURL(videoURL);
-  videoURL=URL.createObjectURL(file); video.src=videoURL;
-  video.addEventListener('loadedmetadata', ()=>{
-    const D=video.duration||8;
-    $('start').max=Math.max(0.1,D-0.2); $('dur').max=Math.min(8,D); $('dur').value=Math.min(3,D);
-    syncLabels(); stage.classList.add('on'); drop.querySelector('.big').textContent='⤓ '+file.name;
-  }, { once:true });
-}
-
-const labels={ start:v=>v.toFixed(1)+'s', dur:v=>v.toFixed(1)+'s', fps:v=>String(v|0), width:v=>(v|0)+'px', fade:v=>v.toFixed(1)+'s' };
-function syncLabels(){ ['start','dur','fps','width','fade'].forEach(id=>{ const el=document.querySelector('[data-v="'+id+'"]'); if(el) el.textContent=labels[id](+$(id).value); }); }
-['start','dur','fps','width','fade'].forEach(id=>$(id).addEventListener('input', syncLabels));
-
-$('techs').addEventListener('click', e=>{ const b=e.target.closest('.tech'); if(!b) return; tech=b.dataset.t;
-  [...$('techs').children].forEach(c=>c.classList.toggle('on',c===b)); $('fadeCtrl').classList.toggle('hide', tech!=='crossfade'); });
-$('fmt').addEventListener('click', e=>{ const b=e.target.closest('button'); if(!b) return; fmt=b.dataset.f;
-  [...$('fmt').children].forEach(c=>c.classList.toggle('on',c===b)); });
-
-function seek(t){ return new Promise(res=>{ const h=()=>{ video.removeEventListener('seeked',h); res(); }; video.addEventListener('seeked',h); video.currentTime=t; }); }
-function blend(a,b,al){ const out=new Uint8ClampedArray(a.length); for(let i=0;i<a.length;i++) out[i]=a[i]+(b[i]-a[i])*al; return out; }
-
-$('go').addEventListener('click', run);
-async function run(){
-  const start=+$('start').value, dur=+$('dur').value, fps=+$('fps').value, width=(+$('width').value)|0;
-  const height=Math.round(width*video.videoHeight/video.videoWidth/2)*2 || width;
-  const n=Math.max(2, Math.round(dur*fps)), delay=Math.round(1000/fps);
-  const cv=document.createElement('canvas'); cv.width=width; cv.height=height; const ctx=cv.getContext('2d',{willReadFrequently:true});
-  $('go').disabled=true; $('bar').classList.add('on'); $('result').classList.remove('on'); $('bar').querySelector('i').style.width='0%';
-
-  try{
-    // 1) extraer frames
-    const frames=[];
-    for(let i=0;i<n;i++){ await seek(Math.min(start+i/fps,(video.duration||start+dur))); ctx.drawImage(video,0,0,width,height);
-      frames.push(ctx.getImageData(0,0,width,height).data);
-      $('bar').querySelector('i').style.width=Math.round((i+1)/n*40)+'%'; $('status').innerHTML='extrayendo <b>'+(i+1)+'/'+n+'</b>'; if(i%2===0) await new Promise(r=>setTimeout(r)); }
-
-    // 2) construir la secuencia del loop segun el truco
-    let seq;
-    if(tech==='boomerang'){ seq=frames.concat(frames.slice(1,-1).reverse()); }
-    else { // crossfade: ultimos X frames disuelven a frame[0] → termina en el inicio
-      const X=Math.min(n-1, Math.max(1, Math.round((+$('fade').value)*fps)));
-      seq=frames.slice();
-      for(let j=0;j<X;j++){ const i=n-X+j; const al=(j+1)/X; seq[i]=blend(frames[i],frames[0],al); }
-    }
-    $('status').innerHTML='armando el loop ('+seq.length+' frames)…';
-
-    // 3) encodear
-    let blob, ext, isVideo=false;
-    if(fmt==='gif'){
-      const gif=GIFEncoder();
-      // paleta GLOBAL muestreada (hasta 8 frames): cuantizar por frame hacía parpadear
-      // los colores entre frames — letal justo en el punto de cierre del loop
-      const step=Math.max(1,Math.floor(seq.length/8)); const picks=[];
-      for(let i=0;i<seq.length;i+=step) picks.push(seq[i]);
-      const cat=new Uint8ClampedArray(picks.reduce((n,a)=>n+a.length,0));
-      { let o=0; for(const a of picks){ cat.set(a,o); o+=a.length; } }
-      const pal=quantize(cat,256);
-      for(let i=0;i<seq.length;i++){ const idx=applyPalette(seq[i],pal); gif.writeFrame(idx,width,height,{palette:pal,delay});
-        $('bar').querySelector('i').style.width=(40+Math.round((i+1)/seq.length*55))+'%'; if(i%3===0) await new Promise(r=>setTimeout(r)); }
-      gif.finish(); blob=new Blob([gif.bytes()],{type:'image/gif'}); ext='gif';
-    } else {
-      blob=await encodeWebM(seq,width,height,fps); ext='webm'; isVideo=true;
-    }
-
-    // 4) preview en bucle + descarga
-    if(lastURL) URL.revokeObjectURL(lastURL); lastURL=URL.createObjectURL(blob);
-    $('resbox').innerHTML='';
-    if(isVideo){ const v=document.createElement('video'); v.src=lastURL; v.loop=true; v.autoplay=true; v.muted=true; v.playsInline=true; $('resbox').appendChild(v); v.play().catch(()=>{}); }
-    else { const img=new Image(); img.src=lastURL; $('resbox').appendChild(img); }
-    $('dl').href=lastURL; $('dl').download='loop-human-glitche.'+ext;
-    $('size').textContent=(blob.size/1024/1024).toFixed(2)+' MB · '+width+'×'+height+' · '+seq.length+' frames · '+tech;
-    $('result').classList.add('on'); $('status').innerHTML='<b>listo ✓</b>'; $('result').scrollIntoView({behavior:'smooth',block:'start'});
-  }catch(err){ $('status').textContent='Error: '+err.message; }
-  finally{ $('go').disabled=false; setTimeout(()=>$('bar').classList.remove('on'),600); }
-}
-
-/* Chrome no escribe Duration en los WebM de MediaRecorder → no seekeable en editores.
-   Patch EBML (Segment→Info+Duration) si es seguro; si no, devuelve el blob tal cual.
-   Re-implementación propia de la técnica del paquete MIT fix-webm-duration. */
-async function fixWebmDuration(blob, durationMs){
-  try{
-    const u8=new Uint8Array(await blob.arrayBuffer()); let pos=0;
-    const rv=(keep)=>{ if(pos>=u8.length)return null; const f=u8[pos]; if(!f)return null;
-      let len=1; for(let m=0x80;!(f&m);m>>=1)len++;
-      if(len>8||pos+len>u8.length)return null;
-      let val=keep?f:f&(0xFF>>len); let ones=!keep&&val===(0xFF>>len);
-      for(let i=1;i<len;i++){ val=val*256+u8[pos+i]; if(u8[pos+i]!==0xFF)ones=false; }
-      pos+=len; return {val,len,unknown:ones&&!keep}; };
-    let segC=-1, segUnk=false;
-    while(pos<u8.length){ const id=rv(true); if(!id)return blob; const sz=rv(false); if(!sz)return blob;
-      if(id.val===0x18538067){ segC=pos; segUnk=sz.unknown; break; } pos+=sz.val; }
-    if(segC<0||!segUnk) return blob;
-    pos=segC; let infoId=-1, infoC=-1, infoSz=0;
-    while(pos<u8.length){ const ip=pos; const id=rv(true); if(!id)return blob;
-      const sz=rv(false); if(!sz||sz.unknown)return blob;
-      if(id.val===0x114D9B74||id.val===0x1F43B675) return blob;
-      if(id.val===0x1549A966){ infoId=ip; infoC=pos; infoSz=sz.val; break; } pos+=sz.val; }
-    if(infoC<0) return blob;
-    pos=infoC; let scale=1e6;
-    while(pos<infoC+infoSz){ const id=rv(true); if(!id)return blob; const sz=rv(false); if(!sz)return blob;
-      if(id.val===0x4489) return blob;
-      if(id.val===0x2AD7B1){ let v=0; for(let i=0;i<sz.val;i++)v=v*256+u8[pos+i]; if(v)scale=v; } pos+=sz.val; }
-    const dur=new Uint8Array(11); dur[0]=0x44; dur[1]=0x89; dur[2]=0x88;
-    new DataView(dur.buffer).setFloat64(3, durationMs*1e6/scale);
-    const ns=infoSz+11, sv=new Uint8Array(8); sv[0]=0x01;
-    for(let i=7,v=ns;i>=1;i--){ sv[i]=v&0xFF; v=Math.floor(v/256); }
-    return new Blob([u8.slice(0,infoId+4),sv,u8.slice(infoC,infoC+infoSz),dur,u8.slice(infoC+infoSz)],{type:blob.type||'video/webm'});
-  }catch(e){ return blob; }
-}
-
-// WebM via MediaRecorder (captura manual de frames)
-function encodeWebM(seq,width,height,fps){
-  return new Promise((resolve,reject)=>{
-    const cv=document.createElement('canvas'); cv.width=width; cv.height=height; const ctx=cv.getContext('2d');
-    const types=['video/webm;codecs=vp9','video/webm;codecs=vp8','video/webm'];
-    const mime=types.find(t=>window.MediaRecorder&&MediaRecorder.isTypeSupported(t));
-    if(!mime){ reject(new Error('Tu navegador no soporta grabar WebM — probá el formato GIF.')); return; }
-    const stream=cv.captureStream(0); const track=stream.getVideoTracks()[0];
-    const rec=new MediaRecorder(stream,{mimeType:mime,videoBitsPerSecond:8000000}); const chunks=[];
-    rec.ondataavailable=e=>{ if(e.data.size) chunks.push(e.data); };
-    rec.onstop=()=>resolve(fixWebmDuration(new Blob(chunks,{type:'video/webm'}), seq.length/fps*1000));
-    rec.onerror=e=>reject(e.error||new Error('fallo de grabación'));
-    rec.start();
-    let i=0;
-    const step=()=>{
-      if(i>=seq.length){ track.requestFrame&&track.requestFrame(); setTimeout(()=>rec.stop(),120); return; }
-      ctx.putImageData(new ImageData(seq[i],width,height),0,0); track.requestFrame&&track.requestFrame();
-      $('bar').querySelector('i').style.width=(40+Math.round((i+1)/seq.length*55))+'%';
-      i++; setTimeout(step,1000/fps);
-    };
-    step();
+function loadVideo(file) {
+  currentFile = file;
+  probe = null;
+  $('engine').innerHTML = 'mirando el archivo…';
+  if (videoURL) URL.revokeObjectURL(videoURL);
+  videoURL = URL.createObjectURL(file);
+  video.src = videoURL;
+  video.addEventListener('loadedmetadata', () => {
+    const D = Number.isFinite(video.duration) ? video.duration : 8;
+    $('start').max = Math.max(0.1, D - 0.2);
+    $('dur').max = Math.min(8, D);
+    $('dur').value = Math.min(3, D);
+    syncLabels();
+    stage.classList.add('on');
+    drop.querySelector('.big').textContent = '⤓ ' + file.name;
+    refreshOutputs();
+  }, { once: true });
+  probeVideo(file).then((p) => {
+    if (currentFile !== file) return;
+    probe = p;
+    $('engine').innerHTML = engineLabel(p);
   });
 }
 
+const labels = {
+  start: (v) => v.toFixed(1) + 's',
+  dur: (v) => v.toFixed(1) + 's',
+  fps: (v) => String(v | 0),
+  width: (v) => (v | 0) + 'px',
+  fade: (v) => v.toFixed(1) + 's',
+};
+function syncLabels() {
+  ['start', 'dur', 'fps', 'width', 'fade'].forEach((id) => {
+    const el = document.querySelector('[data-v="' + id + '"]');
+    if (el) el.textContent = labels[id](+$(id).value);
+  });
+}
+['start', 'dur', 'fps', 'width', 'fade'].forEach((id) => $(id).addEventListener('input', () => {
+  syncLabels();
+  if (id === 'width') refreshOutputs();
+}));
+
+$('techs').addEventListener('click', (e) => {
+  const b = e.target.closest('.tech');
+  if (!b) return;
+  tech = b.dataset.t;
+  [...$('techs').children].forEach((c) => c.classList.toggle('on', c === b));
+  $('fadeCtrl').classList.toggle('hide', tech !== 'crossfade');
+});
+
+function selectFmt(next) {
+  fmt = next;
+  for (const btn of $('fmt').querySelectorAll('button')) btn.classList.toggle('on', btn.dataset.f === next);
+}
+$('fmt').addEventListener('click', (e) => {
+  const btn = e.target.closest('button');
+  if (!btn || btn.disabled) return;
+  selectFmt(btn.dataset.f);
+});
+
+function applyOutputs(out) {
+  outputs = out;
+  for (const btn of $('fmt').querySelectorAll('button')) {
+    const id = btn.dataset.f;
+    const ok = id === 'gif' || !!(out && out[id]);
+    btn.disabled = !ok;
+    btn.title = ok ? '' : 'Tu navegador no puede escribir este formato';
+  }
+  const current = $('fmt').querySelector('button.on');
+  if (!current || current.disabled) {
+    const fallback = out && out.webm ? 'webm' : 'gif';
+    selectFmt(fallback);
+  }
+}
+let outputToken = 0;
+function refreshOutputs() {
+  const token = ++outputToken;
+  const width = (+$('width').value) | 0;
+  const { height } = fitOutputSize(video.videoWidth || width, video.videoHeight || width, width);
+  detectOutputs(width, height).then((out) => { if (token === outputToken) applyOutputs(out); });
+}
+
+function showProgress(p) {
+  if (!p) return;
+  if (typeof p.ratio === 'number') bar.style.width = Math.round(Math.max(0, Math.min(1, p.ratio)) * 100) + '%';
+  $('status').innerHTML = progressLabel(p);
+}
+
+$('go').addEventListener('click', run);
+async function run() {
+  if (!currentFile) return;
+  const width = (+$('width').value) | 0;
+  const { height } = fitOutputSize(video.videoWidth, video.videoHeight, width);
+  $('go').disabled = true;
+  $('bar').classList.add('on');
+  bar.style.width = '0%';
+  $('result').classList.remove('on');
+  $('status').innerHTML = 'abriendo el video…';
+  try {
+    const readyProbe = probe || await probeVideo(currentFile);
+    probe = readyProbe;
+    const outs = outputs || await detectOutputs(width, height);
+    if (fmt !== 'gif' && !outs[fmt]) throw new Error('Este navegador no puede escribir ' + fmt.toUpperCase() + '.');
+    const result = await renderClip({
+      file: currentFile,
+      video,
+      format: fmt,
+      start: +$('start').value,
+      dur: +$('dur').value,
+      fps: +$('fps').value,
+      width,
+      height,
+      dither: false,
+      loop: tech,
+      fade: +$('fade').value,
+      probe: readyProbe,
+      outputs: outs,
+      onProgress: showProgress,
+    });
+    if (lastURL) URL.revokeObjectURL(lastURL);
+    lastURL = URL.createObjectURL(result.blob);
+    $('resbox').innerHTML = '';
+    const isVideo = result.mime.startsWith('video/');
+    if (isVideo) {
+      const v = document.createElement('video');
+      v.src = lastURL;
+      v.loop = true;
+      v.autoplay = true;
+      v.muted = true;
+      v.playsInline = true;
+      $('resbox').appendChild(v);
+      v.play().catch(() => {});
+    } else {
+      const img = new Image();
+      img.src = lastURL;
+      $('resbox').appendChild(img);
+    }
+    $('dl').href = lastURL;
+    $('dl').download = 'loop-human-glitche.' + result.ext;
+    const motor = result.engine === 'webcodecs' ? 'WebCodecs' : 'compatibilidad';
+    $('size').textContent = (result.blob.size / 1024 / 1024).toFixed(2) + ' MB · ' + width + '×' + height + ' · ' + result.frames + ' frames · ' + tech + ' · ' + result.ext.toUpperCase() + ' · ' + motor;
+    $('result').classList.add('on');
+    $('status').innerHTML = '<b>listo ✓</b>';
+    bar.style.width = '100%';
+    $('engine').innerHTML = engineLabel(readyProbe);
+    $('result').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  } catch (err) {
+    $('status').textContent = 'Error: ' + (err.message || err);
+  } finally {
+    $('go').disabled = false;
+    setTimeout(() => $('bar').classList.remove('on'), 600);
+  }
+}
+
 syncLabels();
+$('fadeCtrl').classList.add('hide');
+detectOutputs(480, 270).then(applyOutputs);
 </script></body></html>

@@ -12,6 +12,17 @@
   header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:26px;}
   .brand{font-family:'Bebas Neue',sans-serif;font-size:42px;letter-spacing:.03em;line-height:.82;}
   .brand b{color:var(--acid);font-weight:400;} .brand .sub{display:block;font-size:10px;letter-spacing:.2em;color:rgba(240,237,230,.45);margin-top:7px;}
+  .techs{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:14px;}
+  .tech{background:rgba(184,255,0,.04);border:1px solid var(--line);color:var(--ink);font:inherit;font-size:11px;padding:9px 6px;cursor:pointer;border-radius:4px;text-align:center;line-height:1.3;}
+  .tech span{display:block;font-size:8px;letter-spacing:.08em;color:rgba(240,237,230,.4);text-transform:uppercase;margin-top:2px;}
+  .tech.on{border-color:var(--acid);color:var(--acid);background:rgba(184,255,0,.12);}
+  .ctrl.hide{display:none;}
+  #bar{height:5px;background:rgba(240,237,230,.1);border-radius:3px;margin:0 0 12px;overflow:hidden;display:none;}
+  #bar.on{display:block;} #bar i{display:block;height:100%;width:0;background:var(--acid);transition:width .12s;}
+  .engine{font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:rgba(240,237,230,.42);margin:-6px 0 14px;line-height:1.6;}
+  .engine b{color:var(--acid);font-weight:400;}
+  .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px;}
+  .actions .sheetbtn{margin-top:0;}
   header a{font-size:10px;letter-spacing:.2em;color:rgba(240,237,230,.4);text-decoration:none;} header a:hover{color:var(--acid);}
   #drop{border:1.5px dashed var(--line);border-radius:8px;padding:46px 20px;text-align:center;cursor:pointer;transition:.2s;background:rgba(184,255,0,.02);}
   #drop:hover,#drop.over{border-color:var(--acid);background:rgba(184,255,0,.06);}
@@ -39,59 +50,226 @@
 </style><script defer src="/analitica/hg.js"></script>
 </head><body><script src="/gate/gate.js"></script>
 <div class="wrap">
-  <header><div class="brand"><b>FRAMES</b><span class="sub">Human Glitche · extraé fotogramas de un video · 100% local</span></div><a href="/home.html">← HOME</a></header>
+  <header><div class="brand"><b>FRAMES</b><span class="sub">Human Glitche · fotogramas frame a frame · ZIP · 100% local</span></div><a href="/home.html">← HOME</a></header>
   <div id="drop"><div class="big">⤓ Soltá un video acá</div><div class="sm">o clic para elegir · MP4 · MOV · WEBM · no se sube</div>
     <input type="file" id="file" accept="video/*" style="display:none"></div>
   <div class="stage" id="stage">
+    <div class="techs" id="modes">
+      <button type="button" class="tech on" data-m="spread">REPARTIR<span>N frames parejos</span></button>
+      <button type="button" class="tech" data-m="scene">ESCENA<span>cuando cambia el plano</span></button>
+    </div>
     <div class="bar2">
-      <div class="ctrl"><label>cantidad de frames <b data-v="n">12</b></label><input type="range" id="n" min="2" max="48" step="1" value="12"></div>
+      <div class="ctrl" id="nCtrl"><label>cantidad de frames <b data-v="n">12</b></label><input type="range" id="n" min="2" max="48" step="1" value="12"></div>
+      <div class="ctrl hide" id="sensCtrl"><label>sensibilidad <b data-v="sens">media</b></label><input type="range" id="sens" min="1" max="10" step="1" value="5"></div>
+      <div class="ctrl hide" id="keepCtrl"><label>tope <b data-v="keep">16</b></label><input type="range" id="keep" min="4" max="48" step="1" value="16"></div>
       <div class="ctrl"><label>ancho <b data-v="width">480px</b></label><input type="range" id="width" min="160" max="1280" step="20" value="480"></div>
       <button id="go">⚡ EXTRAER</button>
     </div>
-    <div id="status"></div>
+    <div id="bar"><i></i></div>
+    <div id="status" aria-live="polite"></div>
+    <div id="engine" class="engine"></div>
     <div class="grid" id="grid"></div>
-    <button class="sheetbtn" id="sheet" style="display:none">⤓ descargar contact sheet (todo en una imagen)</button>
+    <div class="actions">
+      <button class="sheetbtn" id="sheet" style="display:none">⤓ contact sheet</button>
+      <button class="sheetbtn" id="zip" style="display:none">⤓ ZIP de frames</button>
+    </div>
   </div>
   <video id="video" muted playsinline></video>
-  <p class="note">Saca <b>N</b> frames repartidos a lo largo del video. Pasá el mouse por cada uno para descargarlo (PNG), o bajá el <b>contact sheet</b> con todos juntos. Todo local.</p>
+  <p class="note">Saca <b>N</b> fotogramas repartidos, o detectá <b>cambios de escena</b>. Cuando el navegador se banca WebCodecs, cada frame es el fotograma real del archivo (VideoDecoder, no un seek aproximado) y el decode corre en un Worker. Pasá el mouse para bajar uno (PNG), armá el contact sheet, o descargá un <b>ZIP</b> que se escribe de a un archivo. Todo local, no se sube nada.</p>
 </div>
-<script>
-const $=id=>document.getElementById(id);
-const drop=$('drop'), fileInput=$('file'), stage=$('stage'), video=$('video');
-let videoURL=null, sheetURL=null, last=[];
-drop.addEventListener('click',()=>fileInput.click());
-fileInput.addEventListener('change',e=>{ if(e.target.files[0]) load(e.target.files[0]); });
-drop.addEventListener('dragover',e=>{e.preventDefault();drop.classList.add('over');});
-drop.addEventListener('dragleave',()=>drop.classList.remove('over'));
-drop.addEventListener('drop',e=>{e.preventDefault();drop.classList.remove('over');const f=[...e.dataTransfer.files].find(f=>f.type.startsWith('video/'));if(f)load(f);});
-['n','width'].forEach(id=>$(id).addEventListener('input',()=>{ document.querySelector('[data-v="'+id+'"]').textContent= id==='width'?($(id).value+'px'):$(id).value; }));
-function load(file){ if(videoURL)URL.revokeObjectURL(videoURL); videoURL=URL.createObjectURL(file); video.src=videoURL;
-  video.addEventListener('loadedmetadata',()=>{ stage.classList.add('on'); drop.querySelector('.big').textContent='⤓ '+file.name; },{once:true}); }
-function seek(t){ return new Promise(res=>{ const h=()=>{video.removeEventListener('seeked',h);res();}; video.addEventListener('seeked',h); video.currentTime=t; }); }
-$('go').addEventListener('click',extract);
-async function extract(){
-  const n=+$('n').value, width=(+$('width').value)|0, height=Math.round(width*video.videoHeight/video.videoWidth/2)*2||width;
-  const D=video.duration||1; const cv=document.createElement('canvas'); cv.width=width; cv.height=height; const ctx=cv.getContext('2d');
-  $('go').disabled=true; $('grid').innerHTML=''; $('sheet').style.display='none'; last=[];
-  try{
-    for(let i=0;i<n;i++){ const t=(n===1)?0:(i/(n-1))*Math.max(0,D-0.05); await seek(t); ctx.drawImage(video,0,0,width,height);
-      const dataURL=cv.toDataURL('image/png'); last.push({dataURL,t});
-      const div=document.createElement('div'); div.className='fr';
-      div.innerHTML=`<img src="${dataURL}" alt=""><a href="${dataURL}" download="frame-${String(i+1).padStart(3,'0')}.png">⤓ frame ${i+1} · ${t.toFixed(2)}s</a>`;
-      $('grid').appendChild(div); $('status').innerHTML='extrayendo <b>'+(i+1)+'/'+n+'</b>'; await new Promise(r=>setTimeout(r)); }
-    $('status').innerHTML='<b>'+n+' frames listos</b> · pasá el mouse para descargar cada uno';
-    $('sheet').style.display='';
-  }catch(err){ $('status').textContent='Error: '+err.message; } finally{ $('go').disabled=false; }
-}
-$('sheet').addEventListener('click',async()=>{
-  if(!last.length) return; const cols=Math.ceil(Math.sqrt(last.length)); const rows=Math.ceil(last.length/cols);
-  const first=await loadImg(last[0].dataURL); const fw=first.width, fh=first.height; const gap=6;
-  const cv=document.createElement('canvas'); cv.width=cols*fw+(cols+1)*gap; cv.height=rows*fh+(rows+1)*gap; const ctx=cv.getContext('2d');
-  ctx.fillStyle='#050505'; ctx.fillRect(0,0,cv.width,cv.height);
-  for(let i=0;i<last.length;i++){ const im=await loadImg(last[i].dataURL); const c=i%cols, r=(i/cols)|0;
-    ctx.drawImage(im, gap+c*(fw+gap), gap+r*(fh+gap)); }
-  cv.toBlob(b=>{ if(sheetURL)URL.revokeObjectURL(sheetURL); sheetURL=URL.createObjectURL(b);
-    const a=document.createElement('a'); a.href=sheetURL; a.download='contact-sheet.png'; a.click(); }, 'image/png');
+<script type="module">
+import {
+  downloadZip, engineLabel, fitOutputSize, probeVideo, progressLabel, renderFrames,
+} from '/labs/_core/video.js';
+import { sensLabel } from '/labs/_core/scene.js';
+
+const $ = (id) => document.getElementById(id);
+const drop = $('drop');
+const fileInput = $('file');
+const stage = $('stage');
+const video = $('video');
+const bar = $('bar').querySelector('i');
+let videoURL = null;
+let sheetURL = null;
+let currentFile = null;
+let probe = null;
+let mode = 'spread';
+let last = [];
+let urls = [];
+
+drop.addEventListener('click', () => fileInput.click());
+fileInput.addEventListener('change', (e) => { if (e.target.files[0]) load(e.target.files[0]); });
+drop.addEventListener('dragover', (e) => { e.preventDefault(); drop.classList.add('over'); });
+drop.addEventListener('dragleave', () => drop.classList.remove('over'));
+drop.addEventListener('drop', (e) => {
+  e.preventDefault();
+  drop.classList.remove('over');
+  const f = [...e.dataTransfer.files].find((file) => file.type.startsWith('video/'));
+  if (f) load(f);
 });
-function loadImg(src){ return new Promise(res=>{ const i=new Image(); i.onload=()=>res(i); i.src=src; }); }
+
+function syncLabel(id) {
+  const el = document.querySelector('[data-v="' + id + '"]');
+  if (!el) return;
+  if (id === 'width') el.textContent = $(id).value + 'px';
+  else if (id === 'sens') el.textContent = sensLabel($(id).value);
+  else el.textContent = $(id).value;
+}
+['n', 'width', 'sens', 'keep'].forEach((id) => $(id).addEventListener('input', () => syncLabel(id)));
+
+function load(file) {
+  currentFile = file;
+  probe = null;
+  $('engine').innerHTML = 'mirando el archivo…';
+  if (videoURL) URL.revokeObjectURL(videoURL);
+  videoURL = URL.createObjectURL(file);
+  video.src = videoURL;
+  video.addEventListener('loadedmetadata', () => {
+    stage.classList.add('on');
+    drop.querySelector('.big').textContent = '⤓ ' + file.name;
+  }, { once: true });
+  probeVideo(file).then((p) => {
+    if (currentFile !== file) return;
+    probe = p;
+    $('engine').innerHTML = engineLabel(p);
+  });
+}
+
+$('modes').addEventListener('click', (e) => {
+  const b = e.target.closest('.tech');
+  if (!b) return;
+  mode = b.dataset.m;
+  [...$('modes').children].forEach((c) => c.classList.toggle('on', c === b));
+  const scene = mode === 'scene';
+  $('nCtrl').classList.toggle('hide', scene);
+  $('sensCtrl').classList.toggle('hide', !scene);
+  $('keepCtrl').classList.toggle('hide', !scene);
+});
+
+function clearUrls() {
+  for (const url of urls) URL.revokeObjectURL(url);
+  urls = [];
+}
+
+function addCard(frame) {
+  const blob = new Blob([frame.png], { type: 'image/png' });
+  const url = URL.createObjectURL(blob);
+  urls.push(url);
+  frame.url = url;
+  const div = document.createElement('div');
+  div.className = 'fr';
+  const img = document.createElement('img');
+  img.src = url;
+  img.alt = 'frame ' + (frame.index + 1);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'frame-' + String(frame.index + 1).padStart(3, '0') + '.png';
+  a.textContent = '⤓ frame ' + (frame.index + 1) + ' · ' + frame.t.toFixed(2) + 's';
+  div.append(img, a);
+  $('grid').appendChild(div);
+}
+
+function showProgress(p) {
+  if (!p) return;
+  if (typeof p.ratio === 'number') bar.style.width = Math.round(Math.max(0, Math.min(1, p.ratio)) * 100) + '%';
+  $('status').innerHTML = progressLabel(p);
+}
+
+$('go').addEventListener('click', extract);
+async function extract() {
+  if (!currentFile) return;
+  const width = (+$('width').value) | 0;
+  const { height } = fitOutputSize(video.videoWidth, video.videoHeight, width);
+  $('go').disabled = true;
+  $('bar').classList.add('on');
+  bar.style.width = '0%';
+  $('sheet').style.display = 'none';
+  $('zip').style.display = 'none';
+  clearUrls();
+  last = [];
+  $('grid').innerHTML = '';
+  $('status').innerHTML = 'abriendo el video…';
+  try {
+    const readyProbe = probe || await probeVideo(currentFile);
+    probe = readyProbe;
+    const result = await renderFrames({
+      file: currentFile,
+      video,
+      width,
+      height,
+      mode,
+      count: +$('n').value,
+      sens: +$('sens').value,
+      maxKeep: +$('keep').value,
+      probe: readyProbe,
+      onProgress: showProgress,
+      onFrame: (frame) => { last.push(frame); addCard(frame); },
+      onReset: () => { clearUrls(); last = []; $('grid').innerHTML = ''; },
+    });
+    const n = result.frames.length;
+    const motor = result.engine === 'webcodecs' ? 'WebCodecs' : 'compatibilidad';
+    $('status').innerHTML = '<b>' + n + ' frames listos</b> · ' + motor + ' · pasá el mouse para bajar cada uno';
+    $('engine').innerHTML = engineLabel(readyProbe);
+    bar.style.width = '100%';
+    if (n) {
+      $('sheet').style.display = '';
+      $('zip').style.display = '';
+    }
+  } catch (err) {
+    $('status').textContent = 'Error: ' + (err.message || err);
+  } finally {
+    $('go').disabled = false;
+    setTimeout(() => $('bar').classList.remove('on'), 600);
+  }
+}
+
+$('sheet').addEventListener('click', async () => {
+  if (!last.length) return;
+  const cols = Math.ceil(Math.sqrt(last.length));
+  const rows = Math.ceil(last.length / cols);
+  const first = await loadImg(last[0].url);
+  const fw = first.width;
+  const fh = first.height;
+  const gap = 6;
+  const cv = document.createElement('canvas');
+  cv.width = cols * fw + (cols + 1) * gap;
+  cv.height = rows * fh + (rows + 1) * gap;
+  const ctx = cv.getContext('2d');
+  ctx.fillStyle = '#050505';
+  ctx.fillRect(0, 0, cv.width, cv.height);
+  for (let i = 0; i < last.length; i++) {
+    const im = await loadImg(last[i].url);
+    const c = i % cols;
+    const r = (i / cols) | 0;
+    ctx.drawImage(im, gap + c * (fw + gap), gap + r * (fh + gap));
+  }
+  const blob = await new Promise((resolve) => cv.toBlob(resolve, 'image/png'));
+  if (sheetURL) URL.revokeObjectURL(sheetURL);
+  sheetURL = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = sheetURL;
+  a.download = 'contact-sheet.png';
+  a.click();
+});
+
+$('zip').addEventListener('click', async () => {
+  if (!last.length) return;
+  $('status').innerHTML = 'escribiendo el ZIP…';
+  try {
+    const how = await downloadZip(last, 'frames-human-glitche.zip');
+    if (how === 'abort') $('status').innerHTML = '<b>' + last.length + ' frames listos</b>';
+    else $('status').innerHTML = '<b>ZIP listo</b> · ' + last.length + ' PNG';
+  } catch (err) {
+    $('status').textContent = 'Error: ' + (err.message || err);
+  }
+});
+
+function loadImg(src) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(new Error('No pude armar el contact sheet.'));
+    img.src = src;
+  });
+}
 </script></body></html>

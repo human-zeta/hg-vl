@@ -13,6 +13,13 @@
   .brand{font-family:'Bebas Neue',sans-serif;font-size:42px;letter-spacing:.03em;line-height:.82;}
   .brand b{color:var(--acid);font-weight:400;}
   .brand .sub{display:block;font-family:'Space Mono';font-size:10px;letter-spacing:.22em;color:rgba(240,237,230,.45);margin-top:7px;}
+  .fmt{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:14px;}
+  .fmt button{background:transparent;border:1px solid var(--line);color:var(--ink);font:inherit;font-size:11px;letter-spacing:.1em;padding:8px;cursor:pointer;border-radius:4px;}
+  .fmt button.on{border-color:var(--acid);color:var(--acid);background:rgba(184,255,0,.1);}
+  .fmt button:disabled{opacity:.35;cursor:not-allowed;}
+  .ctrl.hide{display:none;}
+  .engine{font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:rgba(240,237,230,.42);margin-top:8px;text-align:center;line-height:1.6;}
+  .engine b{color:var(--acid);font-weight:400;}
   header a{font-size:10px;letter-spacing:.2em;color:rgba(240,237,230,.4);text-decoration:none;}
   header a:hover{color:var(--acid);}
   #drop{border:1.5px dashed var(--line);border-radius:8px;padding:46px 20px;text-align:center;cursor:pointer;transition:.2s;background:rgba(184,255,0,.02);}
@@ -51,7 +58,7 @@
 </head><body><script src="/gate/gate.js"></script>
 <div class="wrap">
   <header>
-    <div class="brand"><b>VIDEO</b> → GIF<span class="sub">Human Glitche · convertí clips a GIF · 100% en tu navegador</span></div>
+    <div class="brand"><b>VIDEO</b> → GIF<span class="sub">Human Glitche · GIF, WebP, MP4 o WebM · 100% en tu navegador</span></div>
     <a href="/home.html">← HOME</a>
   </header>
 
@@ -72,10 +79,18 @@
       <div class="ctrl"><label>duración <b data-v="dur">3.0s</b></label><input type="range" id="dur" min="0.5" max="15" step="0.1" value="3"></div>
       <div class="ctrl"><label>fps <b data-v="fps">12</b></label><input type="range" id="fps" min="5" max="24" step="1" value="12"></div>
       <div class="ctrl"><label>ancho <b data-v="width">480px</b></label><input type="range" id="width" min="160" max="720" step="20" value="480"></div>
-      <div class="ctrl"><label>tramado (dither) <b id="dithV">off</b></label><input type="checkbox" id="dith" style="accent-color:var(--acid);width:16px;height:16px;cursor:pointer;"></div>
-      <button id="go">⚡ CONVERTIR A GIF</button>
+      <div class="ctrl" id="ditherCtrl"><label>tramado (dither) <b id="dithV">off</b></label><input type="checkbox" id="dith" style="accent-color:var(--acid);width:16px;height:16px;cursor:pointer;"></div>
+      <div class="vlabel">Formato</div>
+      <div class="fmt" id="fmt">
+        <button type="button" class="on" data-f="gif">GIF</button>
+        <button type="button" data-f="webp" disabled>WebP</button>
+        <button type="button" data-f="mp4" disabled>MP4</button>
+        <button type="button" data-f="webm" disabled>WebM</button>
+      </div>
+      <button id="go">⚡ CONVERTIR</button>
       <div id="bar"><i></i></div>
-      <div id="status"></div>
+      <div id="status" aria-live="polite"></div>
+      <div id="engine" class="engine"></div>
     </div>
   </div>
 
@@ -83,113 +98,186 @@
     <div class="vlabel">Resultado</div>
     <div id="resimg"></div>
     <div class="rrow">
-      <a id="dl" download="human-glitche.gif">⤓ DESCARGAR GIF</a>
+      <a id="dl" download="human-glitche.gif">⤓ DESCARGAR</a>
       <button id="again">↻ otro ajuste</button>
       <span class="meta" id="size"></span>
     </div>
   </div>
 
-  <p class="note"><b>Privado:</b> el video nunca sale de tu compu — la conversión corre entera en el navegador. Para GIFs livianos para web: bajá el ancho y los fps. GIFs largos o muy anchos pesan rápido.</p>
+  <p class="note"><b>Privado:</b> el video nunca sale de tu compu. Si el navegador se banca WebCodecs, decodificamos frame a frame con VideoDecoder (mediabunny hace el demux) y el laburo pesado corre en un Worker. Si el codec o el browser no dan, caemos solos al seek de siempre. GIF, WebP animado, MP4 y WebM, según lo que se pueda escribir. Para archivos livianos: bajá el ancho y los fps.</p>
 </div>
 
 <script type="module">
-import { GIFEncoder, quantize, applyPalette } from 'https://cdn.jsdelivr.net/npm/gifenc@1.0.3/dist/gifenc.esm.js';
+import {
+  detectOutputs, engineLabel, fitOutputSize, probeVideo, progressLabel, renderClip,
+} from '/labs/_core/video.js';
 
-const $ = id => document.getElementById(id);
-const drop=$('drop'), fileInput=$('file'), stage=$('stage'), video=$('video');
-let videoURL=null;
+const $ = (id) => document.getElementById(id);
+const drop = $('drop');
+const fileInput = $('file');
+const stage = $('stage');
+const video = $('video');
+const bar = $('bar').querySelector('i');
+let videoURL = null;
+let resultURL = null;
+let currentFile = null;
+let probe = null;
+let fmt = 'gif';
+let outputs = null;
 
-function pick(){ fileInput.click(); }
-drop.addEventListener('click', pick);
-fileInput.addEventListener('change', e=>{ if(e.target.files[0]) loadVideo(e.target.files[0]); });
-drop.addEventListener('dragover', e=>{ e.preventDefault(); drop.classList.add('over'); });
-drop.addEventListener('dragleave', ()=>drop.classList.remove('over'));
-drop.addEventListener('drop', e=>{ e.preventDefault(); drop.classList.remove('over');
-  const f=[...e.dataTransfer.files].find(f=>f.type.startsWith('video/')); if(f) loadVideo(f); });
+drop.addEventListener('click', () => fileInput.click());
+fileInput.addEventListener('change', (e) => { if (e.target.files[0]) loadVideo(e.target.files[0]); });
+drop.addEventListener('dragover', (e) => { e.preventDefault(); drop.classList.add('over'); });
+drop.addEventListener('dragleave', () => drop.classList.remove('over'));
+drop.addEventListener('drop', (e) => {
+  e.preventDefault();
+  drop.classList.remove('over');
+  const f = [...e.dataTransfer.files].find((file) => file.type.startsWith('video/'));
+  if (f) loadVideo(f);
+});
 
-function loadVideo(file){
-  if(videoURL) URL.revokeObjectURL(videoURL);
+function loadVideo(file) {
+  currentFile = file;
+  probe = null;
+  $('engine').innerHTML = 'mirando el archivo…';
+  if (videoURL) URL.revokeObjectURL(videoURL);
   videoURL = URL.createObjectURL(file);
   video.src = videoURL;
-  video.addEventListener('loadedmetadata', ()=>{
-    const D = video.duration || 10;
-    $('start').max = Math.max(0.1, D-0.2);
+  video.addEventListener('loadedmetadata', () => {
+    const D = Number.isFinite(video.duration) ? video.duration : 10;
+    $('start').max = Math.max(0.1, D - 0.2);
     $('dur').max = Math.min(15, D);
     $('dur').value = Math.min(3, D);
     syncLabels();
     stage.classList.add('on');
     drop.querySelector('.big').textContent = '⤓ ' + file.name;
-  }, { once:true });
+    refreshOutputs();
+  }, { once: true });
+  probeVideo(file).then((p) => {
+    if (currentFile !== file) return;
+    probe = p;
+    $('engine').innerHTML = engineLabel(p);
+  });
 }
 
-const labels={ start:v=>v.toFixed(1)+'s', dur:v=>v.toFixed(1)+'s', fps:v=>String(v|0), width:v=>(v|0)+'px' };
-function syncLabels(){ ['start','dur','fps','width'].forEach(id=>{ const el=document.querySelector('[data-v="'+id+'"]'); if(el) el.textContent=labels[id](+$(id).value); }); }
-['start','dur','fps','width'].forEach(id=>$(id).addEventListener('input', syncLabels));
-$('dith').addEventListener('change',()=>{ $('dithV').textContent=$('dith').checked?'on':'off'; });
+const labels = {
+  start: (v) => v.toFixed(1) + 's',
+  dur: (v) => v.toFixed(1) + 's',
+  fps: (v) => String(v | 0),
+  width: (v) => (v | 0) + 'px',
+};
+function syncLabels() {
+  ['start', 'dur', 'fps', 'width'].forEach((id) => {
+    const el = document.querySelector('[data-v="' + id + '"]');
+    if (el) el.textContent = labels[id](+$(id).value);
+  });
+}
+['start', 'dur', 'fps', 'width'].forEach((id) => $(id).addEventListener('input', () => {
+  syncLabels();
+  if (id === 'width') refreshOutputs();
+}));
+$('dith').addEventListener('change', () => { $('dithV').textContent = $('dith').checked ? 'on' : 'off'; });
 
-function seek(t){ return new Promise(res=>{ const h=()=>{ video.removeEventListener('seeked',h); res(); }; video.addEventListener('seeked',h); video.currentTime=t; }); }
+function applyOutputs(out) {
+  outputs = out;
+  for (const btn of $('fmt').querySelectorAll('button')) {
+    const ok = btn.dataset.f === 'gif' || !!(out && out[btn.dataset.f]);
+    btn.disabled = !ok;
+    btn.title = ok ? '' : 'Tu navegador no puede escribir este formato';
+  }
+  if ($('fmt').querySelector('button.on')?.disabled) selectFmt('gif');
+}
+let outputToken = 0;
+function refreshOutputs() {
+  const token = ++outputToken;
+  const width = (+$('width').value) | 0;
+  const { height } = fitOutputSize(video.videoWidth || width, video.videoHeight || width, width);
+  detectOutputs(width, height).then((out) => { if (token === outputToken) applyOutputs(out); });
+}
+
+function selectFmt(next) {
+  fmt = next;
+  for (const btn of $('fmt').querySelectorAll('button')) btn.classList.toggle('on', btn.dataset.f === next);
+  $('ditherCtrl').classList.toggle('hide', next !== 'gif');
+}
+$('fmt').addEventListener('click', (e) => {
+  const btn = e.target.closest('button');
+  if (!btn || btn.disabled) return;
+  selectFmt(btn.dataset.f);
+});
+
+function showProgress(p) {
+  if (!p) return;
+  if (typeof p.ratio === 'number') bar.style.width = Math.round(Math.max(0, Math.min(1, p.ratio)) * 100) + '%';
+  $('status').innerHTML = progressLabel(p);
+}
 
 $('go').addEventListener('click', convert);
-async function convert(){
-  const start=+$('start').value, dur=+$('dur').value, fps=+$('fps').value, width=(+$('width').value)|0;
-  const height = Math.round(width * video.videoHeight / video.videoWidth / 2) * 2 || width;
-  const total = Math.max(1, Math.round(dur*fps));
-  const delay = Math.round(1000/fps);
-  const canvas = document.createElement('canvas'); canvas.width=width; canvas.height=height;
-  const ctx = canvas.getContext('2d', { willReadFrequently:true });
-
-  $('go').disabled=true; $('bar').classList.add('on'); $('result').classList.remove('on');
-  const gif = GIFEncoder();
-  // tramado ordenado Bayer 4×4: rompe el banding de los degradés al bajar a 256 colores
-  const BAYER=[[0,8,2,10],[12,4,14,6],[3,11,1,9],[15,7,13,5]];
-  const ditherOn=$('dith').checked;
-  function bayer(data,w,h){ const k=22;
-    for(let y=0;y<h;y++){ const row=BAYER[y&3];
-      for(let x=0;x<w;x++){ const i=(y*w+x)*4, t=(row[x&3]/16-0.5)*k;
-        data[i]+=t; data[i+1]+=t; data[i+2]+=t; } } }
-  try{
-    // pasada 0: paleta GLOBAL con hasta 8 muestras del clip — cuantizar por frame
-    // hacía parpadear los colores entre frames
-    $('status').innerHTML='calculando paleta global…';
-    const nSamp=Math.min(8,total); const picks=[];
-    for(let s=0;s<nSamp;s++){
-      const t=Math.min(start + (s+0.5)/nSamp*dur, (video.duration||start+dur));
-      await seek(t); ctx.drawImage(video,0,0,width,height);
-      picks.push(ctx.getImageData(0,0,width,height).data);
+async function convert() {
+  if (!currentFile) return;
+  const width = (+$('width').value) | 0;
+  const { height } = fitOutputSize(video.videoWidth, video.videoHeight, width);
+  $('go').disabled = true;
+  $('bar').classList.add('on');
+  bar.style.width = '0%';
+  $('result').classList.remove('on');
+  $('status').innerHTML = 'abriendo el video…';
+  try {
+    const readyProbe = probe || await probeVideo(currentFile);
+    probe = readyProbe;
+    const outs = outputs || await detectOutputs(width, height);
+    if (fmt !== 'gif' && !outs[fmt]) throw new Error('Este navegador no puede escribir ' + fmt.toUpperCase() + '.');
+    const result = await renderClip({
+      file: currentFile,
+      video,
+      format: fmt,
+      start: +$('start').value,
+      dur: +$('dur').value,
+      fps: +$('fps').value,
+      width,
+      height,
+      dither: $('dith').checked,
+      loop: 'none',
+      probe: readyProbe,
+      outputs: outs,
+      onProgress: showProgress,
+    });
+    if (resultURL) URL.revokeObjectURL(resultURL);
+    resultURL = URL.createObjectURL(result.blob);
+    $('resimg').innerHTML = '';
+    if (result.mime.startsWith('video/')) {
+      const el = document.createElement('video');
+      el.src = resultURL;
+      el.controls = true;
+      el.loop = true;
+      el.muted = true;
+      el.playsInline = true;
+      el.autoplay = true;
+      $('resimg').appendChild(el);
+      el.play().catch(() => {});
+    } else {
+      const img = new Image();
+      img.src = resultURL;
+      $('resimg').appendChild(img);
     }
-    const cat=new Uint8ClampedArray(picks.reduce((n,a)=>n+a.length,0));
-    { let o=0; for(const a of picks){ cat.set(a,o); o+=a.length; } }
-    const palette=quantize(cat,256);
-    for(let i=0;i<total;i++){
-      const t = Math.min(start + i/fps, (video.duration||start+dur));
-      await seek(t);
-      ctx.drawImage(video, 0,0, width, height);
-      const { data } = ctx.getImageData(0,0,width,height);
-      if(ditherOn) bayer(data,width,height);
-      const index = applyPalette(data, palette);
-      gif.writeFrame(index, width, height, { palette, delay });
-      const p = Math.round((i+1)/total*100);
-      $('bar').querySelector('i').style.width = p+'%';
-      $('status').innerHTML = 'fotograma <b>'+(i+1)+'/'+total+'</b> · '+width+'×'+height;
-      if(i % 3 === 0) await new Promise(r=>setTimeout(r)); // ceder al hilo (UI viva)
-    }
-    gif.finish();
-    const bytes = gif.bytes();
-    const blob = new Blob([bytes], { type:'image/gif' });
-    const url = URL.createObjectURL(blob);
-    $('resimg').innerHTML=''; const img=new Image(); img.src=url; $('resimg').appendChild(img);
-    $('dl').href=url;
-    $('size').textContent = (bytes.length/1024/1024).toFixed(2)+' MB · '+width+'×'+height+' · '+total+' frames';
+    $('dl').href = resultURL;
+    $('dl').download = 'human-glitche.' + result.ext;
+    const motor = result.engine === 'webcodecs' ? 'WebCodecs' : 'compatibilidad';
+    $('size').textContent = (result.blob.size / 1024 / 1024).toFixed(2) + ' MB · ' + width + '×' + height + ' · ' + result.frames + ' frames · ' + result.ext.toUpperCase() + ' · ' + motor;
     $('result').classList.add('on');
-    $('status').innerHTML='<b>listo ✓</b>';
-    $('result').scrollIntoView({ behavior:'smooth', block:'start' });
-  }catch(err){
-    $('status').textContent='Error: '+err.message;
-  }finally{
-    $('go').disabled=false; setTimeout(()=>$('bar').classList.remove('on'), 600);
+    $('status').innerHTML = '<b>listo ✓</b>';
+    bar.style.width = '100%';
+    $('engine').innerHTML = engineLabel(readyProbe);
+    $('result').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  } catch (err) {
+    $('status').textContent = 'Error: ' + (err.message || err);
+  } finally {
+    $('go').disabled = false;
+    setTimeout(() => $('bar').classList.remove('on'), 600);
   }
 }
-$('again').addEventListener('click', ()=>{ $('result').classList.remove('on'); stage.scrollIntoView({behavior:'smooth'}); });
+$('again').addEventListener('click', () => { $('result').classList.remove('on'); stage.scrollIntoView({ behavior: 'smooth' }); });
 
 syncLabels();
+detectOutputs(480, 270).then(applyOutputs);
 </script></body></html>
