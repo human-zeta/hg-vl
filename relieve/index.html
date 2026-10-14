@@ -55,6 +55,8 @@
   #status.err{color:var(--glitch);}
   #progressWrap{height:3px;background:rgba(240,237,230,.08);border-radius:2px;overflow:hidden;margin-top:7px;display:none;}
   #progressBar{height:100%;width:0%;background:var(--cyan);transition:width .25s;}
+  #progressBar.indet{width:38%;transition:none;animation:indet 1.15s ease-in-out infinite;}
+  @keyframes indet{from{transform:translateX(-130%)}to{transform:translateX(340%)}}
   .brushrow{display:flex;gap:6px;margin-bottom:9px;}
   .brushrow button{flex:1;font:inherit;font-size:9.5px;padding:7px;border:1px solid var(--line);background:transparent;color:var(--ink);cursor:pointer;border-radius:4px;}
   .brushrow button.on{border-color:var(--glitch);color:var(--glitch);background:rgba(255,45,85,.07);}
@@ -179,7 +181,7 @@
     </div>
   </div>
 
-  <p class="note">Flujo: sacá una <b>foto del escenario parándote donde está la lente del proyector</b> (así la perspectiva ya viene alineada), subila acá, dale a <b>QUITAR FONDO</b> para aislar el sujeto (todo lo negro no se proyecta) y después a <b>MAPA DE PROFUNDIDAD</b>. Los efectos leen esa profundidad: contornos que recorren el relieve, barridos por distancia, luz que orbita la superficie. Con <b>PANTALLA COMPLETA</b> en el proyector ya estás mapeando; ajustá el encaje con zoom/x/y. La IA (quitar fondo + Depth Anything V2) corre <b>100% en tu navegador</b> — la primera vez baja los modelos (~50-100 MB) y quedan cacheados; después funciona hasta sin internet. Para meterlo en <b>Resolume/VDMX/OBS</b> capturá esta ventana como fuente de video, igual que con MAPEO. Los PNG exportados (recorte con alfa + depth map) también sirven como assets en cualquier software de VJ. <b>¿Tenés iPhone/iPad Pro con LiDAR?</b> Capturá la escena con una app tipo Record3D, Polycam o Halide, exportá el depth map como imagen y traelo con <b>importar depth</b>: es profundidad medida de verdad (mejor que la estimada por IA), y encima el alfa sale gratis — activá <b>recortar máscara por distancia</b> y todo lo que esté más lejos que el escenario desaparece, sin segmentación. El recorte por distancia también funciona sobre la profundidad generada por IA. Si el depth viene con los valores al revés (cerca oscuro), simplemente cruzá los sliders cerca/lejos. <b>EN VIVO</b>: con la app <b>Record3D</b> (extensión de WiFi Streaming) el iPhone transmite RGB + profundidad LiDAR en tiempo real por WebRTC — activá el streaming WiFi en la app, apretá el botón rojo, poné la IP que muestra y conectá: todos los efectos corren sobre el stream y el alfa se calcula por distancia en la GPU, cuadro a cuadro (gente moviéndose incluida; rango 0–3 m). Probá el <b>demo en vivo</b> para verlo sin iPhone. <b>Exportar a tu software de VJ</b>: el pack <b>VDMX6</b> es un generator ISF con tus valores como defaults (modo, velocidad, intensidad y demás quedan como sliders en VDMX) + los PNG que importa; el pack <b>TouchDesigner</b> trae el shader para GLSL TOP con receta de cableado; <b>Resolume Arena</b> no corre shaders externos, así que su pack lleva los assets + receta (captura de ventana, o grabá un <b>loop</b> con el botón y convertilo a DXV con Alley). El loop de video le sirve a cualquier software como clip. Ojo: el iPhone sirve HTTP — si esta página está en https el navegador bloquea la conexión; abrila en http o permití "contenido inseguro" para el sitio.</p>
+  <p class="note">Flujo: sacá una <b>foto del escenario parándote donde está la lente del proyector</b> (así la perspectiva ya viene alineada), subila acá, dale a <b>QUITAR FONDO</b> para aislar el sujeto (todo lo negro no se proyecta) y después a <b>MAPA DE PROFUNDIDAD</b>. Los efectos leen esa profundidad: contornos que recorren el relieve, barridos por distancia, luz que orbita la superficie. Con <b>PANTALLA COMPLETA</b> en el proyector ya estás mapeando; ajustá el encaje con zoom/x/y. La IA (quitar fondo + Depth Anything V2) corre <b>100% en tu navegador</b>, en la GPU si Chrome tiene WebGPU (fp16 en la máscara, q4f16 en la profundidad) y si no en WASM. La primera vez baja los modelos y quedan guardados en el navegador; después funciona hasta sin internet. Para meterlo en <b>Resolume/VDMX/OBS</b> capturá esta ventana como fuente de video, igual que con MAPEO. Los PNG exportados (recorte con alfa + depth map) también sirven como assets en cualquier software de VJ. <b>¿Tenés iPhone/iPad Pro con LiDAR?</b> Capturá la escena con una app tipo Record3D, Polycam o Halide, exportá el depth map como imagen y traelo con <b>importar depth</b>: es profundidad medida de verdad (mejor que la estimada por IA), y encima el alfa sale gratis — activá <b>recortar máscara por distancia</b> y todo lo que esté más lejos que el escenario desaparece, sin segmentación. El recorte por distancia también funciona sobre la profundidad generada por IA. Si el depth viene con los valores al revés (cerca oscuro), simplemente cruzá los sliders cerca/lejos. <b>EN VIVO</b>: con la app <b>Record3D</b> (extensión de WiFi Streaming) el iPhone transmite RGB + profundidad LiDAR en tiempo real por WebRTC — activá el streaming WiFi en la app, apretá el botón rojo, poné la IP que muestra y conectá: todos los efectos corren sobre el stream y el alfa se calcula por distancia en la GPU, cuadro a cuadro (gente moviéndose incluida; rango 0–3 m). Probá el <b>demo en vivo</b> para verlo sin iPhone. <b>Exportar a tu software de VJ</b>: el pack <b>VDMX6</b> es un generator ISF con tus valores como defaults (modo, velocidad, intensidad y demás quedan como sliders en VDMX) + los PNG que importa; el pack <b>TouchDesigner</b> trae el shader para GLSL TOP con receta de cableado; <b>Resolume Arena</b> no corre shaders externos, así que su pack lleva los assets + receta (captura de ventana, o grabá un <b>loop</b> con el botón y convertilo a DXV con Alley). El loop de video le sirve a cualquier software como clip. Ojo: el iPhone sirve HTTP — si esta página está en https el navegador bloquea la conexión; abrila en http o permití "contenido inseguro" para el sitio.</p>
 </div>
 <div id="toast"></div>
 
@@ -187,7 +189,14 @@
 const $=id=>document.getElementById(id);
 function toast(t){ const el=$('toast'); el.textContent=t; el.classList.add('show'); clearTimeout(el._h); el._h=setTimeout(()=>el.classList.remove('show'),2400); }
 function status(t,cls){ const el=$('status'); el.textContent=t; el.className=cls||''; }
-function progress(p){ const w=$('progressWrap'); if(p==null){w.style.display='none';return;} w.style.display='block'; $('progressBar').style.width=Math.max(2,Math.min(100,p))+'%'; }
+function progress(p, indet){
+  const w=$('progressWrap'), b=$('progressBar');
+  if(p==null && !indet){ w.style.display='none'; b.classList.remove('indet'); return; }
+  w.style.display='block';
+  if(indet){ b.classList.add('indet'); return; }
+  b.classList.remove('indet');
+  b.style.width=Math.max(2,Math.min(100,p))+'%';
+}
 
 /* ---------- estado ---------- */
 const MAXSIDE=1600, MLSIDE=1024;
@@ -197,78 +206,288 @@ let maskCanvas=null;      // canvas gris: blanco=sujeto, negro=fondo
 let depthCanvas=null;     // canvas gris: profundidad
 let hasMask=false, hasDepth=false, busy=false;
 
-/* ---------- worker de IA (transformers.js) ---------- */
+/* ---------- worker de IA (transformers.js 4 — WebGPU, cae a WASM) ---------- */
 const workerCode=`
-import { pipeline, RawImage, env } from 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.7.1';
+import { pipeline, RawImage, env } from 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@4.3.1';
 env.allowLocalModels=false;
-// ya corremos en un worker: ni proxy-worker ni hilos anidados de ORT (revientan con errores numericos)
-if(env.backends?.onnx?.wasm){ env.backends.onnx.wasm.proxy=false; env.backends.onnx.wasm.numThreads=1; }
-let segPipe=null, segAlt=null, depPipe=null;
-// wasm a proposito: BiRefNet/DepthAnything tienen ops rotas en el backend webgpu de ORT
-const report=file=>p=>{ if(p.status==='progress'&&p.total) self.postMessage({type:'progress',percent:Math.round(p.progress||0),file:p.file||file}); };
-// modnet como titular: BiRefNet/ormbg abortan con errores numericos en el ORT wasm actual
-async function getSeg(){
-  if(!segPipe) segPipe=await pipeline('image-segmentation','Xenova/modnet',{device:'wasm',progress_callback:report('modnet')});
-  return segPipe;
+const ISOLATED = typeof crossOriginIsolated !== 'undefined' && crossOriginIsolated;
+const CORES = Math.max(1, Math.min(navigator.hardwareConcurrency || 2, 4));
+let threadMode = ISOLATED ? CORES : 1;
+function configureWasm(threads){
+  const wasm = env.backends && env.backends.onnx && env.backends.onnx.wasm;
+  if(!wasm) return;
+  wasm.proxy = false;
+  wasm.numThreads = threads;
 }
-async function getSegAlt(){
-  if(!segAlt) segAlt=await pipeline('background-removal','onnx-community/BiRefNet_lite-ONNX',{device:'wasm',progress_callback:report('BiRefNet_lite')});
-  return segAlt;
+configureWasm(threadMode);
+
+// fp16 en mascaras (el borde se come con q4). q4f16 en Depth Anything: es un ViT
+// y el export onnx-community trae ese cuantizado para la web. Sin shader-f16
+// se prueba fp32 en la GPU y, si la GPU no esta, WASM q8.
+const SPECS = {
+  seg:    { task:'image-segmentation', id:'Xenova/modnet', gpu:'fp16', cpu:'fp16', label:'modnet' },
+  segRm:  { task:'background-removal', id:'Xenova/modnet', gpu:'fp16', cpu:'fp16', label:'modnet' },
+  segAlt: { task:'background-removal', id:'onnx-community/BiRefNet_lite-ONNX', gpu:'fp16', cpu:'fp16', label:'BiRefNet_lite' },
+  dep:    { task:'depth-estimation', id:'onnx-community/depth-anything-v2-small', gpu:'q4f16', cpu:'q8', label:'depth-anything-v2' }
+};
+
+let files = new Map();
+function onHub(p){
+  if(p.status==='progress'){
+    const loaded = p.loaded||0, total = p.total||loaded||0;
+    files.set((p.name||'')+':'+(p.file||''), {loaded, total});
+    let L=0, T=0;
+    files.forEach(f=>{ L+=f.loaded; T+=f.total; });
+    self.postMessage({type:'progress', percent:T?Math.round(L/T*100):0, loaded:L, total:T, file:p.file||''});
+  }
 }
-async function getDep(){
-  if(!depPipe) depPipe=await pipeline('depth-estimation','onnx-community/depth-anything-v2-small',{device:'wasm',progress_callback:report('depth-anything-v2')});
-  return depPipe;
+
+function makeOpfsCache(dir){
+  let manifest = {};
+  let chain = Promise.resolve();
+  const enc = new TextEncoder();
+  function keyOf(req){ return typeof req==='string' ? req : (req&&req.url) || String(req); }
+  function enqueue(fn){
+    const run = chain.then(fn, fn);
+    chain = run.then(function(){}, function(){});
+    return run;
+  }
+  const api = {
+    ready: (async function(){
+      try{
+        const fh = await dir.getFileHandle('manifest.json');
+        manifest = JSON.parse(await (await fh.getFile()).text()) || {};
+      }catch(e){ manifest = {}; }
+    })(),
+    async match(req){
+      await api.ready;
+      const key = keyOf(req);
+      const name = manifest[key];
+      if(!name) return undefined;
+      try{
+        const fh = await dir.getFileHandle(name);
+        const file = await fh.getFile();
+        if(!file.size) return undefined;
+        if(/\\.onnx(\\?|$)/.test(key)) self.postMessage({type:'cache', hit:true, bytes:file.size});
+        return new Response(file, {status:200, headers:{'content-type':'application/octet-stream','content-length':String(file.size)}});
+      }catch(e){ return undefined; }
+    },
+    async put(req, response){
+      const key = keyOf(req);
+      const buf = await response.arrayBuffer();
+      await enqueue(async function(){
+        const dig = await crypto.subtle.digest('SHA-256', enc.encode(key));
+        const name = Array.from(new Uint8Array(dig)).map(function(b){ return b.toString(16).padStart(2,'0'); }).join('')+'.bin';
+        const fh = await dir.getFileHandle(name, {create:true});
+        const w = await fh.createWritable();
+        await w.write(buf);
+        await w.close();
+        manifest[key] = name;
+        const mf = await dir.getFileHandle('manifest.json', {create:true});
+        const mw = await mf.createWritable();
+        await mw.write(JSON.stringify(manifest));
+        await mw.close();
+      });
+    }
+  };
+  return api;
 }
-function shipGray(img,kind){
-  // img: RawImage cualquier canales -> Uint8 1 canal
-  const {data,width,height,channels}=img;
+
+async function installCache(){
+  try{
+    if(navigator.storage && navigator.storage.getDirectory){
+      const root = await navigator.storage.getDirectory();
+      const dir = await root.getDirectoryHandle('hg-relieve-models', {create:true});
+      const cache = makeOpfsCache(dir);
+      await cache.ready;
+      env.useCustomCache = true;
+      env.customCache = cache;
+      env.useBrowserCache = false;
+      return 'OPFS';
+    }
+  }catch(e){}
+  env.useBrowserCache = true;
+  env.useCustomCache = false;
+  return 'Cache Storage';
+}
+
+let f16 = null, adapterOk = null;
+async function probeGpu(){
+  if(adapterOk!==null) return;
+  adapterOk = false; f16 = false;
+  if(!navigator.gpu) return;
+  try{
+    const a = await navigator.gpu.requestAdapter({powerPreference:'high-performance'});
+    adapterOk = !!a;
+    f16 = !!(a && a.features && a.features.has('shader-f16'));
+  }catch(e){}
+}
+
+const pipes = new Map();
+async function disposeKey(key){
+  const p = pipes.get(key);
+  pipes.delete(key);
+  if(p && p.dispose){ try{ await p.dispose(); }catch(e){} }
+}
+function planFor(spec){
+  const plan = [];
+  if(adapterOk){
+    if(f16){
+      plan.push(['webgpu', spec.gpu]);
+      if(spec.gpu!=='fp16') plan.push(['webgpu','fp16']);
+    }
+    plan.push(['webgpu','fp32']);
+  }
+  plan.push(['wasm', spec.cpu]);
+  if(spec.cpu!=='fp32') plan.push(['wasm','fp32']);
+  return plan;
+}
+function rangeOf(img, chOffset){
+  const d = img.data, ch = img.channels||1, off = chOffset||0;
+  let mn=255, mx=0;
+  const step = Math.max(1, Math.floor((d.length/ch)/2500));
+  for(let i=off;i<d.length;i+=step*ch){ const v=d[i]; if(v<mn)mn=v; if(v>mx)mx=v; }
+  return mx-mn;
+}
+async function runSpec(spec, img, validate){
+  await probeGpu();
+  const plan = planFor(spec);
+  let last;
+  for(let i=0;i<plan.length;i++){
+    const device = plan[i][0], dtype = plan[i][1];
+    const attempts = (device==='wasm' && threadMode>1) ? [threadMode, 1] : [threadMode];
+    for(let t=0;t<attempts.length;t++){
+      if(attempts[t]!==threadMode){
+        threadMode = attempts[t];
+        configureWasm(threadMode);
+        self.postMessage({type:'phase', text:'WASM con hilos falló, reintento en un solo hilo…', indeterminate:true});
+      }
+      const key = spec.id+'|'+spec.task+'|'+device+'|'+dtype+'|'+threadMode;
+      let errMsg = '';
+      try{
+        let pipe = pipes.get(key);
+        if(!pipe){
+          files = new Map();
+          const hilos = device==='wasm' && threadMode>1 ? ' · '+threadMode+' hilos SIMD' : (device==='wasm' ? ' · WASM SIMD' : '');
+          self.postMessage({type:'phase', text:'cargando '+spec.label+' · '+(device==='webgpu'?'WebGPU':device)+' · '+dtype+hilos+'…', indeterminate:true});
+          pipe = await pipeline(spec.task, spec.id, {device:device, dtype:dtype, progress_callback:onHub});
+          pipes.set(key, pipe);
+        }
+        const verb = spec.task==='depth-estimation' ? 'midiendo la distancia de cada píxel' : 'separando sujeto y fondo';
+        const where = device==='webgpu' ? 'en la GPU' : (threadMode>1 ? 'en WASM ('+threadMode+' hilos)' : 'en WASM');
+        self.postMessage({type:'phase', text:verb+' '+where+'…', indeterminate:true, device:device, dtype:dtype});
+        const t0 = performance.now();
+        const res = await pipe(img);
+        if(validate) validate(res);
+        self.postMessage({type:'backend', device:device, dtype:dtype, ms:Math.round(performance.now()-t0), threads:device==='wasm'?threadMode:0});
+        return res;
+      }catch(e){
+        last = e;
+        errMsg = String((e&&e.message)||e);
+        await disposeKey(key);
+        self.postMessage({type:'warn', device:device, dtype:dtype, threads:threadMode, message:errMsg.slice(0,220)});
+        self.postMessage({type:'phase', text:(device==='webgpu'?'WebGPU':'WASM')+' ('+dtype+') no pudo con '+spec.label+', sigo…', indeterminate:true});
+      }
+      if(/plana|plano|vaci/.test(errMsg)) break;
+    }
+  }
+  throw last || new Error('sin backend');
+}
+
+function shipGray(img, kind){
+  const data=img.data, width=img.width, height=img.height, channels=img.channels||1;
   const out=new Uint8Array(width*height);
   for(let i=0;i<width*height;i++) out[i]=data[i*channels];
-  self.postMessage({type:kind,width,height,pixels:out.buffer},[out.buffer]);
+  self.postMessage({type:kind, width:width, height:height, pixels:out.buffer}, [out.buffer]);
 }
-self.onmessage=async({data:msg})=>{
+function alphaImage(res){
+  let out = Array.isArray(res) ? res[0] : res;
+  if(out && out.mask) out = out.mask;
+  return out;
+}
+function validateAlpha(res){
+  const out = alphaImage(res);
+  if(!out || !out.data) throw new Error('la máscara vino vacía');
+  const flat = out.channels===4 ? rangeOf(out, 3) : rangeOf(out, 0);
+  if(flat<3) throw new Error('la máscara salió plana (rango '+flat+', '+out.width+'×'+out.height+'×'+out.channels+')');
+}
+function validateDepth(res){
+  const depth = res && (res.depth || res);
+  if(!depth || !depth.data) throw new Error('el depth vino vacío');
+  if(rangeOf(depth, 0)<2) throw new Error('el depth salió plano');
+}
+function shipAlpha(res){
+  const out = alphaImage(res);
+  if(out.channels===4){
+    const data=out.data, width=out.width, height=out.height, a=new Uint8Array(width*height);
+    for(let i=0;i<width*height;i++) a[i]=data[i*4+3];
+    self.postMessage({type:'alpha-result', width:width, height:height, pixels:a.buffer}, [a.buffer]);
+  } else shipGray(out, 'alpha-result');
+}
+
+let cacheReady = null;
+function ensureCache(){
+  if(!cacheReady) cacheReady = installCache().then(function(kind){
+    self.postMessage({type:'ready', cache:kind, isolated:ISOLATED, threads:threadMode});
+    return kind;
+  });
+  return cacheReady;
+}
+
+self.onmessage=async function(ev){
+  const msg = ev.data;
   try{
-    const img=await RawImage.fromBlob(new Blob([msg.buffer],{type:msg.mime||'image/png'}));
+    await ensureCache();
+    const img = await RawImage.fromBlob(new Blob([msg.buffer], {type:msg.mime||'image/png'}));
     if(msg.type==='alpha'){
-      let res;
-      try{
-        const p=await getSeg();
-        self.postMessage({type:'phase',text:'separando sujeto y fondo…'});
-        res=await p(img);
-      }catch(e1){
-        self.postMessage({type:'phase',text:'plan B: probando con otro modelo (modnet)…'});
-        const p2=await getSegAlt();
-        res=await p2(img);
+      let res, shipped=false, err;
+      const order = [SPECS.segRm, SPECS.seg, SPECS.segAlt];
+      for(let i=0;i<order.length && !shipped;i++){
+        if(i>0) self.postMessage({type:'phase', text:'ese modelo no anduvo, pruebo '+(i===1?'modnet por la otra vía':'BiRefNet')+'…', indeterminate:true});
+        try{
+          res = await runSpec(order[i], img, validateAlpha);
+          shipAlpha(res);
+          shipped = true;
+        }catch(e){ err = e; }
       }
-      let out=Array.isArray(res)?res[0]:res;
-      if(out.mask) out=out.mask;               // image-segmentation → {mask}
-      if(out.channels===4){                     // background-removal → RGBA con alfa
-        const {data,width,height}=out, a=new Uint8Array(width*height);
-        for(let i=0;i<width*height;i++) a[i]=data[i*4+3];
-        self.postMessage({type:'alpha-result',width,height,pixels:a.buffer},[a.buffer]);
-      } else shipGray(out,'alpha-result');
+      if(!shipped) throw err || new Error('no pude recortar');
     } else if(msg.type==='depth'){
-      const p=await getDep();
-      self.postMessage({type:'phase',text:'midiendo la distancia de cada píxel…'});
-      const res=await p(img);
-      shipGray(res.depth,'depth-result');
+      const res = await runSpec(SPECS.dep, img, validateDepth);
+      shipGray(res.depth || res, 'depth-result');
     }
-  }catch(e){ self.postMessage({type:'error',message:String(e?.message||e)}); }
+  }catch(e){ self.postMessage({type:'error', message:String((e&&e.message)||e)}); }
 };
+ensureCache();
 `;
-let worker=null;
+let worker=null, lastRun=null, sawCache=false;
 function getWorker(){
   if(worker) return worker;
   worker=new Worker(URL.createObjectURL(new Blob([workerCode],{type:'text/javascript'})),{type:'module'});
   worker.onmessage=({data:m})=>{
-    if(m.type==='progress'){ status(`bajando modelo (${m.file||'…'}) — solo la primera vez`, 'busy'); progress(m.percent); }
-    else if(m.type==='phase'){ status(m.text,'busy'); progress(92); }
+    if(m.type==='ready') return;
+    if(m.type==='cache'){ sawCache=true; status('modelo en caché · '+Math.round((m.bytes||0)/1048576)+' MB, compilando…','busy'); progress(100); }
+    else if(m.type==='progress'){
+      const mb=(m.loaded/1048576).toFixed(1), tot=m.total?(m.total/1048576).toFixed(0):'?';
+      const file=(m.file||'').split('/').pop();
+      if((m.percent||0)<100) sawCache=false;
+      status(sawCache ? ('leyendo caché · '+file) : ('bajando '+file+' · '+mb+'/'+tot+' MB'), 'busy');
+      progress(m.percent);
+    }
+    else if(m.type==='phase'){ if(/cargando/.test(m.text||'')) sawCache=false; status(m.text,'busy'); if(m.indeterminate) progress(null,true); }
+    else if(m.type==='backend'){ lastRun=m; }
+    else if(m.type==='warn'){ console.warn('relieve', m.device, m.dtype, 'hilos='+m.threads, m.message); }
     else if(m.type==='alpha-result'){ applyGrayResult(m,'mask'); }
     else if(m.type==='depth-result'){ applyGrayResult(m,'depth'); }
     else if(m.type==='error'){ endBusy(); status('falló la IA: '+m.message+' — podés usar el pincel o "profundidad desde brillo".','err'); toast('La IA falló — hay plan B abajo'); }
   };
   worker.onerror=e=>{ endBusy(); status('no se pudo levantar el worker de IA ('+(e.message||'error')+').','err'); };
   return worker;
+}
+function viaTxt(){
+  if(!lastRun) return '';
+  const dev=lastRun.device==='webgpu'?'WebGPU':'WASM';
+  const h=lastRun.device==='wasm'&&lastRun.threads>1?' · '+lastRun.threads+' hilos':'';
+  return ' · '+dev+' '+lastRun.dtype+h;
 }
 
 /* ---------- carga de foto ---------- */
@@ -305,7 +524,7 @@ async function photoBlobForML(){
   return new Promise(r=>c.toBlob(r,'image/png'));
 }
 
-function startBusy(txt){ busy=true; status(txt,'busy'); progress(3); $('btnAlpha').disabled=true; $('btnDepth').disabled=true; }
+function startBusy(txt){ busy=true; sawCache=false; lastRun=null; status(txt,'busy'); progress(null,true); $('btnAlpha').disabled=true; $('btnDepth').disabled=true; }
 function endBusy(){ busy=false; progress(null); $('btnAlpha').disabled=!photoRGB; $('btnDepth').disabled=!photoRGB; }
 
 function applyGrayResult(m,kind){
@@ -317,8 +536,8 @@ function applyGrayResult(m,kind){
   // reescalar al tamaño de la foto
   const full=document.createElement('canvas'); full.width=photoW; full.height=photoH;
   const fx=full.getContext('2d'); fx.imageSmoothingQuality='high'; fx.drawImage(c,0,0,photoW,photoH);
-  if(kind==='mask'){ maskCanvas=full; hasMask=true; uploadPhotoTex(); status('fondo afuera. retocá con el pincel si hace falta y generá la profundidad.'); toast('Alfa listo — lo negro no se proyecta'); }
-  else{ depthCanvas=full; hasDepth=true; uploadDepthTex(); status(`profundidad lista (${m.width}×${m.height}). elegí un efecto y a proyectar.`); toast('Depth map listo'); if(mode===0) setMode(1); }
+  if(kind==='mask'){ maskCanvas=full; hasMask=true; uploadPhotoTex(); status('fondo afuera'+viaTxt()+'. retocá con el pincel si hace falta y generá la profundidad.'); toast('Alfa listo — lo negro no se proyecta'); }
+  else{ depthCanvas=full; hasDepth=true; uploadDepthTex(); status('profundidad lista ('+m.width+'×'+m.height+')'+viaTxt()+'. elegí un efecto y a proyectar.'); toast('Depth map listo'); if(mode===0) setMode(1); }
   endBusy();
 }
 
