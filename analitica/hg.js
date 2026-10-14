@@ -11,7 +11,7 @@
  *   contacto-estudio    clic hacia /contacto.html (cotizar, reservá una llamada...)
  *   consulta-enviada    el formulario de contacto se envió bien (segmento)
  *   herramienta-click   clic en una herramienta desde el hub /labs/
- *   herramienta-abierta se abrió una de las 68 herramientas (herramienta, origen)
+ *   herramienta-abierta se abrió una herramienta del hub (herramienta, origen)
  *   instagram-zeta      clic hacia @human.zeta
  *   salida-0800         clic hacia 0800webs.com
  *
@@ -37,13 +37,13 @@
   if (window.__hgAnalitica) return;                   // por si se incluye dos veces
   window.__hgAnalitica = true;
 
-  // Las 68 herramientas, tal como las lista el hub /labs/ (labs/index.html).
+  // Las herramientas, tal como las lista el hub /labs/ (labs/index.html).
   var HERRAMIENTAS = [
     'forge', 'aether-2', 'labs/shaders-lab', 'isf', 'gif', 'loop', 'frames',
     'glitchdown', 'mapeo', 'relieve', 'resize', 'paleta', 'extrude',
     'marcadores', 'compas', 'pulso', 'stems', 'click', 'audiograma', 'lut',
     'gradientes', 'contraste', 'tipos', 'letras', 'kinetic', 'afiche',
-    'control', 'smpte', 'test-patterns', 'overlay', 'lower-third',
+    'control', 'track', 'smpte', 'test-patterns', 'overlay', 'lower-third',
     'scene-pack', 'alertas', 'stingers', 'webcam-frame', 'panels',
     'countdown', 'packgen', 'auditoria', 'embudo', 'servicios-comercios',
     'vitrina', 'medidor-gestion', 'pipelines', 'guia-venta', 'contrato',
