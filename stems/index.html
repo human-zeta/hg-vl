@@ -31,6 +31,9 @@
   .pbar i{display:block;height:100%;width:0%;background:var(--acid);transition:width .15s;}
   #plog{font-size:10px;color:rgba(240,237,230,.5);line-height:1.6;min-height:15px;} #plog b{color:var(--acid);font-weight:400;}
   #plog.err b{color:var(--glitch);}
+  #beLine{font-size:10px;color:rgba(240,237,230,.5);line-height:1.6;margin:-6px 0 14px;display:none;}
+  #beLine.on{display:block;}
+  #beLine b{color:var(--acid);font-weight:400;}
   .results{display:none;} .results.on{display:block;}
   .transport{display:flex;align-items:center;gap:14px;margin-bottom:16px;border:1px solid var(--line);border-radius:7px;padding:12px 16px;}
   .transport button{background:var(--acid);color:#050505;border:none;width:42px;height:42px;border-radius:50%;font-size:16px;cursor:pointer;flex-shrink:0;}
@@ -64,7 +67,8 @@
       <div class="dur" id="fdur"></div>
       <button id="goBtn">SEPARAR ▶</button>
     </div>
-    <p class="warn">La primera vez descarga un modelo de IA (<b>~170MB</b>, htdemucs) desde Hugging Face — tu navegador lo cachea, así que la próxima vez es instantáneo. El procesamiento corre 100% local (WebGPU si tu navegador lo soporta, sino WASM) y puede tardar varios minutos según tu equipo y la duración del tema.</p>
+    <p class="warn">La primera vez descarga un modelo de IA (<b>~170MB</b>, htdemucs) desde Hugging Face y queda guardado en el navegador — la próxima vez no se vuelve a bajar. Corre en <b>WebGPU</b> si Chrome lo tiene; si no, en WASM con SIMD (varios hilos cuando la página está aislada con COOP/COEP). El tema se parte en segmentos de ~8 s con solapado, y la barra avanza con cada uno.</p>
+    <div id="beLine"></div>
 
     <div id="prog">
       <div id="plabel1">descargando modelo</div>
@@ -83,7 +87,7 @@
     </div>
   </div>
 
-  <p class="note">Separación con <b>Demucs</b> (Meta AI / HTDemucs) corriendo en el navegador vía ONNX Runtime Web, usando el port <b>demucs-web</b>. Soló/muteá pistas para escuchar cada una, o descargalas en WAV para llevarlas a tu editor — combinalas con <a href="/marcadores/">/marcadores/</a> para sacar BPM y drops de la pista de batería aislada.</p>
+  <p class="note">Separación con <b>Demucs</b> (Meta AI / HTDemucs) corriendo en el navegador vía ONNX Runtime Web, usando el port <b>demucs-web</b>. WebGPU es el camino por defecto; sin GPU queda WASM SIMD, con todos los núcleos si el servidor manda COOP/COEP. Soló/muteá pistas para escuchar cada una, o descargalas en WAV para llevarlas a tu editor — combinalas con <a href="/marcadores/">/marcadores/</a> para sacar BPM y drops de la pista de batería aislada.</p>
 </div>
 <script type="module">
 const $=id=>document.getElementById(id);
@@ -119,53 +123,320 @@ async function toStereo44100(buf){
 
 function plog(msg, isErr){ const el=$('plog'); el.classList.toggle('err', !!isErr); el.innerHTML=msg; }
 
+/* Worker: WebGPU por defecto, WASM SIMD (hilos si crossOriginIsolated), modelo en OPFS. */
+const STEM_WORKER = `
+import * as ort from 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.27.0/dist/ort.bundle.min.mjs';
+import { DemucsProcessor, CONSTANTS } from 'https://esm.sh/demucs-web@1.0.2';
+
+const ORT_BASE = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.27.0/dist/';
+ort.env.wasm.wasmPaths = ORT_BASE;
+ort.env.wasm.simd = true;
+ort.env.wasm.proxy = false;
+const ISOLATED = typeof crossOriginIsolated !== 'undefined' && crossOriginIsolated;
+const CORES = Math.max(1, Math.min(navigator.hardwareConcurrency || 4, 8));
+ort.env.wasm.numThreads = ISOLATED ? CORES : 1;
+if(ort.env.webgpu) ort.env.webgpu.powerPreference = 'high-performance';
+
+const MODEL_URL = CONSTANTS.DEFAULT_MODEL_URL;
+const MIN_MODEL = 50 * 1024 * 1024;
+let modelBuffer = null;
+let processor = null;
+let backend = '';
+let cacheKind = '';
+let gpuBroken = false;
+
+function keyOf(req){ return typeof req==='string' ? req : (req && req.url) || String(req); }
+function makeOpfsCache(dir){
+  let manifest = {};
+  let chain = Promise.resolve();
+  const enc = new TextEncoder();
+  function enqueue(fn){
+    const run = chain.then(fn, fn);
+    chain = run.then(function(){}, function(){});
+    return run;
+  }
+  const api = {
+    kind: 'OPFS',
+    ready: (async function(){
+      try{
+        const fh = await dir.getFileHandle('manifest.json');
+        manifest = JSON.parse(await (await fh.getFile()).text()) || {};
+      }catch(e){ manifest = {}; }
+    })(),
+    async match(req){
+      await api.ready;
+      const name = manifest[keyOf(req)];
+      if(!name) return undefined;
+      try{
+        const file = await (await dir.getFileHandle(name)).getFile();
+        if(file.size < MIN_MODEL) return undefined;
+        return new Response(file, {status:200, headers:{'content-length':String(file.size),'content-type':'application/octet-stream'}});
+      }catch(e){ return undefined; }
+    },
+    async put(req, response){
+      const key = keyOf(req);
+      const buf = await response.arrayBuffer();
+      if(buf.byteLength < MIN_MODEL) return;
+      await enqueue(async function(){
+        const dig = await crypto.subtle.digest('SHA-256', enc.encode(key));
+        const name = Array.from(new Uint8Array(dig)).map(function(b){ return b.toString(16).padStart(2,'0'); }).join('')+'.onnx';
+        const w = await (await dir.getFileHandle(name, {create:true})).createWritable();
+        await w.write(buf);
+        await w.close();
+        manifest[key] = name;
+        const mw = await (await dir.getFileHandle('manifest.json', {create:true})).createWritable();
+        await mw.write(JSON.stringify(manifest));
+        await mw.close();
+      });
+    }
+  };
+  return api;
+}
+async function openStore(){
+  try{
+    if(navigator.storage && navigator.storage.getDirectory){
+      const root = await navigator.storage.getDirectory();
+      const dir = await root.getDirectoryHandle('hg-stems-models', {create:true});
+      const cache = makeOpfsCache(dir);
+      await cache.ready;
+      return cache;
+    }
+  }catch(e){}
+  try{
+    const box = await caches.open('hg-stems-models');
+    return {
+      kind: 'Cache Storage',
+      async match(req){
+        const hit = await box.match(keyOf(req));
+        if(!hit) return undefined;
+        const len = Number(hit.headers.get('content-length')||0);
+        if(len && len < MIN_MODEL) return undefined;
+        return hit;
+      },
+      async put(req, response){ await box.put(keyOf(req), response); }
+    };
+  }catch(e){}
+  return { kind:'sin caché', async match(){ return undefined; }, async put(){} };
+}
+
+async function fetchModel(onProgress){
+  if(modelBuffer){ onProgress(modelBuffer.byteLength, modelBuffer.byteLength, true); return modelBuffer; }
+  const store = await openStore();
+  cacheKind = store.kind;
+  const hit = await store.match(MODEL_URL);
+  if(hit){
+    const buf = await hit.arrayBuffer();
+    onProgress(buf.byteLength, buf.byteLength, true);
+    modelBuffer = buf;
+    return buf;
+  }
+  const res = await fetch(MODEL_URL);
+  if(!res.ok) throw new Error('no pude bajar el modelo ('+res.status+')');
+  const total = parseInt(res.headers.get('content-length')||'0', 10);
+  const reader = res.body.getReader();
+  const chunks = [];
+  let loaded = 0;
+  while(true){
+    const step = await reader.read();
+    if(step.done) break;
+    chunks.push(step.value);
+    loaded += step.value.length;
+    onProgress(loaded, total || loaded, false);
+  }
+  const out = new Uint8Array(loaded);
+  let off = 0;
+  for(let i=0;i<chunks.length;i++){ out.set(chunks[i], off); off += chunks[i].length; }
+  try{ await store.put(MODEL_URL, new Response(out.slice(0), {headers:{'content-length':String(out.byteLength),'content-type':'application/octet-stream'}})); }
+  catch(e){}
+  modelBuffer = out.buffer;
+  return modelBuffer;
+}
+
+async function hasWebGPU(){
+  if(!navigator.gpu) return false;
+  try{ return !!(await navigator.gpu.requestAdapter({powerPreference:'high-performance'})); }
+  catch(e){ return false; }
+}
+async function releaseProcessor(){
+  const session = processor && processor.session;
+  processor = null;
+  if(session && session.release){ try{ await session.release(); }catch(e){} }
+}
+async function makeProcessor(kind){
+  const buf = await fetchModel(function(loaded, total, cached){
+    self.postMessage({type:'download', loaded:loaded, total:total, cached:!!cached, cache:cacheKind});
+  });
+  await releaseProcessor();
+  const proc = new DemucsProcessor({
+    ort: ort,
+    sessionOptions: {
+      executionProviders: kind==='webgpu' ? ['webgpu','wasm'] : ['wasm'],
+      graphOptimizationLevel: 'basic',
+      enableCpuMemArena: false,
+      enableMemPattern: false
+    },
+    onProgress: function(info){ self.postMessage({type:'segment', progress:info.progress, currentSegment:info.currentSegment, totalSegments:info.totalSegments}); },
+    onLog: function(phase, msg){ self.postMessage({type:'log', phase:phase, msg:msg}); }
+  });
+  await proc.loadModel(buf.slice(0));
+  return proc;
+}
+
+self.onmessage = async function(ev){
+  const msg = ev.data;
+  if(!msg || msg.type!=='separate') return;
+  try{
+    const prefer = (!gpuBroken && await hasWebGPU()) ? 'webgpu' : 'wasm';
+    if(processor && backend===prefer && modelBuffer){
+      self.postMessage({type:'download', loaded:modelBuffer.byteLength, total:modelBuffer.byteLength, cached:true, cache:cacheKind||'memoria'});
+    }
+    if(!processor || backend!==prefer){
+      self.postMessage({type:'log', phase:'modelo', msg:prefer==='webgpu' ? 'abriendo sesión WebGPU…' : 'abriendo sesión WASM…'});
+      try{
+        processor = await makeProcessor(prefer);
+        backend = prefer;
+      }catch(e){
+        if(prefer!=='webgpu') throw e;
+        self.postMessage({type:'log', phase:'backend', msg:'WebGPU no abrió la sesión, sigo en WASM…'});
+        gpuBroken = true;
+        processor = await makeProcessor('wasm');
+        backend = 'wasm';
+        self.postMessage({type:'backend', backend:'wasm', fallback:String((e&&e.message)||e), threads:ort.env.wasm.numThreads, isolated:ISOLATED, simd:true, cache:cacheKind});
+      }
+    }
+    if(backend===prefer){
+      self.postMessage({type:'backend', backend:backend, threads:ort.env.wasm.numThreads, isolated:ISOLATED, simd:true, cache:cacheKind});
+    }
+    const left = new Float32Array(msg.left);
+    const right = new Float32Array(msg.right);
+    const stride = Math.floor(CONSTANTS.TRAINING_SAMPLES * (1 - CONSTANTS.SEGMENT_OVERLAP));
+    const total = left.length;
+    const segments = Math.max(1, Math.ceil((total - CONSTANTS.TRAINING_SAMPLES) / stride) + 1);
+    self.postMessage({type:'work', total: segments < 1 ? 1 : segments});
+    let result;
+    try{
+      result = await processor.separate(left, right);
+    }catch(e){
+      if(backend!=='webgpu') throw e;
+      self.postMessage({type:'log', phase:'backend', msg:'la GPU falló a mitad de camino, reintento el tema en WASM…'});
+      gpuBroken = true;
+      processor = await makeProcessor('wasm');
+      backend = 'wasm';
+      self.postMessage({type:'backend', backend:'wasm', fallback:String((e&&e.message)||e), threads:ort.env.wasm.numThreads, isolated:ISOLATED, simd:true, cache:cacheKind});
+      result = await processor.separate(left, right);
+    }
+    const tracks = {};
+    const transfer = [];
+    for(let i=0;i<CONSTANTS.TRACKS.length;i++){
+      const k = CONSTANTS.TRACKS[i];
+      tracks[k] = {left: result[k].left.buffer, right: result[k].right.buffer};
+      transfer.push(tracks[k].left, tracks[k].right);
+    }
+    self.postMessage({type:'result', tracks:tracks, backend:backend}, transfer);
+  }catch(e){
+    self.postMessage({type:'error', message:String((e&&e.message)||e)});
+  }
+};
+`;
+
+let stemWorker = null;
+let segWatch = null;
+function stemsWorker(){
+  if(stemWorker) return stemWorker;
+  stemWorker = new Worker(URL.createObjectURL(new Blob([STEM_WORKER],{type:'text/javascript'})),{type:'module'});
+  return stemWorker;
+}
+function stopSegWatch(){ if(segWatch){ clearInterval(segWatch); segWatch=null; } }
+function fmtLeft(s){ if(!isFinite(s) || s<1) return ''; s=Math.round(s); const m=Math.floor(s/60), ss=s%60; return m? m+' min '+String(ss).padStart(2,'0')+' s' : ss+' s'; }
+
 $('goBtn').addEventListener('click', async ()=>{
   if(!decodedBuf) return;
   $('goBtn').disabled=true; $('prog').classList.add('on'); $('results').classList.remove('on');
   $('pbar1').style.width='0%'; $('pbar2').style.width='0%';
+  $('plabel1').textContent='descargando modelo';
+  $('plabel2').textContent='separando audio';
+  $('beLine').classList.remove('on');
   plog('preparando audio…');
+  const seg = {done:0, total:0, mark:0, durs:[], running:true};
+  stopSegWatch();
+  segWatch = setInterval(function(){
+    if(!seg.running || !seg.total) return;
+    const elapsed = (performance.now() - seg.mark) / 1000;
+    const avg = seg.durs.length ? seg.durs.reduce(function(a,b){return a+b;},0)/seg.durs.length : 0;
+    const eta = avg ? fmtLeft((seg.total - seg.done - 1) * avg + Math.max(0, avg - elapsed)) : '';
+    const cur = Math.min(seg.total, seg.done + 1);
+    $('plabel2').textContent = 'separando audio · segmento '+cur+'/'+seg.total+' · '+fmtLeft(elapsed)+(eta?' · faltan ~'+eta:'');
+  }, 400);
   try{
     const { left, right, sampleRate } = await toStereo44100(decodedBuf);
-
-    plog('cargando ONNX Runtime Web + demucs-web…');
-    const [ort, demucs] = await Promise.all([
-      import('https://cdn.jsdelivr.net/npm/onnxruntime-web@1.27.0/dist/ort.bundle.min.mjs'),
-      import('https://esm.sh/demucs-web@1.0.2')
-    ]);
-    const { DemucsProcessor, CONSTANTS } = demucs;
-    ort.env.wasm.wasmPaths = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.27.0/dist/';
-    ort.env.wasm.numThreads = (typeof crossOriginIsolated!=='undefined' && crossOriginIsolated) ? (navigator.hardwareConcurrency||4) : 1;
-
-    let backend='wasm';
-    if('gpu' in navigator){ try{ const adapter=await navigator.gpu.requestAdapter(); if(adapter) backend='webgpu'; }catch(e){} }
-    plog('backend: <b>'+backend+'</b> · iniciando descarga del modelo…');
-
-    const processor = new DemucsProcessor({
-      ort,
-      sessionOptions:{ enableCpuMemArena:false, enableMemPattern:false },
-      onDownloadProgress:(loaded,total)=>{
-        const pct = total ? (loaded/total*100) : 0;
-        $('pbar1').style.width=pct+'%';
-        $('plabel1').textContent='descargando modelo IA · '+(loaded/1048576).toFixed(0)+'MB / '+(total?(total/1048576).toFixed(0):'?')+'MB';
-      },
-      onProgress:({progress,currentSegment,totalSegments})=>{
-        $('pbar2').style.width=(progress*100)+'%';
-        $('plabel2').textContent='separando audio · segmento '+currentSegment+'/'+totalSegments;
-      },
-      onLog:(phase,msg)=>plog('['+phase+'] '+msg)
+    plog('cargando el separador…');
+    const worker = stemsWorker();
+    const result = await new Promise(function(resolve, reject){
+      function onErr(e){ finish(function(){ reject(new Error(e.message||'el worker de stems no arrancó')); }); }
+      function finish(fn){
+        worker.removeEventListener('message', onMsg);
+        worker.removeEventListener('error', onErr);
+        fn();
+      }
+      function onMsg(ev){
+        const m = ev.data || {};
+        if(m.type==='download'){
+          const pct = m.total ? (m.loaded/m.total*100) : 0;
+          $('pbar1').style.width = pct+'%';
+          const mb = (m.loaded/1048576).toFixed(0);
+          const tot = m.total ? (m.total/1048576).toFixed(0) : '?';
+          $('plabel1').textContent = m.cached
+            ? ('modelo en caché ('+(m.cache||'navegador')+') · '+mb+' MB')
+            : ('descargando modelo IA · '+mb+' MB / '+tot+' MB');
+        } else if(m.type==='backend'){
+          const threads = m.threads||1;
+          const mode = m.backend==='webgpu'
+            ? 'WebGPU'
+            : ('WASM SIMD · '+(m.isolated && threads>1 ? threads+' hilos' : '1 hilo'+(m.isolated?'':' · sin COOP/COEP')));
+          const fb = m.fallback ? ' · la GPU no anduvo, sigo en WASM' : '';
+          const el = $('beLine');
+          el.classList.add('on');
+          el.innerHTML = 'corriendo en <b>'+mode+'</b>'+fb;
+        } else if(m.type==='work'){
+          seg.total = m.total||1;
+          seg.done = 0;
+          seg.mark = performance.now();
+          $('plabel2').textContent = 'separando audio · segmento 1/'+seg.total;
+        } else if(m.type==='segment'){
+          const dt = (performance.now()-seg.mark)/1000;
+          if(dt>0.05) seg.durs.push(dt);
+          seg.done = m.currentSegment;
+          seg.total = m.totalSegments || seg.total;
+          seg.mark = performance.now();
+          $('pbar2').style.width = (m.progress*100)+'%';
+          $('plabel2').textContent = 'separando audio · segmento '+m.currentSegment+'/'+m.totalSegments;
+        } else if(m.type==='log'){
+          plog('['+m.phase+'] '+m.msg);
+        } else if(m.type==='result'){
+          const tracks = {};
+          Object.keys(m.tracks).forEach(function(k){
+            tracks[k] = {left:new Float32Array(m.tracks[k].left), right:new Float32Array(m.tracks[k].right)};
+          });
+          finish(function(){ resolve(tracks); });
+        } else if(m.type==='error'){
+          finish(function(){ reject(new Error(m.message||'falló la separación')); });
+        }
+      }
+      worker.addEventListener('message', onMsg);
+      worker.addEventListener('error', onErr);
+      worker.postMessage({type:'separate', left:left.buffer, right:right.buffer}, [left.buffer, right.buffer]);
     });
-
-    await processor.loadModel(CONSTANTS.DEFAULT_MODEL_URL);
-    plog('modelo cargado · separando (esto puede tardar varios minutos)…');
-    const result = await processor.separate(left, right);
-    plog('<b>listo</b> · '+CONSTANTS.TRACKS.join(', '));
-
+    seg.running = false;
+    $('pbar2').style.width = '100%';
+    plog('<b>listo</b> · drums, bass, other, vocals');
     buildPlayer(result, sampleRate, decodedBuf.duration);
     $('results').classList.add('on');
   }catch(err){
     console.error(err);
     plog('error: '+(err && err.message ? err.message : err), true);
   }finally{
+    seg.running = false;
+    stopSegWatch();
     $('goBtn').disabled=false;
   }
 });
