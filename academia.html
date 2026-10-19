@@ -46,24 +46,6 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 #ac-title span{color:var(--acid);}
 #ac-sub{font-family:var(--mono);font-size:10px;letter-spacing:0.2em;color:rgba(240,237,230,0.35);margin-top:0.6rem;text-transform:uppercase;}
 
-/* GATE STATES */
-.gate-box{
-  max-width:440px;margin:5rem auto 0;text-align:center;
-  border:1px solid rgba(184,255,0,0.16);border-radius:3px;
-  background:rgba(255,255,255,0.02);padding:2.4rem 1.8rem;
-  font-family:var(--mono);
-}
-.gate-icon{font-size:22px;color:var(--acid);margin-bottom:1rem;}
-.gate-title{font-size:11px;letter-spacing:0.2em;color:var(--white);margin-bottom:0.8rem;text-transform:uppercase;}
-.gate-msg{font-size:9.5px;letter-spacing:0.05em;color:rgba(240,237,230,0.45);line-height:1.9;margin-bottom:1.5rem;}
-.gate-cta{
-  display:inline-block;font-family:var(--mono);font-size:9px;letter-spacing:0.2em;
-  color:var(--acid);border:1px solid rgba(184,255,0,0.3);border-radius:2px;
-  padding:10px 20px;text-decoration:none;background:rgba(184,255,0,0.06);transition:all 0.2s;
-}
-.gate-cta:hover{background:rgba(184,255,0,0.12);border-color:rgba(184,255,0,0.5);}
-.gate-cta.glitch{color:var(--glitch);border-color:rgba(255,45,85,0.3);background:rgba(255,45,85,0.06);}
-.gate-cta.glitch:hover{background:rgba(255,45,85,0.12);}
 #gate-loading{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:6rem;font-family:var(--mono);font-size:9px;letter-spacing:0.22em;color:rgba(240,237,230,0.3);}
 .led-spin{width:6px;height:6px;border-radius:50%;background:var(--acid);animation:pulse-led 1.4s ease-in-out infinite;}
 @keyframes pulse-led{0%,100%{opacity:0.25;}50%{opacity:1;}}
@@ -266,8 +248,6 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 
 #academy-content{display:none;}
 #academy-content.show{display:block;}
-#gate-locked{display:none;}
-#gate-locked.show{display:block;}
 
 /* EL NÚCLEO — manual de autoevaluación */
 #nucleo-card{
@@ -397,17 +377,10 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
   </div>
 
   <h1 id="ac-title">ACADEMIA <span>HG</span></h1>
-  <div id="ac-sub">Temarios y clases — exclusivo para la comunidad suscripta</div>
+  <div id="ac-sub">Temarios y clases — abiertos para todos</div>
 
   <div id="gate-loading">
-    <span class="led-spin"></span> VERIFICANDO ACCESO…
-  </div>
-
-  <div id="gate-locked" class="gate-box">
-    <div class="gate-icon">⌬</div>
-    <div class="gate-title" id="lock-title">ACCESO RESTRINGIDO</div>
-    <div class="gate-msg" id="lock-msg">Esta sección es exclusiva para la comunidad suscripta de Human Glitche.</div>
-    <a class="gate-cta" id="lock-cta" href="home.html">VOLVER AL SITIO</a>
+    <span class="led-spin"></span> CARGANDO…
   </div>
 
   <div id="academy-content">
@@ -495,7 +468,11 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
     const labelEl= document.getElementById('xb-bar-label');
     if(!lvlEl) return;
     lvlEl.textContent = lvl.name;
-    subEl.textContent = `${xp} XP acumulada — autoevaluaciones de la comunidad HG`;
+    if(!UID){
+      subEl.innerHTML = '<a href="home.html#auth-trigger" style="color:var(--acid);text-decoration:none;">Iniciá sesión</a> para guardar tu progreso y sumar XP';
+    } else {
+      subEl.textContent = `${xp} XP acumulada — autoevaluaciones de la comunidad HG`;
+    }
     if(next){
       const span = next.min - lvl.min;
       const prog = Math.max(0, Math.min(1, (xp - lvl.min) / span));
@@ -508,7 +485,12 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
   }
 
   async function toggleTopic(mark, topicIndex, btn){
-    if(!UID || !TOKEN) return;
+    if(!UID || !TOKEN){
+      // sin sesión el contenido se lee igual; marcar lo aprendido necesita cuenta
+      const badge = document.getElementById('xp-badge');
+      if(badge){ badge.scrollIntoView({behavior:'smooth', block:'center'}); badge.animate([{boxShadow:'0 0 0 0 rgba(184,255,0,.6)'},{boxShadow:'0 0 0 10px rgba(184,255,0,0)'}],{duration:900}); }
+      return;
+    }
     const isDone = !!(PROGRESS[mark] && PROGRESS[mark][topicIndex]);
     const newVal = !isDone;
     btn.disabled = true;
@@ -532,10 +514,6 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
   }
 
   const loadingEl = document.getElementById('gate-loading');
-  const lockedEl  = document.getElementById('gate-locked');
-  const lockTitle = document.getElementById('lock-title');
-  const lockMsg   = document.getElementById('lock-msg');
-  const lockCta   = document.getElementById('lock-cta');
   const contentEl = document.getElementById('academy-content');
   const grid      = document.getElementById('program-grid');
 
@@ -784,16 +762,6 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
     }catch(e){ return session.idToken; }
   }
 
-  function showLocked(title, msg, ctaText, ctaHref, glitch){
-    loadingEl.style.display = 'none';
-    lockTitle.textContent = title;
-    lockMsg.textContent = msg;
-    lockCta.textContent = ctaText;
-    lockCta.href = ctaHref;
-    lockCta.classList.toggle('glitch', !!glitch);
-    lockedEl.classList.add('show');
-  }
-
   async function loadProgress(){
     try{
       const r = await fetch(`${FB_URL}/progress/${UID}.json?auth=${TOKEN}`);
@@ -918,56 +886,23 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
   async function showContent(){
     loadingEl.style.display = 'none';
     contentEl.classList.add('show');
-    await Promise.all([loadProgress(), loadPatches()]);
+    if(UID && TOKEN) await Promise.all([loadProgress(), loadPatches()]);
     renderBadge();
     renderPatches();
     renderGrid();
   }
 
-  async function checkAccess(){
+  // La Academia es abierta para todos desde 2026-10-19 (se sacó la suscripción).
+  // La sesión solo suma guardar el progreso, la XP y los parches en Firebase.
+  async function openAcademy(){
     const session = getSession();
-    if(!session){
-      showLocked(
-        'INICIÁ SESIÓN',
-        'Para acceder a la Academia HG primero necesitás iniciar sesión (o crear tu cuenta) desde el sitio principal.',
-        'IR A INICIAR SESIÓN',
-        'home.html#auth-trigger'
-      );
-      return;
+    if(session && session.uid){
+      try{
+        TOKEN = await freshToken(session);
+        UID = session.uid;
+      }catch(e){ TOKEN = null; UID = null; }
     }
-    try{
-      const token = await freshToken(session);
-      TOKEN = token;
-      UID = session.uid;
-      const [subR, adminR, modR] = await Promise.all([
-        fetch(`${FB_URL}/subscribers/${session.uid}.json?auth=${token}`),
-        fetch(`${FB_URL}/admins/${session.uid}.json?auth=${token}`),
-        fetch(`${FB_URL}/moderators/${session.uid}.json?auth=${token}`)
-      ]);
-      // acepta el booleano legado (true) y el nuevo objeto {tier:'1'|'2'|'3'} — cualquier tier da acceso
-      const isSub   = subR.ok   ? (function(v){ return v === true || (v && typeof v === 'object' && !!v.tier); })(await subR.json()) : false;
-      const isAdmin = adminR.ok ? (await adminR.json()) === true : false;
-      const isMod   = modR.ok   ? (await modR.json())   === true : false;
-      // Los admins y moderadores tienen acceso total a la Academia, con o sin suscripción
-      if(isSub || isAdmin || isMod){
-        showContent();
-      }else{
-        showLocked(
-          'SOLO PARA SUSCRIPTOS',
-          'La Academia HG — temarios y clases de cada herramienta del stack — es exclusiva para la comunidad suscripta. Escribinos para sumarte.',
-          'CONSULTAR SUSCRIPCIÓN →',
-          'https://discord.gg/CgmxdSecHY',
-          true
-        );
-      }
-    }catch(e){
-      showLocked(
-        'NO PUDIMOS VERIFICAR TU ACCESO',
-        'Hubo un problema al verificar tu suscripción. Probá de nuevo en un momento o volvé al sitio principal.',
-        'VOLVER AL SITIO',
-        'home.html'
-      );
-    }
+    showContent();
   }
 
   // ── MANUAL DE AUTOEVALUACIÓN — privado, solo en este dispositivo ──
@@ -1150,7 +1085,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 
   document.getElementById('nucleo-card').addEventListener('click', openAutoeval);
 
-  checkAccess();
+  openAcademy();
 })();
 </script>
 

@@ -202,11 +202,9 @@ body.is-own.editing-socials .soc-quick{display:none;}
 .social-card.linked:hover .soc-go{color:var(--acid);}
 body.is-own.editing-socials .soc-go{display:none;}
 
-/* ── DISCORD & SUSCRIPCIÓN ────────────── */
+/* ── DISCORD ──────────────────────────── */
 #discord-sec{display:none;}
 body.is-own #discord-sec{display:block;}
-#sub-badge{font-family:var(--mono);font-size:9px;letter-spacing:0.18em;color:var(--acid);border:1px solid rgba(184,255,0,0.3);display:inline-block;padding:5px 12px;margin-bottom:0.9rem;}
-#sub-badge:empty{display:none;}
 #discord-status{font-family:var(--mono);font-size:10px;color:rgba(var(--ink),0.45);line-height:1.9;margin-bottom:0.9rem;}
 #discord-status .ok{color:var(--acid);}
 #discord-actions{display:flex;gap:0.7rem;flex-wrap:wrap;}
@@ -324,10 +322,9 @@ body.is-own #discord-sec{display:block;}
       <div id="socials-grid"></div>
     </div>
 
-    <!-- DISCORD & SUSCRIPCIÓN -->
+    <!-- DISCORD -->
     <div class="sec" id="discord-sec">
-      <div class="sec-title">⌬ DISCORD &amp; SUSCRIPCIÓN</div>
-      <div id="sub-badge"></div>
+      <div class="sec-title">⌬ DISCORD</div>
       <div id="discord-status"></div>
       <div id="discord-actions">
         <button class="btn-sm primary" id="discord-link-btn" type="button">VINCULAR DISCORD</button>
@@ -692,12 +689,6 @@ body.is-own #discord-sec{display:block;}
   }
 
   // ── Discord linking
-  const SUB_TIER_LABELS = {
-    '1': 'TIER 01 — CONCIENCIA ⌘',
-    '2': 'TIER 02 — CREACIÓN ✦',
-    '3': 'TIER 03 — COMPARTIR ☉',
-  };
-
   function discordRedirectUri(){
     return location.origin + location.pathname;
   }
@@ -745,7 +736,6 @@ body.is-own #discord-sec{display:block;}
   function renderDiscord(){
     if(!IS_OWN) return;
     const statusEl = document.getElementById('discord-status');
-    const badgeEl  = document.getElementById('sub-badge');
     const linkBtn  = document.getElementById('discord-link-btn');
     const unlinkBtn= document.getElementById('discord-unlink-btn');
     const discord = PROFILE.discord;
@@ -754,15 +744,9 @@ body.is-own #discord-sec{display:block;}
       linkBtn.style.display = 'none';
       unlinkBtn.style.display = '';
     } else {
-      statusEl.textContent = 'Vinculá tu cuenta de Discord para recibir tu rol de suscriptor automáticamente.';
+      statusEl.textContent = 'Vinculá tu cuenta de Discord para que la comunidad te reconozca en el servidor.';
       linkBtn.style.display = '';
       unlinkBtn.style.display = 'none';
-    }
-    const sub = PROFILE.subscription;
-    if(sub && sub.tier && SUB_TIER_LABELS[sub.tier]){
-      badgeEl.textContent = SUB_TIER_LABELS[sub.tier];
-    } else {
-      badgeEl.textContent = '';
     }
   }
 

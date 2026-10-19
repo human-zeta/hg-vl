@@ -44,7 +44,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .tool-panel{display:none;}
 .tool-panel.active{display:block;animation:toolIn 0.25s ease;}
 @keyframes toolIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
-/* ── Controles por fila: Tier + Tipo de cuenta ── */
+/* ── Controles por fila: Tipo de cuenta ── */
 .row-ctrl{display:flex;flex-direction:column;gap:3px;margin-top:6px;}
 .row-ctrl label{font-family:var(--mono);font-size:7.5px;letter-spacing:0.16em;color:rgba(240,237,230,0.4);text-transform:uppercase;}
 .row-sel{font-family:var(--mono);font-size:9px;letter-spacing:0.06em;color:var(--white);
@@ -103,13 +103,6 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .u-uid{color:rgba(240,237,230,0.25);font-size:7.5px;letter-spacing:0;word-break:break-all;}
 .u-xp{color:var(--acid);}
 
-.sub-pill{
-  display:inline-flex;align-items:center;gap:6px;font-size:8px;letter-spacing:0.14em;
-  padding:5px 10px;border-radius:20px;text-transform:uppercase;border:1px solid transparent;
-}
-.sub-pill.on{color:var(--acid);border-color:rgba(184,255,0,0.35);background:rgba(184,255,0,0.07);}
-.sub-pill.off{color:rgba(240,237,230,0.35);border-color:rgba(240,237,230,0.12);background:rgba(255,255,255,0.02);}
-.sub-pill .dot{width:5px;height:5px;border-radius:50%;background:currentColor;}
 
 .role-pill{
   display:inline-flex;align-items:center;gap:5px;font-size:7px;letter-spacing:0.16em;
@@ -294,7 +287,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
   </div>
 
   <h1 id="ad-title">ADMIN <span>HG</span></h1>
-  <div id="ad-sub">Panel de administración — gestión manual de suscripciones y comunidad</div>
+  <div id="ad-sub">Panel de administración — gestión de la comunidad</div>
 
   <div id="gate-loading">
     <span class="led-spin"></span> VERIFICANDO ACCESO…
@@ -309,8 +302,8 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 
   <div id="admin-content">
     <div class="ad-intro" id="ad-intro">
-      ⌘ Acá podés ver la <strong>comunidad registrada</strong> y activar o desactivar el acceso a la
-      <strong>Academia HG</strong> de forma manual — sin tener que entrar a la consola de Firebase.
+      ⌘ Acá podés ver la <strong>comunidad registrada</strong>, su tipo de cuenta y la moderación
+      — sin tener que entrar a la consola de Firebase.
       También vas a ver el <strong>progreso / experiencia</strong> que cada miembro acumuló con sus autoevaluaciones.
     </div>
 
@@ -323,7 +316,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
         <thead>
           <tr>
             <th>Usuario</th>
-            <th>Suscripción</th>
+            <th>Cuenta</th>
             <th>XP / Nivel</th>
             <th>Acción</th>
           </tr>
@@ -433,12 +426,11 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
       <div id="bgloops-list-status"></div>
     </div>
 
-    <!-- DISCORD / SUSCRIPCIONES -->
+    <!-- DISCORD -->
     <div id="discord-section" class="tool-panel">
-      <div id="pd-title" style="margin-bottom:0.4rem;">DISCORD <span>&amp; SUSCRIPCIONES</span></div>
+      <div id="pd-title" style="margin-bottom:0.4rem;">DISCORD <span>&amp; COMUNIDAD</span></div>
       <div class="pd-intro">
-        ⌬ Configurá la vinculación de cuentas de Discord y la asignación automática de roles por tier de suscripción.
-        Estos datos los usa <code>perfil.html</code> (vinculación) y el bot/webhook que asigna roles al confirmarse un pago.
+        ⌬ Configurá la vinculación de cuentas de Discord. Estos datos los usa <code>perfil.html</code> para vincular la cuenta de cada miembro.
       </div>
       <form id="discord-form" class="pd-grid">
         <div class="pd-field full">
@@ -448,18 +440,6 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
         <div class="pd-field full">
           <label for="discord-guild-id">Guild ID (servidor)</label>
           <input type="text" id="discord-guild-id" placeholder="Ej. 987654321098765432">
-        </div>
-        <div class="pd-field">
-          <label for="discord-role-t1">Rol Tier 1 — ID</label>
-          <input type="text" id="discord-role-t1" placeholder="Role ID Sub T1">
-        </div>
-        <div class="pd-field">
-          <label for="discord-role-t2">Rol Tier 2 — ID</label>
-          <input type="text" id="discord-role-t2" placeholder="Role ID Sub T2">
-        </div>
-        <div class="pd-field">
-          <label for="discord-role-t3">Rol Tier 3 — ID</label>
-          <input type="text" id="discord-role-t3" placeholder="Role ID Sub T3">
         </div>
         <div class="pd-field full">
           <button type="submit" id="discord-submit">GUARDAR CONFIGURACIÓN ⌬</button>
@@ -610,57 +590,6 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
     }
   }
 
-  async function setSubscription(uid, isSub, btn){
-    btn.disabled = true;
-    const original = btn.textContent;
-    btn.textContent = 'GUARDANDO…';
-    try{
-      const r = await fetch(`${FB_URL}/subscribers/${uid}.json?auth=${TOKEN}`, {
-        method:'PUT',
-        headers:{'Content-Type':'application/json'},
-        body: isSub ? 'true' : 'null'
-      });
-      if(!r.ok){
-        const errBody = await r.text().catch(()=>'');
-        if(r.status === 401 || r.status === 403){
-          throw new Error(`Sin permiso para escribir en /subscribers (HTTP ${r.status}) — actualizá las reglas de seguridad en Firebase para que admins y mods puedan escribir en /subscribers/$uid.`);
-        }
-        throw new Error(`HTTP ${r.status}${errBody ? ' — ' + errBody.slice(0,150) : ''}`);
-      }
-      await loadUsers(); // re-render with fresh state
-    }catch(e){
-      btn.disabled = false;
-      btn.textContent = original;
-      setStatus(`No se pudo actualizar la suscripción — ${e.message}`, true);
-    }
-  }
-
-  // Deriva el tier desde el valor de /subscribers/$uid: objeto {tier}, booleano legado, o vacío.
-  function tierOf(v){
-    if(v && typeof v === 'object' && v.tier) return String(v.tier);
-    if(v === true) return '1';   // legado: true = tenía acceso → equivale a Tier 1
-    return '';                   // sin tier / sin acceso
-  }
-
-  // Asignar tier de suscripción (controla Academia). '' = sin acceso (borra el nodo).
-  async function setTier(uid, tier, sel){
-    sel.disabled = true; sel.classList.add('saving');
-    try{
-      const body = tier ? JSON.stringify({ tier: tier }) : 'null';
-      const r = await fetch(`${FB_URL}/subscribers/${uid}.json?auth=${TOKEN}`, {
-        method:'PUT', headers:{'Content-Type':'application/json'}, body
-      });
-      if(!r.ok){
-        if(r.status === 401 || r.status === 403) throw new Error(`sin permiso para escribir en /subscribers (HTTP ${r.status})`);
-        throw new Error(`HTTP ${r.status}`);
-      }
-      await loadUsers();
-    }catch(e){
-      sel.disabled = false; sel.classList.remove('saving');
-      setStatus(`No se pudo cambiar el tier — ${e.message}`, true);
-    }
-  }
-
   // Asignar tipo de cuenta en /profiles/$uid/accountType: 'comunidad' | 'cliente' (gate.js lo usa).
   async function setAccountType(uid, type, sel){
     sel.disabled = true; sel.classList.add('saving');
@@ -679,10 +608,8 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
     }
   }
 
-  function renderRow(uid, user, sub, xp, accType){
+  function renderRow(uid, user, xp, accType){
     const lvl = levelFor(xp);
-    const tier = tierOf(sub);
-    const isSub = tier !== '';
     const acc = (accType === 'cliente') ? 'cliente' : 'comunidad';
     const tr = document.createElement('tr');
     const name = (user && user.name) || '—';
@@ -700,7 +627,6 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
         ${rolePill}
       </td>
       <td>
-        <span class="sub-pill ${isSub ? 'on' : 'off'}"><span class="dot"></span>${isSub ? 'TIER 0'+tier : 'SIN ACCESO'}</span><br>
         <span class="acc-pill ${acc}">${acc}</span>
       </td>
       <td>
@@ -719,16 +645,6 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
     perfilLink.addEventListener('mouseenter',()=>{ perfilLink.style.color='var(--acid)'; perfilLink.style.borderColor='rgba(184,255,0,0.5)'; });
     perfilLink.addEventListener('mouseleave',()=>{ perfilLink.style.color='rgba(184,255,0,0.5)'; perfilLink.style.borderColor='rgba(184,255,0,0.2)'; });
     actionTd.appendChild(perfilLink);
-
-    // Control de Tier (suscripción + acceso a Academia). Admins y mods pueden.
-    const tierWrap = document.createElement('div'); tierWrap.className = 'row-ctrl';
-    tierWrap.innerHTML = '<label>Tier · Academia</label>';
-    const tierSel = document.createElement('select'); tierSel.className = 'row-sel';
-    [['','— Sin acceso'],['1','Tier 1 · Conciencia'],['2','Tier 2 · Creación'],['3','Tier 3 · Compartir']]
-      .forEach(([v,l])=>{ const o=document.createElement('option'); o.value=v; o.textContent=l; if(v===tier) o.selected=true; tierSel.appendChild(o); });
-    tierSel.addEventListener('change', ()=> setTier(uid, tierSel.value, tierSel));
-    tierWrap.appendChild(tierSel);
-    actionTd.appendChild(tierWrap);
 
     // Control de tipo de cuenta (comunidad / cliente). Escribe en /profiles → SOLO admin.
     if(IS_ADMIN){
@@ -758,9 +674,8 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
     setStatus('Cargando usuarios…');
     rowsEl.innerHTML = '';
     try{
-      const [usersR, subsR, progR, adminsR, modsR] = await Promise.all([
+      const [usersR, progR, adminsR, modsR] = await Promise.all([
         fetch(`${FB_URL}/users.json?auth=${TOKEN}`),
-        fetch(`${FB_URL}/subscribers.json?auth=${TOKEN}`),
         fetch(`${FB_URL}/progress.json?auth=${TOKEN}`),
         fetch(`${FB_URL}/admins.json?auth=${TOKEN}`),
         fetch(`${FB_URL}/moderators.json?auth=${TOKEN}`)
@@ -777,7 +692,6 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
       }
 
       const users = (await usersR.json()) || {};
-      const subs  = subsR.ok  ? (await subsR.json()  || {}) : {};
       const prog  = progR.ok  ? (await progR.json()  || {}) : {};
       ADMINS_CACHE = adminsR.ok ? (await adminsR.json() || {}) : {};
       MODS_CACHE   = modsR.ok   ? (await modsR.json()   || {}) : {};
@@ -798,19 +712,18 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
       ));
       const accTypes = Object.fromEntries(accEntries);
 
-      let subCount = 0;
+      let clientCount = 0;
       let totalXp = 0;
       uids.forEach(uid=>{
-        const tier = tierOf(subs[uid]);
         const xp = xpFromProgress(prog[uid]);
-        if(tier) subCount++;
+        if(accTypes[uid] === 'cliente') clientCount++;
         totalXp += xp;
-        rowsEl.appendChild(renderRow(uid, users[uid], subs[uid], xp, accTypes[uid]));
+        rowsEl.appendChild(renderRow(uid, users[uid], xp, accTypes[uid]));
       });
 
       summaryEl.innerHTML = `
         <div class="ad-stat"><strong>${uids.length}</strong>usuarios registrados</div>
-        <div class="ad-stat"><strong>${subCount}</strong>suscriptores activos</div>
+        <div class="ad-stat"><strong>${uids.length - clientCount}</strong>comunidad · ${clientCount} clientes</div>
         <div class="ad-stat"><strong>${totalXp}</strong>xp acumulada — comunidad</div>
       `;
       setStatus(`${uids.length} usuarios · actualizado ${new Date().toLocaleTimeString('es-AR')}`);
@@ -916,7 +829,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 
     subEl.textContent = IS_ADMIN
       ? 'Panel de administración — elegí una herramienta'
-      : 'Panel de moderación — comunidad y suscripciones';
+      : 'Panel de moderación — comunidad';
 
     // Catálogo de herramientas. init = se ejecuta UNA vez al abrir su panel
     // (lazy + aislado en try/catch: el fallo de una no rompe a las demás → arregla el vidrio).
@@ -1098,9 +1011,6 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
       const cfg = r.ok ? (await r.json() || {}) : {};
       document.getElementById('discord-client-id').value = cfg.clientId || '1513649897352466563';
       document.getElementById('discord-guild-id').value = cfg.guildId || '1481427371574824973';
-      document.getElementById('discord-role-t1').value = cfg.roleT1 || '1514426352995008583';
-      document.getElementById('discord-role-t2').value = cfg.roleT2 || '1514426355192696843';
-      document.getElementById('discord-role-t3').value = cfg.roleT3 || '1514426356643922020';
     }catch(e){}
   }
 
@@ -1110,14 +1020,11 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
     const cfg = {
       clientId: document.getElementById('discord-client-id').value.trim(),
       guildId: document.getElementById('discord-guild-id').value.trim(),
-      roleT1: document.getElementById('discord-role-t1').value.trim(),
-      roleT2: document.getElementById('discord-role-t2').value.trim(),
-      roleT3: document.getElementById('discord-role-t3').value.trim(),
     };
     statusEl.textContent = 'Guardando…';
     try{
       const r = await fetch(`${FB_URL}/config/discord.json?auth=${TOKEN}`, {
-        method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(cfg)
+        method:'PATCH', headers:{'Content-Type':'application/json'}, body: JSON.stringify(cfg)
       });
       statusEl.textContent = r.ok ? 'Configuración guardada ✓' : 'Error al guardar.';
     }catch(e){ statusEl.textContent = 'Error al guardar.'; }
