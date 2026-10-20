@@ -10,14 +10,25 @@
 <meta property="og:title" content="ZETA · Artista visual">
 <meta property="og:description" content="Visuales en vivo, mapping a gran escala y VFX con IA. Desde La Plata.">
 <meta property="og:url" content="https://zeta.hg-vl.com/">
-<meta property="og:image" content="https://hg-vl.com/galeria/labs/malena-narvay-dualidad-electronic-band-live.jpg">
+<meta property="og:image" content="https://zeta.hg-vl.com/img/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="ZETA, artista visual: visuales en vivo, mapping y VFX con IA">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://zeta.hg-vl.com/img/og.jpg">
+<meta name="theme-color" content="#050505">
+<link rel="icon" href="img/icon.svg" type="image/svg+xml">
+<link rel="icon" href="img/icon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="img/icon-180.png">
 <link rel="canonical" href="https://zeta.hg-vl.com/">
 <!--
   RUTAS: todo es absoluto desde la raíz (/galeria/..., /analitica/...) para que
   la página funcione igual en hg-vl.com/zeta/ y como raíz de zeta.hg-vl.com
   (Caddy reescribe el subdominio a /zeta/ y deja pasar /galeria/ y /analitica/;
-  ver drafts/zeta-caddy.md).
+  ver drafts/zeta-caddy.md). Lo propio de la página va RELATIVO (img/, media/):
+  Caddy no reescribe /favicon*, por eso el ícono se llama img/icon.*.
+  MEDIA: los videos de media/ salen de los masters de ~/Desktop/Proyectos/LAbs
+  con la cocina del vault (herramientas/zeta-media/).
   FACTUALIDAD: todo sale de /galeria/. No se inventan citas, prensa ni datos.
 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -32,12 +43,13 @@ html{scroll-behavior:smooth}
 body{background:var(--black);color:var(--white);font-family:var(--body);line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
 a{color:var(--acid);text-decoration:none}a:hover{color:var(--white)}
 .wrap{max-width:1040px;margin:0 auto;padding:0 1.5rem;position:relative;z-index:2}
-.topbar{display:flex;justify-content:space-between;align-items:baseline;padding:1.4rem 1.5rem 0;max-width:1040px;margin:0 auto;position:relative;z-index:3;font-family:var(--mono);font-size:10px;letter-spacing:.24em}
-.topbar b{color:var(--acid)}.topbar nav a{color:var(--faint);margin-left:1rem}.topbar nav a:hover{color:var(--acid)}
+.topbar{display:flex;justify-content:space-between;align-items:baseline;padding:1.4rem 1.5rem 0;max-width:1040px;margin:0 auto;position:relative;z-index:3;text-shadow:0 1px 8px rgba(0,0,0,.8);font-family:var(--mono);font-size:10px;letter-spacing:.24em}
+.topbar b{color:var(--acid)}.topbar nav a{color:var(--soft);margin-left:1rem}.topbar nav a:hover{color:var(--acid)}
 .hero{position:relative;min-height:min(88vh,820px);display:flex;align-items:flex-end;padding-bottom:4rem;margin-top:-3rem}
 .hero-bg{position:absolute;inset:0;z-index:0;overflow:hidden}
-.hero-bg img{width:100%;height:100%;object-fit:cover;filter:saturate(1.2) contrast(1.1)}
-.hero-bg::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(5,5,5,.35),rgba(5,5,5,.5) 50%,var(--black))}
+.hero-bg video{width:100%;height:100%;object-fit:cover;display:block;filter:saturate(1.1)}
+.hero-bg::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,rgba(5,5,5,.78) 0%,rgba(5,5,5,.42) 55%,rgba(5,5,5,.2) 100%),linear-gradient(180deg,rgba(5,5,5,.55),rgba(5,5,5,.15) 30%,rgba(5,5,5,.35) 62%,var(--black))}
+.hero-bg::before{content:'';position:absolute;inset:0;z-index:1;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(0,0,0,.18) 0 1px,transparent 1px 3px);mix-blend-mode:multiply}
 .kicker{font-family:var(--mono);font-size:11px;letter-spacing:.32em;color:var(--acid);text-transform:uppercase;margin-bottom:1rem}
 .hero h1{font-family:var(--display);font-weight:400;font-size:clamp(6rem,24vw,15rem);line-height:.82;letter-spacing:.02em;position:relative}
 .hero h1 span{color:var(--acid)}
@@ -56,16 +68,42 @@ a{color:var(--acid);text-decoration:none}a:hover{color:var(--white)}
 .show p{color:var(--soft);font-size:.98rem}.show p b{color:var(--white);font-weight:500}
 .show .yt{display:inline-block;margin-top:.8rem;font-family:var(--mono);font-size:11px;letter-spacing:.1em}
 .media{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:.5rem}
+.media.n2,.media.n4{grid-template-columns:repeat(2,1fr)}.media.n3{grid-template-columns:repeat(3,1fr)}
 .artists{list-style:none;display:flex;flex-wrap:wrap;gap:.5rem}.artists li{font-family:var(--display);font-size:clamp(1.4rem,3vw,2rem);letter-spacing:.02em;border:1px solid var(--line);border-radius:3px;padding:.3rem .9rem}
-.media img{width:100%;aspect-ratio:16/9;object-fit:cover;border:1px solid var(--line);border-radius:3px;background:#0b0b0b;display:block}
+.media img,.media video{width:100%;aspect-ratio:16/9;object-fit:cover;border:1px solid var(--line);border-radius:3px;background:#0b0b0b;display:block}
+/* filas a lo ancho: título | texto arriba, la pieza a todo el ancho abajo */
+.show.wide,.show.text{grid-template-columns:1fr 1.3fr;align-items:start}
+.show.wide p,.show.text p{margin-top:.2rem}
+.wide-media{grid-column:1/-1}
+.strips{display:grid;gap:.45rem}
+.strips video{width:100%;aspect-ratio:4/1;object-fit:cover;display:block;border-radius:3px;background:#0b0b0b}
+.strips figcaption{font-family:var(--mono);font-size:10px;letter-spacing:.14em;color:var(--faint);text-transform:uppercase;margin-top:.3rem}
+.yt-embed{position:relative;aspect-ratio:16/9;border:1px solid var(--line);border-radius:4px;overflow:hidden;background:#0b0b0b}
+.yt-embed iframe,.yt-play,.yt-play img{position:absolute;inset:0;width:100%;height:100%;border:0;display:block}
+.yt-play{cursor:pointer;background:none;padding:0}
+.yt-play img{object-fit:cover;transition:transform .6s ease,filter .3s}
+.yt-play:hover img{transform:scale(1.02);filter:brightness(1.1)}
+.yt-btn{position:absolute;left:1.2rem;bottom:1.2rem;display:flex;align-items:center;gap:.7rem;font-family:var(--mono);font-size:12px;letter-spacing:.16em;color:var(--black);background:var(--acid);padding:.8rem 1.2rem;border-radius:3px;font-weight:700}
+.yt-btn::before{content:'';width:0;height:0;border-left:10px solid var(--black);border-top:6px solid transparent;border-bottom:6px solid transparent}
+.yt-play:hover .yt-btn{background:var(--white)}
+.yt-src{display:inline-block;margin-top:.6rem;font-family:var(--mono);font-size:10px;letter-spacing:.1em;color:var(--faint)}
 .media.one{grid-template-columns:1fr}
-.works{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem}
+.works{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem;align-items:start}
 .work{overflow:hidden;border:1px solid var(--line);border-radius:4px;padding:1.8rem;background:rgba(240,237,230,.02)}
 .badge{display:inline-block;font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;padding:.3rem .6rem;border-radius:2px;margin-bottom:1rem}
 .badge.prox{background:var(--acid);color:var(--black);font-weight:700}
 .badge.dev{border:1px solid var(--glitch);color:var(--glitch)}
 .work h3{font-family:var(--display);font-weight:400;font-size:2.1rem;line-height:1;margin-bottom:.6rem}
 .cover{width:calc(100% + 3.6rem);margin:-1.8rem -1.8rem 1.4rem;display:block;height:auto;border-radius:4px 4px 0 0}
+/* portada generada para "La interfaz se pela": una capa de interfaz que se despega y deja ver el glitch */
+.cover.peel{aspect-ratio:16/9;position:relative;overflow:hidden;background:radial-gradient(120% 90% at 85% 90%,rgba(255,45,85,.55),rgba(255,45,85,.08) 45%,transparent 70%),repeating-linear-gradient(90deg,rgba(255,45,85,.22) 0 2px,transparent 2px 9px),#0a0507}
+.peel .ui{position:absolute;inset:0;background:linear-gradient(rgba(240,237,230,.07) 1px,transparent 1px) 0 0/100% 22px,linear-gradient(90deg,rgba(240,237,230,.07) 1px,transparent 1px) 0 0/22px 100%,linear-gradient(160deg,#16170f,#0c0d09);clip-path:polygon(0 0,100% 0,100% 58%,62% 100%,0 100%);animation:peel 7s ease-in-out infinite alternate}
+.peel .ui::before{content:'';position:absolute;left:8%;top:12%;width:34%;height:9%;border:1px solid rgba(184,255,0,.55);box-shadow:0 26px 0 -1px rgba(240,237,230,.12),0 52px 0 -1px rgba(240,237,230,.08)}
+.peel .ui::after{content:'';position:absolute;right:9%;top:12%;width:18%;aspect-ratio:1;border-radius:50%;border:1px solid rgba(240,237,230,.18)}
+.peel .flap{position:absolute;inset:0;background:linear-gradient(225deg,transparent 49.6%,rgba(240,237,230,.85) 50%,rgba(240,237,230,.25) 64%,transparent 78%);clip-path:polygon(100% 58%,62% 100%,100% 100%);animation:peel 7s ease-in-out infinite alternate;mix-blend-mode:screen}
+@keyframes peel{from{clip-path:polygon(0 0,100% 0,100% 74%,78% 100%,0 100%)}to{clip-path:polygon(0 0,100% 0,100% 40%,46% 100%,0 100%)}}
+.peel .flap{animation-name:flap}
+@keyframes flap{from{clip-path:polygon(100% 74%,78% 100%,100% 100%)}to{clip-path:polygon(100% 40%,46% 100%,100% 100%)}}
 .wmeta{font-family:var(--mono);font-size:11px!important;letter-spacing:.08em;color:var(--acid)!important;margin-bottom:.6rem}
 .work p{color:var(--soft);font-size:.96rem}
 .bio{display:grid;grid-template-columns:1fr 1fr;gap:2.5rem;margin-top:1.5rem}
@@ -88,7 +126,10 @@ footer a{color:var(--soft)}
 .tools svg{width:28px;height:28px;fill:var(--white)}
 .tools i{width:28px;height:28px;display:grid;place-items:center;font-style:normal;font-family:var(--mono);font-weight:700;font-size:11px;border:1.5px solid var(--white);border-radius:6px}
 .tools span{font-family:var(--mono);font-size:9.5px;letter-spacing:.04em;color:var(--soft);text-align:center;line-height:1.25}
-@media(max-width:760px){.show,.bio{grid-template-columns:1fr;gap:1.2rem}.hero{min-height:min(80vh,720px)}.topbar nav a:not(:last-child){display:none}}
+@media(max-width:760px){.show,.bio,.show.wide,.show.text{grid-template-columns:1fr;gap:1rem}.hero{min-height:min(84vh,720px)}
+.topbar{letter-spacing:.14em}.topbar nav a{margin-left:.8rem}.topbar nav a:last-child{display:none}
+.kicker{letter-spacing:.18em}.media.n3{grid-template-columns:repeat(2,1fr)}.media.n3>:first-child{grid-column:1/-1}
+.yt-btn{left:.8rem;bottom:.8rem;font-size:11px;padding:.65rem .9rem}}
 :focus-visible{outline:2px solid var(--acid);outline-offset:2px}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;scroll-behavior:auto!important}}
 </style>
@@ -101,13 +142,23 @@ footer a{color:var(--soft)}
 </header>
 
 <section class="hero">
-  <div class="hero-bg"><img src="/galeria/labs/malena-narvay-dualidad-electronic-band-live.jpg" alt="" fetchpriority="high"></div>
+  <div class="hero-bg"><video id="hero-v" muted loop playsinline aria-hidden="true" poster="media/hero.jpg"></video></div>
+  <script>
+  /* Loop de piezas propias (Tomorrowland, Martín Cirio). Celular: versión vertical.
+     Con ahorro de datos o movimiento reducido queda solo el póster. */
+  (function(){
+    var v=document.getElementById('hero-v'),m=matchMedia('(max-width:760px)').matches,c=navigator.connection||{};
+    if(m) v.poster='media/hero-movil.jpg';
+    if(c.saveData||matchMedia('(prefers-reduced-motion:reduce)').matches) return;
+    v.src=m?'media/hero-movil.mp4':'media/hero.mp4'; v.autoplay=true; var p=v.play(); if(p&&p.catch) p.catch(function(){});
+  })();
+  </script>
   <div class="wrap" style="width:100%">
     <div class="kicker">Artista visual · La Plata, Argentina</div>
     <h1>ZETA<span>.</span></h1>
     <!-- TODO(Juan): confirmar o reemplazar el statement con tus palabras. -->
-    <p class="lede">Diseño la <b>interfaz visual</b> de lo que se vive en un escenario: visuales en vivo, mapping a gran escala y VFX con IA.</p>
-    <div class="chips"><span>Lollapalooza AR</span><span>Tomorrowland Brasil</span><span>UMF Europe</span><span>Festival Marea</span><span>The Roxy</span></div>
+    <p class="lede">Diseña la <b>interfaz visual</b> de lo que se vive en un escenario: visuales en vivo, mapping a gran escala y VFX con IA.</p>
+    <div class="chips"><span>Lollapalooza AR</span><span>Tomorrowland Brasil</span><span>Ultra Europe</span><span>Festival Marea</span><span>The Roxy</span></div>
   </div>
 </section>
 
@@ -116,25 +167,26 @@ footer a{color:var(--soft)}
   <div class="sec"><span class="n">01 · SHOWS SELECCIONADOS</span><h2>En escena.</h2>
   <p>Una selección del archivo. Los registros en video son de los canales oficiales de cada artista y festival.</p></div>
 
-  <article class="show">
-    <div><span class="yr">Malena Narvay · gira</span><h3>Tomorrowland Brasil · Ultra Europe</h3>
-      <p><b>Mis visuales viajaron con Malena Narvay</b> a Tomorrowland Brasil, UMF Europe 2025 y AGS 2025. Creación total del contenido de sus shows en vivo, sincronizado por SMPTE, y el set para pantalla wide screen.</p>
+  <article class="show wide">
+    <div><span class="yr">Malena Narvay · gira</span><h3>Tomorrowland Brasil · Ultra Europe</h3></div>
+    <div><p><b>Los visuales de Zeta viajaron con Malena Narvay</b> a Tomorrowland Brasil, Ultra Europe 2025 y AGS 2025. Creación total del contenido de sus shows en vivo, sincronizado por SMPTE, y el set para pantalla wide screen.</p>
       <a class="yt" href="https://www.youtube.com/watch?v=JdgMZnNayGU" target="_blank" rel="noopener">VER AGS 2025 →</a></div>
-    <div class="media">
-      <img loading="lazy" src="/galeria/tomorrowland/01.gif" alt="Visuales del set de Malena Narvay, pieza 01">
-      <img loading="lazy" src="/galeria/tomorrowland/03.gif" alt="Visuales del set de Malena Narvay, pieza 03">
-      <img loading="lazy" src="/galeria/tomorrowland/13.gif" alt="Visuales del set de Malena Narvay, pieza 13">
-      <img loading="lazy" src="/galeria/tomorrowland/14.gif" alt="Visuales del set de Malena Narvay, pieza 14">
-    </div>
+    <figure class="wide-media strips">
+      <video class="lv" muted loop playsinline preload="none" poster="media/tl-02.jpg" data-src="media/tl-02.mp4" aria-label="Visuales del set de Malena Narvay para pantalla wide screen, pieza 02"></video>
+      <video class="lv" muted loop playsinline preload="none" poster="media/tl-04.jpg" data-src="media/tl-04.mp4" aria-label="Visuales del set de Malena Narvay para pantalla wide screen, pieza 04"></video>
+      <video class="lv" muted loop playsinline preload="none" poster="media/tl-08.jpg" data-src="media/tl-08.mp4" aria-label="Visuales del set de Malena Narvay para pantalla wide screen, pieza 08"></video>
+      <video class="lv" muted loop playsinline preload="none" poster="media/tl-11.jpg" data-src="media/tl-11.mp4" aria-label="Visuales del set de Malena Narvay para pantalla wide screen, pieza 11"></video>
+      <figcaption>Set para pantalla wide screen · formato 4:1</figcaption>
+    </figure>
   </article>
 
   <article class="show">
     <div><span class="yr">Argentina · 2022 y 2023</span><h3>Lollapalooza Argentina</h3>
-      <p><b>2022 con Oscu</b>, en una edición donde también hice visuales y logos animados para Luck Ra, Lil Cake y otros artistas. <b>2023 con Un Verano.</b></p></div>
-    <div class="media">
-      <img loading="lazy" src="/galeria/lolla/02-oscu.gif" alt="Logo animado de Oscu">
-      <img loading="lazy" src="/galeria/lolla/01-luck-ra.gif" alt="Logo animado de Luck Ra">
-      <img loading="lazy" src="/galeria/lolla/03-lil-cake.gif" alt="Logo animado de Lil Cake">
+      <p><b>2022 con Oscu</b>, en una edición donde también hizo visuales y logos animados para Luck Ra, Lil Cake y otros artistas. <b>2023 con Un Verano.</b></p></div>
+    <div class="media n3">
+      <video class="lv" muted loop playsinline preload="none" poster="media/lolla-oscu.jpg" data-src="media/lolla-oscu.mp4" aria-label="Logo animado de Oscu"></video>
+      <video class="lv" muted loop playsinline preload="none" poster="media/lolla-luck-ra.jpg" data-src="media/lolla-luck-ra.mp4" aria-label="Logo animado de Luck Ra"></video>
+      <video class="lv" muted loop playsinline preload="none" poster="media/lolla-lil-cake.jpg" data-src="media/lolla-lil-cake.mp4" aria-label="Logo animado de Lil Cake"></video>
     </div>
   </article>
 
@@ -145,26 +197,33 @@ footer a{color:var(--soft)}
     <div class="media one"><img loading="lazy" src="/galeria/labs/luckra.jpg" alt="Render para Luck Ra"></div>
   </article>
 
-  <article class="show">
-    <div><span class="yr">CABA · The Roxy</span><h3>Presentaciones de disco</h3>
-      <p><b>Visuales para las presentaciones de disco</b> de Lautaro López y de Un Verano en The Roxy.</p></div>
+  <article class="show text">
+    <div><span class="yr">CABA · The Roxy</span><h3>Presentaciones de disco</h3></div>
+    <p><b>Visuales para las presentaciones de disco</b> de Lautaro López y de Un Verano en The Roxy.</p>
   </article>
 
-  <article class="show">
-    <div><span class="yr">Mar del Plata</span><h3>Festival Marea</h3>
-      <p><b>Mapping de 80 × 200 metros</b> sobre los silos del puerto que cuenta los 150 años de historia del puerto de Mar del Plata, con show de luces.</p>
-      <a class="yt" href="https://www.youtube.com/watch?v=UixJ_ggrkoE" target="_blank" rel="noopener">VER EL MAPPING →</a></div>
-    <div class="media one"><img loading="lazy" src="https://i.ytimg.com/vi/UixJ_ggrkoE/hqdefault.jpg" alt="Mapping sobre los silos del puerto de Mar del Plata"></div>
+  <article class="show wide">
+    <div><span class="yr">Mar del Plata</span><h3>Festival Marea</h3></div>
+    <div><p><b>Mapping de 80 × 200 metros</b> sobre los silos del puerto que cuenta los 150 años de historia del puerto de Mar del Plata, con show de luces.</p></div>
+    <div class="wide-media">
+      <div class="yt-embed" data-yt="UixJ_ggrkoE" data-title="Mapping sobre los silos del puerto de Mar del Plata — Festival Marea">
+        <button type="button" class="yt-play" aria-label="Reproducir el mapping de Festival Marea">
+          <img loading="lazy" src="https://i.ytimg.com/vi/UixJ_ggrkoE/maxresdefault.jpg" alt="Mapping sobre los silos del puerto de Mar del Plata">
+          <span class="yt-btn">VER EL MAPPING</span>
+        </button>
+      </div>
+      <a class="yt-src" href="https://www.youtube.com/watch?v=UixJ_ggrkoE" target="_blank" rel="noopener">Canal oficial de Marea Puerto en YouTube ↗</a>
+    </div>
   </article>
 
   <article class="show">
     <div><span class="yr">Show en vivo</span><h3>Rose in Rio</h3>
       <p><b>Contenido visual para Rose in Rio</b>, la fecha en la que tocó Magdalena: cuatro piezas del set, una por momento.</p></div>
-    <div class="media">
-      <img loading="lazy" src="/galeria/rio/01-magdalena.gif" alt="Rose in Rio, Magdalena">
-      <img loading="lazy" src="/galeria/rio/02-mai.gif" alt="Rose in Rio, Mai">
-      <img loading="lazy" src="/galeria/rio/03-simon.gif" alt="Rose in Rio, Simon">
-      <img loading="lazy" src="/galeria/rio/04-rio.gif" alt="Rose in Rio, Río">
+    <div class="media n4">
+      <video class="lv" muted loop playsinline preload="none" poster="media/rio-magdalena.jpg" data-src="media/rio-magdalena.mp4" aria-label="Rose in Rio, Magdalena"></video>
+      <video class="lv" muted loop playsinline preload="none" poster="media/rio-mai.jpg" data-src="media/rio-mai.mp4" aria-label="Rose in Rio, Mai"></video>
+      <video class="lv" muted loop playsinline preload="none" poster="media/rio-simon.jpg" data-src="media/rio-simon.mp4" aria-label="Rose in Rio, Simon"></video>
+      <video class="lv" muted loop playsinline preload="none" poster="media/rio-rio.jpg" data-src="media/rio-rio.mp4" aria-label="Rose in Rio, Río"></video>
     </div>
   </article>
 
@@ -172,9 +231,9 @@ footer a{color:var(--soft)}
     <div><span class="yr">Videoclip · VFX + IA</span><h3>Martín Cirio</h3>
       <p><b>VFX e imagen generada con IA</b> en “Mani for Supermarket”: ocho escenas construidas, generadas y compuestas una a una. Dirección Francisco Scigliano, productora Lucato.</p>
       <a class="yt" href="https://www.youtube.com/watch?v=egVeg8gXhEA" target="_blank" rel="noopener">VER LA PIEZA →</a></div>
-    <div class="media">
-      <img loading="lazy" src="/galeria/cirio/03-puca-style.gif" alt="Mani for Supermarket, escena Puca style">
-      <img loading="lazy" src="/galeria/cirio/06-throat.gif" alt="Mani for Supermarket, escena Throat">
+    <div class="media n2">
+      <video class="lv" muted loop playsinline preload="none" poster="media/cirio-puca-style.jpg" data-src="media/cirio-puca-style.mp4" aria-label="Mani for Supermarket, escena Puca style"></video>
+      <video class="lv" muted loop playsinline preload="none" poster="media/cirio-throat.jpg" data-src="media/cirio-throat.mp4" aria-label="Mani for Supermarket, escena Throat"></video>
     </div>
   </article>
   <article class="show">
@@ -194,7 +253,8 @@ footer a{color:var(--soft)}
       <p class="wmeta">Videoclip con IA · 5:10</p>
       <p>Obra en colaboración con el músico <b style="color:var(--white)">Agustín Bragoni</b>: un video creado íntegramente con inteligencia artificial. Dirección: Zeta.</p>
       <div class="stack"><span>Seedance 2.5</span><span>Gemini Omni Flash</span><span>Nano Banana 2</span><span>MiniMax Hailuo</span><span>Veo 3</span><span>Premiere Pro</span><span>VDMX6</span><span>Synesthesia</span></div></div>
-    <div class="work"><span class="badge dev">En desarrollo</span>
+    <div class="work"><div class="cover peel" aria-hidden="true"><div class="ui"></div><div class="flap"></div></div>
+      <span class="badge dev">En desarrollo</span>
       <h3>La interfaz se pela</h3>
       <!-- TODO(Juan): sumar sinopsis corta aprobada (ver dossier). -->
       <p>Pieza audiovisual en vivo, en desarrollo.</p></div>
@@ -221,6 +281,33 @@ footer a{color:var(--soft)}
   </div>
 </section>
 </main>
+<script>
+(function(){
+  var calm=matchMedia('(prefers-reduced-motion:reduce)').matches;
+  var vs=[].slice.call(document.querySelectorAll('video.lv'));
+  function load(v){ if(!v.src){ v.src=v.dataset.src; } }
+  if(calm || !('IntersectionObserver' in window)){
+    vs.forEach(function(v){ v.controls=calm; if(!calm){ load(v); v.autoplay=true; } });
+  } else {
+    var io=new IntersectionObserver(function(es){
+      es.forEach(function(e){
+        var v=e.target;
+        if(e.isIntersecting){ load(v); var p=v.play(); if(p&&p.catch) p.catch(function(){}); }
+        else if(!v.paused){ v.pause(); }
+      });
+    },{rootMargin:'200px 0px'});
+    vs.forEach(function(v){ io.observe(v); });
+  }
+  [].forEach.call(document.querySelectorAll('.yt-embed'),function(box){
+    box.querySelector('.yt-play').addEventListener('click',function(){
+      var f=document.createElement('iframe');
+      f.src='https://www.youtube-nocookie.com/embed/'+box.dataset.yt+'?autoplay=1&rel=0&playsinline=1';
+      f.title=box.dataset.title; f.allow='autoplay; encrypted-media; picture-in-picture; fullscreen'; f.allowFullscreen=true;
+      box.innerHTML=''; box.appendChild(f);
+    });
+  });
+})();
+</script>
 <footer class="wrap">ZETA · La Plata, Argentina · Parte de <a href="https://hg-vl.com/">Human Glitche</a></footer>
 </body>
 </html>
