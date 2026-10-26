@@ -28,8 +28,10 @@
   ver drafts/zeta-caddy.md). Lo propio de la página va RELATIVO (img/, media/):
   Caddy no reescribe /favicon*, por eso el ícono se llama img/icon.*.
   MEDIA: los videos de media/ salen de los masters de ~/Desktop/Proyectos/LAbs
-  con la cocina del vault (herramientas/zeta-media/).
-  FACTUALIDAD: todo sale de /galeria/. No se inventan citas, prensa ni datos.
+  con la cocina del vault (herramientas/zeta-media/: piezas.sh, archivo.sh).
+  FONDO: umbral.js + z.bin (el plano de UMBRAL; cada sección marca data-fase/data-velo).
+  FACTUALIDAD: todo sale de /galeria/ y de los nombres de las carpetas de masters.
+  No se inventan citas, prensa ni datos.
   La formación (.edu) sale de los certificados de Coursera, con su link de verificación.
 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -143,14 +145,36 @@ footer a{color:var(--soft)}
 .kicker{letter-spacing:.18em}.media.n3{grid-template-columns:repeat(2,1fr)}.media.n3>:first-child{grid-column:1/-1}
 .yt-btn{left:.8rem;bottom:.8rem;font-size:11px;padding:.65rem .9rem}}
 :focus-visible{outline:2px solid var(--acid);outline-offset:2px}
-/* pantalla LED de fondo (pantalla.js): detrás de todo; el video del hero la tapa */
-#pantalla{position:fixed;inset:0;width:100%;height:100%;z-index:-1;pointer-events:none}
-#pantalla-btn{position:fixed;left:12px;bottom:12px;z-index:20;font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--soft);background:rgba(5,5,5,.72);border:1px solid var(--line);padding:.45rem .65rem;border-radius:2px;cursor:pointer}
-#pantalla-btn:hover,#pantalla-btn[aria-pressed=true]{color:var(--acid);border-color:rgba(184,255,0,.45)}
+/* archivo: piezas verticales (flyers, stories), tiras 4:1 del set y videos de canal en fila */
+.media.v{grid-template-columns:repeat(auto-fill,minmax(92px,1fr))}
+.media.v video{aspect-ratio:9/16}
+.media.n8{grid-template-columns:repeat(4,1fr)}
+.media.r83 video{aspect-ratio:8/3}
+.media .full{grid-column:1/-1}
+.strips-mini{display:grid;grid-template-columns:repeat(2,1fr);gap:.45rem;margin-top:.45rem}
+.strips-mini video{aspect-ratio:4/1}
+.yt-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(220px,100%),1fr));gap:.6rem}
+.yt-row .yt-btn{left:.6rem;bottom:.6rem;font-size:10px;padding:.55rem .75rem;gap:.5rem}
+.yt-row .yt-btn::before{border-left-width:8px;border-top-width:5px;border-bottom-width:5px}
+.yt-cap{display:block;margin-top:.35rem;font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--faint)}
+.yt-cap b{color:var(--soft);font-weight:400}
+.tag{font-family:var(--mono);font-size:10px!important;letter-spacing:.1em;color:var(--faint)!important;margin-top:.5rem!important}
+/* el origen: obras de 2018 */
+.obras-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:.5rem;margin-top:1.6rem}
+.obras-grid figure{background:rgba(12,12,11,.88);border:1px solid var(--line);border-radius:3px;overflow:hidden}
+.obras-grid img{width:100%;height:auto;aspect-ratio:1;object-fit:cover;display:block}
+.obras-grid figcaption{font-family:var(--mono);font-size:9.5px;letter-spacing:.04em;color:var(--soft);padding:.4rem .5rem .5rem;line-height:1.3}
+.obras-grid figcaption i{font-style:normal;color:var(--acid);display:block;letter-spacing:.14em}
+.collect{display:flex;flex-wrap:wrap;gap:.6rem;margin-top:1.4rem}
+/* fondo UMBRAL (umbral.js): detrás de todo; el video del hero lo tapa */
+#umbral{position:fixed;inset:0;width:100%;height:100%;z-index:-1;pointer-events:none}
+#umbral-btn{position:fixed;left:12px;bottom:12px;z-index:20;font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--soft);background:rgba(5,5,5,.72);border:1px solid var(--line);padding:.45rem .65rem;border-radius:2px;cursor:pointer}
+#umbral-btn:hover,#umbral-btn[aria-pressed=true]{color:var(--acid);border-color:rgba(184,255,0,.45)}
 /* con la pared detrás, las tarjetas y etiquetas llevan fondo propio para que se lean */
 .work,.tools li{background:rgba(12,12,11,.88)}
 .contact{background:rgba(5,5,5,.86)}
 .artists li,.stack span,.chips span{background:rgba(5,5,5,.78)}
+@media(max-width:760px){.media.n8{grid-template-columns:repeat(2,1fr)}.strips-mini{grid-template-columns:1fr}}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;scroll-behavior:auto!important}}
 </style>
 <script defer src="/analitica/hg.js"></script>
@@ -158,10 +182,10 @@ footer a{color:var(--soft)}
 <body>
 <header class="topbar">
   <div><b>ZETA</b> · LA PLATA</div>
-  <nav><a href="#shows">SHOWS</a><a href="#obras">OBRAS</a><a href="#contacto">CONTACTO</a><a href="https://hg-vl.com/">HUMAN GLITCHE →</a></nav>
+  <nav><a href="#shows">SHOWS</a><a href="#marcas">3D</a><a href="#origen">ORIGEN</a><a href="#contacto">CONTACTO</a><a href="https://hg-vl.com/">HUMAN GLITCHE →</a></nav>
 </header>
 
-<section class="hero">
+<section class="hero" data-fase="0" data-velo="0">
   <div class="hero-bg"><video id="hero-v" muted loop playsinline aria-hidden="true" poster="media/hero.jpg"></video></div>
   <script>
   /* Loop de piezas propias (Tomorrowland, Martín Cirio). Celular: versión vertical.
@@ -183,30 +207,55 @@ footer a{color:var(--soft)}
 </section>
 
 <main class="wrap">
-<section id="shows">
-  <div class="sec"><span class="n">01 · SHOWS SELECCIONADOS</span><h2>En escena.</h2>
-  <p>Una selección del archivo. Los registros en video son de los canales oficiales de cada artista y festival.</p></div>
+<section id="shows" data-fase="0.15" data-velo="0.55">
+  <div class="sec"><span class="n">01 · SHOWS</span><h2>En escena.</h2>
+  <p>El archivo de shows. Los registros en video son de los canales oficiales de cada artista y festival; los loops son piezas entregadas.</p></div>
 
   <article class="show wide">
     <div><span class="yr">Malena Narvay · gira</span><h3>Tomorrowland Brasil · Ultra Europe</h3></div>
     <div><p><b>Los visuales de Zeta viajaron con Malena Narvay</b> a Tomorrowland Brasil, Ultra Europe 2025 y AGS 2025. Creación total del contenido de sus shows en vivo, sincronizado por SMPTE, y el set para pantalla wide screen.</p>
       <a class="yt" href="https://www.youtube.com/watch?v=JdgMZnNayGU" target="_blank" rel="noopener">VER AGS 2025 →</a></div>
     <figure class="wide-media strips">
-      <video class="lv" muted loop playsinline preload="none" poster="media/tl-02.jpg" data-src="media/tl-02.mp4" aria-label="Visuales del set de Malena Narvay para pantalla wide screen, pieza 02"></video>
-      <video class="lv" muted loop playsinline preload="none" poster="media/tl-04.jpg" data-src="media/tl-04.mp4" aria-label="Visuales del set de Malena Narvay para pantalla wide screen, pieza 04"></video>
-      <video class="lv" muted loop playsinline preload="none" poster="media/tl-08.jpg" data-src="media/tl-08.mp4" aria-label="Visuales del set de Malena Narvay para pantalla wide screen, pieza 08"></video>
-      <video class="lv" muted loop playsinline preload="none" poster="media/tl-11.jpg" data-src="media/tl-11.mp4" aria-label="Visuales del set de Malena Narvay para pantalla wide screen, pieza 11"></video>
-      <figcaption>Set para pantalla wide screen · formato 4:1</figcaption>
+      <video class="lv" muted loop playsinline preload="none" data-poster="media/tl-02.jpg" data-src="media/tl-02.mp4" aria-label="Visuales del set de Malena Narvay para pantalla wide screen, pieza 02"></video>
+      <video class="lv" muted loop playsinline preload="none" data-poster="media/tl-04.jpg" data-src="media/tl-04.mp4" aria-label="Visuales del set de Malena Narvay para pantalla wide screen, pieza 04"></video>
+      <video class="lv" muted loop playsinline preload="none" data-poster="media/tl-08.jpg" data-src="media/tl-08.mp4" aria-label="Visuales del set de Malena Narvay para pantalla wide screen, pieza 08"></video>
+      <video class="lv" muted loop playsinline preload="none" data-poster="media/tl-11.jpg" data-src="media/tl-11.mp4" aria-label="Visuales del set de Malena Narvay para pantalla wide screen, pieza 11"></video>
+      <div class="strips-mini">
+        <video class="lv" muted loop playsinline preload="none" data-poster="media/tl-01.jpg" data-src="media/tl-01.mp4" aria-label="Set wide screen de Malena Narvay, pieza 01"></video>
+        <video class="lv" muted loop playsinline preload="none" data-poster="media/tl-03.jpg" data-src="media/tl-03.mp4" aria-label="Set wide screen de Malena Narvay, pieza 03"></video>
+        <video class="lv" muted loop playsinline preload="none" data-poster="media/tl-05.jpg" data-src="media/tl-05.mp4" aria-label="Set wide screen de Malena Narvay, pieza 05"></video>
+        <video class="lv" muted loop playsinline preload="none" data-poster="media/tl-06.jpg" data-src="media/tl-06.mp4" aria-label="Set wide screen de Malena Narvay, pieza 06"></video>
+        <video class="lv" muted loop playsinline preload="none" data-poster="media/tl-07.jpg" data-src="media/tl-07.mp4" aria-label="Set wide screen de Malena Narvay, pieza 07"></video>
+        <video class="lv" muted loop playsinline preload="none" data-poster="media/tl-09.jpg" data-src="media/tl-09.mp4" aria-label="Set wide screen de Malena Narvay, pieza 09"></video>
+        <video class="lv" muted loop playsinline preload="none" data-poster="media/tl-10.jpg" data-src="media/tl-10.mp4" aria-label="Set wide screen de Malena Narvay, pieza 10"></video>
+        <video class="lv" muted loop playsinline preload="none" data-poster="media/tl-12.jpg" data-src="media/tl-12.mp4" aria-label="Set wide screen de Malena Narvay, pieza 12"></video>
+        <video class="lv" muted loop playsinline preload="none" data-poster="media/tl-13.jpg" data-src="media/tl-13.mp4" aria-label="Set wide screen de Malena Narvay, pieza 13"></video>
+        <video class="lv" muted loop playsinline preload="none" data-poster="media/tl-14.jpg" data-src="media/tl-14.mp4" aria-label="Set wide screen de Malena Narvay, pieza 14"></video>
+      </div>
+      <figcaption>Set para pantalla wide screen · formato 4:1 · las 14 piezas</figcaption>
     </figure>
+  </article>
+
+  <article class="show wide">
+    <div><span class="yr">Malena Narvay · videoclips y show</span><h3>Dame Calor · Manada · Dualidad</h3></div>
+    <div><p><b>VFX con IA en los videoclips</b> «Dame Calor» y «Manada», <b>el logo 3D neón</b> que abre su show y el contenido de «Dualidad» con banda electrónica en vivo, sincronizado por SMPTE.</p></div>
+    <div class="wide-media">
+      <div class="media one" style="margin-bottom:.6rem"><video class="lv" muted loop playsinline preload="none" data-poster="media/malena-logo.jpg" data-src="media/malena-logo.mp4" aria-label="Logo 3D neón del show de Malena Narvay sobre la pared de LEDs"></video></div>
+      <div class="yt-row">
+        <div><div class="yt-embed" data-yt="rvpuVnhwp9s" data-title="Malena Narvay — Dame Calor (video oficial)"><button type="button" class="yt-play" aria-label="Reproducir Dame Calor"><img loading="lazy" src="https://i.ytimg.com/vi/rvpuVnhwp9s/hqdefault.jpg" alt="Videoclip Dame Calor de Malena Narvay"><span class="yt-btn">DAME CALOR</span></button></div><span class="yt-cap"><b>VFX con IA</b> · videoclip oficial</span></div>
+        <div><div class="yt-embed" data-yt="D3j9QXKkcoY" data-title="Malena Narvay, Oh My Pop! — Manada (video oficial)"><button type="button" class="yt-play" aria-label="Reproducir Manada"><img loading="lazy" src="https://i.ytimg.com/vi/D3j9QXKkcoY/hqdefault.jpg" alt="Videoclip Manada de Malena Narvay y Oh My Pop!"><span class="yt-btn">MANADA</span></button></div><span class="yt-cap"><b>VFX con IA</b> · videoclip oficial</span></div>
+        <div><div class="yt-embed" data-yt="94wwxbwZ-4g" data-title="Malena Narvay — Dualidad (Electronic Band, en vivo)"><button type="button" class="yt-play" aria-label="Reproducir Dualidad en vivo"><img loading="lazy" src="https://i.ytimg.com/vi/94wwxbwZ-4g/hqdefault.jpg" alt="Malena Narvay, Dualidad en vivo"><span class="yt-btn">DUALIDAD</span></button></div><span class="yt-cap"><b>Contenido del show</b> · en vivo con SMPTE</span></div>
+      </div>
+    </div>
   </article>
 
   <article class="show">
     <div><span class="yr">Argentina · 2022 y 2023</span><h3>Lollapalooza Argentina</h3>
       <p><b>2022 con Oscu</b>, en una edición donde también hizo visuales y logos animados para Luck Ra, Lil Cake y otros artistas. <b>2023 con Un Verano.</b></p></div>
     <div class="media n3">
-      <video class="lv" muted loop playsinline preload="none" poster="media/lolla-oscu.jpg" data-src="media/lolla-oscu.mp4" aria-label="Logo animado de Oscu"></video>
-      <video class="lv" muted loop playsinline preload="none" poster="media/lolla-luck-ra.jpg" data-src="media/lolla-luck-ra.mp4" aria-label="Logo animado de Luck Ra"></video>
-      <video class="lv" muted loop playsinline preload="none" poster="media/lolla-lil-cake.jpg" data-src="media/lolla-lil-cake.mp4" aria-label="Logo animado de Lil Cake"></video>
+      <video class="lv" muted loop playsinline preload="none" data-poster="media/lolla-oscu.jpg" data-src="media/lolla-oscu.mp4" aria-label="Logo animado de Oscu"></video>
+      <video class="lv" muted loop playsinline preload="none" data-poster="media/lolla-luck-ra.jpg" data-src="media/lolla-luck-ra.mp4" aria-label="Logo animado de Luck Ra"></video>
+      <video class="lv" muted loop playsinline preload="none" data-poster="media/lolla-lil-cake.jpg" data-src="media/lolla-lil-cake.mp4" aria-label="Logo animado de Lil Cake"></video>
     </div>
   </article>
 
@@ -214,7 +263,7 @@ footer a{color:var(--soft)}
     <div><span class="yr">Córdoba · CABA</span><h3>Luck Ra</h3>
       <p><b>Visuales para varias fechas</b>: Festival Recicla en Córdoba, una gira de tres días y shows en CABA.</p>
       <a class="yt" href="https://www.youtube.com/watch?v=9XTxag6klRc" target="_blank" rel="noopener">VER EN VIVO →</a></div>
-    <div class="media one"><img loading="lazy" src="/galeria/labs/luckra.jpg" alt="Render para Luck Ra"></div>
+    <div class="media one"><video class="lv" muted loop playsinline preload="none" data-poster="media/luckra-show.jpg" data-src="media/luckra-show.mp4" aria-label="Visuales de show para Luck Ra"></video></div>
   </article>
 
   <article class="show text">
@@ -233,6 +282,9 @@ footer a{color:var(--soft)}
         </button>
       </div>
       <a class="yt-src" href="https://www.youtube.com/watch?v=UixJ_ggrkoE" target="_blank" rel="noopener">Canal oficial de Marea Puerto en YouTube ↗</a>
+      <div class="yt-row" style="margin-top:.8rem">
+        <div><div class="yt-embed" data-yt="__Yv6AI9KXI" data-title="Festival Marea en vivo — show de luces"><button type="button" class="yt-play" aria-label="Reproducir el show de luces de Festival Marea"><img loading="lazy" src="https://i.ytimg.com/vi/__Yv6AI9KXI/hqdefault.jpg" alt="Festival Marea en vivo, show de luces"><span class="yt-btn">SHOW DE LUCES</span></button></div><span class="yt-cap"><b>Festival Marea en vivo</b> · registro del evento</span></div>
+      </div>
     </div>
   </article>
 
@@ -240,20 +292,35 @@ footer a{color:var(--soft)}
     <div><span class="yr">Show en vivo</span><h3>Rose in Rio</h3>
       <p><b>Contenido visual para Rose in Rio</b>, la fecha en la que tocó Magdalena: cuatro piezas del set, una por momento.</p></div>
     <div class="media n4">
-      <video class="lv" muted loop playsinline preload="none" poster="media/rio-magdalena.jpg" data-src="media/rio-magdalena.mp4" aria-label="Rose in Rio, Magdalena"></video>
-      <video class="lv" muted loop playsinline preload="none" poster="media/rio-mai.jpg" data-src="media/rio-mai.mp4" aria-label="Rose in Rio, Mai"></video>
-      <video class="lv" muted loop playsinline preload="none" poster="media/rio-simon.jpg" data-src="media/rio-simon.mp4" aria-label="Rose in Rio, Simon"></video>
-      <video class="lv" muted loop playsinline preload="none" poster="media/rio-rio.jpg" data-src="media/rio-rio.mp4" aria-label="Rose in Rio, Río"></video>
+      <video class="lv" muted loop playsinline preload="none" data-poster="media/rio-magdalena.jpg" data-src="media/rio-magdalena.mp4" aria-label="Rose in Rio, Magdalena"></video>
+      <video class="lv" muted loop playsinline preload="none" data-poster="media/rio-mai.jpg" data-src="media/rio-mai.mp4" aria-label="Rose in Rio, Mai"></video>
+      <video class="lv" muted loop playsinline preload="none" data-poster="media/rio-simon.jpg" data-src="media/rio-simon.mp4" aria-label="Rose in Rio, Simon"></video>
+      <video class="lv" muted loop playsinline preload="none" data-poster="media/rio-rio.jpg" data-src="media/rio-rio.mp4" aria-label="Rose in Rio, Río"></video>
     </div>
   </article>
 
   <article class="show">
-    <div><span class="yr">Videoclip · VFX + IA</span><h3>Martín Cirio</h3>
-      <p><b>VFX e imagen generada con IA</b> en “Mani for Supermarket”: ocho escenas construidas, generadas y compuestas una a una. Dirección Francisco Scigliano, productora Lucato.</p>
-      <a class="yt" href="https://www.youtube.com/watch?v=egVeg8gXhEA" target="_blank" rel="noopener">VER LA PIEZA →</a></div>
+    <div><span class="yr">Gira · visuales de show</span><h3>Sofi Fernández</h3>
+      <p><b>Pack de visuales para su gira</b>: loops de escenario para el show en vivo.</p></div>
     <div class="media n2">
-      <video class="lv" muted loop playsinline preload="none" poster="media/cirio-puca-style.jpg" data-src="media/cirio-puca-style.mp4" aria-label="Mani for Supermarket, escena Puca style"></video>
-      <video class="lv" muted loop playsinline preload="none" poster="media/cirio-throat.jpg" data-src="media/cirio-throat.mp4" aria-label="Mani for Supermarket, escena Throat"></video>
+      <video class="lv" muted loop playsinline preload="none" data-poster="media/sofi-1.jpg" data-src="media/sofi-1.mp4" aria-label="Sofi Fernández, loop de gira 1"></video>
+      <video class="lv" muted loop playsinline preload="none" data-poster="media/sofi-2.jpg" data-src="media/sofi-2.mp4" aria-label="Sofi Fernández, loop de gira 2"></video>
+    </div>
+  </article>
+
+  <article class="show wide">
+    <div><span class="yr">Videoclip · VFX + IA</span><h3>Martín Cirio</h3></div>
+    <div><p><b>VFX e imagen generada con IA</b> en “Mani for Supermarket”: ocho escenas construidas, generadas y compuestas una a una, del personaje al plano final. Dirección Francisco Scigliano, productora Lucato.</p>
+      <a class="yt" href="https://www.youtube.com/watch?v=egVeg8gXhEA" target="_blank" rel="noopener">VER LA PIEZA →</a></div>
+    <div class="wide-media media n8">
+      <video class="lv" muted loop playsinline preload="none" data-poster="media/cirio-chino-money.jpg" data-src="media/cirio-chino-money.mp4" aria-label="Mani for Supermarket, escena 01, Chino money"></video>
+      <video class="lv" muted loop playsinline preload="none" data-poster="media/cirio-eye-in.jpg" data-src="media/cirio-eye-in.mp4" aria-label="Mani for Supermarket, escena 02, Eye in"></video>
+      <video class="lv" muted loop playsinline preload="none" data-poster="media/cirio-puca-style.jpg" data-src="media/cirio-puca-style.mp4" aria-label="Mani for Supermarket, escena 03, Puca style"></video>
+      <video class="lv" muted loop playsinline preload="none" data-poster="media/cirio-brain.jpg" data-src="media/cirio-brain.mp4" aria-label="Mani for Supermarket, escena 04, Brain"></video>
+      <video class="lv" muted loop playsinline preload="none" data-poster="media/cirio-levitating.jpg" data-src="media/cirio-levitating.mp4" aria-label="Mani for Supermarket, escena 05, Levitating"></video>
+      <video class="lv" muted loop playsinline preload="none" data-poster="media/cirio-throat.jpg" data-src="media/cirio-throat.mp4" aria-label="Mani for Supermarket, escena 06, Throat"></video>
+      <video class="lv" muted loop playsinline preload="none" data-poster="media/cirio-throat-2.jpg" data-src="media/cirio-throat-2.mp4" aria-label="Mani for Supermarket, escena 07, Throat, variante"></video>
+      <video class="lv" muted loop playsinline preload="none" data-poster="media/cirio-wanda.jpg" data-src="media/cirio-wanda.mp4" aria-label="Mani for Supermarket, escena 08, Wanda"></video>
     </div>
   </article>
   <article class="show">
@@ -263,8 +330,101 @@ footer a{color:var(--soft)}
   <p style="margin-top:1rem;font-family:var(--mono);font-size:11px;color:var(--faint)">Archivo completo en <a href="https://hg-vl.com/galeria/">hg-vl.com/galeria</a>.</p>
 </section>
 
-<section id="obras">
-  <div class="sec"><span class="n">02 · OBRA ACTUAL</span><h2>Lo que viene.</h2></div>
+<section id="marcas" data-fase="1" data-velo="0.5">
+  <div class="sec"><span class="n">02 · MARCAS Y 3D</span><h2>El músculo de render.</h2>
+  <p>Sin escenario: motion y render de marca y de artista con <b style="color:var(--white);font-weight:500">Cinema 4D, Octane e Insydium</b>. IA para explorar rápido; 3D propio para construir con control total lo que la IA sola no resuelve.</p></div>
+
+  <article class="show">
+    <div><span class="yr">Serie de marca · varios años</span><h3>Kook</h3>
+      <p><b>Flyers animados</b> para Kook durante varios años, siempre en 3D con Octane e Insydium: aniversarios, Halloween y piezas de feed.</p></div>
+    <div class="media v">
+      <video class="lv" muted loop playsinline preload="none" data-poster="media/kook-aniver.jpg" data-src="media/kook-aniver.mp4" aria-label="Kook, aniversario"></video>
+      <video class="lv" muted loop playsinline preload="none" data-poster="media/kook-feed.jpg" data-src="media/kook-feed.mp4" aria-label="Kook, flyer de aniversario para el feed"></video>
+      <video class="lv" muted loop playsinline preload="none" data-poster="media/kook-aniver-oro.jpg" data-src="media/kook-aniver-oro.mp4" aria-label="Kook, aniversario oro"></video>
+      <video class="lv" muted loop playsinline preload="none" data-poster="media/kook-01.jpg" data-src="media/kook-01.mp4" aria-label="Kook, flyer"></video>
+      <video class="lv" muted loop playsinline preload="none" data-poster="media/kook-halloween-2024-b.jpg" data-src="media/kook-halloween-2024-b.mp4" aria-label="Kook, flyer de Halloween 2024"></video>
+      <video class="lv" muted loop playsinline preload="none" data-poster="media/kook-halloween-2024.jpg" data-src="media/kook-halloween-2024.mp4" aria-label="Kook, Halloween 2024"></video>
+      <video class="lv" muted loop playsinline preload="none" data-poster="media/kook-halloween.jpg" data-src="media/kook-halloween.mp4" aria-label="Kook, Halloween"></video>
+      <video class="lv" muted loop playsinline preload="none" data-poster="media/kook-05.jpg" data-src="media/kook-05.mp4" aria-label="Kook, pieza 3D"></video>
+      <video class="lv" muted loop playsinline preload="none" data-poster="media/kook-04.jpg" data-src="media/kook-04.mp4" aria-label="Kook, pieza 3D"></video>
+      <video class="lv" muted loop playsinline preload="none" data-poster="media/kook-fin.jpg" data-src="media/kook-fin.mp4" aria-label="Kook, cierre"></video>
+    </div>
+  </article>
+
+  <article class="show">
+    <div><span class="yr">Publicidad · 3D + Octane</span><h3>Sernova</h3>
+      <p><b>Animación 3D y render Octane</b> para la publicidad de Sernova: piezas de producto para la marca.</p></div>
+    <div class="media n3">
+      <video class="lv" muted loop playsinline preload="none" data-poster="media/sernova-botella.jpg" data-src="media/sernova-botella.mp4" aria-label="Sernova, botella"></video>
+      <video class="lv" muted loop playsinline preload="none" data-poster="media/sernova-2ice.jpg" data-src="media/sernova-2ice.mp4" aria-label="Sernova, 2ice"></video>
+      <video class="lv" muted loop playsinline preload="none" data-poster="media/sernova-diamonds.jpg" data-src="media/sernova-diamonds.mp4" aria-label="Sernova, diamonds"></video>
+    </div>
+  </article>
+
+  <article class="show">
+    <div><span class="yr">3D · render · 2025</span><h3>Bho</h3>
+      <p><b>Serie de renders 3D</b> de producto: seis piezas de la misma serie.</p></div>
+    <div class="media v">
+      <video class="lv" muted loop playsinline preload="none" data-poster="media/bho-01.jpg" data-src="media/bho-01.mp4" aria-label="Bho 2025, render 01"></video>
+      <video class="lv" muted loop playsinline preload="none" data-poster="media/bho-02.jpg" data-src="media/bho-02.mp4" aria-label="Bho 2025, render 02"></video>
+      <video class="lv" muted loop playsinline preload="none" data-poster="media/bho-03.jpg" data-src="media/bho-03.mp4" aria-label="Bho 2025, render 03"></video>
+      <video class="lv" muted loop playsinline preload="none" data-poster="media/bho-04.jpg" data-src="media/bho-04.mp4" aria-label="Bho 2025, render 04"></video>
+      <video class="lv" muted loop playsinline preload="none" data-poster="media/bho-05.jpg" data-src="media/bho-05.mp4" aria-label="Bho 2025, render 05"></video>
+      <video class="lv" muted loop playsinline preload="none" data-poster="media/bho-06.jpg" data-src="media/bho-06.mp4" aria-label="Bho 2025, render 06"></video>
+    </div>
+  </article>
+
+  <article class="show">
+    <div><span class="yr">Escaneo 3D</span><h3>Pax</h3>
+      <p><b>Escaneo 3D de productos</b> y puesta en escena en render.</p></div>
+    <div class="media v">
+      <video class="lv" muted loop playsinline preload="none" data-poster="media/pax-01.jpg" data-src="media/pax-01.mp4" aria-label="Pax, escaneo 3D 01"></video>
+      <video class="lv" muted loop playsinline preload="none" data-poster="media/pax-02.jpg" data-src="media/pax-02.mp4" aria-label="Pax, escaneo 3D 02"></video>
+      <video class="lv" muted loop playsinline preload="none" data-poster="media/pax-03.jpg" data-src="media/pax-03.mp4" aria-label="Pax, escaneo 3D 03"></video>
+    </div>
+  </article>
+
+  <article class="show">
+    <div><span class="yr">Identidad · 3D</span><h3>Aliko</h3>
+      <p><b>Logo y backgrounds</b> animados en 3D.</p></div>
+    <div class="media n3">
+      <video class="lv" muted loop playsinline preload="none" data-poster="media/aliko-01.jpg" data-src="media/aliko-01.mp4" aria-label="Aliko, logo animado"></video>
+      <video class="lv" muted loop playsinline preload="none" data-poster="media/aliko-02.jpg" data-src="media/aliko-02.mp4" aria-label="Aliko, logo con background"></video>
+      <video class="lv" muted loop playsinline preload="none" data-poster="media/aliko-03.jpg" data-src="media/aliko-03.mp4" aria-label="Aliko, background"></video>
+    </div>
+  </article>
+
+  <article class="show">
+    <div><span class="yr">Logos animados</span><h3>Marcas y artistas</h3>
+      <p><b>Bye Henry</b> por sus 7 años (3D + Octane), <b>Cuartero</b>, <b>Un Verano</b> y la identidad de <b>Human Glitche</b>.</p></div>
+    <div class="media n2">
+      <video class="lv" muted loop playsinline preload="none" data-poster="media/bye-henry.jpg" data-src="media/bye-henry.mp4" aria-label="Bye Henry, logo animado por sus 7 años"></video>
+      <video class="lv" muted loop playsinline preload="none" data-poster="media/cuartero.jpg" data-src="media/cuartero.mp4" aria-label="Cuartero, logo animado"></video>
+      <video class="lv" muted loop playsinline preload="none" data-poster="media/un-verano.jpg" data-src="media/un-verano.mp4" aria-label="Un Verano, logo animado"></video>
+      <video class="lv" muted loop playsinline preload="none" data-poster="media/human-logo.jpg" data-src="media/human-logo.mp4" aria-label="Human Glitche, variantes del logo animado" style="object-fit:contain"></video>
+    </div>
+  </article>
+
+  <article class="show">
+    <div><span class="yr">Producto · render</span><h3>Latas</h3>
+      <p><b>Render de producto</b> en formato panorámico.</p></div>
+    <div class="media one r83"><video class="lv" muted loop playsinline preload="none" data-poster="media/latas.jpg" data-src="media/latas.mp4" aria-label="Render de latas en formato panorámico"></video></div>
+  </article>
+
+  <article class="show">
+    <div><span class="yr">Exploraciones · C4D + Octane</span><h3>Laboratorio</h3>
+      <p><b>Pruebas y piezas propias</b>: simulaciones, materiales y un póster holográfico.</p></div>
+    <div class="media n2">
+      <video class="lv" muted loop playsinline preload="none" data-poster="media/poster-holo.jpg" data-src="media/poster-holo.mp4" aria-label="Póster holográfico"></video>
+      <video class="lv" muted loop playsinline preload="none" data-poster="media/ojo.jpg" data-src="media/ojo.mp4" aria-label="Ojo, render en Cinema 4D y Octane"></video>
+      <video class="lv" muted loop playsinline preload="none" data-poster="media/swim.jpg" data-src="media/swim.mp4" aria-label="Prueba de animación de nado"></video>
+      <video class="lv" muted loop playsinline preload="none" data-poster="media/explode.jpg" data-src="media/explode.mp4" aria-label="Simulación de fuego" style="object-fit:contain"></video>
+    </div>
+  </article>
+</section>
+
+<section id="obras" data-fase="1.25" data-velo="0.45">
+  <div class="sec"><span class="n">03 · OBRA ACTUAL</span><h2>Lo que viene.</h2></div>
   <div class="works">
     <div class="work"><img class="cover" src="img/operacion-eh.webp" width="1600" height="900" loading="lazy" alt="Portada de Operación EH, videoclip con IA en colaboración con Agustín Bragoni">
       <span class="badge prox">Próximamente</span>
@@ -281,8 +441,48 @@ footer a{color:var(--soft)}
   </div>
 </section>
 
-<section>
-  <div class="sec"><span class="n">03 · ENFOQUE</span><h2>Ver la interfaz.<br>Rediseñarla.</h2></div>
+<section id="origen" data-fase="1.5" data-velo="0.5">
+  <div class="sec"><span class="n">04 · EL ORIGEN · 2018</span><h2>Las 80 obras originales.</h2>
+  <p>Antes del primer cliente y del primer escenario: animaciones hechas <b style="color:var(--white);font-weight:500">por gusto en 2018</b>, en Photoshop y sin encargo. El germen de todo lo demás. Hoy viven como NFT; acá están las que conservan su título.</p></div>
+  <div class="obras-grid">
+    <figure><img loading="lazy" src="media/obras/001_consumibles.jpg" width="420" height="420" alt="Consumibles, obra original de 2018"><figcaption><i>Nº 001</i>Consumibles</figcaption></figure>
+    <figure><img loading="lazy" src="media/obras/003_fluir-y-elevarse.jpg" width="420" height="420" alt="Fluir y Elevarse, obra original de 2018"><figcaption><i>Nº 003</i>Fluir y Elevarse</figcaption></figure>
+    <figure><img loading="lazy" src="media/obras/004_people-like-universe.jpg" width="420" height="420" alt="People like universe, obra original de 2018"><figcaption><i>Nº 004</i>People like universe</figcaption></figure>
+    <figure><img loading="lazy" src="media/obras/005_equilibr1um.jpg" width="420" height="420" alt="Equilibr1um, obra original de 2018"><figcaption><i>Nº 005</i>Equilibr1um</figcaption></figure>
+    <figure><img loading="lazy" src="media/obras/006_universo-comestible.jpg" width="420" height="420" alt="Universo comestible, obra original de 2018"><figcaption><i>Nº 006</i>Universo comestible</figcaption></figure>
+    <figure><img loading="lazy" src="media/obras/010_digiland.jpg" width="420" height="420" alt="Digiland, obra original de 2018"><figcaption><i>Nº 010</i>Digiland</figcaption></figure>
+    <figure><img loading="lazy" src="media/obras/011_cree-y-crea.jpg" width="420" height="420" alt="Cree y Crea, obra original de 2018"><figcaption><i>Nº 011</i>Cree y Crea</figcaption></figure>
+    <figure><img loading="lazy" src="media/obras/013_lighter.jpg" width="420" height="420" alt="Lighter, obra original de 2018"><figcaption><i>Nº 013</i>Lighter</figcaption></figure>
+    <figure><img loading="lazy" src="media/obras/015_i-have-diamonds.jpg" width="420" height="420" alt="I Have Diamonds, obra original de 2018"><figcaption><i>Nº 015</i>I Have Diamonds</figcaption></figure>
+    <figure><img loading="lazy" src="media/obras/017_growing-inside-me.jpg" width="420" height="420" alt="growing inside me, obra original de 2018"><figcaption><i>Nº 017</i>growing inside me</figcaption></figure>
+    <figure><img loading="lazy" src="media/obras/022_this-flame-on-your-heart.jpg" width="420" height="420" alt="This flame on your heart, obra original de 2018"><figcaption><i>Nº 022</i>This flame on your heart</figcaption></figure>
+    <figure><img loading="lazy" src="media/obras/023_absorbing-planets.jpg" width="420" height="420" alt="Absorbing planets, obra original de 2018"><figcaption><i>Nº 023</i>Absorbing planets</figcaption></figure>
+    <figure><img loading="lazy" src="media/obras/027_sweet-like-a-sun.jpg" width="420" height="420" alt="sweet like a sun, obra original de 2018"><figcaption><i>Nº 027</i>sweet like a sun</figcaption></figure>
+    <figure><img loading="lazy" src="media/obras/028_hypnotise-me.jpg" width="420" height="420" alt="hypnotise me, obra original de 2018"><figcaption><i>Nº 028</i>hypnotise me</figcaption></figure>
+    <figure><img loading="lazy" src="media/obras/033_campbells-planet-soup.jpg" width="420" height="420" alt="Campbells Planet Soup, obra original de 2018"><figcaption><i>Nº 033</i>Campbells Planet Soup</figcaption></figure>
+    <figure><img loading="lazy" src="media/obras/034_flush.jpg" width="420" height="420" alt="Flush, obra original de 2018"><figcaption><i>Nº 034</i>Flush</figcaption></figure>
+    <figure><img loading="lazy" src="media/obras/036_religion.jpg" width="420" height="420" alt="religion, obra original de 2018"><figcaption><i>Nº 036</i>religion</figcaption></figure>
+    <figure><img loading="lazy" src="media/obras/041_get-the-way-out.jpg" width="420" height="420" alt="get the way out, obra original de 2018"><figcaption><i>Nº 041</i>get the way out</figcaption></figure>
+    <figure><img loading="lazy" src="media/obras/043_pearls.jpg" width="420" height="420" alt="pearls, obra original de 2018"><figcaption><i>Nº 043</i>pearls</figcaption></figure>
+    <figure><img loading="lazy" src="media/obras/056_small-and-humble-thoughts-can-disarm-empires.jpg" width="420" height="420" alt="Small and humble thoughts can disarm empires, obra original de 2018"><figcaption><i>Nº 056</i>Small and humble thoughts can disarm empires</figcaption></figure>
+    <figure><img loading="lazy" src="media/obras/058_my-bubble-world.jpg" width="420" height="420" alt="My bubble &amp; world, obra original de 2018"><figcaption><i>Nº 058</i>My bubble &amp; world</figcaption></figure>
+    <figure><img loading="lazy" src="media/obras/059_rels-b.jpg" width="420" height="420" alt="rels b, obra original de 2018"><figcaption><i>Nº 059</i>rels b</figcaption></figure>
+    <figure><img loading="lazy" src="media/obras/077_russo-gessara.jpg" width="420" height="420" alt="Russo Gessara, obra original de 2018"><figcaption><i>Nº 077</i>Russo Gessara</figcaption></figure>
+    <figure><img loading="lazy" src="media/obras/078_matt.jpg" width="420" height="420" alt="Matt, obra original de 2018"><figcaption><i>Nº 078</i>Matt</figcaption></figure>
+    <figure><img loading="lazy" src="media/obras/079_lit-killa.jpg" width="420" height="420" alt="Lit Killa, obra original de 2018"><figcaption><i>Nº 079</i>Lit Killa</figcaption></figure>
+    <figure><img loading="lazy" src="media/obras/080_coco-swing.jpg" width="420" height="420" alt="Coco Swing, obra original de 2018"><figcaption><i>Nº 080</i>Coco Swing</figcaption></figure>
+    <figure><img loading="lazy" src="media/obras/081_monkid.jpg" width="420" height="420" alt="Monkid, obra original de 2018"><figcaption><i>Nº 081</i>Monkid</figcaption></figure>
+    <figure><img loading="lazy" src="media/obras/082_space-special.jpg" width="420" height="420" alt="Space Special, obra original de 2018"><figcaption><i>Nº 082</i>Space Special</figcaption></figure>
+    <figure><img loading="lazy" src="media/obras/084_franqui.jpg" width="420" height="420" alt="Franqui, obra original de 2018"><figcaption><i>Nº 084</i>Franqui</figcaption></figure>
+  </div>
+  <div class="collect">
+    <a class="btn g" href="https://og.rarible.com/humanglitche" target="_blank" rel="noopener">Colección en Rarible ↗</a>
+    <a class="btn g" href="https://opensea.io/es/human-glitche" target="_blank" rel="noopener">Colección en OpenSea ↗</a>
+  </div>
+</section>
+
+<section data-fase="1.75" data-velo="0.55">
+  <div class="sec"><span class="n">05 · ENFOQUE</span><h2>Ver la interfaz.<br>Rediseñarla.</h2></div>
   <div class="bio">
     <!-- TODO(Juan): premios si los hay. La formación va abajo, en .edu. -->
     <p>Zeta es el proyecto artístico de <b>Juan Cruz Martinez</b>, desde La Plata. Empezó en 2018 creando por gusto, con 80 animaciones en Photoshop sin cliente, y llegó al mapping a gran escala y a visuales en vivo que viajaron a Lollapalooza Argentina, Tomorrowland Brasil y Ultra Europe.</p>
@@ -310,7 +510,7 @@ footer a{color:var(--soft)}
   <div class="tools"><span class="tl">Herramientas</span><ul><li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12.052 0C5.394-.007-.003 5.412 0 11.976.003 18.654 5.475 23.981 11.978 24c6.535.02 12.057-5.306 12.022-11.998-.009-1.665-.53-5.371-1.84-5.276-1.98.145-2.159 4.12-2.377 5.407-.417 2.46-1.346 5.08-2.953 6.99-1.88 2.359-4.697 3.634-7.662 3.158-3.55-.564-5.893-3.278-6.68-5.201-.753-1.723-1.035-4.162-.07-6.324 1.16-2.766 3.734-4.632 6.28-5.584 2.006-.827 4.103-1.151 5.357-1.375 2.516-.5 2.855-1.463 2.814-2.149-.015-.252-.256-.724-.785-.943C15.03.269 13.268.001 12.052 0zm5.098 1.342c.139.398.088.85-.148 1.256-.325.56-.972 1.05-1.897 1.29-1.636.428-2.976.554-4.34.96-1.312.39-3.397 1.018-5.316 2.552-.268.842-.341 1.892-.369 2.662.15 5.014 4.557 8.884 9.17 8.682.853-.037 1.921-.261 2.912-.68a13.56 13.56 0 0 0 1.387-2.683l.002-.002v-.002c.424-1.03.606-1.836.8-2.793.32-1.565.202-2.88 1.012-4.758.251-.582.71-1.113 1.258-1.346.25-.105.522-.133.79-.072-.89-2.471-3.115-4.326-5.26-5.066z"/></svg><span>Cinema 4D</span></li><li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12.51 13.214c.046-.8.438-1.506 1.03-2.006a3.424 3.424 0 0 1 2.212-.79c.85 0 1.631.3 2.211.79.592.5.983 1.206 1.028 2.005.045.823-.285 1.586-.865 2.153a3.389 3.389 0 0 1-2.374.938 3.393 3.393 0 0 1-2.376-.938c-.58-.567-.91-1.33-.865-2.152M7.35 14.831c.006.314.106.922.256 1.398a7.372 7.372 0 0 0 1.593 2.757 8.227 8.227 0 0 0 2.787 2.001 8.947 8.947 0 0 0 3.66.76 8.964 8.964 0 0 0 3.657-.772 8.285 8.285 0 0 0 2.785-2.01 7.428 7.428 0 0 0 1.592-2.762 6.964 6.964 0 0 0 .25-3.074 7.123 7.123 0 0 0-1.016-2.779 7.764 7.764 0 0 0-1.852-2.043h.002L13.566 2.55l-.02-.015c-.492-.378-1.319-.376-1.86.002-.547.382-.609 1.015-.123 1.415l-.001.001 3.126 2.543-9.53.01h-.013c-.788.001-1.545.518-1.695 1.172-.154.665.38 1.217 1.2 1.22V8.9l4.83-.01-8.62 6.617-.034.025c-.813.622-1.075 1.658-.563 2.313.52.667 1.625.668 2.447.004L7.414 14s-.069.52-.063.831zm12.09 1.741c-.97.988-2.326 1.548-3.795 1.55-1.47.004-2.827-.552-3.797-1.538a4.51 4.51 0 0 1-1.036-1.622 4.282 4.282 0 0 1 .282-3.519 4.702 4.702 0 0 1 1.153-1.371c.942-.768 2.141-1.183 3.396-1.185 1.256-.002 2.455.41 3.398 1.175.48.391.87.854 1.152 1.367a4.28 4.28 0 0 1 .522 1.706 4.236 4.236 0 0 1-.239 1.811 4.54 4.54 0 0 1-1.035 1.626"/></svg><span>Blender</span></li><li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11.71 0C8.24 3.9 6.92 6 6.64 9.14c-.01-.01-.03-.01-.04-.02-1.28-.73-2.3-2.22-2.91-3.73l-2.23.87c1.64 4.95 2.81 7.13 5.39 8.94-.02.01-.03.02-.05.03-1.27.74-3.07.89-4.68.66l-.36 2.37c5.11 1.06 7.59 1.15 10.46-.19v.06c0 1.47-.77 3.09-1.78 4.38L12.3 24c3.46-3.89 4.78-5.99 5.06-9.13.02.01.03.01.05.02 1.27.73 2.29 2.21 2.9 3.73l2.23-.87c-1.64-4.95-2.8-7.14-5.39-8.95.02-.01.03-.02.05-.03 1.27-.74 3.07-.88 4.68-.65l.36-2.38c-5.1-1.06-7.58-1.14-10.44.19v-.06c0-1.47.77-3.09 1.78-4.38L11.71 0zm.19 8.82a3.181 3.181 0 0 1 3.28 3.07 3.181 3.181 0 0 1-3.07 3.28 3.181 3.181 0 0 1-3.28-3.07 3.181 3.181 0 0 1 3.07-3.28z"/></svg><span>Octane</span></li><li><i aria-hidden="true">IN</i><span>Insydium</span></li><li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8.54 10.73c-.1-.31-.19-.61-.29-.92s-.19-.6-.27-.89c-.08-.28-.15-.54-.22-.78h-.02c-.09.43-.2.86-.34 1.29-.15.48-.3.98-.46 1.48-.13.51-.29.98-.44 1.4h2.54c-.06-.21-.14-.46-.23-.72-.09-.27-.18-.56-.27-.86zm8.58-.29c-.55-.03-1.07.26-1.33.76-.12.23-.19.47-.22.72h2.109c.26 0 .45 0 .57-.01.08-.01.16-.03.23-.08v-.1c0-.13-.021-.25-.061-.37-.178-.56-.708-.94-1.298-.92zM19.75.3H4.25C1.9.3 0 2.2 0 4.55v14.9c0 2.35 1.9 4.25 4.25 4.25h15.5c2.35 0 4.25-1.9 4.25-4.25V4.55C24 2.2 22.1.3 19.75.3zm-7.04 16.511h-2.09c-.07.01-.14-.041-.16-.11l-.82-2.4H5.92l-.76 2.36c-.02.09-.1.15-.19.14H3.09c-.11 0-.14-.06-.11-.18L6.2 7.39c.03-.1.06-.19.1-.31.04-.21.06-.43.06-.65-.01-.05.03-.1.08-.11h2.59c.07 0 .12.03.13.08l3.65 10.25c.03.11.001.161-.1.161zm7.851-3.991c-.021.189-.031.33-.041.42-.01.07-.069.13-.14.13-.06 0-.17.01-.33.021-.159.02-.35.029-.579.029-.23 0-.471-.04-.73-.04h-3.17c.039.31.14.62.31.89.181.271.431.48.729.601.4.17.841.26 1.281.25.35-.011.699-.04 1.039-.11.311-.039.61-.119.891-.23.05-.039.08-.02.08.08v1.531c0 .039-.01.08-.021.119-.021.03-.04.051-.069.07-.32.14-.65.24-1 .3-.471.09-.94.13-1.42.12-.761 0-1.4-.12-1.92-.35-.49-.211-.921-.541-1.261-.95-.319-.39-.55-.83-.69-1.31-.14-.471-.209-.961-.209-1.461 0-.539.08-1.07.25-1.59.16-.5.41-.96.75-1.37.33-.4.739-.72 1.209-.95.471-.23 1.03-.31 1.67-.31.531-.01 1.06.09 1.55.31.41.18.77.45 1.05.8.26.34.47.72.601 1.14.129.4.189.81.189 1.22 0 .24-.01.45-.019.64z"/></svg><span>After Effects</span></li><li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.15 8.42a2.93 2.93 0 00-1.18-.2 13.9 13.9 0 00-1.09.02v3.36l.39.02h.53c.39 0 .78-.06 1.15-.18.32-.09.6-.28.82-.53.21-.25.31-.59.31-1.03a1.45 1.45 0 00-.93-1.46zM19.75.3H4.25A4.25 4.25 0 000 4.55v14.9c0 2.35 1.9 4.25 4.25 4.25h15.5c2.35 0 4.25-1.9 4.25-4.25V4.55C24 2.2 22.1.3 19.75.3zm-7.09 11.65c-.4.56-.96.98-1.61 1.22-.68.25-1.43.34-2.25.34l-.5-.01-.43-.01v3.21a.12.12 0 01-.11.14H5.82c-.08 0-.12-.04-.12-.13V6.42c0-.07.03-.11.1-.11l.56-.01.76-.02.87-.02.91-.01c.82 0 1.5.1 2.06.31.5.17.96.45 1.34.82.32.32.57.71.73 1.14.15.42.23.85.23 1.3 0 .86-.2 1.57-.6 2.13zm6.82-3.15v1.95c0 .08-.05.11-.16.11a4.35 4.35 0 00-1.92.37c-.19.09-.37.21-.51.37v5.1c0 .1-.04.14-.13.14h-1.97a.14.14 0 01-.16-.12v-5.58l-.01-.75-.02-.78c0-.23-.02-.45-.04-.68a.1.1 0 01.07-.11h1.78c.1 0 .18.07.2.16a3.03 3.03 0 01.13.92c.3-.35.67-.64 1.08-.86a3.1 3.1 0 011.52-.39c.07-.01.13.04.14.11v.04z"/></svg><span>Premiere Pro</span></li><li><i aria-hidden="true">Me</i><span>Media Encoder</span></li><li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.53 10.73c-.1-.31-.19-.61-.29-.92-.1-.31-.19-.6-.27-.89-.08-.28-.15-.54-.22-.78h-.02c-.09.43-.2.86-.34 1.29-.15.48-.3.98-.46 1.48-.14.51-.29.98-.44 1.4h2.54c-.06-.211-.14-.46-.23-.721-.09-.269-.18-.559-.27-.859zM19.75.3H4.25C1.9.3 0 2.2 0 4.55v14.9c0 2.35 1.9 4.25 4.25 4.25h15.5c2.35 0 4.25-1.9 4.25-4.25V4.55C24 2.2 22.1.3 19.75.3zM14.7 16.83h-2.091c-.069.01-.139-.04-.159-.11l-.82-2.38H7.91l-.76 2.35c-.02.09-.1.15-.19.141H5.08c-.11 0-.14-.061-.11-.18L8.19 7.38c.03-.1.06-.21.1-.33.04-.21.06-.43.06-.65-.01-.05.03-.1.08-.11h2.59c.08 0 .12.03.13.08l3.65 10.3c.03.109 0 .16-.1.16zm3.4-.15c0 .11-.039.16-.129.16H16.01c-.1 0-.15-.061-.15-.16v-7.7c0-.1.041-.14.131-.14h1.98c.09 0 .129.05.129.14v7.7zm-.209-9.03c-.231.24-.571.37-.911.35-.33.01-.65-.12-.891-.35-.23-.25-.35-.58-.34-.92-.01-.34.12-.66.359-.89.242-.23.562-.35.892-.35.391 0 .689.12.91.35.22.24.34.56.33.89.01.34-.11.67-.349.92z"/></svg><span>Illustrator</span></li><li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.85 8.42c-.37-.15-.77-.21-1.18-.2-.26 0-.49 0-.68.01-.2-.01-.34 0-.41.01v3.36c.14.01.27.02.39.02h.53c.39 0 .78-.06 1.15-.18.32-.09.6-.28.82-.53.21-.25.31-.59.31-1.03.01-.31-.07-.62-.23-.89-.17-.26-.41-.46-.7-.57zM19.75.3H4.25C1.9.3 0 2.2 0 4.55v14.899c0 2.35 1.9 4.25 4.25 4.25h15.5c2.35 0 4.25-1.9 4.25-4.25V4.55C24 2.2 22.1.3 19.75.3zm-7.391 11.65c-.399.56-.959.98-1.609 1.22-.68.25-1.43.34-2.25.34-.24 0-.4 0-.5-.01s-.24-.01-.43-.01v3.209c.01.07-.04.131-.11.141H5.52c-.08 0-.12-.041-.12-.131V6.42c0-.07.03-.11.1-.11.17 0 .33 0 .56-.01.24-.01.49-.01.76-.02s.56-.01.87-.02c.31-.01.61-.01.91-.01.82 0 1.5.1 2.06.31.5.17.96.45 1.34.82.32.32.57.71.73 1.14.149.42.229.85.229 1.3.001.86-.199 1.57-.6 2.13zm7.091 3.89c-.28.4-.671.709-1.12.891-.49.209-1.09.318-1.811.318-.459 0-.91-.039-1.359-.129-.35-.061-.7-.17-1.02-.32-.07-.039-.121-.109-.111-.189v-1.74c0-.029.011-.07.041-.09.029-.02.06-.01.09.01.39.23.8.391 1.24.49.379.1.779.15 1.18.15.38 0 .65-.051.83-.141.16-.07.27-.24.27-.42 0-.141-.08-.27-.24-.4-.16-.129-.489-.279-.979-.471-.51-.18-.979-.42-1.42-.719-.31-.221-.569-.51-.761-.85-.159-.32-.239-.67-.229-1.021 0-.43.12-.84.341-1.21.25-.4.619-.72 1.049-.92.469-.239 1.059-.349 1.769-.349.41 0 .83.03 1.24.09.3.04.59.12.86.23.039.01.08.05.1.09.01.04.02.08.02.12v1.63c0 .04-.02.08-.05.1-.09.02-.14.02-.18 0-.3-.16-.62-.27-.96-.34-.37-.08-.74-.13-1.12-.13-.2-.01-.41.02-.601.07-.129.03-.24.1-.31.2-.05.08-.08.18-.08.27s.04.18.101.26c.09.11.209.2.34.27.229.12.47.23.709.33.541.18 1.061.43 1.541.73.33.209.6.49.789.83.16.318.24.67.23 1.029.011.471-.129.94-.389 1.331z"/></svg><span>Photoshop</span></li><li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12,24C5.383,24,0,18.617,0,12S5.383,0,12,0s12,5.383,12,12S18.617,24,12,24z M12,1.109 C5.995,1.109,1.11,5.995,1.11,12C1.11,18.005,5.995,22.89,12,22.89S22.89,18.005,22.89,12C22.89,5.995,18.005,1.109,12,1.109z M6.182,5.99c0.352-1.698,1.503-3.229,3.05-3.996c-0.269,0.273-0.595,0.483-0.844,0.78c-1.02,1.1-1.48,2.692-1.199,4.156 c0.355,2.235,2.455,4.06,4.732,4.028c1.765,0.079,3.485-0.937,4.348-2.468c1.848,0.063,3.645,1.017,4.7,2.548 c0.54,0.799,0.962,1.736,0.991,2.711c-0.342-1.295-1.202-2.446-2.375-3.095c-1.135-0.639-2.529-0.802-3.772-0.425 c-1.56,0.448-2.849,1.723-3.293,3.293c-0.377,1.25-0.216,2.628,0.377,3.772c-0.825,1.429-2.315,2.449-3.932,2.756 c-1.244,0.261-2.551,0.059-3.709-0.464c1.036,0.302,2.161,0.355,3.191-0.011c1.381-0.457,2.522-1.567,3.024-2.935 c0.556-1.49,0.345-3.261-0.591-4.54c-0.7-1.007-1.803-1.717-3.002-1.969c-0.38-0.068-0.764-0.098-1.148-0.134 c-0.611-1.231-0.834-2.66-0.528-3.996L6.182,5.99z"/></svg><span>OBS</span></li><li><i aria-hidden="true">CC</i><span>CapCut</span></li><li><i aria-hidden="true">FL</i><span>FL Studio</span></li><li><i aria-hidden="true">V</i><span>VDMX 5 y 6</span></li><li><i aria-hidden="true">Sy</i><span>Synesthesia</span></li></ul><span class="tl">IA</span><ul><li><i aria-hidden="true">V3</i><span>Veo 3</span></li><li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.8772 1.4685L24 2.5326v18.9426l-4.1228 1.0563V1.4685zm-13.3481 9.428l4.115 1.0641v8.9786l-4.115 1.0642v-11.107zM0 2.572l4.115 1.0642v16.7354L0 21.428V2.572zm17.4553 5.6205v11.107l-4.1228-1.0642V9.2568l4.1228-1.0642z"/></svg><span>Seedance</span></li><li><i aria-hidden="true">NB</i><span>Nano Banana</span></li><li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11.04 19.32Q12 21.51 12 24q0-2.49.93-4.68.96-2.19 2.58-3.81t3.81-2.55Q21.51 12 24 12q-2.49 0-4.68-.93a12.3 12.3 0 0 1-3.81-2.58 12.3 12.3 0 0 1-2.58-3.81Q12 2.49 12 0q0 2.49-.96 4.68-.93 2.19-2.55 3.81a12.3 12.3 0 0 1-3.81 2.58Q2.49 12 0 12q2.49 0 4.68.96 2.19.93 3.81 2.55t2.55 3.81"/></svg><span>Gemini</span></li><li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11.43 3.92a.86.86 0 1 0-1.718 0v14.236a1.999 1.999 0 0 1-3.997 0V9.022a.86.86 0 1 0-1.718 0v3.87a1.999 1.999 0 0 1-3.997 0V11.49a.57.57 0 0 1 1.139 0v1.404a.86.86 0 0 0 1.719 0V9.022a1.999 1.999 0 0 1 3.997 0v9.134a.86.86 0 0 0 1.719 0V3.92a1.998 1.998 0 1 1 3.996 0v11.788a.57.57 0 1 1-1.139 0zm10.572 3.105a2 2 0 0 0-1.999 1.997v7.63a.86.86 0 0 1-1.718 0V3.923a1.999 1.999 0 0 0-3.997 0v16.16a.86.86 0 0 1-1.719 0V18.08a.57.57 0 1 0-1.138 0v2a1.998 1.998 0 0 0 3.996 0V3.92a.86.86 0 0 1 1.719 0v12.73a1.999 1.999 0 0 0 3.996 0V9.023a.86.86 0 1 1 1.72 0v6.686a.57.57 0 0 0 1.138 0V9.022a2 2 0 0 0-1.998-1.997"/></svg><span>MiniMax Hailuo</span></li></ul></div>
 </section>
 
-<section class="contact" id="contacto">
+<section class="contact" id="contacto" data-fase="2" data-velo="0.1">
   <h2>Booking y colaboraciones</h2>
   <p>Shows, festivales, convocatorias y obra en colaboración.</p>
   <div class="btns">
@@ -324,9 +524,15 @@ footer a{color:var(--soft)}
   var calm=matchMedia('(prefers-reduced-motion:reduce)').matches;
   var vs=[].slice.call(document.querySelectorAll('video.lv'));
   function load(v){ if(!v.src){ v.src=v.dataset.src; } }
+  /* el póster también espera: son ~70 piezas y solo baja el de las que se acercan */
+  function cartel(v){ if(v.dataset.poster && !v.getAttribute('poster')){ v.poster=v.dataset.poster; } }
   if(calm || !('IntersectionObserver' in window)){
-    vs.forEach(function(v){ v.controls=calm; if(!calm){ load(v); v.autoplay=true; } });
+    vs.forEach(function(v){ cartel(v); load(v); v.controls=calm; if(!calm){ v.autoplay=true; } });
   } else {
+    var io2=new IntersectionObserver(function(es){
+      es.forEach(function(e){ if(e.isIntersecting){ cartel(e.target); io2.unobserve(e.target); } });
+    },{rootMargin:'900px 0px'});
+    vs.forEach(function(v){ io2.observe(v); });
     var io=new IntersectionObserver(function(es){
       es.forEach(function(e){
         var v=e.target;
@@ -347,6 +553,6 @@ footer a{color:var(--soft)}
 })();
 </script>
 <footer class="wrap">ZETA · La Plata, Argentina · Parte de <a href="https://hg-vl.com/">Human Glitche</a></footer>
-<script src="pantalla.js?v=7" defer></script>
+<script src="umbral.js?v=2" defer></script>
 </body>
 </html>
