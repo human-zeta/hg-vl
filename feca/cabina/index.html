@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>LA CABINA — Feca · consola de VJ</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../img/icon.svg" type="image/svg+xml">
+<meta name="description" content="Una consola de VJ que corre en el navegador: cinco escenas, controles en vivo, disparos con el teclado y micrófono opcional. Al final te llevás el shader en .fs para VDMX6.">
+<!--
+  Human Glitche · Visual Lab (2026-08-25). Desde 2026-10-26 vive en feca.hg-vl.com/cabina/ (antes inmersivo.html de la demo).
+  LA CABINA — consola de VJ jugable para la demo de Feca (@feka.vj).
+
+  POR QUÉ ESTA PÁGINA EXISTE:
+  Feca trabaja con VDMX6 y shaders. VDMX carga shaders en formato ISF. Entonces
+  la inmersiva no es un adorno: es una pieza de su propio flujo de trabajo. Lo
+  que se toca acá se baja como .fs y se abre allá.
+
+  LO QUE ES REAL:
+  · El shader está escrito en ISF de verdad — TIME, RENDERSIZE y gl_FragColor
+    son los nombres que espera el host, no invenciones de la página. El cuerpo
+    que corre en el navegador es BYTE POR BYTE el que se exporta; lo único que
+    cambia es que el preview clava la escena como `const float mode` y el
+    export la deja como INPUT para poder cambiarla en VDMX.
+  · Por qué se recompila al cambiar de escena en vez de ramificar con un
+    uniform: con `mode` como uniform el compilador reserva registros por el
+    peor caso y una escena barata corre con la huella de la cara. Es la misma
+    lección que ya está documentada en web/forge/index.html.
+  · El micrófono es OPCIONAL y explícito: hay que apretar el botón. El audio se
+    analiza en la máquina del visitante y no se graba ni se manda a ningún lado
+    — no hay red en esta página. Los tres valores (bajo/medio/alto) son los
+    mismos que en VDMX llena el host.
+
+  LO QUE NO ES:
+  · No es THE FORGE (web/forge/) ni el PUENTE ISF (web/isf/). Aquellas son las
+    herramientas completas; esto es una cabina de cinco escenas para que el
+    visitante entienda el oficio tocándolo.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --hueso:#f2f0f5; --dim:rgba(242,240,245,.58); --mute:rgba(242,240,245,.3);
+    --line:rgba(242,240,245,.14); --rojo:#ff1f3d; --cyan:#31e8ff; --magenta:#ff2fd0;
+    --panel:rgba(6,6,10,.82);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%; overflow:hidden}
+  body{
+    background:#000; color:var(--hueso);
+    font-family:'JetBrains Mono',ui-monospace,monospace; font-size:13px;
+    -webkit-font-smoothing:antialiased;
+  }
+  #gl{position:fixed; inset:0; width:100%; height:100%; display:block; z-index:0}
+  .disp{font-family:'Anton',Impact,sans-serif; text-transform:uppercase; letter-spacing:.02em; font-weight:400}
+
+  /* ── barra superior ─────────────────────────────────────────── */
+  #top{
+    position:fixed; top:0; left:0; right:0; z-index:20;
+    display:flex; align-items:center; justify-content:space-between; gap:16px;
+    padding:14px 18px; pointer-events:none;
+  }
+  #top > *{pointer-events:auto}
+  .volver{
+    text-decoration:none; color:var(--dim); font-size:11px; letter-spacing:.14em;
+    text-transform:uppercase; background:var(--panel); border:1px solid var(--line);
+    padding:8px 14px; border-radius:2px; backdrop-filter:blur(10px);
+  }
+  .volver:hover{color:var(--hueso); border-color:var(--hueso)}
+  .titulo{font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:var(--mute)}
+  .titulo b{color:var(--rojo)}
+
+  /* ── panel de control ───────────────────────────────────────── */
+  #panel{
+    position:fixed; left:0; right:0; bottom:0; z-index:20;
+    background:var(--panel); backdrop-filter:blur(16px);
+    border-top:1px solid var(--line);
+    padding:16px 18px calc(16px + env(safe-area-inset-bottom));
+    display:grid; gap:14px;
+    transition:transform .3s cubic-bezier(.4,0,.2,1);
+  }
+  #panel.oculto{transform:translateY(100%)}
+  /* el tirador vive arriba del panel: cuando el panel baja, queda asomando
+     contra el borde de la pantalla y sigue siendo tocable */
+  #tirador{
+    position:absolute; top:1px; left:50%; transform:translate(-50%,-100%);
+    background:var(--panel); border:1px solid var(--line); border-bottom:none;
+    border-radius:3px 3px 0 0; padding:6px 26px; cursor:pointer;
+    color:var(--mute); font-family:inherit; font-size:11px; letter-spacing:.2em;
+    backdrop-filter:blur(16px); line-height:1;
+  }
+  #tirador:hover{color:var(--hueso)}
+
+  .escenas{display:flex; gap:7px; flex-wrap:wrap}
+  .esc{
+    flex:1 1 auto; min-width:96px; background:transparent; color:var(--dim);
+    border:1px solid var(--line); border-radius:2px; padding:11px 10px;
+    font-family:inherit; font-size:11px; letter-spacing:.12em; text-transform:uppercase;
+    cursor:pointer; transition:all .16s; position:relative;
+  }
+  .esc:hover{color:var(--hueso); border-color:var(--dim)}
+  .esc.on{color:#000; background:var(--rojo); border-color:var(--rojo); font-weight:700}
+  .esc i{
+    position:absolute; top:5px; left:7px; font-style:normal; font-size:9px; opacity:.55;
+  }
+
+  .fila{display:grid; grid-template-columns:repeat(auto-fit,minmax(158px,1fr)); gap:14px}
+  .ctrl label{
+    display:flex; justify-content:space-between; align-items:baseline;
+    font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--mute);
+    margin-bottom:6px;
+  }
+  .ctrl label b{color:var(--cyan); font-weight:400; font-size:11px}
+  input[type=range]{
+    -webkit-appearance:none; appearance:none; width:100%; height:3px;
+    background:var(--line); border-radius:2px; outline:none; cursor:pointer;
+  }
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none; appearance:none; width:14px; height:14px; border-radius:50%;
+    background:var(--hueso); cursor:pointer; border:none;
+  }
+  input[type=range]::-moz-range-thumb{
+    width:14px; height:14px; border-radius:50%; background:var(--hueso); cursor:pointer; border:none;
+  }
+
+  .acciones{display:flex; gap:7px; flex-wrap:wrap; align-items:center}
+  .bt{
+    background:transparent; color:var(--dim); border:1px solid var(--line); border-radius:2px;
+    padding:10px 15px; font-family:inherit; font-size:11px; letter-spacing:.12em;
+    text-transform:uppercase; cursor:pointer; transition:all .16s;
+  }
+  .bt:hover{color:var(--hueso); border-color:var(--hueso)}
+  .bt.on{color:#000; background:var(--cyan); border-color:var(--cyan); font-weight:700}
+  .bt.fuerte{color:#000; background:var(--hueso); border-color:var(--hueso); font-weight:700}
+  .bt.fuerte:hover{background:var(--cyan); border-color:var(--cyan)}
+  .sep{flex:1}
+  .nivel{
+    display:flex; gap:3px; align-items:flex-end; height:22px; width:52px;
+  }
+  .nivel span{flex:1; background:var(--line); border-radius:1px; height:12%; transition:height .07s linear}
+
+  .ayuda{font-size:10px; color:var(--mute); letter-spacing:.06em; line-height:1.8}
+  .ayuda kbd{
+    border:1px solid var(--line); border-radius:2px; padding:1px 5px; color:var(--dim);
+    font-family:inherit; font-size:10px;
+  }
+  @media(max-width:720px){
+    .ayuda{display:none}
+    .esc{min-width:0; flex:1 1 30%; font-size:10px; padding:8px 4px}
+    #panel{gap:10px; padding:12px 12px calc(12px + env(safe-area-inset-bottom))}
+    .fila{gap:10px}
+    .bt{padding:9px 11px; font-size:10px}
+  }
+
+  /* ── cartel de bienvenida ───────────────────────────────────── */
+  #intro{
+    position:fixed; inset:0; z-index:40; display:grid; place-items:center;
+    background:rgba(0,0,0,.82); backdrop-filter:blur(8px); text-align:center; padding:24px;
+    transition:opacity .45s;
+  }
+  #intro.ido{opacity:0; pointer-events:none}
+  #intro h1{font-size:clamp(2.4rem,9vw,5rem); margin-bottom:14px; line-height:.94}
+  #intro p{color:var(--dim); max-width:46ch; margin:0 auto 26px; line-height:1.75; font-size:12.5px}
+  #intro .fino{color:var(--mute); font-size:10.5px; margin-top:20px; letter-spacing:.05em}
+
+  #aviso{
+    position:fixed; left:50%; top:76px; transform:translateX(-50%); z-index:30;
+    background:var(--panel); border:1px solid var(--line); backdrop-filter:blur(10px);
+    padding:10px 18px; border-radius:2px; font-size:11px; letter-spacing:.1em;
+    text-transform:uppercase; color:var(--hueso); opacity:0; transition:opacity .25s;
+    pointer-events:none; white-space:nowrap;
+  }
+  #aviso.on{opacity:1}
+  .nogl{position:fixed; inset:0; display:grid; place-items:center; padding:28px; text-align:center; color:var(--dim)}
+</style>
+</head>
+<body>
+
+<canvas id="gl"></canvas>
+
+<div id="top">
+  <a class="volver" href="../">← Volver</a>
+  <div class="titulo"><b>LA CABINA</b> · FECA</div>
+</div>
+
+<div id="aviso"></div>
+
+<div id="panel">
+  <button id="tirador" aria-label="Plegar o desplegar los controles">▾</button>
+  <div class="escenas" id="escenas"></div>
+
+  <div class="fila">
+    <div class="ctrl">
+      <label>Velocidad <b id="vVel">1.00</b></label>
+      <input type="range" id="vel" min="0" max="3" step="0.01" value="1">
+    </div>
+    <div class="ctrl">
+      <label>Escala <b id="vEsc">1.00</b></label>
+      <input type="range" id="escala" min="0.3" max="3" step="0.01" value="1">
+    </div>
+    <div class="ctrl">
+      <label>Intensidad <b id="vInt">1.00</b></label>
+      <input type="range" id="intensidad" min="0" max="2" step="0.01" value="1">
+    </div>
+    <div class="ctrl">
+      <label>Deriva <b id="vWar">0.20</b></label>
+      <input type="range" id="warp" min="0" max="1" step="0.01" value="0.2">
+    </div>
+  </div>
+
+  <div class="acciones">
+    <button class="bt" id="bMic">◉ Micrófono</button>
+    <div class="nivel" id="nivel" title="bajo / medio / alto"><span></span><span></span><span></span></div>
+    <button class="bt" id="bFlash">⚡ Flash</button>
+    <button class="bt" id="bPaleta">◑ Paleta</button>
+    <button class="bt" id="bFull">⛶ Pantalla</button>
+    <div class="sep"></div>
+    <div class="ayuda">
+      <kbd>1</kbd>–<kbd>5</kbd> escena · <kbd>↑↓</kbd> intensidad · <kbd>←→</kbd> velocidad ·
+      <kbd>espacio</kbd> flash · <kbd>M</kbd> mic · <kbd>F</kbd> pantalla · <kbd>H</kbd> ocultar
+    </div>
+    <button class="bt fuerte" id="bExport">↓ Bajar .fs para VDMX</button>
+  </div>
+</div>
+
+<div id="intro">
+  <div>
+    <h1 class="disp">La cabina</h1>
+    <p>Cinco escenas, cuatro controles y el teclado. Es lo mismo que hace Feca cuando
+       se apagan las luces, en chiquito: tocar la imagen mientras suena.</p>
+    <p style="color:var(--mute)">Cuando encuentres algo que te guste, bajalo en
+       <b style="color:var(--cyan)">.fs</b> y abrilo en VDMX6.</p>
+    <button class="bt fuerte" id="bEmpezar" style="font-size:12px; padding:13px 30px">Entrar</button>
+    <div class="fino">El micrófono es opcional y lo activás vos. El audio se procesa<br>
+      en tu máquina: no se graba ni sale de esta página.</div>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════════════════
+   EL SHADER — ISF de verdad.
+   CUERPO es lo que se exporta tal cual. El preview le antepone las
+   declaraciones de uniforms (que en ISF las pone el host desde INPUTS) y clava
+   la escena como const para que el compilador tire las otras cuatro.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+var ESCENAS = ['tunel','marea','rejilla','enjambre','caleido'];
+var ETIQUETAS = ['Túnel','Marea','Rejilla','Enjambre','Caleido'];
+
+var CUERPO = [
+'float hash21(vec2 p){ return fract(sin(dot(p, vec2(41.3, 289.1))) * 43758.5453); }',
+'vec2 hash22(vec2 p){',
+'  vec3 q = fract(vec3(p.xyx) * vec3(0.1031, 0.1030, 0.0973));',
+'  q += dot(q, q.yzx + 33.33);',
+'  return fract((q.xx + q.yz) * q.zy);',
+'}',
+'float ruido(vec2 p){',
+'  vec2 i = floor(p), f = fract(p);',
+'  f = f * f * (3.0 - 2.0 * f);',
+'  return mix(mix(hash21(i), hash21(i + vec2(1.0, 0.0)), f.x),',
+'             mix(hash21(i + vec2(0.0, 1.0)), hash21(i + vec2(1.0, 1.0)), f.x), f.y);',
+'}',
+'float fbm(vec2 p){',
+'  float s = 0.0, a = 0.5;',
+'  for (int k = 0; k < 5; k++){ s += a * ruido(p); p *= 2.03; a *= 0.5; }',
+'  return s;',
+'}',
+'mat2 giro(float a){ float c = cos(a), s = sin(a); return mat2(c, -s, s, c); }',
+'',
+'/* rampa de tres colores: fondo -> medio -> acento */',
+'vec3 paleta(float x){',
+'  x = clamp(x, 0.0, 1.0);',
+'  return x < 0.5 ? mix(colA.rgb, colB.rgb, x * 2.0)',
+'                 : mix(colB.rgb, colC.rgb, (x - 0.5) * 2.0);',
+'}',
+'',
+'/* cada escena devuelve 0..1; el color se pone después */',
+'vec2 deriva(vec2 p, float t){',
+'  if (warp <= 0.001) return p;',
+'  vec2 d = vec2(fbm(p * 1.7 + t * 0.30), fbm(p * 1.7 - t * 0.25 + 5.2));',
+'  return p + warp * 0.7 * (d - 0.5);',
+'}',
+'',
+'float patron(vec2 p, float t){',
+'  float m = floor(float(mode) + 0.5);',   /* float(): en el preview mode es const float; en el host ISF, un int */
+'  if (m > 3.5) { /* CALEIDO deriva despues del espejo */ } else p = deriva(p, t);',
+'',
+'  if (m < 0.5){                       /* 0 · TÚNEL */',
+'    float r = length(p), a = atan(p.y, p.x);',
+'    float z = 1.0 / (r + 0.13) + t * 1.15;',
+'    float anillos = pow(0.5 + 0.5 * sin(z * 6.0), 2.2);',
+'    float radios  = 0.5 + 0.5 * sin(a * 9.0 + t * 1.4 + medio * 6.0);',
+'    return anillos * radios * smoothstep(1.7, 0.04, r);',
+'  }',
+'  if (m < 1.5){                       /* 1 · MAREA */',
+'    float h = fbm(p * 1.6 + vec2(t * 0.40, -t * 0.30));',
+'    h = fbm(p * 2.3 + vec2(h * 1.8 - t * 0.35, h * 1.3));',
+'    return smoothstep(0.26, 0.74, h);',
+'  }',
+'  if (m < 2.5){                       /* 2 · REJILLA — sus cubos LED */',
+'    vec2 g = p * 7.0;',
+'    vec2 id = floor(g), ce = fract(g) - 0.5;',
+'    float onda  = sin(id.x * 0.7 + id.y * 0.5 + t * 3.0 + bajo * 5.0);',
+'    float pulso = sin(length(id) * 0.9 - t * 2.2);',          /* anillo desde el centro */
+'    float on = 0.5 + 0.5 * max(onda, pulso * 0.9);',
+'    on *= 0.72 + 0.28 * hash21(id);',                          /* cada LED con su brillo */
+'    float led = 1.0 - smoothstep(0.19, 0.33, length(ce));',    /* borde mas duro */
+'    return led * on;',
+'  }',
+'  if (m < 3.5){                       /* 3 · ENJAMBRE */',
+'    vec2 g = p * 3.2;',
+'    vec2 id = floor(g), f = fract(g);',
+'    float d = 8.0;',
+'    for (int y = -1; y <= 1; y++){',
+'      for (int x = -1; x <= 1; x++){',
+'        vec2 o = vec2(float(x), float(y));',
+'        vec2 pt = hash22(id + o);',
+'        pt = 0.5 + 0.45 * sin(t * 1.3 + 6.2831 * pt);',
+'        d = min(d, length(o + pt - f));',
+'      }',
+'    }',
+'    return smoothstep(0.72, 0.0, d);',
+'  }',
+'  /* 4 · CALEIDO */',
+'  float a = atan(p.y, p.x), r = length(p);',
+'  float seg = 6.0;',
+'  a = mod(a, 6.2831853 / seg);',
+'  a = abs(a - 3.1415927 / seg);',
+'  vec2 q = vec2(cos(a), sin(a)) * r;',
+'  q = giro(t * 0.2) * q;',
+'  q = deriva(q, t);',
+'  return smoothstep(0.28, 0.72, fbm(q * 2.6 + t * 0.35));',
+'}',
+'',
+'void main(){',
+'  vec2 p = (gl_FragCoord.xy - 0.5 * RENDERSIZE) / RENDERSIZE.y;',
+'  float t = TIME * vel;',
+'',
+'  /* La deriva NO va acá: en CALEIDO rompia el espejo y quedaba fango.',
+'     Cada escena la aplica donde corresponde (ver patron). */',
+'  p *= escala;',
+'',
+'  float v = patron(p, t);',
+'  v *= 0.72 + 0.9 * bajo;                         /* el bajo empuja el cuadro */',
+'',
+'  v = pow(clamp(v, 0.0, 1.0), 1.45);                /* contraste: menos fango, mas figura */',
+'  vec3 c = paleta(v) * intensidad * (0.5 + 0.95 * v);',
+'  c += colC.rgb * alto * 0.45 * pow(v, 3.0);      /* los agudos chispean */',
+'',
+'  /* viñeta de sala y grano fino contra el banding */',
+'  float rr = length((gl_FragCoord.xy - 0.5 * RENDERSIZE) / RENDERSIZE.y);',
+'  c *= 1.0 - 0.5 * smoothstep(0.5, 1.35, rr);',
+'  c += (hash21(gl_FragCoord.xy + TIME) - 0.5) * 0.018;',
+'',
+'  gl_FragColor = vec4(max(c, 0.0), 1.0);',
+'}'].join('\n');
+
+/* uniforms que en ISF declara el host desde INPUTS; acá los ponemos a mano.
+   `mode` NO va: el preview lo clava como const (ver nota del encabezado). */
+var PRELUDIO = [
+'precision highp float;',
+'uniform float TIME;',
+'uniform vec2  RENDERSIZE;',
+'uniform float vel, escala, intensidad, warp;',
+'uniform float bajo, medio, alto;',
+'uniform vec4  colA, colB, colC;',
+''].join('\n');
+
+/* ═══ paletas ═══ las tres primeras salen de sus propios videos ═══ */
+var PALETAS = [
+  {n:'iconic',   a:[0.02,0.01,0.05], b:[1.00,0.12,0.24], c:[1.00,0.55,0.72]},
+  {n:'goodfriends', a:[0.01,0.02,0.07], b:[0.18,0.42,1.00], c:[0.40,0.92,1.00]},
+  {n:'cubos',    a:[0.04,0.01,0.01], b:[1.00,0.30,0.05], c:[1.00,0.90,0.55]},
+  {n:'magenta',  a:[0.03,0.00,0.05], b:[1.00,0.18,0.82], c:[0.55,0.85,1.00]},
+  {n:'ácido',    a:[0.00,0.03,0.02], b:[0.20,1.00,0.45], c:[0.90,1.00,0.30]}
+];
+
+var P = { mode:0, vel:1, escala:1, intensidad:1, warp:0.2, pal:0,
+          bajo:0, medio:0, alto:0, flash:0 };
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   WEBGL
+   ═══════════════════════════════════════════════════════════════════════════ */
+var cv = document.getElementById('gl');
+var gl = cv.getContext('webgl', {antialias:false, alpha:false, powerPreference:'high-performance'})
+      || cv.getContext('experimental-webgl');
+
+if (!gl) {
+  document.body.innerHTML = '<div class="nogl">Esta cabina necesita WebGL.<br>' +
+    'Probá en Chrome, Edge, Firefox o Safari actualizado.<br><br>' +
+    '<a href="../" style="color:#31e8ff">← Volver a la página</a></div>';
+} else {
+  arrancar();
+}
+
+function arrancar(){
+  var VS = 'attribute vec2 a; void main(){ gl_Position = vec4(a, 0.0, 1.0); }';
+
+  var buf = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 3,-1, -1,3]), gl.STATIC_DRAW);
+
+  var cache = {};       /* un programa compilado por escena */
+  var prog = null, U = {};
+
+  function compilar(tipo, src){
+    var s = gl.createShader(tipo);
+    gl.shaderSource(s, src); gl.compileShader(s);
+    if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) {
+      console.error('shader:', gl.getShaderInfoLog(s));
+      gl.deleteShader(s); return null;
+    }
+    return s;
+  }
+
+  function programaDe(modo){
+    if (cache[modo]) return cache[modo];
+    var fuente = PRELUDIO + 'const float mode = ' + Number(modo).toFixed(1) + ';\n' + CUERPO;
+    var v = compilar(gl.VERTEX_SHADER, VS), f = compilar(gl.FRAGMENT_SHADER, fuente);
+    if (!v || !f) return null;
+    var p = gl.createProgram();
+    gl.attachShader(p, v); gl.attachShader(p, f); gl.linkProgram(p);
+    gl.deleteShader(v); gl.deleteShader(f);
+    if (!gl.getProgramParameter(p, gl.LINK_STATUS)) {
+      console.error('link:', gl.getProgramInfoLog(p)); return null;
+    }
+    var loc = gl.getAttribLocation(p, 'a');
+    cache[modo] = { p:p, loc:loc, u:{
+      TIME:gl.getUniformLocation(p,'TIME'), RENDERSIZE:gl.getUniformLocation(p,'RENDERSIZE'),
+      vel:gl.getUniformLocation(p,'vel'), escala:gl.getUniformLocation(p,'escala'),
+      intensidad:gl.getUniformLocation(p,'intensidad'), warp:gl.getUniformLocation(p,'warp'),
+      bajo:gl.getUniformLocation(p,'bajo'), medio:gl.getUniformLocation(p,'medio'),
+      alto:gl.getUniformLocation(p,'alto'),
+      colA:gl.getUniformLocation(p,'colA'), colB:gl.getUniformLocation(p,'colB'),
+      colC:gl.getUniformLocation(p,'colC')
+    }};
+    return cache[modo];
+  }
+
+  function usar(modo){
+    var e = programaDe(modo);
+    if (!e) return;
+    prog = e; U = e.u;
+    gl.useProgram(e.p);
+    gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+    gl.enableVertexAttribArray(e.loc);
+    gl.vertexAttribPointer(e.loc, 2, gl.FLOAT, false, 0, 0);
+  }
+
+  function medir(){
+    var d = Math.min(window.devicePixelRatio || 1, 1.75);
+    var w = Math.floor(innerWidth * d), h = Math.floor(innerHeight * d);
+    if (cv.width !== w || cv.height !== h) { cv.width = w; cv.height = h; gl.viewport(0,0,w,h); }
+  }
+  addEventListener('resize', medir, {passive:true});
+  medir();
+  usar(0);
+
+  var t0 = performance.now();
+  function cuadro(now){
+    requestAnimationFrame(cuadro);
+    if (document.hidden || !prog) return;
+    medir();
+    leerAudio();
+    if (P.flash > 0) P.flash = Math.max(0, P.flash - 0.055);
+
+    var pal = PALETAS[P.pal];
+    gl.uniform1f(U.TIME, (now - t0) / 1000);
+    gl.uniform2f(U.RENDERSIZE, cv.width, cv.height);
+    gl.uniform1f(U.vel, P.vel);
+    gl.uniform1f(U.escala, P.escala);
+    gl.uniform1f(U.intensidad, P.intensidad + P.flash * 1.6);
+    gl.uniform1f(U.warp, P.warp);
+    gl.uniform1f(U.bajo, P.bajo);
+    gl.uniform1f(U.medio, P.medio);
+    gl.uniform1f(U.alto, P.alto);
+    gl.uniform4f(U.colA, pal.a[0], pal.a[1], pal.a[2], 1);
+    gl.uniform4f(U.colB, pal.b[0], pal.b[1], pal.b[2], 1);
+    gl.uniform4f(U.colC, pal.c[0], pal.c[1], pal.c[2], 1);
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+  }
+  requestAnimationFrame(cuadro);
+
+  /* ═══ escenas ═══ */
+  var cont = document.getElementById('escenas');
+  ETIQUETAS.forEach(function(nom, i){
+    var b = document.createElement('button');
+    b.className = 'esc' + (i === 0 ? ' on' : '');
+    b.innerHTML = '<i>' + (i + 1) + '</i>' + nom;
+    b.onclick = function(){ escena(i); };
+    cont.appendChild(b);
+  });
+  function escena(i){
+    P.mode = i;
+    usar(i);
+    [].forEach.call(cont.children, function(b, k){ b.classList.toggle('on', k === i); });
+  }
+
+  /* ═══ sliders ═══ */
+  function slider(id, campo, muestra, dec){
+    var el = document.getElementById(id), out = document.getElementById(muestra);
+    function pintar(){ out.textContent = Number(P[campo]).toFixed(dec || 2); }
+    el.oninput = function(){ P[campo] = parseFloat(el.value); pintar(); };
+    pintar();
+    return { el:el, pintar:pintar };
+  }
+  var sVel = slider('vel','vel','vVel'),
+      sEsc = slider('escala','escala','vEsc'),
+      sInt = slider('intensidad','intensidad','vInt'),
+      sWar = slider('warp','warp','vWar');
+
+  function ajustar(campo, delta, min, max, s){
+    P[campo] = Math.min(max, Math.max(min, P[campo] + delta));
+    s.el.value = P[campo]; s.pintar();
+  }
+
+  /* ═══ audio: solo si el visitante lo pide ═══ */
+  var analiz = null, datos = null, ctxAudio = null, stream = null;
+  var barras = document.getElementById('nivel').children;
+
+  document.getElementById('bMic').onclick = micro;
+  function micro(){
+    var bt = document.getElementById('bMic');
+    if (analiz) {                       /* apagar y soltar el micrófono de verdad */
+      if (stream) stream.getTracks().forEach(function(t){ t.stop(); });
+      if (ctxAudio) ctxAudio.close();
+      analiz = null; ctxAudio = null; stream = null;
+      P.bajo = P.medio = P.alto = 0;
+      bt.classList.remove('on'); bt.textContent = '◉ Micrófono';
+      avisar('micrófono apagado');
+      return;
+    }
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      avisar('este navegador no da micrófono'); return;
+    }
+    navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false, autoGainControl:false, noiseSuppression:false}})
+      .then(function(s){
+        stream = s;
+        ctxAudio = new (window.AudioContext || window.webkitAudioContext)();
+        var src = ctxAudio.createMediaStreamSource(s);
+        analiz = ctxAudio.createAnalyser();
+        analiz.fftSize = 1024; analiz.smoothingTimeConstant = 0.72;
+        src.connect(analiz);
+        datos = new Uint8Array(analiz.frequencyBinCount);
+        bt.classList.add('on'); bt.textContent = '◉ Escuchando';
+        avisar('micrófono andando · nada se graba');
+      })
+      .catch(function(){ avisar('no se pudo abrir el micrófono'); });
+  }
+
+  function leerAudio(){
+    if (!analiz) return;
+    analiz.getByteFrequencyData(datos);
+    var n = datos.length;
+    /* tres bandas anchas, como los tres inputs de audio de VDMX */
+    var corte1 = Math.floor(n * 0.06), corte2 = Math.floor(n * 0.28);
+    var s1 = 0, s2 = 0, s3 = 0, i;
+    for (i = 0; i < corte1; i++) s1 += datos[i];
+    for (i = corte1; i < corte2; i++) s2 += datos[i];
+    for (i = corte2; i < n; i++) s3 += datos[i];
+    P.bajo  = Math.min(1, (s1 / corte1 / 255) * 1.5);
+    P.medio = Math.min(1, (s2 / (corte2 - corte1) / 255) * 2.0);
+    P.alto  = Math.min(1, (s3 / (n - corte2) / 255) * 3.0);
+    barras[0].style.height = (12 + P.bajo * 88) + '%';
+    barras[1].style.height = (12 + P.medio * 88) + '%';
+    barras[2].style.height = (12 + P.alto * 88) + '%';
+  }
+
+  /* ═══ botones ═══ */
+  document.getElementById('bFlash').onclick = function(){ P.flash = 1; };
+  document.getElementById('bPaleta').onclick = function(){
+    P.pal = (P.pal + 1) % PALETAS.length;
+    avisar('paleta · ' + PALETAS[P.pal].n);
+  };
+  document.getElementById('bFull').onclick = pantalla;
+  function pantalla(){
+    if (document.fullscreenElement) document.exitFullscreen();
+    else document.documentElement.requestFullscreen().catch(function(){});
+  }
+
+  var panel = document.getElementById('panel');
+  var tirador = document.getElementById('tirador');
+  function alternarPanel(){
+    var plegado = panel.classList.toggle('oculto');
+    tirador.textContent = plegado ? '▴' : '▾';
+  }
+  tirador.onclick = alternarPanel;
+
+  /* ═══ teclado — el instrumento de verdad ═══ */
+  addEventListener('keydown', function(e){
+    if (e.target.tagName === 'INPUT') return;
+    var k = e.key;
+    if (k >= '1' && k <= '5') { escena(+k - 1); return; }
+    switch (k) {
+      case 'ArrowUp':    ajustar('intensidad',  0.08, 0, 2, sInt); e.preventDefault(); break;
+      case 'ArrowDown':  ajustar('intensidad', -0.08, 0, 2, sInt); e.preventDefault(); break;
+      case 'ArrowRight': ajustar('vel',  0.08, 0, 3, sVel); e.preventDefault(); break;
+      case 'ArrowLeft':  ajustar('vel', -0.08, 0, 3, sVel); e.preventDefault(); break;
+      case ' ':          P.flash = 1; e.preventDefault(); break;
+      case 'm': case 'M': micro(); break;
+      case 'f': case 'F': pantalla(); break;
+      case 'h': case 'H': alternarPanel(); break;
+      case 'p': case 'P': document.getElementById('bPaleta').click(); break;
+    }
+  });
+
+  /* ═══ exportar ISF ═══ */
+  document.getElementById('bExport').onclick = function(){
+    var pal = PALETAS[P.pal];
+    var r2 = function(x){ return Math.round(x * 100) / 100; };
+    var cabecera = {
+      DESCRIPTION: 'LA CABINA · ' + ETIQUETAS[P.mode] + ' · hecho para Feca (@feka.vj)',
+      CREDIT: 'Human Glitche · Visual Lab',
+      ISFVSN: '2',
+      CATEGORIES: ['generator', 'procedural'],
+      INPUTS: [
+        {NAME:'mode', TYPE:'long', LABEL:'escena', DEFAULT:P.mode,
+         VALUES:ESCENAS.map(function(_, i){ return i; }), LABELS:ETIQUETAS},
+        {NAME:'vel',        TYPE:'float', LABEL:'velocidad',  DEFAULT:r2(P.vel),        MIN:0,   MAX:3},
+        {NAME:'escala',     TYPE:'float', LABEL:'escala',     DEFAULT:r2(P.escala),     MIN:0.3, MAX:3},
+        {NAME:'intensidad', TYPE:'float', LABEL:'intensidad', DEFAULT:r2(P.intensidad), MIN:0,   MAX:2},
+        {NAME:'warp',       TYPE:'float', LABEL:'deriva',     DEFAULT:r2(P.warp),       MIN:0,   MAX:1},
+        /* los tres de audio: en VDMX se enganchan al analizador del host */
+        {NAME:'bajo',  TYPE:'float', LABEL:'audio · bajo',  DEFAULT:0, MIN:0, MAX:1},
+        {NAME:'medio', TYPE:'float', LABEL:'audio · medio', DEFAULT:0, MIN:0, MAX:1},
+        {NAME:'alto',  TYPE:'float', LABEL:'audio · alto',  DEFAULT:0, MIN:0, MAX:1},
+        {NAME:'colA', TYPE:'color', LABEL:'fondo',  DEFAULT:pal.a.concat(1)},
+        {NAME:'colB', TYPE:'color', LABEL:'medio',  DEFAULT:pal.b.concat(1)},
+        {NAME:'colC', TYPE:'color', LABEL:'acento', DEFAULT:pal.c.concat(1)}
+      ]
+    };
+    var texto = '/*' + JSON.stringify(cabecera, null, 2) + '*/\n' + CUERPO + '\n';
+    var blob = new Blob([texto], {type:'text/plain'});
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'cabina-feca-' + ESCENAS[P.mode] + '.fs';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+    avisar('bajado · va a ~/Library/Graphics/ISF/');
+  };
+
+  /* ═══ avisos ═══ */
+  var avisoT = null;
+  function avisar(txt){
+    var el = document.getElementById('aviso');
+    el.textContent = txt; el.classList.add('on');
+    clearTimeout(avisoT);
+    avisoT = setTimeout(function(){ el.classList.remove('on'); }, 2600);
+  }
+
+  /* ═══ intro ═══ */
+  document.getElementById('bEmpezar').onclick = function(){
+    document.getElementById('intro').classList.add('ido');
+    setTimeout(function(){
+      var i = document.getElementById('intro');
+      if (i) i.remove();
+    }, 500);
+  };
+}
+</script>
+</body></html>

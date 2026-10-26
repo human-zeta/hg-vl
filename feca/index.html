@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FECA · VJ · Visuales en vivo</title>
+<meta name="description" content="Feca (@feka.vj), VJ: visuales en vivo, mapping y contenido propio con VDMX6 y shaders. Iconic Club, Musicplace® Goodfriends y en vivo en Kick.">
+<!-- TODO: sacar el noindex cuando Feca dé el OK a la página (es su nombre y su material). -->
+<meta name="robots" content="noindex">
+<meta property="og:type" content="profile">
+<meta property="og:site_name" content="Human Glitche">
+<meta property="og:title" content="FECA · VJ">
+<meta property="og:description" content="Visuales en vivo: pantallas LED, cubos colgados y mapping, con VDMX6 y shaders.">
+<meta property="og:url" content="https://feca.hg-vl.com/">
+<meta property="og:image" content="https://feca.hg-vl.com/img/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="FECA, VJ: cubos LED colgados entre humo">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://feca.hg-vl.com/img/og.jpg">
+<meta name="theme-color" content="#050505">
+<link rel="icon" href="img/icon.svg" type="image/svg+xml">
+<link rel="icon" href="img/icon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="img/icon-180.png">
+<link rel="canonical" href="https://feca.hg-vl.com/">
+<!--
+  Hermana de zeta.hg-vl.com: misma forma (portada, secciones numeradas, filas de obra, caja de
+  booking) y otro fondo. Caddy reescribe feca.hg-vl.com a /feca/ (como zeta); lo propio va
+  RELATIVO (img/, media/, cubos.js) y lo compartido por ruta absoluta (/analitica/).
+  FONDO: cubos.js (shader CUBOS, escrito en ISF; cada sección marca data-fase/data-velo).
+  MATERIAL: el de la demo archivada (~/Desktop/repos/portfolio-webs/demo-feka/). Los videos en alta
+  y la foto los pasó él; criatura, calavera y los dos mapping son clips cortos de su grilla pública
+  de Instagram, en baja hasta que mande el archivo bueno. Los nombres de las salas se leen en las
+  pantallas de sus propios videos. No se inventan salas, fechas, precios ni datos de contacto.
+  La página va en tercera persona, como la de zeta.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--black:#050505;--white:#f0ede6;--acc:#ff1f3d;--azul:#2f6bff;
+--mono:'Space Mono',monospace;--display:'Bebas Neue',sans-serif;--body:'DM Sans',sans-serif;
+--line:rgba(240,237,230,.12);--soft:rgba(240,237,230,.6);--faint:rgba(240,237,230,.34)}
+html{scroll-behavior:smooth;background:var(--black)}
+body{background:transparent;color:var(--white);font-family:var(--body);line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{color:var(--acc);text-decoration:none}a:hover{color:var(--white)}
+.wrap{max-width:1040px;margin:0 auto;padding:0 1.5rem;position:relative;z-index:2}
+.topbar{display:flex;justify-content:space-between;align-items:baseline;padding:1.4rem 1.5rem 0;max-width:1040px;margin:0 auto;position:relative;z-index:3;text-shadow:0 1px 8px rgba(0,0,0,.8);font-family:var(--mono);font-size:10px;letter-spacing:.24em}
+.topbar b{color:var(--acc)}.topbar nav a{color:var(--soft);margin-left:1rem}.topbar nav a:hover{color:var(--acc)}
+/* portada: el shader se ve entero; a la derecha, una pantalla vertical con su sala */
+.hero{position:relative;min-height:min(92vh,860px);display:flex;align-items:flex-end;padding-bottom:4rem;margin-top:-3rem}
+.hero::before{content:'';position:absolute;inset:0;z-index:0;pointer-events:none;background:radial-gradient(75% 60% at 0% 100%,rgba(5,5,5,.74),rgba(5,5,5,.3) 50%,transparent 78%)}
+.panel{position:absolute;z-index:1;right:max(1.5rem,calc(50% - 520px + 1.5rem));top:50%;transform:translateY(-44%);width:min(27vw,300px)}
+.panel video{width:100%;aspect-ratio:9/16;object-fit:cover;display:block;border:1px solid var(--line);border-radius:4px;background:#0b0b0b;box-shadow:0 0 70px rgba(255,31,61,.22)}
+.panel figcaption{font-family:var(--mono);font-size:10px;letter-spacing:.18em;color:var(--soft);margin-top:.5rem;text-transform:uppercase}
+.panel figcaption b{color:var(--acc);font-weight:400}
+.kicker{font-family:var(--mono);font-size:11px;letter-spacing:.32em;color:var(--white);text-transform:uppercase;margin-bottom:1rem;text-shadow:0 0 6px #050505,0 1px 10px #050505}
+.kicker::before{content:'● ';color:var(--acc)}
+.hero h1{font-family:var(--display);font-weight:400;font-size:clamp(6rem,24vw,15rem);line-height:.82;letter-spacing:.02em;position:relative;display:inline-block}
+.hero h1 span{color:var(--acc)}
+.hero h1::after{content:'FECA';position:absolute;left:4px;top:0;color:var(--azul);opacity:.45;mix-blend-mode:screen;clip-path:inset(42% 0 40% 0);animation:gl 4s infinite steps(1)}
+@keyframes gl{0%,92%{transform:none}94%{transform:translateX(-6px)}96%{transform:translateX(5px)}}
+.lede{font-size:clamp(1.1rem,2.4vw,1.45rem);font-weight:300;max-width:560px;margin-top:1.2rem;text-shadow:0 1px 14px rgba(0,0,0,.7)}
+.lede b{color:var(--acc);font-weight:500}
+.chips{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:1.6rem;max-width:620px}
+.chips span{font-family:var(--mono);font-size:10px;letter-spacing:.14em;border:1px solid var(--line);padding:.35rem .7rem;border-radius:2px;color:var(--soft);background:rgba(5,5,5,.78)}
+.sec{margin:5rem 0 2rem}.sec .n{font-family:var(--mono);font-size:11px;letter-spacing:.28em;color:var(--acc);display:block;margin-bottom:.6rem}
+.sec h2{font-family:var(--display);font-weight:400;font-size:clamp(2.2rem,6vw,3.6rem);line-height:1}
+.sec p{color:var(--soft);max-width:680px;margin-top:.8rem}
+.show{display:grid;grid-template-columns:1fr 1.3fr;gap:2rem;border-top:1px solid var(--line);padding:2.4rem 0;align-items:center}
+.show .yr{font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--acc);text-transform:uppercase}
+.show h3{font-family:var(--display);font-weight:400;font-size:clamp(2rem,5vw,3.2rem);line-height:.95;margin:.3rem 0 .6rem}
+.show p{color:var(--soft);font-size:.98rem}.show p b{color:var(--white);font-weight:500}
+.show.wide{align-items:start}.show.wide p{margin-top:.2rem}
+.wide-media{grid-column:1/-1}
+.media{display:grid;gap:.5rem}
+.media.n2{grid-template-columns:repeat(2,1fr)}
+.media figure{margin:0}
+.media video,.media img{width:100%;aspect-ratio:16/9;object-fit:cover;border:1px solid var(--line);border-radius:3px;background:#0b0b0b;display:block}
+.media figcaption{font-family:var(--mono);font-size:10px;letter-spacing:.14em;color:var(--faint);text-transform:uppercase;margin-top:.35rem}
+.media.v4{grid-template-columns:repeat(4,1fr)}
+.media.v4 video,.media.v4 img{aspect-ratio:9/16}
+.media.r45 video{aspect-ratio:4/5}
+/* criatura (apaisada) y calavera (vertical) a la misma altura */
+.pareja{display:grid;grid-template-columns:2.2fr 1fr;gap:.5rem}
+.pareja video{width:100%;height:100%;object-fit:cover;border:1px solid var(--line);border-radius:3px;background:#0b0b0b;display:block}
+.pareja video:first-child{aspect-ratio:16/9}
+.pareja video+video{object-position:40% 30%}
+.tag{font-family:var(--mono);font-size:10px!important;letter-spacing:.1em;color:var(--faint)!important;margin-top:.7rem!important}
+.bio{display:grid;grid-template-columns:1fr 1fr;gap:2.5rem;margin-top:1.5rem}
+.bio p{color:var(--soft)}.bio p b{color:var(--white);font-weight:500}
+.stack{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:1.4rem}
+.stack span{font-family:var(--mono);font-size:10px;letter-spacing:.1em;border:1px solid var(--line);padding:.25rem .55rem;border-radius:2px;color:var(--faint);background:rgba(5,5,5,.78)}
+.works{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem;align-items:start}
+.work{overflow:hidden;border:1px solid var(--line);border-radius:4px;padding:1.8rem;background:rgba(12,12,11,.88)}
+.badge{display:inline-block;font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;padding:.3rem .6rem;border-radius:2px;margin-bottom:1rem}
+.badge.isf{background:var(--acc);color:var(--black);font-weight:700}
+.badge.web{border:1px solid var(--azul);color:#8fb0ff}
+.work h3{font-family:var(--display);font-weight:400;font-size:2.1rem;line-height:1;margin-bottom:.6rem}
+.cover{width:calc(100% + 3.6rem);margin:-1.8rem -1.8rem 1.4rem;display:block;height:auto;aspect-ratio:16/9;object-fit:cover;border-radius:4px 4px 0 0}
+.work .wmeta{font-family:var(--mono);font-size:11px;letter-spacing:.08em;color:var(--acc);margin-bottom:.6rem}
+.work p{color:var(--soft);font-size:.96rem}
+.work p code{font-family:var(--mono);font-size:.82em;color:var(--white)}
+.work .btn{display:inline-block;margin-top:1.3rem}
+.contact{margin:5rem 0 2rem;border:1px solid rgba(255,31,61,.45);border-radius:4px;padding:3rem 2rem;text-align:center;background:rgba(5,5,5,.86)}
+.contact h2{font-family:var(--display);font-weight:400;font-size:clamp(2.2rem,6vw,3.8rem);line-height:1;margin-bottom:1rem}
+.contact p{color:var(--soft);max-width:540px;margin:0 auto 1.8rem}
+.btns{display:flex;gap:.9rem;justify-content:center;flex-wrap:wrap}
+.btn{font-family:var(--mono);font-size:12px;letter-spacing:.14em;padding:.85rem 1.5rem;border-radius:3px;text-transform:uppercase;cursor:pointer;border:0}
+.btn.p{background:var(--acc);color:var(--black);font-weight:700}.btn.p:hover{background:var(--white);color:var(--black)}
+.btn.g{border:1px solid var(--line);color:var(--white);background:transparent}.btn.g:hover{border-color:var(--acc);color:var(--acc)}
+footer{border-top:1px solid var(--line);margin-top:3rem;padding:2rem 0 4.5rem;font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--faint)}
+footer a{color:var(--soft)}
+:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+/* fondo CUBOS (cubos.js): detrás de todo */
+#cubos{position:fixed;inset:0;width:100%;height:100%;z-index:-1;pointer-events:none}
+#cubos-btn{position:fixed;left:12px;bottom:12px;z-index:20;font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--soft);background:rgba(5,5,5,.72);border:1px solid var(--line);padding:.45rem .65rem;border-radius:2px;cursor:pointer}
+#cubos-btn:hover,#cubos-btn[aria-pressed=true]{color:var(--acc);border-color:rgba(255,31,61,.45)}
+@media(max-width:760px){
+  .show,.bio,.show.wide{grid-template-columns:1fr;gap:1rem}
+  .hero{min-height:min(88vh,760px)}
+  /* en el celu la pantalla de la sala pasa a ser el fondo de la portada, como el video de zeta */
+  .panel{inset:0;top:0;right:0;width:auto;transform:none;z-index:0}
+  .panel video{height:100%;aspect-ratio:auto;border:0;border-radius:0;box-shadow:none;opacity:.6}
+  .panel figcaption{display:none}
+  .hero::before{z-index:1;background:linear-gradient(180deg,rgba(5,5,5,.6),rgba(5,5,5,.1) 30%,rgba(5,5,5,.55) 65%,var(--black))}
+  .topbar{letter-spacing:.14em}.topbar nav a{margin-left:.8rem}.topbar nav a:last-child{display:none}
+  .kicker{letter-spacing:.18em}
+  .media.v4{grid-template-columns:repeat(2,1fr)}
+}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;scroll-behavior:auto!important}}
+</style>
+<script defer src="/analitica/hg.js"></script>
+</head>
+<body>
+<header class="topbar">
+  <div><b>FECA</b> · VJ</div>
+  <nav><a href="#vivo">EN VIVO</a><a href="#propio">OBRA</a><a href="#cabina">CABINA</a><a href="#booking">BOOKING</a><a href="https://hg-vl.com/">HUMAN GLITCHE →</a></nav>
+</header>
+
+<section class="hero" data-fase="0" data-velo="0">
+  <figure class="panel">
+    <video id="hero-v" muted loop playsinline aria-label="Feca en vivo en Iconic Club" poster="media/iconic.jpg"></video>
+    <figcaption><b>●</b> Iconic Club · en vivo</figcaption>
+  </figure>
+  <script>
+  /* La pantalla de la sala. Con ahorro de datos o movimiento reducido queda solo el póster. */
+  (function(){
+    var v=document.getElementById('hero-v'),c=navigator.connection||{};
+    if(c.saveData||matchMedia('(prefers-reduced-motion:reduce)').matches) return;
+    v.src='media/iconic.mp4'; v.autoplay=true; var p=v.play(); if(p&&p.catch) p.catch(function(){});
+  })();
+  </script>
+  <div class="wrap" style="width:100%">
+    <!-- TODO(Feca): confirmar ciudades; vienen de la demo de agosto. -->
+    <div class="kicker">VJ · La Plata · Buenos Aires</div>
+    <h1>FECA<span>.</span></h1>
+    <p class="lede">Toca la imagen en vivo como el DJ toca la música: <b>capas, cortes y golpes</b> que caen con el bombo. Pantallas LED, cubos colgados y mapping, con VDMX6 y shaders.</p>
+    <div class="chips"><span>Iconic Club</span><span>Musicplace® Goodfriends</span><span>VDMX6 + shaders</span><span>En vivo en Kick</span></div>
+  </div>
+</section>
+
+<main class="wrap">
+<section id="vivo" data-fase="0.3" data-velo="0.55">
+  <div class="sec"><span class="n">01 · EN VIVO</span><h2>Esto pasó de verdad.</h2>
+  <p>Filmado en las salas, la noche que pasó. Sin render de catálogo ni maqueta.</p></div>
+
+  <article class="show wide">
+    <div><span class="yr">Clubes · pantalla y luz</span><h3>Iconic Club · Musicplace® Goodfriends</h3></div>
+    <div><p><b>Pared LED, pantalla central sobre el booth y cubos colgados.</b> En un club chico la imagen tiene que sostener toda la sala; en uno grande, tomar el escenario entero. Se decide en el momento, mirando la pista: por eso ningún set sale igual a otro.</p></div>
+    <div class="wide-media media v4">
+      <figure><video class="lv" muted loop playsinline preload="none" data-poster="media/musicplace.jpg" data-src="media/musicplace.mp4" aria-label="Pantalla central sobre el booth en Musicplace Goodfriends, con luz azul y barrido"></video><figcaption>Musicplace® Goodfriends</figcaption></figure>
+      <figure><video class="lv" muted loop playsinline preload="none" data-poster="media/sala-roja.jpg" data-src="media/sala-roja.mp4" aria-label="Sala roja: el escenario completo tomado por la imagen"></video><figcaption>Sala roja · el escenario entero</figcaption></figure>
+      <figure><img loading="lazy" src="img/cubos.jpg" alt="Cubos LED colgados sobre la pista llena, con vetas de luz blanca sobre rojo y haces azules"><figcaption>Cubos LED · pista llena</figcaption></figure>
+      <figure><video class="lv" muted loop playsinline preload="none" data-poster="media/cabina.jpg" data-src="media/cabina.mp4" aria-label="Desde la cabina de Feca: la laptop con la previa y la grilla de clips, y la pista de frente"></video><figcaption>Desde la cabina</figcaption></figure>
+    </div>
+  </article>
+</section>
+
+<section id="propio" data-fase="1" data-velo="0.5">
+  <div class="sec"><span class="n">02 · CONTENIDO PROPIO</span><h2>Hecho por él.</h2>
+  <p>Lo que sale en la pantalla no viene de un banco de imágenes. Se puede pedir a medida para un tema, un flyer o la identidad de una fiesta.</p></div>
+
+  <article class="show">
+    <div><span class="yr">3D · loops</span><h3>Criaturas y figuras</h3>
+      <p><b>Criaturas 3D, texturas y loops propios</b>, hechos para pantalla: la criatura que respira y la figura verde sobre negro.</p></div>
+    <div class="pareja">
+      <video class="lv" muted loop playsinline preload="none" data-poster="media/criatura.jpg" data-src="media/criatura.mp4" aria-label="Criatura 3D, contenido propio para pantalla"></video>
+      <video class="lv" muted loop playsinline preload="none" data-poster="media/calavera.jpg" data-src="media/calavera.mp4" aria-label="Figura 3D verde sobre negro"></video>
+    </div>
+  </article>
+
+  <article class="show">
+    <div><span class="yr">Mapping · arquitectura</span><h3>La imagen, cortada al edificio</h3>
+      <p><b>La imagen se adapta al fierro que hay</b>: una fachada, pantallas partidas, una pared irregular. El contenido se corta a la forma real del lugar en vez de estirarse y quedar torcido.</p>
+      <p class="tag">Es lo que hacen los cubos del fondo en esta sección: una sola imagen repartida entre todos.</p></div>
+    <div class="media n2 r45">
+      <video class="lv" muted loop playsinline preload="none" data-poster="media/mapping-dia.jpg" data-src="media/mapping-dia.mp4" aria-label="Mapping de fachada, de día"></video>
+      <video class="lv" muted loop playsinline preload="none" data-poster="media/mapping-noche.jpg" data-src="media/mapping-noche.mp4" aria-label="Mapping nocturno sobre arquitectura"></video>
+    </div>
+  </article>
+</section>
+
+<section id="oficio" data-fase="1.4" data-velo="0.55">
+  <div class="sec"><span class="n">03 · EL OFICIO</span><h2>Un VJ no pone imágenes.<br>Las toca.</h2></div>
+  <div class="bio">
+    <p><b>Feca mezcla imagen como el DJ mezcla música</b>: capas que entran y salen, cortes a tiempo y golpes que caen con el bombo. Toca mirando la pista, que es el único monitor que importa; lo demás es herramienta.</p>
+    <p>Trabaja con <b>VDMX6 y shaders</b>: imagen que se calcula sola, cuadro a cuadro, y se puede atar al audio. Lo que pasa en la cabina también sale por internet: transmite en vivo en <a href="https://kick.com/fekavj" target="_blank" rel="noopener">kick.com/fekavj</a>, sin techo ni capacidad de sala.</p>
+  </div>
+  <div class="stack"><span>VDMX6</span><span>SHADERS ISF</span><span>MAPPING</span><span>CONTENIDO 3D</span><span>STREAM EN KICK</span></div>
+</section>
+
+<section id="cabina" data-fase="1.75" data-velo="0.45">
+  <div class="sec"><span class="n">04 · LA CABINA</span><h2>El fondo de esta página<br>es un shader.</h2>
+  <p>VDMX6 carga shaders en formato ISF. Los cubos de atrás son uno, escrito en ISF de verdad: el mismo texto que corre en esta página es el que se baja. Mové el mouse sobre el vacío y el seguidor te busca; un clic es un golpe.</p></div>
+  <div class="works">
+    <div class="work">
+      <span class="badge isf">ISF · .fs</span>
+      <h3>CUBOS</h3>
+      <p class="wmeta">Fase · BPM · golpe · seguidor · colores</p>
+      <p>Cubos LED colgados entre humo, haces de cabezales y golpe a tempo, en tres momentos: sala, mapping y drop. En macOS va a <code>~/Library/Graphics/ISF/</code> y VDMX lo levanta solo; el golpe se ata al bombo.</p>
+      <button type="button" class="btn p" data-fs>Bajar cubos-feca.fs</button>
+    </div>
+    <div class="work">
+      <img class="cover" loading="lazy" src="img/laptop.jpg" alt="Vista desde la cabina de Feca: la laptop con la previa y la grilla de clips, y la pista iluminada de rojo al fondo">
+      <span class="badge web">En el navegador</span>
+      <h3>La cabina jugable</h3>
+      <p>Cinco escenas, controles en vivo, disparos con el teclado y micrófono opcional, que se procesa en tu equipo y no se graba. Al final te la llevás en <code>.fs</code>.</p>
+      <a class="btn g" href="cabina/">Abrir la cabina →</a>
+    </div>
+  </div>
+</section>
+
+<section class="contact" id="booking" data-fase="2" data-velo="0.1">
+  <h2>Booking y fechas</h2>
+  <p>Clubes, fiestas, festivales y streams.</p>
+  <!-- TODO(Feca): mail y WhatsApp de booking cuando los pase. No se inventan. -->
+  <div class="btns">
+    <a class="btn p" href="https://www.instagram.com/feka.vj/" target="_blank" rel="noopener">Instagram @feka.vj</a>
+    <a class="btn g" href="https://kick.com/fekavj" target="_blank" rel="noopener">kick.com/fekavj</a>
+  </div>
+</section>
+</main>
+<script>
+(function(){
+  var calm=matchMedia('(prefers-reduced-motion:reduce)').matches;
+  var vs=[].slice.call(document.querySelectorAll('video.lv'));
+  function load(v){ if(!v.src){ v.src=v.dataset.src; } }
+  function cartel(v){ if(v.dataset.poster && !v.getAttribute('poster')){ v.poster=v.dataset.poster; } }
+  if(calm || !('IntersectionObserver' in window)){
+    vs.forEach(function(v){ cartel(v); load(v); v.controls=calm; if(!calm){ v.autoplay=true; } });
+  } else {
+    var io2=new IntersectionObserver(function(es){
+      es.forEach(function(e){ if(e.isIntersecting){ cartel(e.target); io2.unobserve(e.target); } });
+    },{rootMargin:'900px 0px'});
+    vs.forEach(function(v){ io2.observe(v); });
+    var io=new IntersectionObserver(function(es){
+      es.forEach(function(e){
+        var v=e.target;
+        if(e.isIntersecting){ load(v); var p=v.play(); if(p&&p.catch) p.catch(function(){}); }
+        else if(!v.paused){ v.pause(); }
+      });
+    },{rootMargin:'200px 0px'});
+    vs.forEach(function(v){ io.observe(v); });
+  }
+})();
+</script>
+<footer class="wrap">FECA · VJ · Visuales en vivo · Parte de <a href="https://hg-vl.com/">Human Glitche</a></footer>
+<script src="cubos.js?v=1" defer></script>
+</body>
+</html>
