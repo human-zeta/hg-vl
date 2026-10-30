@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Página no encontrada · FECA</title>
+<meta name="theme-color" content="#050505">
+<link rel="icon" href="/img/icon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box}
+  html,body{margin:0;min-height:100%}
+  body{min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;background:#050505;color:#f0ede6;font:400 17px/1.55 'DM Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased;color-scheme:dark;}
+  a{color:inherit}
+  header{padding:20px 16px;border-bottom:1px solid rgba(240,237,230,.26)}
+  header a{font:600 15px/1 'Bebas Neue',Impact,sans-serif;letter-spacing:.04em;text-decoration:none}
+  main{flex:1;display:flex;flex-direction:column;justify-content:center;width:100%;max-width:640px;margin:0 auto;padding:48px 16px 64px}
+  .num{display:block;font:400 clamp(96px,28vw,180px)/.85 'Bebas Neue',Impact,sans-serif;color:#ff1f3d;letter-spacing:-.02em;margin:0 0 20px}
+  h1{font:600 clamp(28px,7vw,44px)/1.1 'Bebas Neue',Impact,sans-serif;margin:0 0 14px;text-wrap:balance}
+  p{margin:0 0 10px;color:#bdbab3;max-width:46ch}
+  .sub{font-size:15px}
+  .acciones{display:flex;flex-wrap:wrap;gap:12px;margin-top:28px}
+  .btn{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:12px 22px;border-radius:999px;font:500 16px/1.2 'DM Sans',system-ui,sans-serif;text-decoration:none;border:1px solid #ff1f3d;transition:transform .15s ease,background-color .15s ease}
+  .btn.uno{background:#ff1f3d;color:#050505}
+  .btn.dos{border-color:rgba(240,237,230,.26);color:#f0ede6}
+  .btn:hover{transform:translateY(-1px)}
+  .btn:focus-visible{outline:3px solid #ff1f3d;outline-offset:3px}
+  .btn.uno:focus-visible{outline-color:#f0ede6}
+  footer{padding:18px 16px;border-top:1px solid rgba(240,237,230,.26);font:400 13px/1.4 'Space Mono',ui-monospace,monospace;color:#bdbab3}
+  @media (max-width:420px){.btn{flex:1 1 100%}}
+  .num{position:relative}
+  .num::before,.num::after{content:'404';position:absolute;inset:0;pointer-events:none}
+  .num::before{color:#2f6bff;transform:translate(-3px,0);mix-blend-mode:screen;opacity:.8;clip-path:inset(12% 0 58% 0)}
+  .num::after{color:#ff1f3d;transform:translate(3px,0);mix-blend-mode:screen;opacity:.8;clip-path:inset(62% 0 8% 0)}
+  @media (prefers-reduced-motion:no-preference){
+    .num::before{animation:g1 2.6s steps(2,end) infinite}
+    .num::after{animation:g2 3.1s steps(2,end) infinite}
+    @keyframes g1{0%,86%,100%{transform:translate(-3px,0)}88%{transform:translate(-9px,1px)}92%{transform:translate(4px,-1px)}}
+    @keyframes g2{0%,80%,100%{transform:translate(3px,0)}83%{transform:translate(10px,-1px)}90%{transform:translate(-5px,1px)}}
+  }
+</style>
+</head>
+<body>
+<header><a href="https://feca.hg-vl.com/">FECA</a></header>
+<main>
+  <span class="num" aria-hidden="true">404</span>
+  <h1>Señal perdida</h1>
+  <p>Esta página no existe o se movió. Los visuales siguen en el inicio.</p>
+  <div class="acciones">
+    <a class="btn uno" href="https://feca.hg-vl.com/">Volver a FECA</a>
+  </div>
+</main>
+<footer>Error 404 · feca.hg-vl.com</footer>
+</body>
+</html>
