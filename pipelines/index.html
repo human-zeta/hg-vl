@@ -161,7 +161,7 @@
     </aside>
   </div>
 
-  <div class="foot">HUMAN GLITCHE · VISUAL LAB · diagnóstico + presupuesto client-side, conectado a la Auditoría</div>
+  <div class="foot">HUMAN GLITCHE · VISUAL LAB · diagnóstico + presupuesto client-side</div>
 </div>
 <div class="toast" id="toast"></div>
 
@@ -258,7 +258,7 @@ const CHANNELS = [
   {k:'web', t:'Web'}, {k:'ig', t:'Instagram'}, {k:'fb', t:'Facebook'}, {k:'wa', t:'WhatsApp'}, {k:'tt', t:'TikTok'}
 ];
 
-// ── Dataset de respaldo (si no se puede leer el seed de la auditoría) ──────
+// ── Comercios de muestra ──────
 const FALLBACK = {
   seed_a:{name:'Panadería La Tradición', type:'Panadería', city:'La Plata', web:false, ig:false, fb:true, wa:false, tt:false, rating:4.7, reviews:312},
   seed_b:{name:'Barbería Norte', type:'Barbería', city:'Quilmes', web:false, ig:true, fb:false, wa:false, tt:false, rating:4.4, reviews:88},
@@ -297,24 +297,16 @@ function load(){
 function savePrice(){ try{ localStorage.setItem(LS_PRICE, JSON.stringify(priceOv)); }catch(e){} }
 
 // ── Carga de negocios desde la Auditoría (con fallback) ──────────────────────
-async function loadBiz(){
-  // Rutas candidatas del seed: cubre staging (web/auditoria/) y el sitio vivo
-  // (hg-vl es plano: auditoria.html en raíz + seed en raíz). Primera que responda gana.
-  // Fuente única: primero el tablero VIVO de la Auditoría (Firebase /comercios,
-  // lectura pública), y solo si no responde, el seed estático como respaldo.
-  const SEED_PATHS = ['https://hg-vl-shaders-default-rtdb.firebaseio.com/comercios.json','/seed_comercios_pba.json','/auditoria/seed_comercios_pba.json','../auditoria/seed_comercios_pba.json','seed_comercios_pba.json'];
-  let loaded=false;
-  for(const path of SEED_PATHS){
-    try{
-      const r = await fetch(path, {cache:'no-store'});
-      if(!r.ok) continue;
-      const d = await r.json();
-      const obj = (d && typeof d==='object' && !Array.isArray(d)) ? d : {};
-      if(!Object.keys(obj).length) continue;
-      BIZ = obj; loaded=true; break;
-    }catch(e){ /* siguiente ruta */ }
-  }
-  if(!loaded) BIZ = FALLBACK;   // demo si no hay seed publicado
+// Los comercios relevados viven solo en labs.hg-vl.com. Acá quedan los de muestra y,
+// si viene de AUDITORÍA, ese comercio (llega por localStorage para no ir en la URL).
+function loadBiz(){
+  BIZ = {...FALLBACK};
+  let d=null;
+  try{ d=JSON.parse(localStorage.getItem('hg_aud_traspaso')||'null'); localStorage.removeItem('hg_aud_traspaso'); }catch(e){}
+  if(d&&Date.now()-d.t>60000) d=null;
+  if(d){ delete d.t; BIZ.auditoria=d; }
+  const q=new URLSearchParams(location.search), nm=(q.get('biz')||'').trim();
+  if(nm && !Object.values(BIZ).some(b=>(b.name||'').trim().toLowerCase()===nm.toLowerCase())) BIZ.pedido={name:nm,city:(q.get('city')||'').trim()};
   buildSelectors();
 }
 
@@ -537,14 +529,14 @@ load();
 renderBiz(); renderCards(); renderQuote();
 // Handoff desde la AUDITORÍA: /pipelines/?biz=Nombre&city=Ciudad → preselecciona el comercio
 function applyHandoff(){
-  const p=new URLSearchParams(location.search); const nm=(p.get('biz')||'').trim().toLowerCase(); if(!nm) return;
+  const p=new URLSearchParams(location.search); const nm=(p.get('biz')||'').trim().toLowerCase();
   const cy=(p.get('city')||'').trim().toLowerCase();
-  const hit=Object.entries(BIZ).find(([id,b])=> (b.name||'').trim().toLowerCase()===nm && (!cy||(b.city||'').trim().toLowerCase()===cy));
+  const hit=BIZ.auditoria?['auditoria',BIZ.auditoria]:nm?Object.entries(BIZ).find(([id,b])=> (b.name||'').trim().toLowerCase()===nm && (!cy||(b.city||'').trim().toLowerCase()===cy)):null;
   if(!hit) return;
   if(hit[1].city){ $('fCity').value=hit[1].city; fillBizSelect(); }
   curBizId=hit[0]; $('fBiz').value=hit[0]; renderBiz(); renderCards();
 }
-loadBiz().then(()=>{ renderBiz(); renderCards(); applyHandoff(); });
+loadBiz(); renderBiz(); renderCards(); applyHandoff();
 })();
 </script>
 </body></html>

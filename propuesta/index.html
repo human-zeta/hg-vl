@@ -113,7 +113,7 @@
 
       <div class="grp">
         <div class="gl">Cliente</div>
-        <div class="fld"><label>Cargar negocio auditado (opcional)</label><select id="bizPick"><option value="">— a mano —</option></select></div>
+        
         <div class="fld"><label>Negocio</label><input id="cNeg" placeholder="Panadería La Tradición"></div>
         <div class="row2">
           <div class="fld"><label>Ciudad</label><input id="cCiu" placeholder="La Plata"></div>
@@ -374,25 +374,13 @@ $('resetBtn').addEventListener('click', ()=>{ if(!confirm('¿Limpiar la propuest
   save(); ['cNeg','cCiu','cAt','mMarca','mCont'].forEach(k=>{}); location.reload(); });
 
 // ── Prefill desde la Auditoría (opcional, robusto) ──────────────────────────
-async function loadBiz(){
-  const paths=['https://hg-vl-shaders-default-rtdb.firebaseio.com/comercios.json','/seed_comercios_pba.json','/auditoria/seed_comercios_pba.json','../auditoria/seed_comercios_pba.json','seed_comercios_pba.json'];
-  for(const p of paths){
-    try{ const r=await fetch(p,{cache:'no-store'}); if(!r.ok) continue; const d=await r.json();
-      if(d && typeof d==='object' && Object.keys(d).length){
-        const sel=$('bizPick');
-        sel.innerHTML='<option value="">— a mano —</option>'+Object.entries(d)
-          .sort((a,b)=>(a[1].name||'').localeCompare(b[1].name||''))
-          .map(([id,b])=>`<option value="${esc(id)}" data-n="${esc(b.name||'')}" data-c="${esc(b.city||'')}">${esc(b.name||id)}${b.city?' · '+esc(b.city):''}</option>`).join('');
-        sel.addEventListener('change', ()=>{ const o=sel.options[sel.selectedIndex]; if(!o||!o.value) return;
-          st.neg=o.getAttribute('data-n')||''; st.ciu=o.getAttribute('data-c')||'';
-          $('cNeg').value=st.neg; $('cCiu').value=st.ciu; save(); render(); });
-        // Handoff desde la AUDITORÍA: /propuesta/?biz=Nombre&city=Ciudad prellena el cliente
-        const hp=new URLSearchParams(location.search), hn=(hp.get('biz')||'').trim();
-        if(hn){ st.neg=hn; st.ciu=(hp.get('city')||'').trim(); $('cNeg').value=st.neg; $('cCiu').value=st.ciu; save(); render(); }
-        return;
-      }
-    }catch(e){}
-  }
+// Los comercios relevados viven solo en labs.hg-vl.com: el dato llega desde AUDITORÍA o por ?biz=.
+function loadBiz(){
+  let d=null;
+  try{ d=JSON.parse(localStorage.getItem('hg_aud_traspaso')||'null'); localStorage.removeItem('hg_aud_traspaso'); }catch(e){}
+  if(d&&Date.now()-d.t>60000) d=null;
+  const hp=new URLSearchParams(location.search), hn=d?d.name:(hp.get('biz')||'').trim();
+  if(hn){ st.neg=hn; st.ciu=d?(d.city||''):(hp.get('city')||'').trim(); $('cNeg').value=st.neg; $('cCiu').value=st.ciu; save(); render(); }
 }
 
 renderAll();

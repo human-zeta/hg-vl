@@ -110,7 +110,7 @@
       <h2>Armá el reporte</h2>
       <div class="grp">
         <div class="gl">Cliente + período</div>
-        <div class="fld"><label>Cargar negocio auditado (opcional)</label><select id="bizPick"><option value="">— a mano —</option></select></div>
+        
         <div class="fld"><label>Negocio</label><input id="cNeg" placeholder="Panadería La Tradición"></div>
         <div class="row2">
           <div class="fld"><label>Mes</label><select id="cMes"></select></div>
@@ -373,18 +373,7 @@ $('resetBtn').addEventListener('click', ()=>{ if(!confirm('¿Limpiar el reporte 
   st={ neg:'', mes:new Date().getMonth(), anio:new Date().getFullYear(), sel:[], data:{}, coment:'', comentTouched:false, prox:'', marca:'Human Glitche', cont:'hola@hg-vl.com · hg-vl.com' };
   save(); location.reload(); });
 
-// ── Prefill Auditoría ───────────────────────────────────────────────────────
-async function loadBiz(){
-  const paths=['https://hg-vl-shaders-default-rtdb.firebaseio.com/comercios.json','/seed_comercios_pba.json','/auditoria/seed_comercios_pba.json','../auditoria/seed_comercios_pba.json','seed_comercios_pba.json'];
-  for(const p of paths){ try{ const r=await fetch(p,{cache:'no-store'}); if(!r.ok) continue; const d=await r.json();
-    if(d && typeof d==='object' && Object.keys(d).length){ const sel=$('bizPick');
-      sel.innerHTML='<option value="">— a mano —</option>'+Object.entries(d).sort((a,b)=>(a[1].name||'').localeCompare(b[1].name||''))
-        .map(([id,b])=>`<option data-n="${esc(b.name||'')}">${esc(b.name||id)}${b.city?' · '+esc(b.city):''}</option>`).join('');
-      sel.addEventListener('change', ()=>{ const o=sel.options[sel.selectedIndex]; if(!o||!o.value&&sel.selectedIndex===0) return;
-        const n=o.getAttribute('data-n'); if(n){ st.neg=n; $('cNeg').value=n; save(); render(); } });
-      return; } }catch(e){} }
-}
-renderAll(); loadBiz();
+renderAll();
 })();
 </script>
 </body></html>

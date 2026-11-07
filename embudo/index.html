@@ -88,13 +88,12 @@
 <div class="wrap">
   <header>
     <div class="brand"><b>EMBUDO</b><span>tu funnel de ventas, de prospecto a cliente</span></div>
-    <nav><a href="/labs/">← LABS</a><a href="/auditoria.html">AUDITORÍA</a><a href="/pipelines/">PIPELINES</a></nav>
+    <nav><a href="/labs/">← LABS</a><a href="/auditoria/">AUDITORÍA</a><a href="/pipelines/">PIPELINES</a></nav>
   </header>
-  <p class="intro">La GUÍA DE VENTA dice "armá una lista de 10 y trabajala": este es el tablero para hacerlo. Traés negocios de la <b>AUDITORÍA</b> (o los cargás a mano) y los movés por las etapas — <b>Prospecto → Contactado → Propuesta → Cerrado / Perdido</b> — con arrastrar, notas, próxima acción y el valor estimado. Todo se guarda en tu navegador.</p>
+  <p class="intro">La GUÍA DE VENTA dice "armá una lista de 10 y trabajala": este es el tablero para hacerlo. Traés negocios desde la ficha de la <b>AUDITORÍA</b> (o los cargás a mano) y los movés por las etapas — <b>Prospecto → Contactado → Propuesta → Cerrado / Perdido</b> — con arrastrar, notas, próxima acción y el valor estimado. Todo se guarda en tu navegador.</p>
 
   <div class="bar">
-    <div class="field"><label>Sumar desde Auditoría</label><select id="bizPick"><option value="">— elegí un negocio —</option></select></div>
-    <button class="btn pri" id="addBiz">+ Sumar a Prospectos</button>
+    <a class="btn pri" href="/auditoria/" style="text-decoration:none">Buscar en AUDITORÍA</a>
     <button class="btn" id="addManual">+ A mano</button>
     <div class="grow"></div>
     <div class="stat" id="stats"></div>
@@ -128,7 +127,6 @@ const PIPE_LBL=Object.fromEntries(PIPES);
 
 const LS='hg_embudo_v1';
 let cards=[];        // {id,name,city,type,stage,tags[],next,due,val,notes}
-let seed={};
 let editId=null, tagSel=[];
 try{ const s=JSON.parse(localStorage.getItem(LS)||'null'); if(Array.isArray(s)) cards=s; }catch(e){}
 
@@ -250,12 +248,14 @@ $('ovl').addEventListener('click', e=>{ if(e.target===$('ovl')) closeModal(); })
 
 // ── Alta desde Auditoría ────────────────────────────────────────────────────
 function addFromBiz(){
-  const sel=$('bizPick'); const o=sel.options[sel.selectedIndex]; if(!o||!o.value) { toast('Elegí un negocio'); return; }
-  const b=seed[o.value]; if(!b) return;
-  if(cards.some(c=>c.name===b.name && c.city===b.city)){ toast('Ya está en el embudo'); return; }
+  let d=null;
+  try{ d=JSON.parse(localStorage.getItem('hg_aud_traspaso')||'null'); localStorage.removeItem('hg_aud_traspaso'); }catch(e){}
+  if(d&&Date.now()-d.t>60000) d=null;
+  if(!d||!d.name) return;
+  if(cards.some(c=>c.name===d.name && c.city===(d.city||''))){ toast('Ya está en el embudo'); return; }
   // sugerir tags por huecos de canal
-  const tags=[]; if(b.web===false) tags.push('web'); if(b.wa===false) tags.push('wa'); if(b.ig===false) tags.push('social');
-  cards.push({ id:uid(), name:b.name||'', city:b.city||'', type:b.type||'', stage:'prospecto', tags, next:'Primer contacto', due:'', val:'', notes:'' });
+  const tags=[]; if(d.web===false) tags.push('web'); if(d.wa===false) tags.push('wa'); if(d.ig===false) tags.push('social');
+  cards.push({ id:uid(), name:d.name, city:d.city||'', type:d.type||'', stage:'prospecto', tags, next:'Primer contacto', due:'', val:'', notes:'' });
   save(); render(); toast('Sumado a Prospectos');
 }
 
@@ -276,22 +276,11 @@ function exportText(){
 function toast(t){ const el=$('toast'); el.textContent=t; el.classList.add('show'); setTimeout(()=>el.classList.remove('show'),1600); }
 
 // ── Bind barra ──────────────────────────────────────────────────────────────
-$('addBiz').addEventListener('click', addFromBiz);
 $('addManual').addEventListener('click', ()=>openModal(null,'prospecto'));
 $('exportBtn').addEventListener('click', ()=>{ const t=exportText(); if(!t){ toast('Embudo vacío'); return; }
   navigator.clipboard?.writeText(t).then(()=>toast('Embudo copiado'),()=>prompt('Copiá el embudo:',t)); });
 
-// ── Prefill Auditoría ───────────────────────────────────────────────────────
-async function loadBiz(){
-  const paths=['https://hg-vl-shaders-default-rtdb.firebaseio.com/comercios.json','/seed_comercios_pba.json','/auditoria/seed_comercios_pba.json','../auditoria/seed_comercios_pba.json','seed_comercios_pba.json'];
-  for(const p of paths){ try{ const r=await fetch(p,{cache:'no-store'}); if(!r.ok) continue; const d=await r.json();
-    if(d && typeof d==='object' && Object.keys(d).length){ seed=d;
-      $('bizPick').innerHTML='<option value="">— elegí un negocio —</option>'+Object.entries(d).sort((a,b)=>(a[1].name||'').localeCompare(b[1].name||''))
-        .map(([id,b])=>`<option value="${esc(id)}">${esc(b.name||id)}${b.city?' · '+esc(b.city):''}</option>`).join('');
-      return; } }catch(e){} }
-}
-
-render(); loadBiz();
+render(); addFromBiz();
 })();
 </script>
 </body></html>

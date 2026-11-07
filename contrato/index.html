@@ -103,7 +103,7 @@
 
       <div class="grp">
         <div class="gl">Cliente</div>
-        <div class="fld"><label>Cargar negocio auditado (opcional)</label><select id="bizPick"><option value="">— a mano —</option></select></div>
+        
         <div class="fld"><label>Negocio / Razón social</label><input id="cNeg" placeholder="Panadería La Tradición"></div>
         <div class="fld"><label>Titular (nombre y apellido)</label><input id="cTit" placeholder="Nombre del dueño/a"></div>
         <div class="row2">
@@ -303,19 +303,7 @@ $('resetBtn').addEventListener('click', ()=>{ if(!confirm('¿Limpiar el contrato
   st={ pNom:'Human Glitche', pCuit:'', pLoc:'', pDom:'', neg:'', tit:'', dni:'', ciu:'', dom:'', sel:[], sena:50, plazo:15, preaviso:30, juris:'', fecha:'' };
   save(); location.reload(); });
 
-// ── Prefill Auditoría ───────────────────────────────────────────────────────
-async function loadBiz(){
-  const paths=['https://hg-vl-shaders-default-rtdb.firebaseio.com/comercios.json','/seed_comercios_pba.json','/auditoria/seed_comercios_pba.json','../auditoria/seed_comercios_pba.json','seed_comercios_pba.json'];
-  for(const p of paths){ try{ const r=await fetch(p,{cache:'no-store'}); if(!r.ok) continue; const d=await r.json();
-    if(d && typeof d==='object' && Object.keys(d).length){ const sel=$('bizPick');
-      sel.innerHTML='<option value="">— a mano —</option>'+Object.entries(d).sort((a,b)=>(a[1].name||'').localeCompare(b[1].name||''))
-        .map(([id,b])=>`<option data-n="${esc(b.name||'')}" data-c="${esc(b.city||'')}">${esc(b.name||id)}${b.city?' · '+esc(b.city):''}</option>`).join('');
-      sel.addEventListener('change', ()=>{ const o=sel.options[sel.selectedIndex]; if(!o||sel.selectedIndex===0) return;
-        st.neg=o.getAttribute('data-n')||''; st.ciu=o.getAttribute('data-c')||'';
-        $('cNeg').value=st.neg; $('cCiu').value=st.ciu; save(); render(); });
-      return; } }catch(e){} }
-}
-renderAll(); loadBiz();
+renderAll();
 })();
 </script>
 </body></html>
